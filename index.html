@@ -42,12 +42,12 @@
   --ink-4:#B0A196;
 
   /* — KIRMIZI MARKA — nude kırmızı + premium vurgular — */
-  --brand:#B8322F;        /* ana nude kırmızı */
-  --brand-2:#9D2824;      /* koyu vurgu */
-  --brand-3:#E85851;      /* açık canlı */
-  --brand-soft:#FCEDEA;   /* çok soft arka plan */
-  --brand-softer:#FFF5F3; /* en soft ton */
-  --brand-bd:#F2C9C3;     /* soft border */
+  --brand:#9B1B30;        /* ana nude kırmızı */
+  --brand-2:#7A1525;      /* koyu vurgu */
+  --brand-3:#B02A3F;      /* açık canlı */
+  --brand-soft:#F8E5E9;   /* çok soft arka plan */
+  --brand-softer:#FDF0F2; /* en soft ton */
+  --brand-bd:#E8B8C0;     /* soft border */
 
   --accent:#C89B7B;       /* nude şampanya */
   --accent-2:#B8855F;
@@ -56,7 +56,7 @@
   /* — semantik (yumuşatıldı) — */
   --ok:#2D7A4A; --ok-bg:#E9F4EC; --ok-bd:#BDDBC5;
   --warn:#A57A1E; --warn-bg:#FAF1D9; --warn-bd:#E5CB92;
-  --err:#B8322F; --err-bg:#FCEDEA; --err-bd:#F2C9C3;
+  --err:#9B1B30; --err-bg:#F8E5E9; --err-bd:#E8B8C0;
   --info:#3D6FA8; --info-bg:#EAF0F7; --info-bd:#BECCDD;
 
   /* — transfer tipi pasteller — nude aile ile uyumlu — */
@@ -226,7 +226,7 @@ select.inp,select{
 }
 .avatar-ring{
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,#B8322F 0%,#E85851 50%,#C89B7B 120%);
+  background:linear-gradient(135deg,#9B1B30 0%,#B02A3F 50%,#C89B7B 120%);
   padding:2.5px;
   box-shadow:0 4px 14px rgba(184,50,47,.28),0 1px 3px rgba(184,50,47,.18);
   flex-shrink:0;position:relative;
@@ -245,7 +245,7 @@ select.inp,select{
   box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 .hdr-status-on{background:#2D7A4A}
-.hdr-status-off{background:#B8322F}
+.hdr-status-off{background:#9B1B30}
 .hdr-iconbtn{
   width:42px;height:42px;border-radius:14px;
   background:var(--card);
@@ -288,13 +288,13 @@ select.inp,select{
 }
 .qa-item:active .qa-circle{transform:scale(.93)}
 .qa-circle-red{
-  background:linear-gradient(135deg,#B8322F 0%,#9D2824 100%);
-  border-color:#9D2824;
+  background:linear-gradient(135deg,#9B1B30 0%,#7A1525 100%);
+  border-color:#7A1525;
   color:#fff;
   box-shadow:0 6px 18px rgba(184,50,47,.32),inset 0 1px 0 rgba(255,255,255,.18);
 }
 .qa-circle-red-soft{
-  background:linear-gradient(135deg,#FCEDEA 0%,#F8DDD6 100%);
+  background:linear-gradient(135deg,#F8E5E9 0%,#F0D4DB 100%);
   border-color:var(--brand-bd);
   color:var(--brand);
 }
@@ -361,7 +361,7 @@ select.inp,select{
   pointer-events:none;
 }
 .hero-card-red{
-  background:linear-gradient(135deg,#B8322F 0%,#9D2824 60%,#7D1E1B 110%);
+  background:linear-gradient(135deg,#9B1B30 0%,#7A1525 60%,#7D1E1B 110%);
   color:#fff;
 }
 .hero-card-nude{
@@ -375,7 +375,7 @@ select.inp,select{
   border-color:var(--line);
 }
 .hero-card-softred{
-  background:linear-gradient(135deg,#FCEDEA 0%,#F6D4CC 100%);
+  background:linear-gradient(135deg,#F8E5E9 0%,#EDC9D3 100%);
   color:#7D1E1B;
   border-color:var(--brand-bd);
 }
@@ -525,7 +525,7 @@ select.inp,select{
    DATE HEADER — günü başlatan bar
    ═══════════════════════════════════════════════════════════════ */
 .date-hdr{
-  background:linear-gradient(135deg,#B8322F 0%,#9D2824 60%,#7D1E1B 110%);
+  background:linear-gradient(135deg,#9B1B30 0%,#7A1525 60%,#7D1E1B 110%);
   border:none;
   border-radius:var(--r-sm);
   padding:12px 18px;
@@ -536,7 +536,7 @@ select.inp,select{
 }
 .date-hdr::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
-  background:linear-gradient(180deg,#FCEDEA 0%,#E85851 50%,#B8322F 100%);
+  background:linear-gradient(180deg,#F8E5E9 0%,#B02A3F 50%,#9B1B30 100%);
   box-shadow:0 0 12px rgba(255,255,255,.3);
 }
 .date-hdr::after{
@@ -603,13 +603,13 @@ select.inp,select{
 .tab.is-active::before{
   content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
   width:30px;height:3px;border-radius:2px;
-  background:linear-gradient(90deg,#B8322F 0%,#E85851 100%);
+  background:linear-gradient(90deg,#9B1B30 0%,#B02A3F 100%);
   box-shadow:0 1px 4px rgba(184,50,47,.35);
 }
 .tab-fab{
   align-self:center;
   width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(135deg,#E85851 0%,#B8322F 55%,#9D2824 100%);
+  background:linear-gradient(135deg,#B02A3F 0%,#9B1B30 55%,#7A1525 100%);
   color:#fff;font-size:28px;font-weight:300;
   display:flex;align-items:center;justify-content:center;
   border:none;margin:0 4px;
@@ -716,8 +716,8 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
-const NAV = '#B8322F', NAV2 = '#9D2824', GOLD = '#C89B7B';
-const G = '#246B3D', O = '#8B5A1A', R = '#A33A3A', BR = '#B8322F';
+const NAV = '#9B1B30', NAV2 = '#7A1525', GOLD = '#C89B7B';
+const G = '#246B3D', O = '#8B5A1A', R = '#A33A3A', BR = '#9B1B30';
 const TX = '#1F1715', SB = '#7F6D63', INP = '#F6F0EB', BOR = '#EFE3DB';
 const TIPLER = [
     { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#1F7A54', bg: '#EAF5EE', b: '#A8D5B5' },
@@ -1580,6 +1580,7 @@ function HesapTab({ T, sT, agencies, tip }) {
     };
     const csvExport = firm => {
         // iPhone Numbers uyumlu CSV - UTF-8 BOM ile Türkçe karakter desteği
+        // İki grup: (1) Firma'nın verdiği işler (oVerdi)  (2) Ölmeztur'un verdiği işler (benVerdim)
         const { ts, al, ver, net } = ozet(firm);
         const esc = v => {
             const s = String(v == null ? '' : v);
@@ -1588,18 +1589,53 @@ function HesapTab({ T, sT, agencies, tip }) {
             }
             return s;
         };
+        // Firma bazında grupla
+        const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : String(a.time || '').localeCompare(String(b.time || '')));
+        const oVerdi = ts.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);   // Firma verdi, biz götürdük (ALACAK)
+        const benVerdim = ts.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate); // Biz verdik, firma götürdü (VERECEK)
+        const altGrup = ts.filter(t => t.yon === 'alt').slice().sort(sortByDate);   // Alt transferler
+
+        // Grup toplamları
+        const grupToplam = (arr) => {
+            let gAl = 0, gVer = 0, gAcik = 0, gKapanan = 0;
+            arr.forEach(t => {
+                if (t.firmSettled) gKapanan++;
+                else {
+                    gAcik++;
+                    if (t.netOl > 0) gAl += t.netOl;
+                    else gVer += Math.abs(t.netOl);
+                }
+            });
+            return { al: gAl, ver: gVer, acik: gAcik, kapanan: gKapanan, net: gAl - gVer };
+        };
+        const gO = grupToplam(oVerdi);
+        const gB = grupToplam(benVerdim);
+        const gA = grupToplam(altGrup);
+
         let csv = '';
-        // Üst başlık — özet
+        // ═══ BAŞLIK & GENEL ÖZET ═══
         csv += 'ÖLMEZTUR - ' + esc(firm) + '\n';
-        csv += 'Tarih,' + esc(new Date().toLocaleDateString('tr-TR')) + '\n';
-        csv += 'Toplam Transfer,' + ts.length + '\n';
-        csv += 'Alacak (TL),' + Math.round(al) + '\n';
-        csv += 'Verecek (TL),' + Math.round(ver) + '\n';
-        csv += 'Net (TL),' + Math.round(net) + '\n';
+        csv += 'Rapor Tarihi,' + esc(new Date().toLocaleDateString('tr-TR')) + '\n';
         csv += '\n';
-        // Transfer tablosu
-        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Durum,Hesap\n';
-        ts.slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach((t, i) => {
+        csv += '═══ GENEL ÖZET ═══\n';
+        csv += 'Toplam Transfer,' + ts.length + '\n';
+        csv += 'Toplam Alacak (TL),' + Math.round(al) + '\n';
+        csv += 'Toplam Verecek (TL),' + Math.round(ver) + '\n';
+        csv += 'NET BAKİYE (TL),' + Math.round(net) + '\n';
+        csv += (net > 0 ? 'Durum,' + esc(firm) + ' bize ' + Math.round(net) + ' TL verecek' :
+                net < 0 ? 'Durum,Ölmeztur ' + esc(firm) + '\'a ' + Math.round(Math.abs(net)) + ' TL verecek' :
+                'Durum,Kapalı') + '\n';
+        csv += '\n';
+
+        // ═══ GRUP 1: FİRMA'NIN VERDİĞİ İŞLER (ALACAK) ═══
+        csv += '═══ ' + esc(firm.toUpperCase()) + "'IN VERDİĞİ İŞLER (ALACAK) ═══\n";
+        csv += 'Transfer Sayısı,' + oVerdi.length + ' (' + gO.acik + ' açık · ' + gO.kapanan + ' kapandı)\n';
+        csv += 'Toplam Alacak (TL),' + Math.round(gO.al) + '\n';
+        csv += 'Toplam Verecek (TL),' + Math.round(gO.ver) + '\n';
+        csv += 'Net (TL),' + Math.round(gO.net) + '\n';
+        csv += '\n';
+        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Net (TL),Durum,Hesap\n';
+        oVerdi.forEach((t, i) => {
             const row = [
                 i + 1,
                 esc(t.date || ''),
@@ -1609,12 +1645,80 @@ function HesapTab({ T, sT, agencies, tip }) {
                 t.paymentCollect === 'yes' ? (parseFloat(t.paymentAmount) || 0) : 0,
                 esc(t.paymentCurrency || 'TRY'),
                 parseFloat(t.driverPayment) || 0,
+                Math.round(t.netOl || 0),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
             csv += row.join(',') + '\n';
         });
-        // UTF-8 BOM ekle (Numbers/Excel Türkçe karakter desteği için)
+        if (oVerdi.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—\n';
+        csv += '\n';
+
+        // ═══ GRUP 2: ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══
+        csv += "═══ ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══\n";
+        csv += 'Transfer Sayısı,' + benVerdim.length + ' (' + gB.acik + ' açık · ' + gB.kapanan + ' kapandı)\n';
+        csv += 'Toplam Alacak (TL),' + Math.round(gB.al) + '\n';
+        csv += 'Toplam Verecek (TL),' + Math.round(gB.ver) + '\n';
+        csv += 'Net (TL),' + Math.round(gB.net) + '\n';
+        csv += '\n';
+        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Net (TL),Durum,Hesap\n';
+        benVerdim.forEach((t, i) => {
+            const row = [
+                i + 1,
+                esc(t.date || ''),
+                esc(t.time || ''),
+                esc(t.pickup || ''),
+                esc(t.dropoff || ''),
+                t.paymentCollect === 'yes' ? (parseFloat(t.paymentAmount) || 0) : 0,
+                esc(t.paymentCurrency || 'TRY'),
+                parseFloat(t.driverPayment) || 0,
+                Math.round(t.netOl || 0),
+                esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
+                esc(t.firmSettled ? 'Kapandı' : 'Açık')
+            ];
+            csv += row.join(',') + '\n';
+        });
+        if (benVerdim.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—\n';
+        csv += '\n';
+
+        // ═══ GRUP 3: ALT TRANSFERLER (varsa) ═══
+        if (altGrup.length > 0) {
+            csv += '═══ ALT TRANSFERLER ═══\n';
+            csv += 'Transfer Sayısı,' + altGrup.length + ' (' + gA.acik + ' açık · ' + gA.kapanan + ' kapandı)\n';
+            csv += 'Net (TL),' + Math.round(gA.net) + '\n';
+            csv += '\n';
+            csv += 'No,Tarih,Saat,Alış,Bırakış,Net (TL),Hesap\n';
+            altGrup.forEach((t, i) => {
+                const row = [
+                    i + 1,
+                    esc(t.date || ''),
+                    esc(t.time || ''),
+                    esc(t.pickup || ''),
+                    esc(t.dropoff || ''),
+                    Math.round(t.netOl || 0),
+                    esc(t.firmSettled ? 'Kapandı' : 'Açık')
+                ];
+                csv += row.join(',') + '\n';
+            });
+            csv += '\n';
+        }
+
+        // ═══ KAPANIŞ — HESAPLAMA ÖZETİ ═══
+        csv += '═══ HESAPLAMA ÖZETİ ═══\n';
+        csv += 'Grup,Alacak (TL),Verecek (TL),Net (TL)\n';
+        csv += esc(firm) + "'ın verdiği işler," + Math.round(gO.al) + ',' + Math.round(gO.ver) + ',' + Math.round(gO.net) + '\n';
+        csv += "Ölmeztur'un verdiği işler," + Math.round(gB.al) + ',' + Math.round(gB.ver) + ',' + Math.round(gB.net) + '\n';
+        if (altGrup.length > 0) {
+            csv += 'Alt transferler,' + Math.round(gA.al) + ',' + Math.round(gA.ver) + ',' + Math.round(gA.net) + '\n';
+        }
+        csv += 'TOPLAM,' + Math.round(al) + ',' + Math.round(ver) + ',' + Math.round(net) + '\n';
+        csv += '\n';
+        const kalan = net;
+        if (kalan > 0) csv += 'SONUÇ,' + esc(firm) + ' Ölmeztur\'a ' + Math.round(kalan) + ' TL verecek\n';
+        else if (kalan < 0) csv += "SONUÇ,Ölmeztur " + esc(firm) + "'a " + Math.round(Math.abs(kalan)) + ' TL verecek\n';
+        else csv += 'SONUÇ,Hesap kapalı (denge)\n';
+
+        // UTF-8 BOM ekle
         const BOM = '\uFEFF';
         const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
         const fname = 'Olmeztur_' + firm.replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.csv';
