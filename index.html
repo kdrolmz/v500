@@ -2074,6 +2074,12 @@ function App() {
     const [dateRangeStart, setDateRangeStart] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
     const [selectedRangeDay, setSelectedRangeDay] = useState(null);
     const [authReady, setAuthReady] = useState(!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey);
+    // BUG FIX: Her dakika güncellenen tick - tarih değişince UI yenilenir
+    const [clockTick, setClockTick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setClockTick(t => t + 1), 60000); // 60 saniye
+        return () => clearInterval(id);
+    }, []);
     const [authUser, setAuthUser] = useState(null);
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
@@ -3127,7 +3133,8 @@ function App() {
                ═══════════════════════════════════════════════════════════════ */
             tab === 'home' && (() => {
                 const now = new Date();
-                const todayKey = now.toISOString().split('T')[0];
+                // BUG FIX: yerel saat ile bugünün tarihi (UTC değil)
+                const todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, '0');
                 const todayFmt = now.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -3300,16 +3307,17 @@ function App() {
 
                     /* ─── TARİH + KUR BAŞLIK KARTI ─── */
                     React.createElement("div", { 
-                        onClick: () => refreshRates(),
+                        onClick: () => setExpandedT(p => ({ ...p, __rates: !p.__rates })),
                         style: {
                             background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
                             borderRadius: 'var(--r-lg)',
                             padding: '14px 16px',
                             color: '#fff',
-                            boxShadow: '0 6px 20px rgba(184,50,47,.22), 0 1px 3px rgba(184,50,47,.14)',
+                            boxShadow: '0 6px 20px rgba(155,27,48,.28), 0 1px 3px rgba(155,27,48,.18)',
                             position: 'relative',
                             overflow: 'hidden',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all .2s ease'
                         }
                     },
                         /* Dekoratif parlaklık */
@@ -3336,44 +3344,228 @@ function App() {
                                 )
                             )
                         ),
-                        lastRateUpdate && React.createElement("div", { style: { fontSize: 9.5, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, position: 'relative' } },
-                            React.createElement("span", null, "↻"),
-                            React.createElement("span", null, "Son güncelleme: " + new Date(lastRateUpdate).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }))
-                        )
-                    ),
-
-                    /* ─── HIZLI ERİŞİM DAİRELERİ ─── */
-                    React.createElement("div", { className: "qa-scroll" },
-                        React.createElement("div", { className: "qa-row" },
-                            React.createElement("button", { className: "qa-item", onClick: () => setTab('new') },
-                                React.createElement("div", { className: "qa-circle qa-circle-red" }, "+"),
-                                React.createElement("div", { className: "qa-label" }, "Yeni Transfer")
+                        lastRateUpdate && React.createElement("div", { style: { fontSize: 9.5, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, position: 'relative', justifyContent: 'space-between' } },
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5 } },
+                                React.createElement("span", null, "↻"),
+                                React.createElement("span", null, "Son güncelleme: " + new Date(lastRateUpdate).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }))
                             ),
-                            React.createElement("button", { className: "qa-item", onClick: () => setTab('list') },
-                                React.createElement("div", { className: "qa-circle qa-circle-red-soft" },
-                                    React.createElement("span", null, "📋"),
-                                    todayT.length > 0 && React.createElement("span", { className: "qa-badge" }, todayT.length)
-                                ),
-                                React.createElement("div", { className: "qa-label" }, "Transferler")
+                            React.createElement("span", { style: { fontSize: 11, transition: 'transform .2s', transform: expandedT.__rates ? 'rotate(180deg)' : 'none' } }, "▼")
+                        ),
+                        // Açılır kur detayı
+                        expandedT.__rates && React.createElement("div", {
+                            onClick: (e) => e.stopPropagation(),
+                            style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.18)', position: 'relative' }
+                        },
+                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
+                                [
+                                    { code: 'USD', label: 'Amerikan Doları', flag: '🇺🇸', val: rates.USD },
+                                    { code: 'EUR', label: 'Euro', flag: '🇪🇺', val: rates.EUR },
+                                    { code: 'GBP', label: 'İngiliz Sterlini', flag: '🇬🇧', val: rates.GBP || (rates.EUR * 1.18) },
+                                    { code: 'CHF', label: 'İsviçre Frangı', flag: '🇨🇭', val: rates.CHF || (rates.USD * 1.13) }
+                                ].map(r => React.createElement("div", { 
+                                    key: r.code,
+                                    style: {
+                                        background: 'rgba(255,255,255,.12)',
+                                        border: '1px solid rgba(255,255,255,.18)',
+                                        borderRadius: 10, padding: '8px 10px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                    }
+                                },
+                                    React.createElement("div", null,
+                                        React.createElement("div", { style: { fontSize: 10, fontWeight: 700, opacity: .9 } }, r.flag + " " + r.code),
+                                        React.createElement("div", { style: { fontSize: 8.5, opacity: .65, fontWeight: 500, marginTop: 1 } }, r.label)
+                                    ),
+                                    React.createElement("div", { style: { fontSize: 14, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, '₺' + r.val.toFixed(2))
+                                ))
                             ),
-                            React.createElement("button", { className: "qa-item", onClick: () => setTab('hesap') },
-                                React.createElement("div", { className: "qa-circle qa-circle-nude" }, React.createElement("span", null, "💼")),
-                                React.createElement("div", { className: "qa-label" }, "Hesap")
-                            ),
-                            React.createElement("button", { className: "qa-item", onClick: () => setTab('arac') },
-                                React.createElement("div", { className: "qa-circle qa-circle-vehicle" }, React.createElement("span", null, "🚐")),
-                                React.createElement("div", { className: "qa-label" }, PLAKA)
-                            )
+                            React.createElement("button", {
+                                onClick: (e) => { e.stopPropagation(); refreshRates(); },
+                                style: {
+                                    marginTop: 10, width: '100%',
+                                    background: 'rgba(255,255,255,.18)',
+                                    border: '1px solid rgba(255,255,255,.25)',
+                                    color: '#fff',
+                                    padding: '8px 12px',
+                                    borderRadius: 9,
+                                    fontSize: 11, fontWeight: 700,
+                                    cursor: 'pointer'
+                                }
+                            }, "↻ Kurları Yenile")
                         )
                     ),
 
                     /* ═══════ 4 PREMIUM KART ═══════ */
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 11 } },
-                        SC("📅", "Bugün", todayT.length, todayT.length === 0 ? "Transfer yok" : (todayDone + " tamam · " + (todayT.length - todayDone) + " bekliyor"), "day"),
+                        SC("📅", "Bugün", todayT.length, todayT.length === 0 ? "Transfer yok" : (function(){
+                            const tam = todayT.filter(x => x.status === 'tam').length;
+                            const ipt = todayT.filter(x => x.status === 'iptal').length;
+                            const bos = todayT.length - tam - ipt;
+                            const parts = [];
+                            if (tam > 0) parts.push(tam + ' tamam');
+                            if (bos > 0) parts.push(bos + ' bekliyor');
+                            if (ipt > 0) parts.push(ipt + ' iptal');
+                            return parts.length ? parts.join(' · ') : 'Tümü tamam';
+                        })(), "day"),
                         SC("🗓️", "Bu Hafta", weekT.length, "Pazartesi – Pazar", "week"),
                         SC("📆", "Bu Ay", monthT.length, AYLAR[now.getMonth()] + " " + yyyy, "month"),
                         SC("📊", "Bu Yıl", yearT.length, String(yyyy), "year")
                     ),
+
+                    /* ═══ YILLIK KAR PANELİ — Açılır/Kapanır ═══ */
+                    (function(){
+                        const yyOpen = !!expandedT.__yyear;
+                        // Yıllık hesaplamalar
+                        const yearTransfers = T.filter(x => x.date && x.date.startsWith(String(yyyy)));
+                        // Ölmeztur kar (16 LMZ 55 hariç)
+                        const olmezKarYear = yearTransfers
+                            .filter(t => !isPlate16Transfer(t))
+                            .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                        // 16 LMZ 55 kar (giderler vs sadeleştirilmiş net)
+                        const plate16KarYear = yearTransfers
+                            .filter(t => isPlate16Transfer(t))
+                            .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                        const totalYear = olmezKarYear + plate16KarYear;
+                        // Tahsil edilen — firmSettled olanlar
+                        const tahsilEdilen = yearTransfers
+                            .filter(t => t.firmSettled)
+                            .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                        // Aylık dağılım
+                        const aylikDagilim = Array.from({ length: 12 }, (_, i) => {
+                            const ayKey = yyyy + '-' + String(i + 1).padStart(2, '0');
+                            const ayTr = yearTransfers.filter(t => t.date && t.date.startsWith(ayKey));
+                            const ayOlmez = ayTr.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                            const ayPlate = ayTr.filter(t => isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                            return { ay: i, name: AYLAR[i].slice(0, 3), olmez: ayOlmez, plate: ayPlate, toplam: ayOlmez + ayPlate, count: ayTr.length };
+                        }).filter(x => x.count > 0); // Sadece transfer olan aylar
+
+                        // Bu ay özet
+                        const buAyKey = yyyy + '-' + String(now.getMonth() + 1).padStart(2, '0');
+                        const buAyTr = yearTransfers.filter(t => t.date && t.date.startsWith(buAyKey));
+                        const buAyTam = buAyTr.filter(t => t.status === 'tam').length;
+                        const buAyBos = buAyTr.filter(t => t.status !== 'tam' && t.status !== 'iptal').length;
+                        const buAyIpt = buAyTr.filter(t => t.status === 'iptal').length;
+                        const buAyNet = buAyTr.reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+
+                        const fmtTL = n => (n >= 0 ? '+' : '') + n.toLocaleString('tr-TR') + '₺';
+                        const colorFor = n => n > 0 ? '#2D7A4A' : n < 0 ? 'var(--brand)' : 'var(--ink-3)';
+
+                        return React.createElement("div", {
+                            style: {
+                                background: 'linear-gradient(135deg, #FFFFFF 0%, #FBF5F6 100%)',
+                                border: '1px solid var(--line)',
+                                borderRadius: 'var(--r-lg)',
+                                padding: yyOpen ? '14px 14px 12px' : '14px',
+                                boxShadow: '0 2px 8px rgba(35,26,22,.05)',
+                                transition: 'all .2s ease'
+                            }
+                        },
+                            // Başlık (tıklanabilir)
+                            React.createElement("div", {
+                                onClick: () => setExpandedT(p => ({ ...p, __yyear: !p.__yyear })),
+                                style: {
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    cursor: 'pointer', userSelect: 'none'
+                                }
+                            },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                                    React.createElement("div", { style: {
+                                        width: 36, height: 36, borderRadius: 10,
+                                        background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
+                                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 18, boxShadow: '0 4px 12px rgba(155,27,48,.25)'
+                                    } }, '💰'),
+                                    React.createElement("div", null,
+                                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 800, color: 'var(--ink-3)', letterSpacing: .7, textTransform: 'uppercase' } }, yyyy + ' Yılı'),
+                                        React.createElement("div", { style: { fontSize: 18, fontWeight: 900, color: colorFor(totalYear), letterSpacing: -.4, fontVariantNumeric: 'tabular-nums', marginTop: 1 } }, fmtTL(totalYear))
+                                    )
+                                ),
+                                React.createElement("span", { style: { fontSize: 13, color: 'var(--ink-4)', transition: 'transform .25s', transform: yyOpen ? 'rotate(180deg)' : 'none', display: 'inline-block', fontWeight: 700 } }, '▼')
+                            ),
+                            // Açık panel
+                            yyOpen && React.createElement(React.Fragment, null,
+                                React.createElement("div", { style: { height: 12 } }),
+                                // 3 büyük kart
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 } },
+                                    React.createElement("div", { style: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' } },
+                                        React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: .4, textTransform: 'uppercase', marginBottom: 4 } }, '💰 ÖLMEZTUR'),
+                                        React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: colorFor(olmezKarYear), fontVariantNumeric: 'tabular-nums', letterSpacing: -.3 } }, fmtTL(olmezKarYear)),
+                                        React.createElement("div", { style: { fontSize: 8.5, color: 'var(--ink-4)', marginTop: 3, fontWeight: 600 } }, 'Tahsil: ' + fmtTL(tahsilEdilen))
+                                    ),
+                                    React.createElement("div", { style: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' } },
+                                        React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: .4, textTransform: 'uppercase', marginBottom: 4 } }, '🚐 ' + PLAKA),
+                                        React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: colorFor(plate16KarYear), fontVariantNumeric: 'tabular-nums', letterSpacing: -.3 } }, fmtTL(plate16KarYear)),
+                                        React.createElement("div", { style: { fontSize: 8.5, color: 'var(--ink-4)', marginTop: 3, fontWeight: 600 } }, 'Gider sonrası')
+                                    ),
+                                    React.createElement("div", { style: { background: 'linear-gradient(135deg, var(--brand-soft) 0%, #F2C9C3 100%)', border: '1px solid var(--brand-bd)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' } },
+                                        React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: .4, textTransform: 'uppercase', marginBottom: 4 } }, 'TOPLAM'),
+                                        React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: colorFor(totalYear), fontVariantNumeric: 'tabular-nums', letterSpacing: -.3 } }, fmtTL(totalYear)),
+                                        React.createElement("div", { style: { fontSize: 8.5, color: 'var(--brand)', marginTop: 3, fontWeight: 700, opacity: .8 } }, yearTransfers.length + ' transfer')
+                                    )
+                                ),
+                                // Aylık dağılım başlığı
+                                React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: 'var(--ink-3)', letterSpacing: .7, textTransform: 'uppercase', marginBottom: 6 } }, 'Aylık Dağılım'),
+                                // Tablo başlığı
+                                React.createElement("div", { style: {
+                                    display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr', gap: 8,
+                                    padding: '7px 10px', background: 'var(--surface)', borderRadius: 8,
+                                    fontSize: 9.5, fontWeight: 800, color: 'var(--ink-3)', letterSpacing: .5, textTransform: 'uppercase', marginBottom: 4
+                                } },
+                                    React.createElement("div", null, 'AY'),
+                                    React.createElement("div", { style: { textAlign: 'right' } }, '💰 ÖLMEZ'),
+                                    React.createElement("div", { style: { textAlign: 'right' } }, '🚐 16LMZ55'),
+                                    React.createElement("div", { style: { textAlign: 'right' } }, 'TOPLAM')
+                                ),
+                                // Aylık satırlar
+                                aylikDagilim.length === 0 
+                                    ? React.createElement("div", { style: { textAlign: 'center', padding: '16px', color: 'var(--ink-3)', fontSize: 11 } }, 'Bu yıl için kayıt yok')
+                                    : aylikDagilim.map((m, idx) => {
+                                        const isCurrent = m.ay === now.getMonth();
+                                        return React.createElement("div", {
+                                            key: m.ay,
+                                            style: {
+                                                display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr', gap: 8,
+                                                padding: '8px 10px', borderRadius: 8,
+                                                background: isCurrent ? 'var(--brand-softer)' : 'transparent',
+                                                border: isCurrent ? '1px solid var(--brand-bd)' : '1px solid transparent',
+                                                marginBottom: 2, alignItems: 'center'
+                                            }
+                                        },
+                                            React.createElement("div", { style: { fontSize: 11, fontWeight: 800, color: isCurrent ? 'var(--brand)' : 'var(--ink)' } }, m.name + '.'),
+                                            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: colorFor(m.olmez), textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, fmtTL(m.olmez)),
+                                            React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: colorFor(m.plate), textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, fmtTL(m.plate)),
+                                            React.createElement("div", { style: { fontSize: 11.5, fontWeight: 900, color: colorFor(m.toplam), textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, fmtTL(m.toplam))
+                                        );
+                                    }),
+                                // Alt özet
+                                React.createElement("div", { style: { borderTop: '1px solid var(--line)', marginTop: 10, paddingTop: 10 } },
+                                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                                        React.createElement("div", { style: { display: 'flex', gap: 12 } },
+                                            React.createElement("div", { style: { textAlign: 'center' } },
+                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: 'var(--ink)' } }, buAyTr.length),
+                                                React.createElement("div", { style: { fontSize: 8, fontWeight: 700, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'TOPLAM')
+                                            ),
+                                            React.createElement("div", { style: { textAlign: 'center' } },
+                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: '#2D7A4A' } }, buAyTam),
+                                                React.createElement("div", { style: { fontSize: 8, fontWeight: 700, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'TAM')
+                                            ),
+                                            React.createElement("div", { style: { textAlign: 'center' } },
+                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: '#8B5A1A' } }, buAyBos),
+                                                React.createElement("div", { style: { fontSize: 8, fontWeight: 700, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'BOŞ')
+                                            ),
+                                            React.createElement("div", { style: { textAlign: 'center' } },
+                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: 'var(--ink-4)' } }, buAyIpt),
+                                                React.createElement("div", { style: { fontSize: 8, fontWeight: 700, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'İPTAL')
+                                            )
+                                        ),
+                                        React.createElement("div", { style: { textAlign: 'right' } },
+                                            React.createElement("div", { style: { fontSize: 8.5, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: .4 } }, 'NET (Bu Ay)'),
+                                            React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: colorFor(buAyNet), fontVariantNumeric: 'tabular-nums' } }, fmtTL(buAyNet))
+                                        )
+                                    )
+                                )
+                            )
+                        );
+                    })(),
 
                     /* ═══ 1) BUGÜN PANELİ ═══ */
                     panel === 'day' && DP("📅 Bugünkü Transferler (" + todayT.length + ")", () => tp('day'),
@@ -3766,8 +3958,28 @@ function App() {
                     React.createElement("div", { className: "tab-icon" }, "🏠"),
                     React.createElement("div", { className: "tab-label" }, "Ana Sayfa")
                 ),
-                React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onClick: () => setTab('list') },
-                    React.createElement("div", { className: "tab-icon" }, "📋"),
+                React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onClick: () => setTab('list'), style: { position: 'relative' } },
+                    React.createElement("div", { className: "tab-icon", style: { position: 'relative', display: 'inline-block' } }, "📋",
+                        (function(){
+                            const _now = new Date();
+                            const _key = _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
+                            const _cnt = T.filter(x => x.date === _key && x.status !== 'iptal').length;
+                            return _cnt > 0 ? React.createElement("span", {
+                                style: {
+                                    position: 'absolute', top: -4, right: -10,
+                                    minWidth: 16, height: 16, padding: '0 4px',
+                                    background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
+                                    color: '#fff', borderRadius: 10,
+                                    fontSize: 9.5, fontWeight: 800,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 2px 6px rgba(155,27,48,.4)',
+                                    border: '1.5px solid #fff',
+                                    fontVariantNumeric: 'tabular-nums', letterSpacing: '-.2px',
+                                    lineHeight: 1
+                                }
+                            }, _cnt) : null;
+                        })()
+                    ),
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
