@@ -720,9 +720,10 @@ const NAV = '#9B1B30', NAV2 = '#7A1525', GOLD = '#C89B7B';
 const G = '#246B3D', O = '#8B5A1A', R = '#A33A3A', BR = '#9B1B30';
 const TX = '#1F1715', SB = '#7F6D63', INP = '#F6F0EB', BOR = '#EFE3DB';
 const TIPLER = [
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#1F7A54', bg: '#EAF5EE', b: '#A8D5B5' },
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2A5C92', bg: '#EBF1F8', b: '#B8CADC' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#1F7A54', bg: '#EAF5EE', b: '#A8D5B5' },
     { id: 'tour', n: 'Tur', ico: '🗺️', c: '#9A7525', bg: '#FAF0D6', b: '#E8CC78' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '🏨', c: '#6B3F8C', bg: '#F0E8F5', b: '#D4C0E0' },
     { id: 'intercity', n: 'Şehirlerarası', ico: '🛣️', c: '#5F6670', bg: '#F2EEE5', b: '#D0CBC0' },
 ];
 const VEHS = [
@@ -842,7 +843,7 @@ const BF = {
     childSeat: false, childSeatCount: 0,
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', isRecurring: false, endDate: '',
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
 };
 const STORAGE_KEY = 'tp10';
 const LEGACY_STORAGE_KEYS = ['tp9'];
@@ -2329,6 +2330,30 @@ function App() {
                     transfersToAdd.push(normalizeTransfer(retBase));
                 }
                 
+                // ═══ FARKLI TARİH DÖNÜŞ (yeni hasReturn sistemi) ═══
+                // Sadece ilk transferden sonra TEK kez ekle (tekrarlanan transferlerde tekrar ekleme)
+                if (form.hasReturn && form.returnDate && loopCount === 0) {
+                    const retId = Date.now().toString() + 'RD_' + Math.random().toString(36).slice(2, 8);
+                    // Otomatik tip ters çevir: arrival ↔ departure (diğerleri aynen kalır)
+                    const retType = form.transferType === 'arrival' ? 'departure' 
+                                  : form.transferType === 'departure' ? 'arrival' 
+                                  : form.transferType;
+                    const retBase = { 
+                        ...outBase, 
+                        id: retId, 
+                        date: form.returnDate,
+                        time: form.returnTime || form.time, 
+                        pickup: form.dropoff,    // Otomatik ters güzergah
+                        dropoff: form.pickup,    // Otomatik ters güzergah
+                        transferType: retType,
+                        // Yeni ID ile yeni createdAt
+                        createdAt: new Date().toISOString(),
+                        // Ana transfer ile ilişki kuralım
+                        linkedTransferId: outId
+                    };
+                    transfersToAdd.push(normalizeTransfer(retBase));
+                }
+                
                 currentDate.setDate(currentDate.getDate() + 1);
                 loopCount++;
             }
@@ -2389,6 +2414,11 @@ function App() {
         if (t.plate) msg += '🚐 Plaka: ' + t.plate + '\n';
         msg += '📍 Alış: ' + t.pickup + '\n';
         (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Ara Durak ' + (i + 1) + ': ' + s2 + '\n'; });
+        // Rota bilgisi — Alış ile Varış arasında (form'da seçilen rota)
+        if (t.route && t.route !== 'free') {
+            const rotaItem = ROTALAR.find(r => r.id === t.route);
+            if (rotaItem) msg += rotaItem.ico + ' Rota: ' + rotaItem.n + '\n';
+        }
         msg += '🎯 Varış: ' + t.dropoff + '\n';
         if (withMaps) {
             msg += '🗺️ Alış Konumu: https://maps.google.com/?q=' + encodeURIComponent(getQ(t.pickup)) + '\n';
@@ -3745,35 +3775,127 @@ function App() {
 
             tab === 'new' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card" },
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 12 } }, TIPLER.map(tp => { const a = form.transferType === tp.id; return (React.createElement("button", { key: tp.id, onClick: () => sf({ transferType: tp.id }), style: { background: a ? tp.bg : INP, color: a ? tp.c : SB, border: '1.5px solid ' + (a ? tp.b : BOR), borderRadius: 10, padding: '9px 3px', cursor: 'pointer', textAlign: 'center' } },
-                        React.createElement("div", { style: { fontSize: 20, marginBottom: 2 } }, tp.ico),
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 700 } }, tp.n))); })),
+                    /* SOL: Tarih (üstünde TIP açılır pill) + SAĞ: Saat (üstünde MOD açılır pill) */
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
-                            React.createElement("span", { className: "lbl" }, "\uD83D\uDCC5 Tarih"),
-                            React.createElement("input", { type: "date", value: form.date, onChange: e => sf({ date: e.target.value }), className: "inp" })),
+                            (function(){
+                                const sel = TIPLER.find(x => x.id === form.transferType) || TIPLER[1];
+                                const isOpen = !!expandedT.__newType;
+                                return React.createElement("div", { style: { position: 'relative', marginBottom: 4 } },
+                                    React.createElement("button", {
+                                        type: "button",
+                                        onClick: () => setExpandedT(p => ({ ...p, __newType: !p.__newType, __newMode: false })),
+                                        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '6px 9px', background: sel.bg, color: sel.c, border: '1.5px solid ' + sel.b, borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 800, transition: 'all .15s ease' }
+                                    },
+                                        React.createElement("span", { style: { display: 'flex', alignItems: 'center', gap: 5 } },
+                                            React.createElement("span", { style: { fontSize: 13 } }, sel.ico),
+                                            React.createElement("span", null, sel.n)
+                                        ),
+                                        React.createElement("span", { style: { fontSize: 9, opacity: .7, transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'none' } }, '\u25BC')
+                                    ),
+                                    isOpen && React.createElement("div", {
+                                        style: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08)', display: 'flex', flexDirection: 'column', gap: 3 }
+                                    },
+                                        TIPLER.map(tp => {
+                                            const a = form.transferType === tp.id;
+                                            return React.createElement("button", {
+                                                key: tp.id,
+                                                type: "button",
+                                                onClick: () => { sf({ transferType: tp.id }); setExpandedT(p => ({ ...p, __newType: false })); },
+                                                style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a ? tp.bg : 'transparent', color: a ? tp.c : TX, border: a ? '1px solid ' + tp.b : '1px solid transparent', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: a ? 800 : 600, textAlign: 'left' }
+                                            },
+                                                React.createElement("span", { style: { fontSize: 16, width: 22, textAlign: 'center' } }, tp.ico),
+                                                React.createElement("span", null, tp.n)
+                                            );
+                                        })
+                                    )
+                                );
+                            })(),
+                            React.createElement("input", { type: "date", value: form.date, onChange: e => sf({ date: e.target.value }), className: "inp" })
+                        ),
                         React.createElement("div", null,
-                            React.createElement("span", { className: "lbl" }, "\u23F0 Saat"),
-                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp" }))),
+                            (function(){
+                                const MODES = [
+                                    { id: 'single', n: 'Tek Sefer', ico: '\uD83C\uDFAB' },
+                                    { id: 'roundtrip', n: 'Gidi\u015F-Geli\u015F', ico: '\uD83D\uDD04' },
+                                    { id: 'sameday', n: 'Ayn\u0131 G\u00FCn D\u00F6n\u00FC\u015F', ico: '\u21A9' },
+                                    { id: 'recurring', n: 'Herg\u00FCn Tekrarla', ico: '\uD83D\uDCC5' }
+                                ];
+                                const curMode = form.tripMode || 'single';
+                                const sel = MODES.find(m => m.id === curMode) || MODES[0];
+                                const isOpen = !!expandedT.__newMode;
+                                return React.createElement("div", { style: { position: 'relative', marginBottom: 4 } },
+                                    React.createElement("button", {
+                                        type: "button",
+                                        onClick: () => setExpandedT(p => ({ ...p, __newMode: !p.__newMode, __newType: false })),
+                                        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '6px 9px', background: curMode !== 'single' ? 'var(--brand-soft)' : INP, color: curMode !== 'single' ? 'var(--brand)' : TX, border: '1.5px solid ' + (curMode !== 'single' ? 'var(--brand-bd)' : BOR), borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 800, transition: 'all .15s ease' }
+                                    },
+                                        React.createElement("span", { style: { display: 'flex', alignItems: 'center', gap: 5 } },
+                                            React.createElement("span", { style: { fontSize: 13 } }, sel.ico),
+                                            React.createElement("span", null, sel.n)
+                                        ),
+                                        React.createElement("span", { style: { fontSize: 9, opacity: .7, transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'none' } }, '\u25BC')
+                                    ),
+                                    isOpen && React.createElement("div", {
+                                        style: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08)', display: 'flex', flexDirection: 'column', gap: 3 }
+                                    },
+                                        MODES.map(m => {
+                                            const a = curMode === m.id;
+                                            return React.createElement("button", {
+                                                key: m.id,
+                                                type: "button",
+                                                onClick: () => { sf({ tripMode: m.id, hasReturn: m.id === 'roundtrip', isReturn: m.id === 'sameday', isRecurring: m.id === 'recurring' }); setExpandedT(p => ({ ...p, __newMode: false })); },
+                                                style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a ? 'var(--brand-soft)' : 'transparent', color: a ? 'var(--brand)' : TX, border: a ? '1px solid var(--brand-bd)' : '1px solid transparent', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: a ? 800 : 600, textAlign: 'left' }
+                                            },
+                                                React.createElement("span", { style: { fontSize: 16, width: 22, textAlign: 'center' } }, m.ico),
+                                                React.createElement("span", null, m.n)
+                                            );
+                                        })
+                                    )
+                                );
+                            })(),
+                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp" })
+                        )
+                    ),
+                    /* MOD'A GÖRE EK ALANLAR */
+                    form.tripMode === 'roundtrip' && React.createElement("div", { style: { background: 'linear-gradient(135deg, var(--brand-soft) 0%, var(--surface) 100%)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
+                            React.createElement("span", { style: { fontSize: 13 } }, '\uD83D\uDD04'),
+                            React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: 'var(--brand)' } }, 'D\u00F6n\u00FC\u015F Seferi (Ayn\u0131 Misafir)')
+                        ),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                            React.createElement("div", null,
+                                React.createElement("span", { className: "lbl" }, "\uD83D\uDCC5 D\u00F6n\u00FC\u015F Tarihi"),
+                                React.createElement("input", { type: "date", value: form.returnDate || '', onChange: e => sf({ returnDate: e.target.value }), className: "inp", min: form.date })
+                            ),
+                            React.createElement("div", null,
+                                React.createElement("span", { className: "lbl" }, "\u23F0 D\u00F6n\u00FC\u015F Saati"),
+                                React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp" })
+                            )
+                        ),
+                        (form.pickup || form.dropoff) && React.createElement("div", { style: { marginTop: 7, padding: '7px 10px', background: '#fff', borderRadius: 7, fontSize: 10.5, color: SB, lineHeight: 1.4, border: '1px dashed var(--brand-bd)' } },
+                            React.createElement("span", { style: { fontWeight: 700, color: 'var(--brand)' } }, '\u21AA Ters g\u00FCzergah: '),
+                            React.createElement("span", { style: { fontWeight: 600, color: TX } }, (form.dropoff || '\u2014') + ' \u2192 ' + (form.pickup || '\u2014'))
+                        )
+                    ),
+                    form.tripMode === 'sameday' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
+                            React.createElement("span", { style: { fontSize: 13 } }, '\u21A9'),
+                            React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: 'var(--brand)' } }, 'Ayn\u0131 G\u00FCn D\u00F6n\u00FC\u015F Saati')
+                        ),
+                        React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp" })
+                    ),
+                    form.tripMode === 'recurring' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
+                            React.createElement("span", { style: { fontSize: 13 } }, '\uD83D\uDCC5'),
+                            React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: 'var(--brand)' } }, 'Herg\u00FCn Tekrarla \u2014 Biti\u015F Tarihi')
+                        ),
+                        React.createElement("input", { type: "date", value: form.endDate || '', onChange: e => sf({ endDate: e.target.value }), className: "inp", min: form.date })
+                    ),
+                    
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "\u2708\uFE0F U\u00E7u\u015F Kodu"),
                         React.createElement("input", { type: "text", value: form.flightCode, onChange: e => sf({ flightCode: e.target.value.toUpperCase() }), placeholder: "TK 123", className: "inp" }))),
-                                                  !editId && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 5, marginBottom: 5, padding: '12px', background: '#F6F2EC', borderRadius: '12px', border: '1px solid #E4DDD4' } },
-                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                            React.createElement("label", { style: { display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', color: '#1D1C1A' } },
-                                React.createElement("input", { type: "checkbox", checked: form.isReturn || false, onChange: e => sf({ isReturn: e.target.checked }), style: { marginRight: '8px', width: '18px', height: '18px' } }),
-                                "🔄 Dönüş Seferi Ekle"
-                            ),
-                            form.isReturn && React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp", style: { width: '110px', padding: '6px 8px' } })
-                        ),
-                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                            React.createElement("label", { style: { display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', color: '#1D1C1A' } },
-                                React.createElement("input", { type: "checkbox", checked: form.isRecurring || false, onChange: e => sf({ isRecurring: e.target.checked }), style: { marginRight: '8px', width: '18px', height: '18px' } }),
-                                "📅 Her Gün Tekrarla"
-                            ),
-                            form.isRecurring && React.createElement("input", { type: "date", value: form.endDate || '', onChange: e => sf({ endDate: e.target.value }), className: "inp", style: { width: '140px', padding: '6px 8px' } })
-                        )
-                    ),
                 React.createElement("div", { className: "card" },
                     React.createElement("div", { style: { display: 'flex', gap: 7, alignItems: 'flex-end', marginBottom: 8 } },
                         React.createElement("div", { style: { flex: 1 } },
@@ -4085,3 +4207,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
 </script>
 </body>
 </html>
+
+
+
+
+
