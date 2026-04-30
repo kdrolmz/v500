@@ -842,7 +842,7 @@ const BF = {
     passengerCount: 1, passengers: [{ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }],
     childSeat: false, childSeatCount: 0,
     tourCommission: '', tourCommissionShop: '',
-    paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
+    paymentAmount: '', paymentExpected: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
 };
@@ -1039,10 +1039,22 @@ function olmezKar(t) {
     /* HAKEDİŞ kuralı:
        - alan (givenBy=firma, assignedTo=OL) → hakediş iş verenin (firma) → OL kârına EKLENMEZ
        - veren (givenBy=OL, assignedTo=firma) → hakediş iş verenin (OL) → OL kârına EKLENİR
-       - OL→OL veya dış→dış → hakediş OL'a → eklenir */
+       - OL→OL veya dış→dış → hakediş OL'a → eklenir
+       
+       Kısmi ödemede VEREN senaryosunda kâr tam tutar üzerinden hesaplanır
+       (eksik müşteriden ek alacak, kâr düşmez). */
+    const expected = parseFloat(t.paymentExpected) || 0;
+    const cFull = expected > 0 ? expected : c;
     if (alan) {
-        if (t.altAcenta && alt > 0)
-            return d - alt;
+        if (t.altAcenta && alt > 0) {
+            // alan + alt acenta: iş veren bize müşteri tutarını verir, biz alt acentaya alt ücretini öderiz.
+            // Kâr = (iş verenle anlaşılan müşteri tutarı) - alt acenta ücreti.
+            // expected varsa onu kullan (tam tutar), yoksa c (paymentAmount) tam ödeme kabul edilir.
+            // Kısmi ödemede kâr DÜŞMEZ — eksik kısım iş verenden alacak olarak gözükür.
+            // Örn: Salah verdi 10800, Taşdemir 9800 → expected=10800, alt=9800 → kâr = 1000 ✓
+            // Örn: Salah verdi 9800, Taşdemir 9800 → expected=9800, alt=9800 → kâr = 0 ✓
+            return cFull - alt;
+        }
         return d;  // hakediş eklenmez
     }
     if (veren) {
@@ -1050,11 +1062,11 @@ function olmezKar(t) {
             return com;  // müşteri ödemedi, transfer normal kârı yok ama hakediş OL'a
         if (t.altAcenta && alt > 0)
             return d - alt + com;
-        return c - d + com;
+        return cFull - d + com;
     }
     if (!yes)
         return com;
-    return c - d + com;
+    return cFull - d + com;
 }
 /* POTANSİYEL NET KAR — ödeme alınıp alınmadığından BAĞIMSIZ olarak transferden Ölmeztur'a kalacak tahmini kâr.
    Muhasebeyi (calcBal/calcAltBal) etkilemez; sadece görüntüleme ve alt bar özetinde kullanılır.
@@ -1067,19 +1079,21 @@ function olmezPotentialKar(t) {
     const com = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
+    const expected = parseFloat(t.paymentExpected) || 0;
+    const cFull = expected > 0 ? expected : c;
     /* HAKEDİŞ kuralı: alan durumda hakediş iş veren firmaya, OL'a değil. */
     if (alan) {
         /* Başka firma verdi, biz yaptık — hakediş firmaya, OL'a kalmaz */
-        if (t.altAcenta && alt > 0) return d - alt;
+        if (t.altAcenta && alt > 0) return cFull - alt;
         return d;
     }
     if (veren) {
         /* Biz verdik, başka firma yaptı — hakediş OL'a kalır */
         if (t.altAcenta && alt > 0) return d - alt + com;
-        return c - d + com;
+        return cFull - d + com;
     }
     /* OL→OL veya dış→dış — hakediş OL'a */
-    return c - d + com;
+    return cFull - d + com;
 }
 function calcBal(t) {
     const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
@@ -1092,43 +1106,70 @@ function calcBal(t) {
     if (!veren && !alan)
         return null;
     const firm = veren ? t.assignedTo : t.givenBy;
-    /* HAKEDİŞ KURALI: hakediş iş verenin alacağına +olarak yansır.
-       İş veren = veren ise (Ölmeztur veren değil) → firma alacaklı → Ölmeztur açısından netOl negatife (-com).
-       İş veren = givenBy = OL ise → OL alacaklı, com Ölmeztur'un kazancı → netOl etkilenmez (firma hesabında).
-       Yani: alan durumunda (givenBy = firma) → -com ile firma alacağına ekle.
-              veren durumunda (givenBy = OL) → assignedTo firma alacaklı değil hakediş açısından → 0.
-       NOT: hakediş Ölmeztur kasasına gelir, dolayısıyla "iş veren = işi başlatan firma" mantığı.
-            Trias verdi → Trias işveren → Trias hakedişi alır. */
+    /* ═══ KISMİ ÖDEME MANTIĞI ═══
+       paymentAmount (c): müşterinin GERÇEKTEN ödediği tutar (TRY)
+       paymentExpected: müşteriden alınması gereken TAM tutar (opsiyonel, sadece veren senaryosu için)
+       
+       ALAN (Balentur verdi, Ölmeztur yaptı):
+         Müşteri Balentur'a 6.000 ödedi (araç 10.000) → c=6000, d=10000
+         netOl = -(c-d) = -(6000-10000) = +4000 → Balentur 4000 BORÇLU (alacak ✓)
+         Tahsilat iş verenin sorumluluğu — eksik tutar otomatik olarak alacak çıkar.
+       
+       VEREN (Ölmeztur verdi, Balentur yaptı):
+         Müşteri Balentur'a 6.000 ödedi (beklenen 10.000, araç 8.000) →
+         c=6000, expected=10000, d=8000
+         netOl = expected-d = 10000-8000 = +2000 → Balentur 2000 BORÇLU (kâr farkı ✓)
+         Eksik 4.000 → Ölmeztur'un müşteriden ek alacağı, firma hesabıyla ilgisi yok. */
 
     if (alan) {
         // alan: givenBy = firma, assignedTo = OL → işi yapan biz, hakediş firmaya ait
-        // Fatih Erden: müşteri kısmi ödedi → kalan (d - c) firmadan alacak; hakediş firma alacağına +
+        // ═══ KISMI ÖDEME (alan) ═══
+        // paymentExpected: iş verenle anlaşılan tam müşteri ücreti (varsa).
+        //                  yoksa paymentAmount (c) tam ödeme kabul edilir.
+        // c (paymentAmount): müşterinin GERÇEKTEN ödediği tutar.
+        // Eksik kalan (expected - c) → iş veren firmadan ALACAK.
+        //
+        // Örn: Salah verdi 9800, alt acenta Taşdemir 9800, müşteri 7000 ödedi.
+        //   expected=9800, c=7000, d=9800, alt=9800
+        //   ALT ACENTA VAR → ana firma (Salah) alacağı = -(expected - c) = -(9800-7000) = -2800
+        //   → Salah 2800 BORÇLU ✓
+        // Örn: Salah verdi 10800, alt 9800, müşteri 7000.
+        //   expected=10800, c=7000, d=9800
+        //   netOl = -(10800 - 7000) - com = -3800 → Salah 3800 BORÇLU ✓
+        // Örn: Balentur verdi, araç 10k, müşteri 6k ödedi (alt acenta yok).
+        //   expected boş → c=6000 tam kabul, d=10000
+        //   netOl = -(6000-10000) = +4000 → Balentur 4000 BORÇLU ✓
+        const expected = parseFloat(t.paymentExpected) || 0;
         if (t.altAcenta && alt > 0 && yes) {
+            // Alt acenta varsa: ana firma yalnızca müşteri tarafındaki eksiği üstlenir.
+            // expected varsa: -(expected - c). yoksa eski mantık (-Math.max(0, c-d)).
+            if (expected > 0) {
+                return { firm, netOl: -(expected - c) - com };
+            }
             return { firm, netOl: -Math.max(0, c - d) - com };
         }
         if (yes) {
-            // c=4500 d=4000 com=500 → -(4500-4000) - 500 = -1000 = OL Trias'a 1000 verecek (Trias alacak +1000)
-            // c=2000 d=4500 com=0   → -(2000-4500) = +2500 = OL Trias'tan 2500 alacaklı
-            return { firm, netOl: -(c - d) - com };
+            // expected varsa onu kullan — kısmi ödeme = eksik tutar firma alacağı.
+            const cefektif = expected > 0 ? expected : c;
+            return { firm, netOl: -(cefektif - d) - com };
         }
-        // müşteri ödemedi: OL Trias'a sadece araç parasının dışında bir şey ödemez; ama Trias OL'a d ödeyecek (ters)
-        // hakediş yine Trias'ın alacağı: -com
+        // müşteri ödemedi: iş veren Ölmeztur'a tam araç ücretini öder.
         return { firm, netOl: d - com };
     }
 
-    // veren: givenBy = OL, assignedTo = firma → işi yapan firma, hakediş yine işverenin (OL) — ama OL veren olduğu için hakediş Ölmeztur'a kalır.
-    // Senin senaryon 2: c=0, d=3000, com=1000 → OL Taşdemir'e net 2000 verecek (Taşdemir alacak)
-    // Hakediş işi Ölmeztur'a kazanç (com OL hesabında), firma hesabında com -com olarak gözükür (yani Taşdemir alacağı azalır)
+    // veren: givenBy = OL, assignedTo = firma → işi yapan firma, hakediş Ölmeztur'a kalır.
     if (yes) {
         if (t.paymentToMe)
-            // müşteri OL'a ödedi → OL firmaya d ödeyecek; hakediş OL'da kalır → firma alacağı azalır com kadar
+            // müşteri OL'a ödedi → OL firmaya d ödeyecek; hakediş OL'da kalır
             return { firm, netOl: -d + com };
-        // müşteri firmaya ödedi: firma OL'a (c-d) borçlu (OL alacaklı); hakediş OL'a kalır
-        return { firm, netOl: c - d + com };
+        // müşteri firmaya ödedi: firma OL'a (c-d) borçlu (kâr farkı).
+        // KISMI ÖDEME: tam tutar (expected) varsa onu kullan — eksik kısım Ölmeztur'un
+        // müşteriden ek alacağıdır, firma hesabını etkilemez. expected boşsa c kullan.
+        const expected = parseFloat(t.paymentExpected) || 0;
+        const cefektif = expected > 0 ? expected : c;
+        return { firm, netOl: cefektif - d + com };
     }
-    // müşteri ödemedi (yes=false): Senaryo 2.
-    // OL firmaya d ödeyecek (firma alacaklı), hakediş OL'a kazanç olarak kalır → firma alacağı com kadar azalır
-    // c=0 d=3000 com=1000 → -3000 + 1000 = -2000 ✓ (OL net 2000 verecek)
+    // müşteri ödemedi: OL firmaya d ödeyecek; hakediş OL'a kalır → firma alacağı com kadar azalır
     return { firm, netOl: -d + com };
 }
 function calcAltBal(t) {
@@ -1141,8 +1182,17 @@ function calcAltBal(t) {
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     if (t.paymentToMe)
         return { firm: t.altAcenta, netOl: -alt };
-    if (alan && yes)
-        return { firm: t.altAcenta, netOl: Math.max(0, c - alt) };
+    if (alan && yes) {
+        // ═══ KISMI ÖDEME (alan + alt acenta) ═══
+        // Alt acenta alt acenta ücretine (alt) hak kazanır.
+        // Müşteri ne kadar ödediyse o kadarı alt acenta tahsil etmiş sayılır.
+        // netOl = c - alt
+        //   c >= alt ise: alt acenta tam tahsil etti, fazlası Ölmeztur'a (pratikte alan'da olmaz)
+        //   c <  alt ise: alt acenta eksik tahsil etti → Ölmeztur alt acentaya borçlu (negatif)
+        // Örn: alt=9800, c=7000 → netOl = -2800 → Taşdemir 2800 ALACAKLI ✓
+        // Örn: alt=9800, c=9800 → netOl = 0 → kapalı ✓
+        return { firm: t.altAcenta, netOl: c - alt };
+    }
     if (t.paymentCollect === 'yes')
         return { firm: t.altAcenta, netOl: d };
     return { firm: t.altAcenta, netOl: -alt };
@@ -4272,7 +4322,7 @@ function App() {
                             form.paymentToMe && React.createElement("div", { style: { fontSize: '10px', color: '#246B3D', marginTop: '5px', textAlign: 'center', fontWeight: 'bold' } }, "Hesap Düzenlendi: Alt acenteye sadece araç ücreti (-borç) yazılacak.")
                         ),                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 7 } },
                             React.createElement("div", { style: { flex: 1 } },
-                                React.createElement("span", { className: "lbl" }, "Tutar"),
+                                React.createElement("span", { className: "lbl" }, form.paymentExpected ? "Müşterinin Ödediği Tutar" : "Tutar"),
                                 React.createElement("input", { type: "number", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
                             React.createElement("div", { style: { width: 75 } },
                                 React.createElement("span", { className: "lbl" }, "D\u00F6viz"),
@@ -4280,6 +4330,18 @@ function App() {
                                     React.createElement("option", { value: "TRY" }, "\u20BA TRY"),
                                     React.createElement("option", { value: "USD" }, "$ USD"),
                                     React.createElement("option", { value: "EUR" }, "\u20AC EUR")))),
+                        /* — Kısmi ödeme toggle — */
+                        React.createElement("button", {
+                            onClick: () => sf({ paymentExpected: form.paymentExpected ? '' : (form.paymentAmount || '') }),
+                            style: { width: '100%', padding: '8px 10px', borderRadius: 9, border: '1.5px dashed ' + (form.paymentExpected ? '#A57A1E' : BOR), background: form.paymentExpected ? '#FAF1D9' : INP, color: form.paymentExpected ? '#A57A1E' : SB, fontWeight: 700, fontSize: 11, cursor: 'pointer', marginBottom: 7, textAlign: 'left' }
+                        }, form.paymentExpected ? "✓ Kısmi Ödeme Aktif — kapat" : "💸 Müşteri Eksik Ödedi mi? (Kısmi Ödeme)"),
+                        form.paymentExpected !== '' && form.paymentExpected !== undefined && React.createElement("div", { style: { background: '#FAF1D9', border: '1px solid #E5CB92', borderRadius: 10, padding: '10px 12px', marginBottom: 8 } },
+                            React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: '#A57A1E', marginBottom: 5, letterSpacing: .4 } }, "💰 MÜŞTERİDEN ALINMASI GEREKEN TAM TUTAR"),
+                            React.createElement("input", { type: "number", value: form.paymentExpected, onChange: e => sf({ paymentExpected: e.target.value }), placeholder: "Örn: 10000", className: "inp", style: { background: '#fff', marginBottom: 6 } }),
+                            (parseFloat(form.paymentExpected) > parseFloat(form.paymentAmount || 0)) && React.createElement("div", { style: { fontSize: 11, fontWeight: 800, color: '#A33A3A' } },
+                                "⚠ Eksik: ", fr(parseFloat(form.paymentExpected) - parseFloat(form.paymentAmount || 0)), " ₺",
+                                React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 600, marginTop: 2 } },
+                                    olAlan2 ? "İş veren firmadan alacak olarak gözükecek." : "Müşteriden ek alacak (firma hesabı tam tutar üzerinden)."))),
                         form.paymentAmount && form.paymentCurrency !== 'TRY' && React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 7 } },
                             "\u2248 ",
                             cTRY2.toFixed(2),
