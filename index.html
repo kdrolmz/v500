@@ -1030,9 +1030,26 @@ async function downloadWorkbook(wb, filename) {
     catch (e) { }
     return false;
 }
+function tourCommissionTotal(t) {
+    if (!t || t.transferType !== 'tour')
+        return 0;
+    const explicit = parseFloat(t.tourCommission) || 0;
+    if (explicit > 0)
+        return explicit;
+    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
+    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    if (t.altAcenta && alt > 0 && t.paymentCollect === 'yes')
+        return Math.max(0, c - alt);
+    return 0;
+}
+function tourCommissionShare(t) {
+    const total = tourCommissionTotal(t);
+    return total > 0 ? total / 2 : 0;
+}
 function olmezKar(t) {
     const c = parseFloat(t.customerTRY) || 0, d = parseFloat(t.driverPayment) || 0, alt = parseFloat(t.altAcentaUcreti) || 0;
-    const com = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
+    const comTotal = tourCommissionTotal(t);
+    const com = tourCommissionShare(t);
     const yes = t.paymentCollect === 'yes';
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
@@ -1043,18 +1060,18 @@ function olmezKar(t) {
     if (alan) {
         if (t.altAcenta && alt > 0)
             return d - alt;
-        return d;  // hakediş eklenmez
+        return d + com;
     }
     if (veren) {
         if (!yes)
-            return com;  // müşteri ödemedi, transfer normal kârı yok ama hakediş OL'a
+            return com;
         if (t.altAcenta && alt > 0)
             return d - alt + com;
         return c - d + com;
     }
     if (!yes)
-        return com;
-    return c - d + com;
+        return comTotal;
+    return c - d + comTotal;
 }
 /* POTANSİYEL NET KAR — ödeme alınıp alınmadığından BAĞIMSIZ olarak transferden Ölmeztur'a kalacak tahmini kâr.
    Muhasebeyi (calcBal/calcAltBal) etkilemez; sadece görüntüleme ve alt bar özetinde kullanılır.
@@ -1064,14 +1081,15 @@ function olmezPotentialKar(t) {
     const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
-    const com = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
+    const comTotal = tourCommissionTotal(t);
+    const com = tourCommissionShare(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
     /* HAKEDİŞ kuralı: alan durumda hakediş iş veren firmaya, OL'a değil. */
     if (alan) {
         /* Başka firma verdi, biz yaptık — hakediş firmaya, OL'a kalmaz */
         if (t.altAcenta && alt > 0) return d - alt;
-        return d;
+        return d + com;
     }
     if (veren) {
         /* Biz verdik, başka firma yaptı — hakediş OL'a kalır */
@@ -1079,7 +1097,7 @@ function olmezPotentialKar(t) {
         return c - d + com;
     }
     /* OL→OL veya dış→dış — hakediş OL'a */
-    return c - d + com;
+    return c - d + comTotal;
 }
 function calcAltAcentaPaylasim(t) {
     if (!t || !t.altAcenta || !(parseFloat(t.altAcentaUcreti) > 0))
@@ -1093,10 +1111,8 @@ function calcAltAcentaPaylasim(t) {
         return null;
     const musteriFarki = c - alt;
     const aracFarki = d - alt;
-    const acikKomisyon = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
-    const toplamKomisyon = acikKomisyon > 0 ? acikKomisyon : Math.max(0, musteriFarki);
-    const komisyonPayi = toplamKomisyon > 0 ? toplamKomisyon / 2 : 0;
-    if (toplamKomisyon > 0) {
+    const komisyonPayi = tourCommissionShare(t);
+    if (komisyonPayi > 0) {
         return {
             giverNetOl: -(aracFarki + komisyonPayi),
             altNetOl: musteriFarki + komisyonPayi,
@@ -1113,7 +1129,7 @@ function calcBal(t) {
     const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
-    const com = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
+    const com = tourCommissionShare(t);
     const yes = t.paymentCollect === 'yes';
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
@@ -1150,14 +1166,14 @@ function calcBal(t) {
     if (yes) {
         if (t.paymentToMe)
             // müşteri OL'a ödedi → OL firmaya d ödeyecek; hakediş OL'da kalır → firma alacağı azalır com kadar
-            return { firm, netOl: -d + com };
+            return { firm, netOl: -d + (t.altAcenta ? 0 : com) };
         // müşteri firmaya ödedi: firma OL'a (c-d) borçlu (OL alacaklı); hakediş OL'a kalır
-        return { firm, netOl: c - d + com };
+        return { firm, netOl: c - d + (t.altAcenta ? 0 : com) };
     }
     // müşteri ödemedi (yes=false): Senaryo 2.
     // OL firmaya d ödeyecek (firma alacaklı), hakediş OL'a kazanç olarak kalır → firma alacağı com kadar azalır
     // c=0 d=3000 com=1000 → -3000 + 1000 = -2000 ✓ (OL net 2000 verecek)
-    return { firm, netOl: -d + com };
+    return { firm, netOl: -d + (t.altAcenta ? 0 : com) };
 }
 function calcAltBal(t) {
     if (!t.altAcenta || !(parseFloat(t.altAcentaUcreti) > 0))
@@ -1167,6 +1183,7 @@ function calcAltBal(t) {
     const alt = parseFloat(t.altAcentaUcreti) || 0;
     const yes = t.paymentCollect === 'yes';
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
+    const altKomisyonKesinti = tourCommissionShare(t);
     if (t.paymentToMe)
         return { firm: t.altAcenta, netOl: -alt };
     const altPaylasim = calcAltAcentaPaylasim(t);
@@ -1175,7 +1192,7 @@ function calcAltBal(t) {
     if (alan && yes)
         return { firm: t.altAcenta, netOl: c - alt };
     if (t.paymentCollect === 'yes')
-        return { firm: t.altAcenta, netOl: d };
+        return { firm: t.altAcenta, netOl: d + altKomisyonKesinti };
     return { firm: t.altAcenta, netOl: -alt };
 }
 function tokenOverlapScore(a, b) {
@@ -1659,13 +1676,14 @@ function HesapTab({ T, sT, agencies, tip }) {
         const rows = ts.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => {
             const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'short' });
             const odeme = t.paymentCollect === 'no' ? '—' : (t.paymentAmount ? t.paymentAmount + ' ' + t.paymentCurrency : '—');
-            const hd = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
-            const hdLine = hd > 0 ? ('\n   🪙 Hakediş: +' + fr(hd) + '₺' + ((t.tourCommissionShop || '').trim() ? ' (' + t.tourCommissionShop + ')' : '')) : '';
+            const hd = tourCommissionTotal(t);
+            const hdPay = tourCommissionShare(t);
+            const hdLine = hd > 0 ? ('\n   🪙 Tur komisyonu: ' + fr(hd) + '₺ (pay ' + fr(hdPay) + '₺ / ' + fr(hdPay) + '₺)' + ((t.tourCommissionShop || '').trim() ? ' (' + t.tourCommissionShop + ')' : '')) : '';
             return (t.firmSettled ? '✓' : '○') + ' ' + (i + 1) + '. ' + dt + ' ' + t.time + '\n   ' + (t.pickup || '—') + ' → ' + (t.dropoff || '—') + '\n   Müşteri: ' + odeme + ' | Araç: ' + fr(t.driverPayment) + '₺' + hdLine;
         }).join('\n\n');
-        const tourHd = ts.filter(t => t.transferType === 'tour' && parseFloat(t.tourCommission) > 0);
-        const toplamHd = Math.round(tourHd.reduce((s, t) => s + parseFloat(t.tourCommission), 0));
-        const hdSatir = toplamHd > 0 ? '\nToplam Hakediş: +' + fr(toplamHd) + '₺ (' + tourHd.length + ' tur)' : '';
+        const tourHd = ts.filter(t => tourCommissionTotal(t) > 0);
+        const toplamHd = Math.round(tourHd.reduce((s, t) => s + tourCommissionTotal(t), 0));
+        const hdSatir = toplamHd > 0 ? '\nToplam Tur Komisyonu: ' + fr(toplamHd) + '₺ | Bölüşen Pay: ' + fr(toplamHd / 2) + '₺ / ' + fr(toplamHd / 2) + '₺ (' + tourHd.length + ' tur)' : '';
         const poz = net >= 0 ? 'Tarafınızdan ' + fr(Math.abs(net)) + '₺ alacağımız var.' : 'Tarafınıza ' + fr(Math.abs(net)) + '₺ borcumuz var.';
         return 'ÖLMEZTUR TURİZM\n' + firm + ' — ' + new Date().toLocaleDateString('tr-TR') + '\n' + '─'.repeat(28) + '\n' + ts.length + ' Transfer | Alacak:' + fr(al) + '₺ Verecek:' + fr(ver) + '₺\nNet: ' + (net >= 0 ? '+' : '') + fr(net) + '₺' + hdSatir + '\n' + '─'.repeat(28) + '\n\n' + rows + '\n\n' + poz;
     };
@@ -1704,8 +1722,8 @@ function HesapTab({ T, sT, agencies, tip }) {
         const gA = grupToplam(altGrup);
 
         // Hakediş toplamları (sadece tour transferlerinden)
-        const tourHd = ts.filter(t => t.transferType === 'tour' && parseFloat(t.tourCommission) > 0);
-        const toplamHakedis = Math.round(tourHd.reduce((s, t) => s + parseFloat(t.tourCommission), 0));
+        const tourHd = ts.filter(t => tourCommissionTotal(t) > 0);
+        const toplamHakedis = Math.round(tourHd.reduce((s, t) => s + tourCommissionTotal(t), 0));
 
         let csv = '';
         // ═══ BAŞLIK & GENEL ÖZET ═══
@@ -1718,7 +1736,8 @@ function HesapTab({ T, sT, agencies, tip }) {
         csv += 'Toplam Verecek (TL),' + Math.round(ver) + '\n';
         csv += 'NET BAKİYE (TL),' + Math.round(net) + '\n';
         if (toplamHakedis > 0) {
-            csv += 'Toplam Hakediş (TL),' + toplamHakedis + ' (' + tourHd.length + ' tur)\n';
+            csv += 'Toplam Tur Komisyonu (TL),' + toplamHakedis + ' (' + tourHd.length + ' tur)\n';
+            csv += 'Bölüşen Pay (TL),' + Math.round(toplamHakedis / 2) + ' / ' + Math.round(toplamHakedis / 2) + '\n';
         }
         csv += (net > 0 ? 'Durum,' + esc(firm) + ' bize ' + Math.round(net) + ' TL verecek' :
                 net < 0 ? 'Durum,Ölmeztur ' + esc(firm) + '\'a ' + Math.round(Math.abs(net)) + ' TL verecek' :
@@ -1732,9 +1751,10 @@ function HesapTab({ T, sT, agencies, tip }) {
         csv += 'Toplam Verecek (TL),' + Math.round(gO.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gO.net) + '\n';
         csv += '\n';
-        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Hakediş (TL),Hakediş Notu,Net (TL),Durum,Hesap\n';
+        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
         oVerdi.forEach((t, i) => {
-            const hd = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
+            const hd = tourCommissionTotal(t);
+            const hdPay = tourCommissionShare(t);
             const hdNot = (t.tourCommissionShop || '').trim();
             const row = [
                 i + 1,
@@ -1746,6 +1766,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                 esc(t.paymentCurrency || 'TRY'),
                 parseFloat(t.driverPayment) || 0,
                 Math.round(hd),
+                Math.round(hdPay),
                 esc(hdNot),
                 Math.round(t.netOl || 0),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
@@ -1753,7 +1774,7 @@ function HesapTab({ T, sT, agencies, tip }) {
             ];
             csv += row.join(',') + '\n';
         });
-        if (oVerdi.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—\n';
+        if (oVerdi.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—,—\n';
         csv += '\n';
 
         // ═══ GRUP 2: ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══
@@ -1763,9 +1784,10 @@ function HesapTab({ T, sT, agencies, tip }) {
         csv += 'Toplam Verecek (TL),' + Math.round(gB.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gB.net) + '\n';
         csv += '\n';
-        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Hakediş (TL),Hakediş Notu,Net (TL),Durum,Hesap\n';
+        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
         benVerdim.forEach((t, i) => {
-            const hd = (t.transferType === 'tour' && parseFloat(t.tourCommission)) || 0;
+            const hd = tourCommissionTotal(t);
+            const hdPay = tourCommissionShare(t);
             const hdNot = (t.tourCommissionShop || '').trim();
             const row = [
                 i + 1,
@@ -1777,6 +1799,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                 esc(t.paymentCurrency || 'TRY'),
                 parseFloat(t.driverPayment) || 0,
                 Math.round(hd),
+                Math.round(hdPay),
                 esc(hdNot),
                 Math.round(t.netOl || 0),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
@@ -1784,7 +1807,7 @@ function HesapTab({ T, sT, agencies, tip }) {
             ];
             csv += row.join(',') + '\n';
         });
-        if (benVerdim.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—\n';
+        if (benVerdim.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—,—\n';
         csv += '\n';
 
         // ═══ GRUP 3: ALT TRANSFERLER (varsa) ═══
@@ -1852,9 +1875,11 @@ function HesapTab({ T, sT, agencies, tip }) {
         const odeme = detayT.paymentCollect === 'no' ? 'Müşteri ödemez' : (detayT.paymentAmount ? (detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY')) : 'Tutar yok');
         const yolcu = detayT.passengers && detayT.passengers.length ? detayT.passengers.map(p => p.name || p.fullName || '').filter(Boolean).join(', ') : ((detayT.passengerCount || 0) > 0 ? (detayT.passengerCount + ' kişi') : '');
         const yonTxt = detayT.yon === 'oVerdi' ? (sel + ' → ' + OL) : detayT.yon === 'benVerdim' ? (OL + ' → ' + sel) : ('Alt Acenta: ' + (detayT.altAcenta || sel));
-        const hakedisVar = detayT.transferType === 'tour' && parseFloat(detayT.tourCommission) > 0;
-        const hakedisTutar = hakedisVar ? parseFloat(detayT.tourCommission) : 0;
+        const hakedisTutar = tourCommissionTotal(detayT);
+        const hakedisPay = tourCommissionShare(detayT);
+        const hakedisVar = hakedisTutar > 0;
         const hakedisNot = (detayT.tourCommissionShop || '').trim();
+        const hakedisDagilim = hakedisVar ? ('Toplam ' + fr(hakedisTutar) + '₺ · İş veren +' + fr(hakedisPay) + '₺ · ' + (detayT.altAcenta ? 'Alt acenta' : 'İş alan') + ' −' + fr(hakedisPay) + '₺') : '';
         const rows = [
             ['Tarih', detayT.date ? new Date(detayT.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'],
             ['Saat', detayT.time || '—'],
@@ -1867,7 +1892,7 @@ function HesapTab({ T, sT, agencies, tip }) {
             ['Müşteri', odeme],
             ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
             detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + ((parseFloat(detayT.altAcentaUcreti) || 0) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
-            hakedisVar ? ['🪙 Hakediş', '+' + fr(hakedisTutar) + '₺' + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
+            hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
             ['Net', (pos ? '+' : '−') + fr(detayT.netOl) + '₺'],
             ['Kâr', (kar >= 0 ? '+' : '−') + fr(kar) + '₺'],
@@ -1921,9 +1946,10 @@ function HesapTab({ T, sT, agencies, tip }) {
                 },
                     React.createElement("div", { style: { fontSize: 22 } }, '🪙'),
                     React.createElement("div", { style: { flex: 1 } },
-                        React.createElement("div", { style: { fontSize: 10, fontWeight: 900, color: '#7A5A2A', letterSpacing: .6 } }, 'HAKEDİŞ'),
+                        React.createElement("div", { style: { fontSize: 10, fontWeight: 900, color: '#7A5A2A', letterSpacing: .6 } }, 'TUR KOMİSYONU'),
+                        React.createElement("div", { style: { fontSize: 10, color: '#9A7525', fontWeight: 800, marginTop: 1 } }, 'Pay: ' + fr(hakedisPay) + '₺ / ' + fr(hakedisPay) + '₺'),
                         hakedisNot && React.createElement("div", { style: { fontSize: 10, color: '#9A7525', fontStyle: 'italic', marginTop: 1 } }, hakedisNot)),
-                    React.createElement("div", { style: { fontSize: 18, fontWeight: 900, color: '#7A5A2A', letterSpacing: -.2 } }, '+' + fr(hakedisTutar) + '₺')),
+                    React.createElement("div", { style: { fontSize: 18, fontWeight: 900, color: '#7A5A2A', letterSpacing: -.2 } }, fr(hakedisTutar) + '₺')),
                 React.createElement("div", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 12, padding: '0 12px', marginBottom: 14 } }, rows.map(([etiket, deger]) => detaySatiri(etiket, deger))),
                 React.createElement("button", { onClick: () => setDetayT(null), style: { width: '100%', background: NAV, color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' } }, "Kapat"))));
     };
@@ -1931,6 +1957,8 @@ function HesapTab({ T, sT, agencies, tip }) {
     const renderHesapKart = t => {
         const pos = t.netOl >= 0;
         const kar = transferNetAmount({ ...t });
+        const kartKomisyonToplam = tourCommissionTotal(t);
+        const kartKomisyonPay = tourCommissionShare(t);
         const yonBilgi = t.yon === 'oVerdi'
             ? { txt: sel + ' verdi', bg: '#EFEBE2', col: NAV }
             : t.yon === 'benVerdim'
@@ -1977,7 +2005,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                     React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
                         kar !== 0 && React.createElement("div", { style: { background: 'rgba(30,122,69,.08)', borderRadius: 6, padding: '2px 7px' } },
                             React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 800 } }, 'Kâr: ' + (kar >= 0 ? '+' : '−') + fr(kar) + '₺')),
-                        (t.transferType === 'tour' && parseFloat(t.tourCommission) > 0) && React.createElement("div", {
+                        kartKomisyonToplam > 0 && React.createElement("div", {
                             style: {
                                 background: 'linear-gradient(135deg,#FAF0D6,#F2E0A8)',
                                 border: '1px solid #D4B870',
@@ -1986,7 +2014,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                                 boxShadow: '0 1px 3px rgba(154,117,37,.18)'
                             }
                         },
-                            React.createElement("span", { style: { fontSize: 10, color: '#7A5A2A', fontWeight: 900, letterSpacing: .2 } }, '🪙 Hakediş: +' + fr(parseFloat(t.tourCommission)) + '₺'),
+                            React.createElement("span", { style: { fontSize: 10, color: '#7A5A2A', fontWeight: 900, letterSpacing: .2 } }, '🪙 Komisyon: ' + fr(kartKomisyonToplam) + '₺ · Pay ' + fr(kartKomisyonPay) + '₺'),
                             (t.tourCommissionShop || '').trim() && React.createElement("span", { style: { fontSize: 9, color: '#9A7525', fontWeight: 600, marginLeft: 4, fontStyle: 'italic' } }, '· ' + t.tourCommissionShop)))),
                 rightSide));
     };
@@ -3370,6 +3398,9 @@ function App() {
     const altPreviewBal = calcAltBal(formPreviewT);
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
     const altPreviewNet = altPreviewBal ? altPreviewBal.netOl : 0;
+    const formTourCommissionTotal = tourCommissionTotal(formPreviewT);
+    const formTourCommissionShare = tourCommissionShare(formPreviewT);
+    const formTourCommissionRightSide = form.altAcenta ? (form.altAcenta || 'Alt acenta') : (form.assignedTo || 'İş alan');
     if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !authReady) {
         return (React.createElement("div", { style: { minHeight: '100%', background: '#F5F0EB', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
             React.createElement("div", { className: 'card', style: { width: '100%', maxWidth: 420, textAlign: 'center' } },
@@ -4397,15 +4428,26 @@ function App() {
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                             React.createElement("span", { style: { fontSize: 14 } }, "🪙"),
-                            React.createElement("span", { style: { fontSize: 12, fontWeight: 900, color: '#7A5A2A', letterSpacing: .5 } }, "HAKEDİŞ"),
-                            React.createElement("span", { style: { fontSize: 9, color: '#9A7525', marginLeft: 'auto', fontWeight: 700, fontStyle: 'italic' } }, "İş verenin alacağına +")),
+                            React.createElement("span", { style: { fontSize: 12, fontWeight: 900, color: '#7A5A2A', letterSpacing: .5 } }, "TUR KOMİSYONU"),
+                            React.createElement("span", { style: { fontSize: 9, color: '#9A7525', marginLeft: 'auto', fontWeight: 700, fontStyle: 'italic' } }, "Toplamı 2'ye böl")),
                         React.createElement("input", {
                             type: "number", inputMode: "decimal",
                             value: form.tourCommission || '',
                             onChange: e => sf({ tourCommission: e.target.value }),
-                            placeholder: "0 ₺", className: "inp",
+                            placeholder: "Toplam komisyon", className: "inp",
                             style: { fontSize: 16, padding: '10px 12px', background: '#fff', textAlign: 'right', fontWeight: 800, color: '#7A5A2A', border: '1px solid #D4B870', marginBottom: 6 }
                         }),
+                        formTourCommissionTotal > 0 && React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 6 } },
+                            React.createElement("div", { style: { background: '#FFF8E7', border: '1px solid #E8D49A', borderRadius: 9, padding: '7px 6px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8, color: '#9A7525', fontWeight: 900, letterSpacing: .4 } }, "TOPLAM"),
+                                React.createElement("div", { style: { fontSize: 13, color: '#7A5A2A', fontWeight: 900 } }, fr(formTourCommissionTotal) + "₺")),
+                            React.createElement("div", { style: { background: '#E8F5ED', border: '1px solid #A8D5B5', borderRadius: 9, padding: '7px 6px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8, color: G, fontWeight: 900, letterSpacing: .4 } }, (form.givenBy || 'İş veren').slice(0, 14)),
+                                React.createElement("div", { style: { fontSize: 13, color: G, fontWeight: 900 } }, "+" + fr(formTourCommissionShare) + "₺")),
+                            React.createElement("div", { style: { background: '#FDEEEE', border: '1px solid #E5A8A8', borderRadius: 9, padding: '7px 6px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8, color: R, fontWeight: 900, letterSpacing: .4 } }, formTourCommissionRightSide.slice(0, 14)),
+                                React.createElement("div", { style: { fontSize: 13, color: R, fontWeight: 900 } }, "−" + fr(formTourCommissionShare) + "₺"))),
+                        (formTourCommissionTotal > 0 && form.altAcenta) && React.createElement("div", { style: { fontSize: 9, color: '#7A5A2A', fontWeight: 800, marginBottom: 6, textAlign: 'center' } }, "Alt acenta seçili: iş alan hesabına komisyon yazılmaz."),
                         React.createElement("input", {
                             value: form.tourCommissionShop || '',
                             onChange: e => sf({ tourCommissionShop: e.target.value }),
