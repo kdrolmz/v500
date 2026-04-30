@@ -1034,13 +1034,7 @@ function tourCommissionTotal(t) {
     if (!t || t.transferType !== 'tour')
         return 0;
     const explicit = parseFloat(t.tourCommission) || 0;
-    if (explicit > 0)
-        return explicit;
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
-    if (t.altAcenta && alt > 0 && t.paymentCollect === 'yes')
-        return Math.max(0, c - alt);
-    return 0;
+    return explicit > 0 ? explicit : 0;
 }
 function tourCommissionShare(t) {
     const total = tourCommissionTotal(t);
@@ -1110,12 +1104,12 @@ function calcAltAcentaPaylasim(t) {
     if (!alan || !yes || t.paymentToMe)
         return null;
     const musteriFarki = c - alt;
-    const aracFarki = d - alt;
     const komisyonPayi = tourCommissionShare(t);
     if (komisyonPayi > 0) {
+        const paylasilacakTutar = musteriFarki + komisyonPayi;
         return {
-            giverNetOl: -(aracFarki + komisyonPayi),
-            altNetOl: musteriFarki + komisyonPayi,
+            giverNetOl: -paylasilacakTutar,
+            altNetOl: paylasilacakTutar,
             komisyonPayi
         };
     }
