@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Transfer Bilgileri">
-<meta name="theme-color" content="#3D5A3C">
+<meta name="theme-color" content="#686868">
 <title>Transfer Bilgileri</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -42,23 +42,19 @@
   --ink-4:#9AAA9C;
 
   /* — MARKA — sage premium yeşil — */
-  --brand:#3D5A3C;        /* ana nude yeşil */
-  --brand-2:#2A4029;      /* derin nude yeşil vurgu */
-  --brand-3:#536F4F;      /* orta açık sage ton */
-  --brand-soft:#EAF0E7;   /* soft nude yeşil arka plan */
-  --brand-softer:#F4F7F2; /* en soft */
-  --brand-bd:#C9D4BF;     /* soft border */
-  --nude:#C8B8A0;         /* nude/şampanya — premium aksan */
-  --nude-deep:#9C8B6F;    /* nude koyu */
-  --nude-soft:#F1ECE3;    /* nude soft arka plan */
-  --nude-glow:#D9C8B0;    /* nude parıltı */
+  --brand:#6B8B6E;        /* ana sage yeşil — sakin, doygun */
+  --brand-2:#4F6B53;      /* koyu vurgu */
+  --brand-3:#8FA993;      /* açık ton */
+  --brand-soft:#EEF3EE;   /* soft arka plan */
+  --brand-softer:#F5F8F5; /* en soft */
+  --brand-bd:#D2DFD4;     /* soft border */
 
   --accent:#C5B795;       /* nude şampanya tonu (sage ile uyumlu) */
   --accent-2:#A89B7C;
   --accent-soft:#F5F0E5;
 
   /* — semantik — */
-  --ok:#3F5F42; --ok-bg:#EBF1EC; --ok-bd:#C7D5C9;
+  --ok:#3D7A4D; --ok-bg:#E8F3EB; --ok-bd:#BFD9C5;
   --warn:#A57A1E; --warn-bg:#FAF1D9; --warn-bd:#E5CB92;
   --err:#A33A3A; --err-bg:#FBEAEA; --err-bd:#E5C0C0;
   --info:#3D6FA8; --info-bg:#EAF0F7; --info-bd:#BECCDD;
@@ -153,7 +149,7 @@ a{color:inherit;text-decoration:none}
 .inp:focus{
   border-color:var(--brand);
   background:var(--card);
-  box-shadow:0 0 0 3px rgba(61,90,60,.14);
+  box-shadow:0 0 0 3px rgba(184,50,47,.12);
 }
 .inp::placeholder{color:var(--ink-4);font-weight:500}
 
@@ -231,9 +227,9 @@ select.inp,select{
 }
 .avatar-ring{
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,#3D5A3C 0%,#536F4F 56%,#B8A78D 120%);
+  background:linear-gradient(135deg,#5C7C5C 0%,#6F9170 50%,#C89B7B 120%);
   padding:2.5px;
-  box-shadow:0 4px 14px rgba(61,90,60,.24),0 1px 3px rgba(61,90,60,.16);
+  box-shadow:0 4px 14px rgba(184,50,47,.28),0 1px 3px rgba(184,50,47,.18);
   flex-shrink:0;position:relative;
 }
 .avatar-inner{
@@ -250,7 +246,7 @@ select.inp,select{
   box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 .hdr-status-on{background:#2D7A4A}
-.hdr-status-off{background:#536F4F}
+.hdr-status-off{background:#5C7C5C}
 .hdr-iconbtn{
   width:42px;height:42px;border-radius:14px;
   background:var(--card);
@@ -293,10 +289,10 @@ select.inp,select{
 }
 .qa-item:active .qa-circle{transform:scale(.93)}
 .qa-circle-red{
-  background:linear-gradient(135deg,#3D5A3C 0%,#2A4029 100%);
-  border-color:#2A4029;
+  background:linear-gradient(135deg,#5C7C5C 0%,#455F47 100%);
+  border-color:#455F47;
   color:#fff;
-  box-shadow:0 6px 18px rgba(61,90,60,.30),inset 0 1px 0 rgba(255,255,255,.18);
+  box-shadow:0 6px 18px rgba(184,50,47,.32),inset 0 1px 0 rgba(255,255,255,.18);
 }
 .qa-circle-red-soft{
   background:linear-gradient(135deg,#EAF1EC 0%,#D5E5D8 100%);
@@ -327,7 +323,7 @@ select.inp,select{
   font-size:10px;font-weight:800;
   display:flex;align-items:center;justify-content:center;
   line-height:1;
-  box-shadow:0 2px 6px rgba(61,90,60,.28);
+  box-shadow:0 2px 6px rgba(184,50,47,.35);
 }
 .qa-label{
   font-size:11.5px;font-weight:600;color:var(--ink-2);
@@ -366,7 +362,7 @@ select.inp,select{
   pointer-events:none;
 }
 .hero-card-red{
-  background:linear-gradient(135deg,#3D5A3C 0%,#2A4029 62%,#9C8B6F 125%);
+  background:linear-gradient(135deg,#5C7C5C 0%,#455F47 60%,#7D1E1B 110%);
   color:#fff;
 }
 .hero-card-nude{
@@ -380,8 +376,8 @@ select.inp,select{
   border-color:var(--line);
 }
 .hero-card-softred{
-  background:linear-gradient(135deg,#EAF0E7 0%,#EFEAE0 100%);
-  color:#2A4029;
+  background:linear-gradient(135deg,#EAF1EC 0%,#EDC9D3 100%);
+  color:#7D1E1B;
   border-color:var(--brand-bd);
 }
 .hero-label{
@@ -443,9 +439,9 @@ select.inp,select{
   width:4px;flex-shrink:0;
   background:var(--line-strong);
 }
-.tcard.t-arrival .tcard-stripe{background:linear-gradient(180deg,#536F4F,#2A4029)}
+.tcard.t-arrival .tcard-stripe{background:linear-gradient(180deg,#BC5D56,#9E3A35)}
 .tcard.t-departure .tcard-stripe{background:linear-gradient(180deg,#C4BCB0,#A89E90)}
-.tcard.t-tour .tcard-stripe{background:linear-gradient(180deg,#B8A78D,#9C8B6F)}
+.tcard.t-tour .tcard-stripe{background:linear-gradient(180deg,#6B94B8,#4A7296)}
 .tcard.t-intercity .tcard-stripe{background:linear-gradient(180deg,#C4A880,#9E8460)}
 .tcard-body{flex:1;min-width:0;padding:13px 14px;display:flex;gap:11px;align-items:stretch}
 .tcard-time{
@@ -530,18 +526,18 @@ select.inp,select{
    DATE HEADER — günü başlatan bar
    ═══════════════════════════════════════════════════════════════ */
 .date-hdr{
-  background:linear-gradient(135deg,#3D5A3C 0%,#2A4029 62%,#9C8B6F 125%);
+  background:linear-gradient(135deg,#5C7C5C 0%,#455F47 60%,#7D1E1B 110%);
   border:none;
   border-radius:var(--r-sm);
   padding:12px 18px;
   margin:18px 0 10px;
   display:flex;justify-content:space-between;align-items:center;
-  box-shadow:0 6px 18px rgba(61,90,60,.22),inset 0 1px 0 rgba(255,255,255,.12);
+  box-shadow:0 6px 18px rgba(184,50,47,.22),inset 0 1px 0 rgba(255,255,255,.12);
   position:relative;overflow:hidden;
 }
 .date-hdr::before{
   content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
-  background:linear-gradient(180deg,#EAF0E7 0%,#536F4F 50%,#3D5A3C 100%);
+  background:linear-gradient(180deg,#EAF1EC 0%,#6F9170 50%,#5C7C5C 100%);
   box-shadow:0 0 12px rgba(255,255,255,.3);
 }
 .date-hdr::after{
@@ -569,7 +565,7 @@ select.inp,select{
   border-radius:20px;padding:7px 15px;
   font-size:11px;font-weight:700;letter-spacing:.3px;
   margin:0 0 10px;
-  box-shadow:0 2px 6px rgba(61,90,60,.12);
+  box-shadow:0 2px 6px rgba(184,50,47,.12);
 }
 .bugun-inline:active{background:var(--brand-softer)}
 
@@ -608,19 +604,19 @@ select.inp,select{
 .tab.is-active::before{
   content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
   width:30px;height:3px;border-radius:2px;
-  background:linear-gradient(90deg,#3D5A3C 0%,#536F4F 100%);
-  box-shadow:0 1px 4px rgba(61,90,60,.30);
+  background:linear-gradient(90deg,#5C7C5C 0%,#6F9170 100%);
+  box-shadow:0 1px 4px rgba(184,50,47,.35);
 }
 .tab-fab{
   align-self:center;
   width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(135deg,#536F4F 0%,#3D5A3C 55%,#2A4029 100%);
+  background:linear-gradient(135deg,#6F9170 0%,#5C7C5C 55%,#455F47 100%);
   color:#fff;font-size:28px;font-weight:300;
   display:flex;align-items:center;justify-content:center;
   border:none;margin:0 4px;
   box-shadow:
-    0 6px 18px rgba(61,90,60,.42),
-    0 2px 6px rgba(61,90,60,.24),
+    0 6px 18px rgba(184,50,47,.45),
+    0 2px 6px rgba(184,50,47,.25),
     inset 0 1px 0 rgba(255,255,255,.22),
     0 0 0 5px rgba(255,255,255,.95);
   position:relative;top:-12px;
@@ -664,631 +660,6 @@ main.main-cont{
   main.main-cont{max-width:1320px!important}
   .desk-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   📅 TAKVİM SEKMESİ
-   ═══════════════════════════════════════════════════════════════ */
-.tk-wrap{
-  display:flex;flex-direction:column;gap:14px;padding:0 2px;
-  /* Lokal nude yeşil + titanyum palet */
-  --tk-green:#3D5A3C;
-  --tk-green-deep:#2A4029;
-  --tk-green-deepest:#1F2E1E;
-  --tk-green-soft:#536F4F;
-  --tk-green-pale:#EAF0E7;
-  --tk-green-paler:#F4F7F2;
-  --tk-ti:#B8A78D;
-  --tk-ti-deep:#9C8B6F;
-  --tk-ti-glow:#D9C8B0;
-  --tk-ti-pale:#E8DBC4;
-  --tk-line-green:rgba(61,90,60,0.18);
-  --tk-line-gold:rgba(184,167,141,0.28);
-}
-.tk-card{
-  background:linear-gradient(180deg,#FFFFFF 0%,#FAFBF9 100%);
-  border:1px solid var(--tk-line-gold);border-radius:18px;
-  padding:14px;
-  box-shadow:0 1px 2px rgba(0,0,0,.03),0 4px 14px rgba(31,46,30,.04),
-    0 0 0 0.5px rgba(184,167,141,0.10);
-}
-.tk-widget-app{
-  width:min(100%,560px);
-  height:clamp(560px,calc(100dvh - var(--tabbar-h) - var(--sa-b) - var(--sa-t) - 120px),700px);
-  margin:0 auto;
-  border-radius:30px;
-  position:relative;
-  overflow:hidden;
-  background:
-    radial-gradient(ellipse 110% 80% at 0% 0%, rgba(232,219,196,0.55) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 70% at 100% 100%, rgba(184,167,141,0.20) 0%, transparent 55%),
-    linear-gradient(135deg,#FDFCFA 0%,#F5F1EA 35%,#EFE9DE 100%);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.9) inset,
-    0 -1px 0 rgba(184,167,141,0.20) inset,
-    0 0 0 0.5px rgba(184,167,141,0.40),
-    0 20px 42px -24px rgba(31,46,30,0.46),
-    0 8px 18px -12px rgba(31,46,30,0.24);
-  display:flex;
-  flex-direction:column;
-  padding:12px;
-  gap:10px;
-  isolation:isolate;
-}
-.tk-widget-app::before{
-  content:'';position:absolute;inset:0;
-  background-image:
-    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(184,167,141,0.10) 0%, transparent 45%);
-  pointer-events:none;z-index:1;
-}
-.tk-widget-app::after{
-  content:'';position:absolute;inset:0;
-  background-image:repeating-linear-gradient(135deg,transparent 0,transparent 1px,rgba(184,167,141,0.022) 1px,rgba(184,167,141,0.022) 2px);
-  pointer-events:none;z-index:1;opacity:.65;
-}
-.tk-widget-cal{
-  position:relative;z-index:2;flex-shrink:0;
-  background:
-    radial-gradient(ellipse at 80% 0%, rgba(217,200,176,0.14) 0%, transparent 55%),
-    linear-gradient(160deg,var(--tk-green) 0%,var(--tk-green-deep) 60%,var(--tk-green-deepest) 100%);
-  border-radius:13px;
-  padding:10px 13px 9px;
-  overflow:hidden;
-  box-shadow:
-    0 1px 0 rgba(217,200,176,0.20) inset,
-    0 -1px 0 rgba(0,0,0,0.30) inset,
-    0 0 0 0.5px rgba(0,0,0,0.30),
-    0 4px 12px rgba(31,46,30,0.30),
-    0 1px 3px rgba(31,46,30,0.20);
-}
-.tk-widget-cal::before{
-  content:'';position:absolute;top:-30px;right:-30px;
-  width:90px;height:90px;
-  background:radial-gradient(circle,var(--tk-ti-glow),transparent 70%);
-  opacity:.13;pointer-events:none;
-}
-.tk-widget-cal-head{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:7px;position:relative;z-index:1;
-}
-.tk-widget-brand{
-  display:flex;align-items:center;gap:6px;
-  font-size:9px;font-weight:900;color:var(--tk-ti-glow);
-  letter-spacing:2.6px;text-transform:uppercase;
-}
-.tk-widget-brand-dot{
-  width:5px;height:5px;border-radius:50%;background:var(--tk-ti-glow);
-  box-shadow:0 0 5px rgba(217,200,176,.6);
-}
-.tk-widget-cal-nav{display:flex;align-items:center;gap:4px}
-.tk-widget-month{
-  min-width:84px;text-align:center;
-  font-size:13px;font-weight:900;color:#F4EAD7;letter-spacing:.2px;
-}
-.tk-widget-month em{font-style:normal;color:var(--tk-ti-glow);font-weight:700;margin-left:4px}
-.tk-widget-nav-btn{
-  width:24px;height:24px;border-radius:8px;
-  border:.5px solid rgba(217,200,176,.28);
-  background:rgba(255,255,255,.08);
-  color:#F4EAD7;
-  display:flex;align-items:center;justify-content:center;
-  font-size:16px;font-weight:900;line-height:1;
-  cursor:pointer;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
-}
-.tk-widget-nav-btn:active{background:rgba(217,200,176,.18);transform:scale(.94)}
-.tk-widget-weekdays{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  margin-bottom:3px;padding-bottom:4px;
-  border-bottom:.5px solid rgba(217,200,176,.22);
-  position:relative;z-index:1;
-}
-.tk-widget-weekday{
-  text-align:center;font-size:9px;font-weight:900;
-  color:rgba(244,234,215,.55);letter-spacing:.8px;
-}
-.tk-widget-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:2px;
-  position:relative;z-index:1;
-}
-.tk-widget-day{
-  height:24px;
-  display:flex;align-items:center;justify-content:flex-start;flex-direction:column;gap:2px;
-  padding-top:2px;
-  font-size:11px;font-weight:700;color:#F4EAD7;
-  border-radius:3px;position:relative;
-  font-variant-numeric:tabular-nums;letter-spacing:-.3px;
-  cursor:pointer;
-}
-.tk-widget-day-num{display:block;line-height:1}
-.tk-widget-day.tk-other{color:rgba(244,234,215,.26);font-weight:500}
-.tk-widget-day.tk-today{
-  background:radial-gradient(ellipse at top,rgba(217,200,176,.32) 0%,transparent 60%),rgba(184,167,141,.36);
-  color:#fff;font-weight:900;
-  box-shadow:inset 0 0 0 1px rgba(217,200,176,.50),0 1px 3px rgba(0,0,0,.20);
-}
-.tk-widget-day.tk-selected{outline:1px solid rgba(244,234,215,.62);outline-offset:-1px}
-.tk-widget-dot{
-  display:block;width:4px;height:4px;border-radius:50%;
-  background:var(--tk-ti-glow);box-shadow:0 0 3px rgba(217,200,176,.55);
-  flex-shrink:0;
-}
-.tk-widget-day.tk-today .tk-widget-dot{background:#fff;box-shadow:0 0 4px rgba(255,255,255,.7)}
-.tk-widget-bot{
-  flex:1;display:grid;grid-template-columns:60% 40%;gap:10px;
-  position:relative;z-index:2;min-height:0;
-}
-.tk-widget-pane{
-  background:rgba(255,253,249,.78);
-  border-radius:13px;
-  border:1px solid rgba(31,46,30,.14);
-  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 1px 2px rgba(31,46,30,.04),0 0 0 .5px rgba(184,167,141,.16);
-  padding:10px 12px;
-  display:flex;flex-direction:column;
-  min-height:0;overflow:hidden;
-}
-.tk-widget-daygrp{display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow:hidden}
-.tk-widget-daygrp + .tk-widget-daygrp{margin-top:8px;padding-top:8px;border-top:1px solid rgba(184,167,141,.24)}
-.tk-widget-rowhead{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-shrink:0}
-.tk-widget-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  font-size:9px;font-weight:900;color:var(--tk-green-deep);
-  letter-spacing:1px;text-transform:uppercase;
-  background:linear-gradient(180deg,rgba(61,90,60,.10),rgba(61,90,60,.06));
-  padding:2.5px 7px 2.5px 6px;border-radius:9px;
-  border:.5px solid var(--tk-line-green);
-}
-.tk-widget-pill::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--tk-green);box-shadow:0 0 0 1.5px rgba(61,90,60,.20)}
-.tk-widget-pill.tomorrow{color:var(--tk-ti-deep);background:linear-gradient(180deg,rgba(184,167,141,.16),rgba(184,167,141,.10));border-color:var(--tk-line-gold)}
-.tk-widget-pill.tomorrow::before{background:var(--tk-ti-deep);box-shadow:0 0 0 1.5px rgba(156,139,111,.20)}
-.tk-widget-date{font-size:9.5px;font-weight:800;color:var(--ink-3);white-space:nowrap}
-.tk-widget-bar{flex:1;height:1px;background:linear-gradient(90deg,var(--tk-line-green) 0%,transparent 100%)}
-.tk-widget-list{display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.tk-widget-list.dense .tk-widget-task{padding:3px 0}
-.tk-widget-list.dense .tk-widget-sub{display:none}
-.tk-widget-task{
-  display:flex;align-items:flex-start;gap:6px;
-  padding:4px 0;min-width:0;flex-shrink:0;
-  cursor:pointer;
-}
-.tk-widget-task:not(:last-child){border-bottom:.5px solid rgba(184,167,141,.16)}
-.tk-widget-check{
-  width:14px;height:14px;border-radius:4px;
-  border:1.2px solid var(--tk-green-soft);
-  background:rgba(255,255,255,.72);
-  flex-shrink:0;margin-top:2px;
-  display:flex;align-items:center;justify-content:center;
-}
-.tk-widget-task.done .tk-widget-check{
-  background:linear-gradient(135deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
-  border-color:var(--tk-green-deep);
-}
-.tk-widget-task.done .tk-widget-check::after{content:'✓';color:var(--tk-ti-glow);font-size:8px;font-weight:900;line-height:1}
-.tk-widget-task.transfer .tk-widget-check{
-  width:7px;height:7px;border-radius:50%;border:none;
-  background:var(--tk-ti-deep);box-shadow:0 0 0 3px rgba(156,139,111,.14);
-  margin-top:6px;
-}
-.tk-widget-task.transfer.done .tk-widget-check{background:var(--tk-ti-deep);border:none}
-.tk-widget-taskbody{flex:1;min-width:0;display:flex;flex-direction:column}
-.tk-widget-line{
-  display:flex;align-items:flex-start;gap:5px;min-width:0;overflow:hidden;
-  font-size:12px;color:var(--ink);font-weight:800;line-height:1.25;
-}
-.tk-widget-time{font-size:10.5px;color:var(--tk-green-deep);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.2px;flex-shrink:0;line-height:1.25;padding-top:1px}
-.tk-widget-task.transfer .tk-widget-time{color:var(--tk-ti-deep)}
-.tk-widget-title{
-  flex:1;min-width:0;display:block;
-  white-space:nowrap;overflow:hidden;text-overflow:clip;
-}
-.tk-widget-sub{
-  font-size:10px;color:var(--ink-3);font-weight:650;line-height:1.22;margin-top:1px;
-  display:block;white-space:nowrap;overflow:hidden;text-overflow:clip;
-}
-.tk-widget-task.done .tk-widget-line,.tk-widget-task.done .tk-widget-sub{text-decoration:line-through;color:var(--ink-4);font-weight:600}
-.tk-widget-task.transfer.done .tk-widget-line,.tk-widget-task.transfer.done .tk-widget-sub{text-decoration:none;color:var(--ink);font-weight:800}
-.tk-widget-task.transfer.done .tk-widget-time{color:var(--tk-ti-deep)}
-.tk-widget-task.transfer .tk-widget-sub{display:none}
-.tk-widget-empty{font-size:10px;color:var(--ink-4);font-style:italic;padding:4px 2px;font-weight:600}
-.tk-widget-lgsec{display:flex;flex-direction:column;flex:1;min-height:0}
-.tk-widget-lgsec + .tk-widget-lgsec{margin-top:8px}
-.tk-widget-ledger-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0}
-.tk-widget-ledger-pill{
-  display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
-  padding:2.5px 7px 2.5px 6px;border-radius:9px;
-}
-.tk-widget-ledger-pill.in{color:#2A4029;background:linear-gradient(180deg,rgba(61,90,60,.10),rgba(61,90,60,.06));border:.5px solid rgba(61,90,60,.20)}
-.tk-widget-ledger-pill.out{color:#7A4538;background:linear-gradient(180deg,rgba(156,92,76,.10),rgba(156,92,76,.06));border:.5px solid rgba(156,92,76,.20)}
-.tk-widget-ledger-pill::before{content:'';width:4px;height:4px;border-radius:50%}
-.tk-widget-ledger-pill.in::before{background:#3D5A3C;box-shadow:0 0 0 1.5px rgba(61,90,60,.20)}
-.tk-widget-ledger-pill.out::before{background:#9C5C4C;box-shadow:0 0 0 1.5px rgba(156,92,76,.20)}
-.tk-widget-total{font-size:9.5px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.15px;max-width:68px;white-space:nowrap;overflow:hidden}
-.tk-widget-total.in{color:#2A4029}.tk-widget-total.out{color:#7A4538}
-.tk-widget-ledger-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:.5px dotted rgba(184,167,141,.30);cursor:pointer;min-width:0}
-.tk-widget-ledger-row:last-child{border-bottom:none}
-.tk-widget-ledger-check{width:14px;height:14px;border-radius:4px;border:1.2px solid var(--tk-green-soft);background:rgba(255,255,255,.72);flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.tk-widget-ledger-row.settled.in .tk-widget-ledger-check{background:linear-gradient(135deg,#3D5A3C,#2A4029);border-color:#2A4029}
-.tk-widget-ledger-row.settled.out .tk-widget-ledger-check{background:linear-gradient(135deg,#9C5C4C,#7A4538);border-color:#7A4538}
-.tk-widget-ledger-row.settled .tk-widget-ledger-check::after{content:'✓';color:#fff;font-size:7.5px;font-weight:900;line-height:1}
-.tk-widget-ledger-name{flex:1;min-width:0;font-size:12px;font-weight:800;color:var(--ink);line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:clip}
-.tk-widget-ledger-amt{font-size:10.5px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.2px;white-space:nowrap;flex-shrink:0;max-width:72px;overflow:hidden}
-.tk-widget-ledger-amt.in{color:#2A4029}.tk-widget-ledger-amt.out{color:#7A4538}
-.tk-widget-ledger-row.settled .tk-widget-ledger-name,.tk-widget-ledger-row.settled .tk-widget-ledger-amt{text-decoration:line-through;color:var(--ink-4);font-weight:600}
-.tk-widget-actions{width:min(100%,560px);margin:12px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tk-widget-action{
-  border:1px solid var(--tk-line-gold);background:linear-gradient(180deg,#FFFFFF,#FAFBF9);
-  color:var(--tk-green-deep);border-radius:12px;padding:10px 12px;font-size:12px;font-weight:900;
-  box-shadow:0 1px 2px rgba(31,46,30,.04);cursor:pointer;
-}
-@media (min-width:900px){
-  .tk-widget-app{
-    width:min(100%,860px);
-    height:clamp(620px,calc(100dvh - var(--tabbar-h) - 110px),760px);
-    padding:14px;
-    gap:12px;
-  }
-  .tk-widget-actions{width:min(100%,860px)}
-  .tk-widget-cal{padding:12px 16px 11px}
-  .tk-widget-day{height:30px;font-size:12px;padding-top:4px}
-  .tk-widget-dot{width:4px;height:4px}
-  .tk-widget-brand{font-size:10px}
-  .tk-widget-month{font-size:14px;min-width:96px}
-  .tk-widget-pane{padding:12px 14px}
-  .tk-widget-line{font-size:13px}
-  .tk-widget-time{font-size:11px}
-  .tk-widget-sub{font-size:10.5px}
-  .tk-widget-ledger-name{font-size:13px}
-  .tk-widget-ledger-amt{font-size:11.5px;max-width:90px}
-}
-.tk-month-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line);
-}
-.tk-month-title{font-weight:900;font-size:18px;color:var(--ink);letter-spacing:-.3px}
-.tk-month-title em{font-style:normal;color:var(--tk-ti-deep);font-weight:700;margin-left:6px}
-.tk-nav-btn{
-  background:var(--surface);border:1px solid var(--line);border-radius:10px;
-  width:34px;height:34px;color:var(--ink);font-size:18px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-}
-.tk-nav-btn:active{background:var(--tk-green-pale)}
-.tk-weekdays{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:2px;
-  margin-bottom:4px;
-}
-.tk-weekday{
-  text-align:center;font-size:10px;font-weight:800;
-  color:var(--ink-3);letter-spacing:.6px;text-transform:uppercase;
-  padding:4px 0;
-}
-.tk-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:3px;
-}
-.tk-cell{
-  aspect-ratio:1;
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:6px 4px 4px;
-  position:relative;
-  cursor:pointer;
-  transition:all .15s;
-  display:flex;flex-direction:column;align-items:center;
-  min-height:46px;
-}
-.tk-cell.tk-other{opacity:.35}
-.tk-cell.tk-today{
-  background:linear-gradient(180deg,var(--tk-green-pale),var(--tk-green-paler));
-  border-color:var(--tk-green);
-  box-shadow:0 0 0 2px rgba(61,90,60,.15);
-}
-.tk-cell.tk-selected{
-  background:linear-gradient(180deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
-  border-color:var(--tk-green-deep);
-  box-shadow:0 2px 8px rgba(31,46,30,0.20);
-}
-.tk-cell.tk-selected .tk-cell-num{color:#fff}
-.tk-cell-num{
-  font-weight:800;font-size:14px;color:var(--ink);
-  font-variant-numeric:tabular-nums;line-height:1;
-}
-.tk-cell-dots{
-  display:flex;gap:2px;margin-top:auto;flex-wrap:wrap;justify-content:center;
-}
-.tk-cell-dot{
-  width:5px;height:5px;border-radius:50%;
-}
-.tk-cell.tk-selected .tk-cell-dot{background:rgba(255,255,255,.85)!important}
-.tk-cell-count{
-  position:absolute;top:3px;right:4px;
-  font-size:9px;font-weight:800;color:var(--tk-green-deep);
-  background:rgba(255,255,255,.95);
-  border-radius:8px;padding:1px 4px;line-height:1;
-  box-shadow:0 1px 2px rgba(0,0,0,.06);
-}
-.tk-cell.tk-selected .tk-cell-count{background:rgba(255,255,255,.95);color:var(--tk-green-deep)}
-
-.tk-calendar-card{
-  position:relative;overflow:hidden;
-  background:
-    radial-gradient(ellipse at 82% 0%, rgba(217,200,176,0.16) 0%, transparent 54%),
-    linear-gradient(160deg,var(--tk-green) 0%,var(--tk-green-deep) 58%,var(--tk-green-deepest) 100%);
-  border-color:rgba(184,167,141,0.34);
-  border-radius:18px;
-  padding:13px 13px 14px;
-  box-shadow:
-    0 1px 0 rgba(217,200,176,0.22) inset,
-    0 -1px 0 rgba(0,0,0,0.24) inset,
-    0 0 0 0.5px rgba(31,46,30,0.35),
-    0 10px 24px rgba(31,46,30,0.18);
-}
-.tk-calendar-card::before{
-  content:'';position:absolute;top:-44px;right:-34px;
-  width:138px;height:138px;border-radius:50%;
-  background:radial-gradient(circle,var(--tk-ti-glow),transparent 70%);
-  opacity:.13;pointer-events:none;
-}
-.tk-calendar-card::after{
-  content:'';position:absolute;left:16px;right:16px;bottom:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--tk-ti),transparent);
-  opacity:.34;pointer-events:none;
-}
-.tk-calendar-card .tk-month-head{
-  position:relative;z-index:1;
-  border-bottom:1px solid rgba(217,200,176,0.22);
-  padding-bottom:9px;margin-bottom:7px;
-}
-.tk-month-center{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
-.tk-calendar-brand{
-  display:flex;align-items:center;gap:6px;
-  font-size:9px;font-weight:900;color:var(--tk-ti-glow);
-  letter-spacing:2.4px;text-transform:uppercase;
-}
-.tk-calendar-brand-dot{
-  width:5px;height:5px;border-radius:50%;
-  background:var(--tk-ti-glow);
-  box-shadow:0 0 6px rgba(217,200,176,.62);
-}
-.tk-calendar-card .tk-month-title{font-size:17px;color:#F4EAD7;text-align:center}
-.tk-calendar-card .tk-month-title em{color:var(--tk-ti-glow)}
-.tk-calendar-card .tk-nav-btn{
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(217,200,176,.26);
-  color:#F4EAD7;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
-}
-.tk-calendar-card .tk-nav-btn:active{background:rgba(217,200,176,.18)}
-.tk-calendar-card .tk-nav-btn:focus{outline:none}
-.tk-calendar-card .tk-nav-btn:focus-visible{
-  box-shadow:0 0 0 2px rgba(217,200,176,.34),inset 0 1px 0 rgba(255,255,255,.12);
-}
-.tk-calendar-card .tk-weekdays,
-.tk-calendar-card .tk-grid{position:relative;z-index:1}
-.tk-calendar-card .tk-weekday{
-  color:rgba(244,234,215,.58);
-  font-size:9.5px;
-}
-.tk-calendar-card .tk-cell{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(217,200,176,.12);
-  color:#F4EAD7;
-  box-shadow:none;
-}
-.tk-calendar-card .tk-cell-num{color:#F4EAD7}
-.tk-calendar-card .tk-cell.tk-other{opacity:1}
-.tk-calendar-card .tk-cell.tk-other .tk-cell-num{color:rgba(244,234,215,.30)}
-.tk-calendar-card .tk-cell.tk-today{
-  background:rgba(184,167,141,.28);
-  border-color:rgba(217,200,176,.48);
-  box-shadow:inset 0 0 0 1px rgba(217,200,176,.28),0 2px 7px rgba(0,0,0,.12);
-}
-.tk-calendar-card .tk-cell.tk-selected{
-  background:linear-gradient(180deg,rgba(217,200,176,.42),rgba(184,167,141,.26));
-  border-color:rgba(244,234,215,.72);
-  box-shadow:0 3px 10px rgba(0,0,0,.20),inset 0 0 0 1px rgba(255,255,255,.18);
-}
-.tk-calendar-card .tk-cell-count{
-  color:var(--tk-green-deep);
-  background:rgba(244,234,215,.94);
-}
-
-.tk-day-section{
-  background:linear-gradient(180deg,#FFFFFF 0%,#FAFBF9 100%);
-  border:1px solid var(--tk-line-gold);border-radius:18px;
-  padding:14px 14px 10px;
-  box-shadow:0 1px 2px rgba(0,0,0,.03),0 4px 14px rgba(31,46,30,.04),
-    0 0 0 0.5px rgba(184,167,141,0.10);
-}
-.tk-day-h{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line);
-}
-.tk-day-title{font-weight:900;font-size:16px;color:var(--ink);letter-spacing:-.2px}
-.tk-day-sub{font-size:11px;color:var(--ink-3);font-weight:600;margin-top:2px}
-.tk-add-btn{
-  background:linear-gradient(135deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
-  color:#fff;border:none;border-radius:10px;
-  padding:8px 14px;font-weight:800;font-size:12px;cursor:pointer;
-  box-shadow:0 2px 6px rgba(31,46,30,.30),0 0 0 0.5px rgba(184,167,141,0.20);
-}
-.tk-add-btn:active{transform:scale(.96)}
-.tk-item{
-  display:flex;align-items:flex-start;gap:10px;
-  padding:10px 12px;border:1px solid var(--line);
-  border-radius:12px;background:var(--card);
-  margin-bottom:8px;transition:all .15s;
-}
-.tk-item.tk-done{opacity:.55}
-.tk-item.tk-done .tk-item-title{text-decoration:line-through;color:var(--ink-3)}
-.tk-item-check{
-  width:22px;height:22px;border-radius:7px;
-  border:1.8px solid var(--line-strong);
-  background:#fff;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;color:transparent;font-weight:900;
-  transition:all .15s;
-}
-.tk-item-check.tk-checked{
-  background:linear-gradient(135deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
-  border-color:var(--tk-green-deep);color:#fff;
-}
-.tk-item-body{flex:1;min-width:0}
-.tk-item-row1{
-  display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;
-}
-.tk-item-time{
-  font-weight:800;font-size:12px;color:var(--tk-green-deep);
-  font-variant-numeric:tabular-nums;letter-spacing:-.2px;
-  background:var(--tk-green-pale);padding:2px 7px;border-radius:6px;
-}
-.tk-item-title{
-  font-weight:700;font-size:13.5px;color:var(--ink);line-height:1.3;
-  word-break:break-word;
-}
-.tk-item-sub{
-  font-size:11.5px;color:var(--ink-3);font-weight:500;
-  margin-top:3px;line-height:1.4;
-  word-break:break-word;
-}
-.tk-item-tag{
-  display:inline-block;
-  font-size:10px;font-weight:800;
-  padding:2px 7px;border-radius:6px;
-  letter-spacing:.3px;text-transform:uppercase;
-  margin-left:4px;
-}
-.tk-item-tag.tk-tag-transfer{background:#EAF0E7;color:#2A4029;border:1px solid #C9D4BF}
-.tk-item-tag.tk-tag-todo{background:#EFEAE0;color:#7A6B4A;border:1px solid #D8C99F}
-.tk-item-tag.tk-tag-event{background:#EAF0F7;color:#3D6FA8;border:1px solid #BECCDD}
-.tk-item-del{
-  background:none;border:none;color:var(--ink-4);
-  font-size:18px;cursor:pointer;padding:0 4px;
-  flex-shrink:0;
-}
-.tk-item-del:active{color:var(--err)}
-.tk-empty{
-  text-align:center;padding:18px 14px;
-  font-size:12.5px;color:var(--ink-3);font-weight:600;
-  background:var(--surface);border:1px dashed var(--line);
-  border-radius:12px;
-}
-
-/* Ledger items */
-.tk-ledger{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border:1px solid var(--line);
-  border-radius:12px;background:var(--card);
-  margin-bottom:6px;
-}
-.tk-ledger.tk-ledger-done{opacity:.5}
-.tk-ledger.tk-ledger-done .tk-ledger-name{text-decoration:line-through}
-.tk-ledger-check{
-  width:22px;height:22px;border-radius:7px;
-  border:1.8px solid var(--line-strong);
-  background:#fff;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;color:transparent;font-weight:900;
-  transition:all .15s;
-}
-.tk-ledger-check.tk-checked{
-  background:linear-gradient(135deg,var(--ok) 0%,#2D4530 100%);
-  border-color:var(--ok);color:#fff;
-}
-.tk-ledger-body{flex:1;min-width:0}
-.tk-ledger-name{font-weight:700;font-size:13px;color:var(--ink);line-height:1.3;word-break:break-word}
-.tk-ledger-sub{font-size:11px;color:var(--ink-3);font-weight:500;margin-top:2px}
-.tk-ledger-amt{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:-.3px;flex-shrink:0;white-space:nowrap}
-.tk-ledger-amt.tk-amt-in{color:var(--ok)}
-.tk-ledger-amt.tk-amt-out{color:var(--err)}
-
-.tk-section-h{
-  display:flex;align-items:center;gap:8px;margin-bottom:10px;
-  padding-bottom:8px;border-bottom:1px solid var(--line);
-}
-.tk-section-bar{display:inline-block;width:4px;height:16px;border-radius:2px}
-.tk-section-bar.tk-bar-in{background:var(--ok)}
-.tk-section-bar.tk-bar-out{background:var(--err)}
-.tk-section-title{font-weight:900;font-size:13px;letter-spacing:.3px;text-transform:uppercase}
-.tk-section-title.tk-tt-in{color:var(--ok)}
-.tk-section-title.tk-tt-out{color:var(--err)}
-.tk-section-count{
-  margin-left:auto;font-size:10.5px;font-weight:800;
-  padding:2px 8px;border-radius:9px;
-}
-.tk-section-count.tk-cn-in{background:#E8F3EB;color:var(--ok);border:1px solid #BFD9C5}
-.tk-section-count.tk-cn-out{background:#FBEAEA;color:var(--err);border:1px solid #E5C0C0}
-
-/* Takvim form modal */
-.tk-form-grp{margin-bottom:14px}
-.tk-form-lbl{
-  font-size:10.5px;font-weight:800;color:var(--ink-3);
-  letter-spacing:.7px;text-transform:uppercase;
-  display:block;margin-bottom:6px;
-}
-.tk-type-grid{
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;
-}
-.tk-type-opt{
-  background:var(--surface);border:1.5px solid var(--line);
-  border-radius:11px;padding:10px 6px;text-align:center;cursor:pointer;
-  transition:all .15s;
-}
-.tk-type-opt.sel{
-  background:linear-gradient(135deg,var(--tk-green-pale) 0%,var(--tk-green-paler) 100%);
-  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(61,90,60,.15);
-}
-.tk-type-opt-icon{font-size:18px;margin-bottom:3px}
-.tk-type-opt-lbl{font-size:11px;font-weight:800;color:var(--ink)}
-.tk-type-opt.sel .tk-type-opt-lbl{color:var(--tk-green-deep)}
-
-
-
-/* SCRIPTABLE/RECURRING LEDGER */
-.tk-control-grid{width:min(100%,560px);margin:12px auto 0;display:grid;grid-template-columns:1fr;gap:10px}
-.tk-tools-card{
-  background:linear-gradient(180deg,#FFFFFF,#FAFBF9);
-  border:1px solid rgba(184,167,141,.28);
-  border-radius:18px;padding:13px;
-  box-shadow:0 1px 2px rgba(31,46,30,.04),0 10px 24px -18px rgba(31,46,30,.28)
-}
-.tk-tools-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.tk-tools-title{font-size:12px;font-weight:900;color:var(--tk-green-deep);letter-spacing:.8px;text-transform:uppercase}
-.tk-tools-sub{font-size:11px;font-weight:700;color:var(--ink-3);line-height:1.35}
-.tk-ledger-mini-list{display:grid;grid-template-columns:1fr;gap:8px}
-.tk-ledger-mini{
-  display:flex;align-items:center;gap:8px;min-width:0;
-  padding:9px 10px;border-radius:12px;background:rgba(246,240,235,.72);
-  border:1px solid rgba(184,167,141,.22)
-}
-.tk-ledger-mini-check{
-  width:18px;height:18px;border-radius:6px;border:1.4px solid var(--tk-green-soft);
-  display:flex;align-items:center;justify-content:center;background:#fff;flex-shrink:0;
-  color:#fff;font-size:10px;font-weight:900;cursor:pointer
-}
-.tk-ledger-mini-check.done{background:linear-gradient(135deg,var(--tk-green),var(--tk-green-deep));border-color:var(--tk-green-deep)}
-.tk-ledger-mini-body{flex:1;min-width:0}
-.tk-ledger-mini-name{font-size:12px;font-weight:900;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:clip}
-.tk-ledger-mini-note{font-size:10.5px;color:var(--ink-3);font-weight:650;line-height:1.25;margin-top:2px}
-.tk-ledger-mini-amt{font-size:12px;font-weight:950;font-variant-numeric:tabular-nums;white-space:nowrap}
-.tk-ledger-mini-amt.in{color:#2A4029}.tk-ledger-mini-amt.out{color:#7A4538}
-.tk-ledger-mini-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.tk-mini-btn{border:none;border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900;cursor:pointer;background:#EFE8DE;color:#2A4029}
-.tk-mini-btn.pay{background:#EAF0E7;color:#2A4029}.tk-mini-btn.add{background:#F3ECE1;color:#7A6040}
-.tk-history-list{display:flex;flex-direction:column;gap:7px;max-height:230px;overflow:auto;padding-right:2px}
-.tk-history-row{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:11px;background:rgba(246,240,235,.58);border:1px solid rgba(184,167,141,.18)}
-.tk-history-dot{width:7px;height:7px;border-radius:50%;background:var(--tk-ti-deep);margin-top:5px;flex-shrink:0}
-.tk-history-body{flex:1;min-width:0}
-.tk-history-title{font-size:11.5px;font-weight:900;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:clip}
-.tk-history-sub{font-size:10.5px;font-weight:650;color:var(--ink-3);line-height:1.25;margin-top:2px}
-.tk-repeat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:6px}
-.tk-repeat-btn{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:9px 4px;font-size:11px;font-weight:900;color:var(--ink-2);cursor:pointer}
-.tk-repeat-btn.sel{background:linear-gradient(135deg,var(--tk-green-pale),var(--tk-green-paler));border-color:var(--tk-green);color:var(--tk-green-deep)}
-.tk-form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-@media (min-width:900px){
-  .tk-control-grid{width:min(100%,860px);grid-template-columns:1.2fr .8fr}
-  .tk-ledger-mini-list{grid-template-columns:1fr 1fr}
-}
-
 </style>
 </head>
 <body>
@@ -1346,8 +717,8 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
-const NAV = '#3D5A3C', NAV2 = '#2A4029', GOLD = '#B8A78D';
-const G = '#3D5A3C', O = '#9C8B6F', R = '#A33A3A', BR = '#536F4F';
+const NAV = '#5C7C5C', NAV2 = '#455F47', GOLD = '#C89B7B';
+const G = '#246B3D', O = '#8B5A1A', R = '#A33A3A', BR = '#5C7C5C';
 const TX = '#1F1715', SB = '#7F6D63', INP = '#F6F0EB', BOR = '#EFE3DB';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2A5C92', bg: '#EBF1F8', b: '#B8CADC' },
@@ -1501,17 +872,6 @@ const shortLoc = name => {
     if (slash) return slash[1];
     return n.split('(')[0].trim();
 };
-const shortVehicle = t => {
-    const raw = String((t && (t.vehicle || t.vehicleType || t.arac || t.car)) || '').toLowerCase();
-    const plate = String((t && t.plate) || '').toLowerCase();
-    if (raw.includes('sprinter') || plate.includes('sprinter')) return 'Sprinter';
-    if (raw.includes('vito') || plate.includes('vito')) return 'Vito';
-    if (raw) {
-        const veh = (typeof VEHS !== 'undefined' ? VEHS : []).find(v => String(v.id).toLowerCase() === raw || String(v.n).toLowerCase() === raw);
-        if (veh && veh.n) return veh.n;
-    }
-    return '';
-};
 const transferIdentity = t => {
     if (!t) return '';
     if (t.id)
@@ -1535,13 +895,6 @@ const mergeTransferLists = (preferred, fallback, deletedIds) => {
     });
     return Array.from(map.values());
 };
-const mergeByIdLists = (preferred, fallback) => {
-    const map = new Map();
-    const keyOf = x => x && x.id != null ? String(x.id) : JSON.stringify(x || {});
-    (fallback || []).forEach(x => map.set(keyOf(x), x));
-    (preferred || []).forEach(x => map.set(keyOf(x), { ...(map.get(keyOf(x)) || {}), ...(x || {}) }));
-    return Array.from(map.values());
-};
 const mergeSnapshots = (preferred, fallback, deletedIds) => ({
     ...(fallback || {}),
     ...(preferred || {}),
@@ -1556,10 +909,8 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => ({
         }
     }),
     ap: { ...((fallback && fallback.ap) || {}), ...((preferred && preferred.ap) || {}) },
-    ak: mergeByIdLists((preferred && preferred.ak) || [], (fallback && fallback.ak) || []),
-    db: mergeByIdLists((preferred && preferred.db) || [], (fallback && fallback.db) || []),
-    tk: mergeByIdLists((preferred && preferred.tk) || [], (fallback && fallback.tk) || []),
-    tl: mergeByIdLists((preferred && preferred.tl) || [], (fallback && fallback.tl) || []),
+    ak: (preferred && preferred.ak) || (fallback && fallback.ak) || [],
+    db: (preferred && preferred.db) || (fallback && fallback.db) || [],
     r: (preferred && preferred.r) || (fallback && fallback.r),
     ru: (preferred && preferred.ru) || (fallback && fallback.ru),
 });
@@ -2995,460 +2346,6 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok')))));
 }
 
-function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ type: 'todo', title: '', time: '', notes: '', priority: 'none', repeat: 'none', repeatEnd: '' });
-    const [showLedgerForm, setShowLedgerForm] = useState(false);
-    const [ledgerForm, setLedgerForm] = useState({ ltype: 'in', person: '', amount: '', note: '', due: '' });
-
-    const AYLAR_LONG = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-    const GUNLER = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
-    const REPEAT_OPTIONS = [
-        { id: 'none', label: 'Yok' },
-        { id: 'daily', label: 'Günlük' },
-        { id: 'weekly', label: 'Haftalık' },
-        { id: 'monthly', label: 'Aylık' },
-        { id: 'yearly', label: 'Yıllık' }
-    ];
-
-    const keyOf = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    const parseKey = k => { const p = String(k || '').split('-').map(Number); return new Date(p[0] || 1970, (p[1] || 1) - 1, p[2] || 1); };
-    const dayMs = 86400000;
-    const today = new Date();
-    const todayKey = keyOf(today);
-    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
-    const tomorrowKey = keyOf(tomorrow);
-
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month+1, 0);
-    const startWeekday = (firstDay.getDay() + 6) % 7;
-    const daysInMonth = lastDay.getDate();
-    const prevMonthDays = new Date(year, month, 0).getDate();
-
-    const cells = [];
-    for (let i = startWeekday - 1; i >= 0; i--) {
-        const d = prevMonthDays - i;
-        const dt = new Date(year, month-1, d);
-        cells.push({ day: d, date: keyOf(dt), other: true });
-    }
-    for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, date: year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'), other: false });
-    const remain = (7 - cells.length % 7) % 7;
-    for (let d = 1; d <= remain; d++) {
-        const dt = new Date(year, month+1, d);
-        cells.push({ day: d, date: keyOf(dt), other: true });
-    }
-
-    const repeatLabel = r => (REPEAT_OPTIONS.find(x => x.id === r) || REPEAT_OPTIONS[0]).label;
-    const todoStart = t => t.date || t.eventDate || '';
-    const isRepeating = t => t && t.repeat && t.repeat !== 'none';
-    const monthsBetween = (start, end) => (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-    const occursOn = (t, dateKey) => {
-        const startKey = todoStart(t);
-        if (!startKey) return false;
-        if (!isRepeating(t)) return startKey === dateKey || t.eventDate === dateKey;
-        if (dateKey < startKey) return false;
-        if (t.repeatEnd && dateKey > t.repeatEnd) return false;
-        const start = parseKey(startKey);
-        const target = parseKey(dateKey);
-        const interval = Math.max(1, parseInt(t.repeatInterval || 1, 10));
-        const diff = Math.floor((target - start) / dayMs);
-        if (diff < 0) return false;
-        if (t.repeat === 'daily') return diff % interval === 0;
-        if (t.repeat === 'weekly') return diff % (7 * interval) === 0;
-        if (t.repeat === 'monthly') return target.getDate() === start.getDate() && monthsBetween(start, target) % interval === 0;
-        if (t.repeat === 'yearly') return target.getDate() === start.getDate() && target.getMonth() === start.getMonth() && ((target.getFullYear() - start.getFullYear()) % interval === 0);
-        return startKey === dateKey;
-    };
-    const doneOn = (t, dateKey) => isRepeating(t) ? !!(t.completions && t.completions[dateKey]) : !!t.done;
-    const kindOf = t => t.kind || (t.type === 'event' ? 'event' : 'todo');
-
-    const getDateItems = (dateKey) => {
-        const transfers = (T || []).filter(x => x.date === dateKey && x.status !== 'iptal').map(t => ({
-            type: 'transfer',
-            id: 't_' + t.id,
-            title: shortLoc(t.pickup) + ' → ' + shortLoc(t.dropoff) + (shortVehicle(t) ? ' · ' + shortVehicle(t) : ''),
-            sub: [t.plate ? '🚐 ' + t.plate : '', t.givenBy || '', t.assignedTo && t.assignedTo !== t.givenBy ? '· ' + t.assignedTo : '', (t.passengers && t.passengers[0] && t.passengers[0].name) ? '· ' + t.passengers[0].name : ''].filter(Boolean).join(' '),
-            time: t.time || '',
-            done: false,
-            occurrenceDate: dateKey,
-            origData: t
-        }));
-        const reminders = (todos || []).filter(t => occursOn(t, dateKey)).map(t => {
-            const k = kindOf(t);
-            return {
-                type: k === 'event' ? 'event' : (k === 'note' ? 'note' : 'todo'),
-                id: 'td_' + t.id + '_' + dateKey,
-                title: t.title,
-                sub: [t.notes || '', isRepeating(t) ? repeatLabel(t.repeat) : ''].filter(Boolean).join(' · '),
-                time: t.time || '',
-                done: doneOn(t, dateKey),
-                occurrenceDate: dateKey,
-                origData: t
-            };
-        });
-        return [...transfers, ...reminders].sort((a,b) => {
-            if (!a.time && !b.time) return 0;
-            if (!a.time) return 1;
-            if (!b.time) return -1;
-            return a.time.localeCompare(b.time);
-        });
-    };
-
-    const dateCounts = {};
-    cells.forEach(c => { const n = getDateItems(c.date).length; if (n) dateCounts[c.date] = n; });
-    const goPrev = () => setCurrentDate(new Date(year, month-1, 1));
-    const goNext = () => setCurrentDate(new Date(year, month+1, 1));
-
-    const toggleTodoDone = (id, dateKey) => {
-        setTodos(prev => prev.map(t => {
-            if (String(t.id) !== String(id)) return t;
-            if (isRepeating(t)) {
-                const completions = { ...(t.completions || {}) };
-                if (completions[dateKey]) delete completions[dateKey]; else completions[dateKey] = new Date().toISOString();
-                return { ...t, completions };
-            }
-            const nextDone = !t.done;
-            return { ...t, done: nextDone, doneAt: nextDone ? new Date().toISOString() : '' };
-        }));
-    };
-    const deleteTodo = (id) => {
-        if (!window.confirm('Bu anımsatıcı tamamen silinsin mi?')) return;
-        setTodos(prev => prev.filter(t => String(t.id) !== String(id)));
-        tip('Silindi');
-    };
-
-    const ledgerAmount = l => Math.max(0, parseFloat(l.amount ?? l.remaining ?? 0) || 0);
-    const ledgerOriginal = l => parseFloat(l.originalAmount ?? l.total ?? l.amount ?? 0) || 0;
-    const normalizeTx = l => Array.isArray(l.ledgerTx) ? l.ledgerTx : [];
-    const toggleLedgerSettled = (id) => {
-        setLedger(prev => prev.map(l => {
-            if (String(l.id) !== String(id)) return l;
-            const settled = !l.settled;
-            return { ...l, settled, settledAt: settled ? new Date().toISOString() : '' };
-        }));
-    };
-    const adjustLedger = (id, mode) => {
-        const raw = window.prompt(mode === 'pay' ? 'Düşülecek tutar' : 'Eklenecek tutar', '');
-        if (raw === null) return;
-        const amount = Math.abs(parseFloat(String(raw).replace(',', '.')) || 0);
-        if (!amount) { tip('Tutar girin'); return; }
-        const note = window.prompt('Not (opsiyonel)', '') || '';
-        setLedger(prev => prev.map(l => {
-            if (String(l.id) !== String(id)) return l;
-            const cur = ledgerAmount(l);
-            const next = mode === 'pay' ? Math.max(0, cur - amount) : cur + amount;
-            const tx = normalizeTx(l).concat([{ id: Date.now().toString() + '_' + Math.random().toString(36).slice(2,6), type: mode, amount, note, date: new Date().toISOString() }]);
-            const originalAmount = mode === 'add' ? ledgerOriginal(l) + amount : ledgerOriginal(l);
-            return { ...l, amount: next, originalAmount, ledgerTx: tx };
-        }));
-        tip(mode === 'pay' ? 'Tutar düşüldü' : 'Tutar eklendi');
-    };
-
-    const saveTodo = () => {
-        if (!formData.title.trim()) { tip('Başlık girin'); return; }
-        const newTodo = {
-            id: Date.now().toString(),
-            title: formData.title.trim(),
-            date: selectedDate,
-            time: formData.time,
-            notes: formData.notes,
-            priority: formData.priority,
-            kind: formData.type === 'event' ? 'event' : (formData.type === 'note' ? 'note' : 'todo'),
-            repeat: formData.repeat || 'none',
-            repeatInterval: 1,
-            repeatEnd: formData.repeatEnd || '',
-            completions: {},
-            done: false,
-            createdAt: new Date().toISOString()
-        };
-        if (newTodo.kind === 'event') newTodo.eventDate = selectedDate;
-        setTodos(prev => [...prev, newTodo]);
-        setShowForm(false);
-        setFormData({ type: 'todo', title: '', time: '', notes: '', priority: 'none', repeat: 'none', repeatEnd: '' });
-        tip('Anımsatıcı eklendi');
-    };
-    const saveLedger = () => {
-        if (!ledgerForm.person.trim()) { tip('Kişi/Kurum girin'); return; }
-        const amount = Math.abs(parseFloat(String(ledgerForm.amount || '').replace(',', '.')) || 0);
-        if (!amount) { tip('Tutar girin'); return; }
-        const newL = {
-            id: Date.now().toString(),
-            ltype: ledgerForm.ltype,
-            person: ledgerForm.person.trim(),
-            amount,
-            originalAmount: amount,
-            ledgerTx: [],
-            note: ledgerForm.note,
-            due: ledgerForm.due,
-            settled: false,
-            created: new Date().toISOString()
-        };
-        setLedger(prev => [newL, ...prev]);
-        setShowLedgerForm(false);
-        setLedgerForm({ ltype: 'in', person: '', amount: '', note: '', due: '' });
-        tip(newL.ltype === 'in' ? 'Alacak eklendi' : 'Borç eklendi');
-    };
-
-    const alacakAll = (ledger || []).filter(l => l.ltype === 'in');
-    const borcAll = (ledger || []).filter(l => l.ltype === 'out');
-    const alacakList = alacakAll.filter(l => !l.settled);
-    const borcList = borcAll.filter(l => !l.settled);
-    const totalAlacak = alacakList.reduce((s,l) => s + ledgerAmount(l), 0);
-    const totalBorc = borcList.reduce((s,l) => s + ledgerAmount(l), 0);
-
-    const fr = n => Math.round(Number(n)||0).toLocaleString('tr-TR');
-    const shortDate = d => d.getDate() + ' ' + ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'][d.getMonth()];
-    const MAX_WIDGET_TASKS = 4;
-    const MAX_WIDGET_LEDGER = 4;
-    const todayItems = getDateItems(todayKey);
-    const tomorrowItems = getDateItems(tomorrowKey);
-    const selectedDay = parseKey(selectedDate);
-    const selectedNextDay = new Date(selectedDay);
-    selectedNextDay.setDate(selectedNextDay.getDate() + 1);
-    const selectedNextKey = keyOf(selectedNextDay);
-    const selectedDayItems = getDateItems(selectedDate);
-    const selectedNextItems = getDateItems(selectedNextKey);
-    const dayPillLabel = (dateKey, dateObj) => {
-        if (dateKey === todayKey) return 'Bugün';
-        if (dateKey === tomorrowKey) return 'Yarın';
-        return dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
-    };
-    const daySideLabel = dateObj => dateObj.toLocaleDateString('tr-TR', { weekday: 'short' });
-    const sortLedger = (a,b) => {
-        if (!!a.settled !== !!b.settled) return a.settled ? 1 : -1;
-        return ledgerAmount(b) - ledgerAmount(a);
-    };
-
-    const renderWidgetTasks = (items, emptyText) => {
-        if (!items.length) return React.createElement('div', { className: 'tk-widget-empty' }, emptyText || 'Kayıt yok');
-        const shown = items.slice(0, MAX_WIDGET_TASKS);
-        return React.createElement('div', { className: 'tk-widget-list' + (shown.length >= 4 ? ' dense' : '') },
-            shown.map(item => React.createElement('div', {
-                key: item.id,
-                className: 'tk-widget-task ' + item.type + (item.done ? ' done' : ''),
-                onClick: () => item.type !== 'transfer' && toggleTodoDone(item.origData.id, item.occurrenceDate)
-            },
-                React.createElement('div', { className: 'tk-widget-check' }),
-                React.createElement('div', { className: 'tk-widget-taskbody' },
-                    React.createElement('div', { className: 'tk-widget-line' },
-                        item.time && React.createElement('span', { className: 'tk-widget-time' }, item.time),
-                        React.createElement('span', { className: 'tk-widget-title' }, item.title)
-                    ),
-                    item.sub && React.createElement('div', { className: 'tk-widget-sub' }, item.sub)
-                )
-            )),
-            items.length > MAX_WIDGET_TASKS && React.createElement('div', { className: 'tk-widget-empty', style: { textAlign: 'center', padding: '2px 0' } }, '+' + (items.length - MAX_WIDGET_TASKS) + ' kayıt daha')
-        );
-    };
-    const renderWidgetLedgerRows = (rows, side) => {
-        const sign = side === 'in' ? '+' : '−';
-        const shown = rows.slice().sort(sortLedger).slice(0, MAX_WIDGET_LEDGER);
-        if (!shown.length) return React.createElement('div', { className: 'tk-widget-empty' }, '—');
-        return shown.map(l => React.createElement('div', {
-            key: l.id,
-            className: 'tk-widget-ledger-row ' + side
-        },
-            React.createElement('div', { className: 'tk-widget-ledger-check', onClick: () => toggleLedgerSettled(l.id) }),
-            React.createElement('div', { className: 'tk-widget-ledger-name' }, l.person),
-            React.createElement('div', { className: 'tk-widget-ledger-amt ' + side }, sign + fr(ledgerAmount(l)) + '₺')
-        ));
-    };
-    const widgetModalHead = (title, onCancel, onSave) => React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
-        React.createElement('button', { onClick: onCancel, style: { background: 'var(--surface)', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 700, fontSize: 13, color: 'var(--ink-2)', cursor: 'pointer' } }, 'İptal'),
-        React.createElement('div', { style: { fontWeight: 900, fontSize: 16, color: 'var(--ink)' } }, title),
-        React.createElement('button', { onClick: onSave, style: { background: 'linear-gradient(135deg,var(--brand),var(--brand-2))', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, 'Kaydet')
-    );
-
-    const renderLedgerMini = (rows, side) => {
-        const sign = side === 'in' ? '+' : '−';
-        const payText = side === 'in' ? 'Tahsil' : 'Öde';
-        if (!rows.length) return React.createElement('div', { className: 'tk-widget-empty' }, side === 'in' ? 'Açık alacak yok' : 'Açık borç yok');
-        return React.createElement('div', { className: 'tk-ledger-mini-list' },
-            rows.slice().sort(sortLedger).map(l => React.createElement('div', { key: l.id, className: 'tk-ledger-mini' },
-                React.createElement('button', { className: 'tk-ledger-mini-check' + (l.settled ? ' done' : ''), onClick: () => toggleLedgerSettled(l.id), title: 'Tamamlandı' }, l.settled ? '✓' : ''),
-                React.createElement('div', { className: 'tk-ledger-mini-body' },
-                    React.createElement('div', { className: 'tk-ledger-mini-name' }, l.person),
-                    React.createElement('div', { className: 'tk-ledger-mini-note' }, (l.note || 'Not yok') + ' · İlk: ' + fr(ledgerOriginal(l)) + '₺')
-                ),
-                React.createElement('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 } },
-                    React.createElement('div', { className: 'tk-ledger-mini-amt ' + side }, sign + fr(ledgerAmount(l)) + '₺'),
-                    React.createElement('div', { className: 'tk-ledger-mini-actions' },
-                        React.createElement('button', { className: 'tk-mini-btn pay', onClick: () => adjustLedger(l.id, 'pay') }, payText),
-                        React.createElement('button', { className: 'tk-mini-btn add', onClick: () => adjustLedger(l.id, 'add') }, '+ Ekle')
-                    )
-                )
-            ))
-        );
-    };
-
-    const historyItems = [];
-    (todos || []).forEach(t => {
-        if (isRepeating(t)) {
-            Object.keys(t.completions || {}).forEach(k => historyItems.push({ date: k, title: t.title, sub: repeatLabel(t.repeat) + ' tamamlandı', type: 'todo' }));
-        } else if (t.done) {
-            historyItems.push({ date: t.doneAt || t.date || t.eventDate || '', title: t.title, sub: 'Yapılacak tamamlandı', type: 'todo' });
-        }
-    });
-    (ledger || []).forEach(l => {
-        normalizeTx(l).forEach(tx => historyItems.push({ date: tx.date || '', title: l.person, sub: (tx.type === 'pay' ? 'Düşülen' : 'Eklenen') + ': ' + fr(tx.amount) + '₺' + (tx.note ? ' · ' + tx.note : ''), type: 'ledger' }));
-        if (l.settled) historyItems.push({ date: l.settledAt || l.created || '', title: l.person, sub: (l.ltype === 'in' ? 'Alacak kapandı' : 'Borç kapandı') + ' · Son kalan: ' + fr(ledgerAmount(l)) + '₺', type: 'ledger' });
-    });
-    historyItems.sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
-
-    return React.createElement('div', { className: 'tk-wrap' },
-        React.createElement('section', { className: 'tk-widget-app' },
-            React.createElement('div', { className: 'tk-widget-cal' },
-                React.createElement('div', { className: 'tk-widget-cal-head' },
-                    React.createElement('div', { className: 'tk-widget-brand' },
-                        React.createElement('span', { className: 'tk-widget-brand-dot' }),
-                        React.createElement('span', null, 'Yapılacaklar')
-                    ),
-                    React.createElement('div', { className: 'tk-widget-cal-nav' },
-                        React.createElement('button', { className: 'tk-widget-nav-btn', onClick: goPrev, 'aria-label': 'Önceki ay' }, '‹'),
-                        React.createElement('div', { className: 'tk-widget-month' }, AYLAR_LONG[month], React.createElement('em', null, year)),
-                        React.createElement('button', { className: 'tk-widget-nav-btn', onClick: goNext, 'aria-label': 'Sonraki ay' }, '›')
-                    )
-                ),
-                React.createElement('div', { className: 'tk-widget-weekdays' }, GUNLER.map((g, i) => React.createElement('div', { key: i, className: 'tk-widget-weekday' }, g))),
-                React.createElement('div', { className: 'tk-widget-grid' },
-                    cells.map((c, i) => {
-                        const isToday = c.date === todayKey;
-                        const isSelected = c.date === selectedDate;
-                        const hasEvt = (dateCounts[c.date] || 0) > 0;
-                        return React.createElement('div', {
-                            key: i,
-                            className: 'tk-widget-day' + (c.other ? ' tk-other' : '') + (isToday ? ' tk-today' : '') + (isSelected ? ' tk-selected' : '') + (hasEvt ? ' tk-has-evt' : ''),
-                            onClick: () => {
-                                setSelectedDate(c.date);
-                                if (c.other) {
-                                    const parts = c.date.split('-').map(Number);
-                                    setCurrentDate(new Date(parts[0], parts[1] - 1, 1));
-                                }
-                            }
-                        },
-                            React.createElement('span', { className: 'tk-widget-day-num' }, c.day),
-                            hasEvt && React.createElement('span', { className: 'tk-widget-dot' })
-                        );
-                    })
-                )
-            ),
-            React.createElement('div', { className: 'tk-widget-bot' },
-                React.createElement('div', { className: 'tk-widget-pane' },
-                    React.createElement('div', { className: 'tk-widget-daygrp' },
-                        React.createElement('div', { className: 'tk-widget-rowhead' },
-                            React.createElement('div', { className: 'tk-widget-pill' + (selectedDate !== todayKey ? ' tomorrow' : '') }, dayPillLabel(selectedDate, selectedDay)),
-                            React.createElement('div', { className: 'tk-widget-date' }, daySideLabel(selectedDay)),
-                            React.createElement('div', { className: 'tk-widget-bar' })
-                        ),
-                        renderWidgetTasks(selectedDayItems, 'Kayıt yok')
-                    ),
-                    React.createElement('div', { className: 'tk-widget-daygrp' },
-                        React.createElement('div', { className: 'tk-widget-rowhead' },
-                            React.createElement('div', { className: 'tk-widget-pill tomorrow' }, dayPillLabel(selectedNextKey, selectedNextDay)),
-                            React.createElement('div', { className: 'tk-widget-date' }, daySideLabel(selectedNextDay)),
-                            React.createElement('div', { className: 'tk-widget-bar' })
-                        ),
-                        renderWidgetTasks(selectedNextItems, 'Kayıt yok')
-                    )
-                ),
-                React.createElement('div', { className: 'tk-widget-pane' },
-                    React.createElement('div', { className: 'tk-widget-lgsec' },
-                        React.createElement('div', { className: 'tk-widget-ledger-head' },
-                            React.createElement('div', { className: 'tk-widget-ledger-pill in' }, 'Alacak'),
-                            React.createElement('div', { className: 'tk-widget-total in' }, '+' + fr(totalAlacak) + '₺')
-                        ),
-                        renderWidgetLedgerRows(alacakList, 'in')
-                    ),
-                    React.createElement('div', { className: 'tk-widget-lgsec' },
-                        React.createElement('div', { className: 'tk-widget-ledger-head' },
-                            React.createElement('div', { className: 'tk-widget-ledger-pill out' }, 'Borç'),
-                            React.createElement('div', { className: 'tk-widget-total out' }, '−' + fr(totalBorc) + '₺')
-                        ),
-                        renderWidgetLedgerRows(borcList, 'out')
-                    )
-                )
-            )
-        ),
-        React.createElement('div', { className: 'tk-widget-actions' },
-            React.createElement('button', { className: 'tk-widget-action', onClick: () => setShowForm(true) }, '+ Anımsatıcı'),
-            React.createElement('button', { className: 'tk-widget-action', onClick: () => setShowLedgerForm(true) }, '+ Alacak / Borç')
-        ),
-        React.createElement('div', { className: 'tk-control-grid' },
-            React.createElement('section', { className: 'tk-tools-card' },
-                React.createElement('div', { className: 'tk-tools-head' },
-                    React.createElement('div', null,
-                        React.createElement('div', { className: 'tk-tools-title' }, 'Açık Alacak / Borç'),
-                        React.createElement('div', { className: 'tk-tools-sub' }, 'Kısmi ödeme/tahsilat düşer, ekleme kalan tutara eklenir. Kapanınca kutucuğu işaretle.')
-                    )
-                ),
-                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
-                    React.createElement('div', null, React.createElement('div', { className: 'tk-widget-ledger-pill in', style: { marginBottom: 7 } }, 'Alacaklar'), renderLedgerMini(alacakList, 'in')),
-                    React.createElement('div', null, React.createElement('div', { className: 'tk-widget-ledger-pill out', style: { marginBottom: 7 } }, 'Borçlar'), renderLedgerMini(borcList, 'out'))
-                )
-            ),
-            React.createElement('section', { className: 'tk-tools-card' },
-                React.createElement('div', { className: 'tk-tools-head' },
-                    React.createElement('div', null,
-                        React.createElement('div', { className: 'tk-tools-title' }, 'Geçmiş'),
-                        React.createElement('div', { className: 'tk-tools-sub' }, 'Tamamlanan anımsatıcılar, kapatılan borç/alacaklar ve kısmi hareketler.')
-                    )
-                ),
-                React.createElement('div', { className: 'tk-history-list' },
-                    historyItems.length ? historyItems.slice(0, 18).map((h, i) => React.createElement('div', { key: i, className: 'tk-history-row' },
-                        React.createElement('span', { className: 'tk-history-dot', style: { background: h.type === 'todo' ? '#3D5A3C' : '#9C8B6F' } }),
-                        React.createElement('div', { className: 'tk-history-body' },
-                            React.createElement('div', { className: 'tk-history-title' }, h.title),
-                            React.createElement('div', { className: 'tk-history-sub' }, (h.date ? new Date(h.date).toLocaleDateString('tr-TR') + ' · ' : '') + h.sub)
-                        )
-                    )) : React.createElement('div', { className: 'tk-widget-empty' }, 'Henüz geçmiş yok')
-                )
-            )
-        ),
-        showForm && React.createElement('div', { className: 'mo', onClick: () => setShowForm(false) },
-            React.createElement('div', { className: 'ms', onClick: e => e.stopPropagation() },
-                React.createElement('div', { style: { width: 40, height: 4, background: 'var(--line)', borderRadius: 3, margin: '0 auto 14px' } }),
-                widgetModalHead('Yeni Anımsatıcı', () => setShowForm(false), saveTodo),
-                React.createElement('div', { className: 'tk-type-grid' },
-                    React.createElement('div', { className: 'tk-type-opt' + (formData.type === 'todo' ? ' sel' : ''), onClick: () => setFormData(p => ({...p, type: 'todo'})) }, React.createElement('div', { className: 'tk-type-opt-icon' }, '✓'), React.createElement('div', { className: 'tk-type-opt-lbl' }, 'Yapılacak')),
-                    React.createElement('div', { className: 'tk-type-opt' + (formData.type === 'event' ? ' sel' : ''), onClick: () => setFormData(p => ({...p, type: 'event'})) }, React.createElement('div', { className: 'tk-type-opt-icon' }, '◷'), React.createElement('div', { className: 'tk-type-opt-lbl' }, 'Etkinlik')),
-                    React.createElement('div', { className: 'tk-type-opt' + (formData.type === 'note' ? ' sel' : ''), onClick: () => setFormData(p => ({...p, type: 'note'})) }, React.createElement('div', { className: 'tk-type-opt-icon' }, '•'), React.createElement('div', { className: 'tk-type-opt-lbl' }, 'Not'))
-                ),
-                React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Başlık'), React.createElement('input', { className: 'inp', type: 'text', value: formData.title, onChange: e => setFormData(p => ({...p, title: e.target.value})), placeholder: 'Örn: Araç bakımını kontrol et' })),
-                React.createElement('div', { className: 'tk-form-row' },
-                    React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Saat'), React.createElement('input', { className: 'inp', type: 'time', value: formData.time, onChange: e => setFormData(p => ({...p, time: e.target.value})) })),
-                    React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Tekrar bitiş'), React.createElement('input', { className: 'inp', type: 'date', value: formData.repeatEnd, onChange: e => setFormData(p => ({...p, repeatEnd: e.target.value})) }))
-                ),
-                React.createElement('div', { className: 'tk-form-grp' },
-                    React.createElement('label', { className: 'tk-form-lbl' }, 'Tekrar'),
-                    React.createElement('div', { className: 'tk-repeat-grid' }, REPEAT_OPTIONS.map(r => React.createElement('button', { key: r.id, className: 'tk-repeat-btn' + (formData.repeat === r.id ? ' sel' : ''), onClick: () => setFormData(p => ({...p, repeat: r.id})), type: 'button' }, r.label)))
-                ),
-                React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Not'), React.createElement('textarea', { className: 'inp', value: formData.notes, onChange: e => setFormData(p => ({...p, notes: e.target.value})), placeholder: 'Detay...', rows: 3, style: { resize: 'vertical', minHeight: 64 } })),
-                React.createElement('div', { style: { fontSize: 12, color: 'var(--ink-3)', textAlign: 'center', padding: 8, background: 'var(--surface)', borderRadius: 9, marginTop: 10 } }, 'Başlangıç: ' + new Date(selectedDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }))
-            )
-        ),
-        showLedgerForm && React.createElement('div', { className: 'mo', onClick: () => setShowLedgerForm(false) },
-            React.createElement('div', { className: 'ms', onClick: e => e.stopPropagation() },
-                React.createElement('div', { style: { width: 40, height: 4, background: 'var(--line)', borderRadius: 3, margin: '0 auto 14px' } }),
-                widgetModalHead('Borç / Alacak', () => setShowLedgerForm(false), saveLedger),
-                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 } },
-                    React.createElement('button', { onClick: () => setLedgerForm(p => ({...p, ltype: 'in'})), style: { background: ledgerForm.ltype === 'in' ? 'linear-gradient(135deg,#3F5F42,#2D4530)' : 'var(--surface)', color: ledgerForm.ltype === 'in' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'in' ? '#3F5F42' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, 'Alacak'),
-                    React.createElement('button', { onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})), style: { background: ledgerForm.ltype === 'out' ? 'linear-gradient(135deg,#A33A3A,#7A2929)' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#A33A3A' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, 'Borç')
-                ),
-                React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Kişi / Kurum'), React.createElement('input', { className: 'inp', type: 'text', value: ledgerForm.person, onChange: e => setLedgerForm(p => ({...p, person: e.target.value})), placeholder: 'Örn: Ali Demir' })),
-                React.createElement('div', { className: 'tk-form-row' },
-                    React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Tutar'), React.createElement('input', { className: 'inp', type: 'number', value: ledgerForm.amount, onChange: e => setLedgerForm(p => ({...p, amount: e.target.value})), placeholder: '0' })),
-                    React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Vade'), React.createElement('input', { className: 'inp', type: 'date', value: ledgerForm.due, onChange: e => setLedgerForm(p => ({...p, due: e.target.value})) }))
-                ),
-                React.createElement('div', { className: 'tk-form-grp' }, React.createElement('label', { className: 'tk-form-lbl' }, 'Not'), React.createElement('input', { className: 'inp', type: 'text', value: ledgerForm.note, onChange: e => setLedgerForm(p => ({...p, note: e.target.value})), placeholder: 'Açıklama...' }))
-            )
-        )
-    );
-}
-
 function App() {
     const [T, setT] = useState([]);
     const [tab, setTab] = useState('home');
@@ -3476,8 +2373,6 @@ function App() {
     const [showSt, setShowSt] = useState(false);
     const [aracK, setAracK] = useState([]);
     const [debts, setDebts] = useState([]);
-    const [todos, setTodos] = useState([]);
-    const [tkLedger, setTkLedger] = useState([]);
     const [openMonths, setOpenMonths] = useState({});
     const [openYears, setOpenYears] = useState({});
     const [openDays, setOpenDays] = useState({});
@@ -3502,17 +2397,6 @@ function App() {
     const cloudLoadedRef = useRef(false);
     const cloudUnsubRef = useRef(null);
     const saveTimerRef = useRef(null);
-    const cloudLastStableKeyRef = useRef('');
-    const cloudPendingStableKeyRef = useRef('');
-    const stableSnapshotKey = d => {
-        try {
-            return JSON.stringify({
-                t: d.t || [], a: d.a || [], ap: d.ap || {}, dr: d.dr || [],
-                r: d.r || {}, ru: d.ru || '', ak: d.ak || [], db: d.db || [],
-                tk: d.tk || [], tl: d.tl || []
-            });
-        } catch (e) { return ''; }
-    };
     useEffect(() => {
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
     }, [aracK]);
@@ -3543,8 +2427,6 @@ function App() {
             setLastRateUpdate(d.ru);
         setAracK(d.ak || []);
         setDebts(d.db || []);
-        setTodos(d.tk || []);
-        setTkLedger(d.tl || []);
         if (closeModal) {
             setBkpM(false);
             setRstTxt('');
@@ -3611,9 +2493,8 @@ function App() {
                             mergedPayload.clientUpdatedAt = new Date(mergedTs || Date.now()).toISOString();
                             cloudLoadedRef.current = true;
                             cloudWritingRef.current = true;
-                            cloudLastStableKeyRef.current = stableSnapshotKey(mergedPayload);
                             hydrateSnapshot(mergedPayload, false);
-                            const sameText = stableSnapshotKey(payload || {}) === stableSnapshotKey(mergedPayload || {});
+                            const sameText = JSON.stringify((payload && payload.t) || []) === JSON.stringify((mergedPayload && mergedPayload.t) || []);
                             if(!sameText || localTs > cloudTs){
                                 cloudDocRef.set({ payload: mergedPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: mergedPayload.clientUpdatedAt }, { merge: true }).catch(function(err){ console.error('Cloud merged save error', err); });
                             }
@@ -3632,36 +2513,30 @@ function App() {
         };
     }, []);
     useEffect(() => { try {
-        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 27, date: new Date().toISOString(), widgetUpdatedAt: new Date().toISOString() }; try { window.OLMEZTUR_WIDGET_DATA = snapshot; } catch(e) {}
+        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, v: 26, date: new Date().toISOString() };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
         if(cloudEnabled() && authUser && !cloudWritingRef.current){
             // KRİTİK KORUMA: Cloud snapshot listener henüz veriyi yüklemediyse,
             // boş state ile cloud'u SİLEMEYİZ. Bu, login sonrası veri kaybına neden olur.
-            if (!cloudLoadedRef.current && (!T || T.length === 0) && (!todos || todos.length === 0) && (!tkLedger || tkLedger.length === 0)) {
+            if (!cloudLoadedRef.current && (!T || T.length === 0)) {
                 console.warn('[CLOUD] Yazma engellendi - henüz cloud verisi yüklenmedi, boş state cloud\'u silerdi');
                 return;
             }
-            const stableKey = stableSnapshotKey(snapshot);
-            if (stableKey && (cloudLastStableKeyRef.current === stableKey || cloudPendingStableKeyRef.current === stableKey)) {
-                return;
-            }
-            cloudPendingStableKeyRef.current = stableKey;
             if(saveTimerRef.current) clearTimeout(saveTimerRef.current);
             saveTimerRef.current = setTimeout(function(){
                 console.log('[CLOUD] yazılıyor:', snapshot.t.length, 'transfer');
                 cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: snapshot.date }, { merge: true })
-                  .then(function(){ cloudLastStableKeyRef.current = stableKey; console.log('[CLOUD] OK', snapshot.t.length); })
+                  .then(function(){ console.log('[CLOUD] OK', snapshot.t.length); })
                   .catch(function(err){
                     console.error('[CLOUD] HATA', err);
                     try{ tip('☁ Hata: ' + (err.message || err.code || 'Bilinmeyen')); }catch(e){}
-                  })
-                  .finally(function(){ cloudPendingStableKeyRef.current = ''; });
+                  });
             }, 500);
         } else if (!authUser) {
             console.warn('[CLOUD] Yazılmadı - oturum yok. Veriler sadece bu cihazda.');
         }
     }
-    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, todos, tkLedger, authUser]);
+    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
     useEffect(() => { try { if(rememberMe) localStorage.setItem(REMEMBER_EMAIL_KEY, loginEmail || ''); else localStorage.removeItem(REMEMBER_EMAIL_KEY); } catch (e) {} }, [rememberMe, loginEmail]);
     const loginWithEmail = async () => {
@@ -4081,7 +2956,7 @@ function App() {
             ym
         };
     };
-    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 27, date: new Date().toISOString(), widgetUpdatedAt: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, v: 19, date: new Date().toISOString() });
     const doBackup = async () => {
         const payload = JSON.stringify(snapshotPayload(), null, 2);
         const ok = await copyText(payload);
@@ -4121,13 +2996,13 @@ function App() {
             tip('Geçersiz');
             return false;
         }
-        if (!window.confirm((d.t || []).length + ' transfer, ' + ((d.ak || []).length) + ' araç kaydı, ' + ((d.tk || []).length) + ' yapılacak ve ' + ((d.tl || []).length) + ' alacak/borç geri yüklensin mi?'))
+        if (!window.confirm(d.t.length + ' transfer geri yüklensin mi?'))
             return false;
         writeDeletedTransferIds([]);
         hydrateSnapshot(d, true);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 27, date: d.date || new Date().toISOString(), widgetUpdatedAt: new Date().toISOString() })); } catch(e) {}
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: d.date || new Date().toISOString() })); } catch(e) {}
         if(cloudEnabled() && authUser){
-            cloudDocRef.set({ payload: { ...d, v: 27, date: d.date || new Date().toISOString(), widgetUpdatedAt: new Date().toISOString() }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: d.date || new Date().toISOString() }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
+            cloudDocRef.set({ payload: { ...d, v: 26, date: d.date || new Date().toISOString() }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: d.date || new Date().toISOString() }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
         }
         tip('Geri yüklendi!');
         return true;
@@ -4675,7 +3550,7 @@ function App() {
                             border: '1px solid ' + (isActive ? 'var(--brand-2)' : 'var(--line)'),
                             borderRadius: 'var(--r-lg)', padding: '16px 14px', textAlign: 'left', cursor: 'pointer',
                             boxShadow: isActive
-                                ? '0 8px 22px rgba(61,90,60,.28), 0 2px 6px rgba(61,90,60,.18)'
+                                ? '0 8px 22px rgba(184,50,47,.28), 0 2px 6px rgba(184,50,47,.18)'
                                 : '0 2px 8px rgba(35,26,22,.06), inset 0 1px 0 rgba(255,255,255,.7)',
                             position: 'relative', overflow: 'hidden', minHeight: 108,
                             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
@@ -4780,7 +3655,7 @@ function App() {
                             borderRadius: 'var(--r-lg)',
                             padding: '14px 16px',
                             color: '#fff',
-                            boxShadow: '0 6px 20px rgba(61,90,60,.28), 0 1px 3px rgba(61,90,60,.18)',
+                            boxShadow: '0 6px 20px rgba(92,124,92,.28), 0 1px 3px rgba(92,124,92,.18)',
                             position: 'relative',
                             overflow: 'hidden',
                             cursor: 'pointer',
@@ -5421,7 +4296,7 @@ function App() {
                                 fontSize: 11, fontWeight: 800, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', gap: 4,
                                 whiteSpace: 'nowrap',
-                                boxShadow: form.plate === PLAKA ? '0 2px 8px rgba(61,90,60,.25)' : 'none',
+                                boxShadow: form.plate === PLAKA ? '0 2px 8px rgba(92,124,92,.25)' : 'none',
                                 transition: 'all .15s ease'
                             }
                         }, "🚐 ", PLAKA)))),
@@ -5625,8 +4500,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
             tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK }),
-            tab === 'takvim' && React.createElement(TakvimTab, { T: T, tip: tip, todos: todos, setTodos: setTodos, ledger: tkLedger, setLedger: setTkLedger })),
+            tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
@@ -5650,7 +4524,7 @@ function App() {
                                     color: '#fff', borderRadius: 10,
                                     fontSize: 9.5, fontWeight: 800,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: '0 2px 6px rgba(61,90,60,.4)',
+                                    boxShadow: '0 2px 6px rgba(92,124,92,.4)',
                                     border: '1.5px solid #fff',
                                     fontVariantNumeric: 'tabular-nums', letterSpacing: '-.2px',
                                     lineHeight: 1
@@ -5669,10 +4543,6 @@ function App() {
                 React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onClick: () => setTab('arac') },
                     React.createElement("div", { className: "tab-icon" }, "🚐"),
                     React.createElement("div", { className: "tab-label" }, "Araç")
-                ),
-                React.createElement("button", { className: "tab" + (tab === 'takvim' ? ' is-active' : ''), onClick: () => setTab('takvim') },
-                    React.createElement("div", { className: "tab-icon" }, "✓"),
-                    React.createElement("div", { className: "tab-label" }, "Yapılacaklar")
                 )
             )
         ),
