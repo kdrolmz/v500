@@ -58,7 +58,7 @@
   --accent-soft:#F2EFEA;
 
   /* — semantik — */
-  --ok:#2F7A46; --ok-bg:#E7F2E9; --ok-bd:#9FC7AA;
+  --ok:#126C37; --ok-bg:#E3F1E7; --ok-bd:#7DB68B;
   --warn:#FF9F0A; --warn-bg:#FFF5E5; --warn-bd:#FFD69A;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
@@ -673,11 +673,11 @@ main.main-cont{
 .tk-wrap{
   display:flex;flex-direction:column;gap:14px;padding:0 2px;
   /* Lokal Natural Titanium palet */
-  --tk-green:#2F7A46;
-  --tk-green-deep:#225C35;
-  --tk-green-deepest:#153C24;
-  --tk-green-soft:#83B98F;
-  --tk-green-pale:#E7F2E9;
+  --tk-green:#126C37;
+  --tk-green-deep:#0D4F29;
+  --tk-green-deepest:#07331A;
+  --tk-green-soft:#6FAE80;
+  --tk-green-pale:#E3F1E7;
   --tk-green-paler:#FAFCF8;
   --tk-ti:#9B9187;
   --tk-ti-deep:#6E665E;
@@ -732,7 +732,7 @@ main.main-cont{
 .tk-cell.tk-today{
   background:linear-gradient(180deg,var(--tk-green-pale),var(--tk-green-paler));
   border-color:var(--tk-green);
-  box-shadow:0 0 0 2px rgba(47,122,70,.24);
+  box-shadow:0 0 0 2px rgba(18,108,55,.28);
 }
 .tk-cell.tk-selected{
   background:linear-gradient(180deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
@@ -904,7 +904,7 @@ main.main-cont{
 }
 .tk-type-opt.sel{
   background:linear-gradient(135deg,var(--tk-green-pale) 0%,var(--tk-green-paler) 100%);
-  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(47,122,70,.24);
+  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(18,108,55,.28);
 }
 .tk-type-opt-icon{font-size:18px;margin-bottom:3px}
 .tk-type-opt-lbl{font-size:11px;font-weight:600;color:var(--ink)}
@@ -1012,7 +1012,7 @@ main.main-cont{
   --nude-deep:#6E665E;
   --nude-soft:#F6F3EF;
   --nude-glow:#DED8D0;
-  --ok:#2F7A46; --ok-bg:#E7F2E9; --ok-bd:#9FC7AA;
+  --ok:#126C37; --ok-bg:#E3F1E7; --ok-bd:#7DB68B;
   --warn:#B8863B; --warn-bg:#FFF7EA; --warn-bd:#E8C988;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
@@ -1313,6 +1313,26 @@ main.main-cont{
 .app-shell [style*="font-weight: 600"]{font-weight:500!important}
 .app-shell [style*="font-weight: bold"]{font-weight:560!important}
 
+/* Final para rengi kilidi: pozitif / tahsil / alacak değerleri koyu yeşil */
+.tcard-amount:not(.is-none),
+.tcard-paystatus.is-paid,
+.tcard-pill-status-tam,
+.amt-pos,
+.tk-ledger-amt.tk-amt-in,
+.tk-widget-ledger-total.is-in,
+.tk-section-title.tk-tt-in,
+.tk-section-count.tk-cn-in,
+.tk-mini-btn.is-green{
+  color:#126C37!important;
+}
+.tcard-paystatus.is-paid,
+.tcard-pill-status-tam,
+.tk-section-count.tk-cn-in,
+.tk-mini-btn.is-green{
+  background:#E3F1E7!important;
+  border-color:#7DB68B!important;
+}
+
 </style>
 </head>
 <body>
@@ -1371,7 +1391,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#8A8378', NAV2 = '#4F4A43', GOLD = '#B6ADA1';
-const G = '#2F7A46', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
+const G = '#126C37', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
 const TX = '#1F1D1A', SB = '#6E665E', INP = '#F6F3EF', BOR = '#DED8D0';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#7F786E', bg: '#F2EFEA', b: '#D8D0C6' },
@@ -2717,14 +2737,14 @@ function HesapTab({ T, sT, agencies, tip }) {
                         style: {
                             position: 'relative',
                             background: net >= 0
-                                ? 'linear-gradient(135deg, #F2EFEA 0%, #ECE7E0 100%)'
+                                ? 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)'
                                 : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                            border: '1.5px solid ' + (net >= 0 ? '#D8D0C6' : '#FFC4C0'),
+                            border: '1.5px solid ' + (net >= 0 ? '#7DB68B' : '#FFC4C0'),
                             borderRadius: 14,
                             padding: '14px 16px',
                             textAlign: 'center',
                             boxShadow: net >= 0
-                                ? '0 4px 14px rgba(79,74,67,.14), inset 0 1px 0 rgba(255,255,255,.6)'
+                                ? '0 4px 14px rgba(18,108,55,.18), inset 0 1px 0 rgba(255,255,255,.6)'
                                 : '0 4px 14px rgba(255,59,48,.18), inset 0 1px 0 rgba(255,255,255,.6)',
                             overflow: 'hidden'
                         }
@@ -2736,12 +2756,12 @@ function HesapTab({ T, sT, agencies, tip }) {
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                         React.createElement("div", {
                             style: {
-                                background: 'linear-gradient(135deg, #F2EFEA 0%, #ECE7E0 100%)',
-                                border: '1px solid #D8D0C6',
+                                background: 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)',
+                                border: '1px solid #7DB68B',
                                 borderRadius: 11,
                                 padding: '10px 8px',
                                 textAlign: 'center',
-                                boxShadow: '0 2px 6px rgba(79,74,67,.10)'
+                                boxShadow: '0 2px 6px rgba(18,108,55,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
@@ -2763,7 +2783,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                         React.createElement("input", { type: "month", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid ' + BOR, borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
                         [mts.length, 'Transfer', NAV, '#F6F3EF', '#C9C1B8'],
-                        ['+' + fr(mAl) + '₺', 'Alacak', G, '#F2EFEA', '#D8D0C6'],
+                        ['+' + fr(mAl) + '₺', 'Alacak', G, '#E3F1E7', '#7DB68B'],
                         ['−' + fr(mVer) + '₺', 'Verecek', R, '#FFF0EF', '#FFC4C0']
                     ].map(([v, l, col, bg, br]) => (React.createElement("div", { key: l, style: { background: bg, border: '1px solid ' + br, borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.04)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 900, color: col } }, v),
@@ -2790,14 +2810,14 @@ function HesapTab({ T, sT, agencies, tip }) {
                                     React.createElement("div", {
                                         style: {
                                             background: oData.net >= 0
-                                                ? 'linear-gradient(135deg, #F2EFEA 0%, #ECE7E0 100%)'
+                                                ? 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)'
                                                 : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
                                             padding: '12px',
                                             borderRadius: 13,
                                             textAlign: 'center',
-                                            border: '1.5px solid ' + (oData.net >= 0 ? '#D8D0C6' : '#FFC4C0'),
+                                            border: '1.5px solid ' + (oData.net >= 0 ? '#7DB68B' : '#FFC4C0'),
                                             boxShadow: oData.net >= 0
-                                                ? '0 3px 10px rgba(79,74,67,.12), inset 0 1px 0 rgba(255,255,255,.5)'
+                                                ? '0 3px 10px rgba(18,108,55,.16), inset 0 1px 0 rgba(255,255,255,.5)'
                                                 : '0 3px 10px rgba(255,59,48,.16), inset 0 1px 0 rgba(255,255,255,.5)'
                                         }
                                     },
@@ -2912,8 +2932,8 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const accent = isBorc ? R : G;
         const accentBgGrad = isBorc
             ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)'
-            : 'linear-gradient(135deg, #E7F2E9 0%, #DCECDF 100%)';
-        const accentBorder = isBorc ? '#FFC4C0' : '#9FC7AA';
+            : 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)';
+        const accentBorder = isBorc ? '#FFC4C0' : '#7DB68B';
         return React.createElement("div", {
             key: d.id,
             style: {
@@ -3009,7 +3029,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                         React.createElement("span", { style: { display: 'inline-block', width: 4, height: 14, background: G, borderRadius: 2 } }),
                         React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: G, letterSpacing: .3 } }, '▲ ALACAKLAR'),
-                        alacaklar.length > 0 && React.createElement("span", { style: { background: 'linear-gradient(135deg,#F2EFEA,#ECE7E0)', color: G, border: '1px solid #D8D0C6', borderRadius: 9, padding: '1px 7px', fontSize: 10, fontWeight: 900, marginLeft: 'auto' } }, alacaklar.length)),
+                        alacaklar.length > 0 && React.createElement("span", { style: { background: 'linear-gradient(135deg,#E3F1E7,#D6EBDD)', color: G, border: '1px solid #7DB68B', borderRadius: 9, padding: '1px 7px', fontSize: 10, fontWeight: 900, marginLeft: 'auto' } }, alacaklar.length)),
                     alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok')))));
 }
 
@@ -3653,7 +3673,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 } },
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'in'})),
-                        style: { background: ledgerForm.ltype === 'in' ? 'linear-gradient(135deg,#8A8378,#4F4A43)' : 'var(--surface)', color: ledgerForm.ltype === 'in' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'in' ? '#8A8378' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
+                        style: { background: ledgerForm.ltype === 'in' ? 'linear-gradient(135deg,' + G + ',#0D4F29)' : 'var(--surface)', color: ledgerForm.ltype === 'in' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'in' ? G : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
                     }, "▲ Alacak"),
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})),
@@ -4537,7 +4557,7 @@ function App() {
                     /* Sağ: tutar + ödeme durumu */
                     React.createElement("div", { className: 'tcard-right' },
                         React.createElement("div", null,
-                            React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : '') }, headlineAmount),
+                            React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : ''), style: showNoPayment ? null : { color: G } }, headlineAmount),
                             React.createElement("div", { className: 'tcard-amount-sub' }, 'müşteriden')
                         ),
                         React.createElement("div", {
@@ -4557,8 +4577,8 @@ function App() {
                     const isPlate16 = isPlate16Transfer(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
                     const netColor = potKar > 0 ? G : (potKar < 0 ? R : SB);
-                    const netBg    = potKar > 0 ? '#E7F2E9' : (potKar < 0 ? '#FFF1EF' : '#F6F3EF');
-                    const netBord  = potKar > 0 ? '#9FC7AA' : (potKar < 0 ? '#E3B8B4' : '#DED8D0');
+                    const netBg    = potKar > 0 ? '#E3F1E7' : (potKar < 0 ? '#FFF1EF' : '#F6F3EF');
+                    const netBord  = potKar > 0 ? '#7DB68B' : (potKar < 0 ? '#E3B8B4' : '#DED8D0');
                     return React.createElement("div", { style: { background: netBg, border: '1px solid ' + netBord, borderRadius: 10, padding: '9px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase' } }, lbl),
                         React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: netColor, fontVariantNumeric: 'tabular-nums' } }, (potKar >= 0 ? '+' : '') + Math.round(potKar).toLocaleString('tr-TR') + '₺'));
