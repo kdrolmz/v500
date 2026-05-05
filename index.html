@@ -446,13 +446,17 @@ select.inp,select{
 .tcard.t-departure .tcard-stripe{background:linear-gradient(180deg,#B6ADA1,#4F4A43)}
 .tcard.t-tour .tcard-stripe{background:linear-gradient(180deg,#8A8378,#4F4A43)}
 .tcard.t-intercity .tcard-stripe{background:linear-gradient(180deg,#FF9F0A,#C46D00)}
-.tcard-body{flex:1;min-width:0;padding:13px 14px;display:flex;gap:11px;align-items:stretch}
+.tcard-body{
+  flex:1;min-width:0;padding:12px 13px;
+  display:grid;grid-template-columns:minmax(54px,auto) minmax(0,1fr) auto;
+  column-gap:10px;row-gap:6px;align-items:start;
+}
 .tcard-time{
-  flex-shrink:0;
+  grid-column:1;grid-row:1 / span 2;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding-right:11px;
+  align-self:stretch;padding-right:10px;
   border-right:1px dashed var(--line);
-  min-width:58px;
+  min-width:54px;
 }
 .tcard-time-big{
   font-size:17px;font-weight:800;color:var(--ink);
@@ -462,7 +466,11 @@ select.inp,select{
   font-size:17px;margin-top:4px;
   line-height:1;
 }
-.tcard-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+.tcard-main{grid-column:2;grid-row:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-start;gap:4px}
+.tcard-flow{
+  grid-column:2 / 4;grid-row:2;min-width:0;
+  display:flex;flex-direction:column;gap:3px;padding-top:1px;
+}
 .tcard-pills{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
 .tcard-pill{
   font-size:10px;font-weight:700;
@@ -495,10 +503,10 @@ select.inp,select{
   overflow-wrap:anywhere;word-break:break-word;
 }
 .tcard-right{
-  flex-shrink:0;
-  display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;
+  grid-column:3;grid-row:1;min-width:86px;
+  display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;
   text-align:right;
-  padding-left:8px;
+  padding-left:6px;gap:5px;
 }
 .tcard-amount{
   font-size:16px;font-weight:800;
@@ -517,7 +525,7 @@ select.inp,select{
   padding:3px 9px;border-radius:6px;
   letter-spacing:.2px;white-space:nowrap;
   display:inline-flex;align-items:center;gap:3px;
-  margin-top:5px;
+  margin-top:2px;
 }
 .tcard-paystatus.is-paid{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
 .tcard-paystatus.is-pending{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
@@ -1215,16 +1223,17 @@ main.main-cont{
 .tcard.t-intercity .tcard-stripe{
   background:linear-gradient(180deg,#C9A56C,#B8863B);
 }
-.tcard-body{padding:12px 13px;gap:10px}
+.tcard-body{padding:11px 12px;column-gap:9px;row-gap:5px}
 .tcard-time{
   border-right:1px solid var(--line);
-  min-width:62px;
+  min-width:54px;
 }
 .tcard-time-big{font-size:16px;color:var(--brand-2);font-weight:620}
 .tcard-agency{font-weight:540;color:var(--ink)}
 .tcard-route{color:var(--ink-2)}
 .tcard-passenger{color:var(--ink-3)}
 .tcard-amount{font-size:15px;color:var(--ok);font-weight:620}
+.tcard-right{min-width:84px}
 .tcard-pill{
   border-radius:9px;
   padding:4px 8px;
@@ -4532,13 +4541,16 @@ function App() {
                         React.createElement("div", { className: 'tcard-time-big' }, t.time || '--:--'),
                         tp && React.createElement("div", { className: 'tcard-time-type', title: tp.n }, tp.ico)
                     ),
-                    /* Orta: pills + firma + rota + misafir */
+                    /* Orta üst: durum rozetleri */
                     React.createElement("div", { className: 'tcard-main' },
                         React.createElement("div", { className: 'tcard-pills' },
                             React.createElement("span", { className: 'tcard-pill ' + statusClass }, sl),
                             t.flightCode && React.createElement("span", { className: 'tcard-pill tcard-pill-flight' }, '✈ ' + t.flightCode),
                             t.altAcenta && React.createElement("span", { className: 'tcard-pill tcard-pill-alt' }, 'ALT: ' + t.altAcenta)
-                        ),
+                        )
+                    ),
+                    /* Alt geniş satır: ödeme alanının altından da devam eder */
+                    React.createElement("div", { className: 'tcard-flow' },
                         React.createElement("div", { className: 'tcard-agency' },
                             React.createElement("span", null, gvn),
                             React.createElement("span", { className: 'arrow' }, '→'),
