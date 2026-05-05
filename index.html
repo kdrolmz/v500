@@ -1322,6 +1322,872 @@ main.main-cont{
 .app-shell [style*="font-weight: 600"]{font-weight:500!important}
 .app-shell [style*="font-weight: bold"]{font-weight:560!important}
 
+/* Liquid Glass home - Apple premium direction */
+:root{
+  --lg-page:#F4F1EC;
+  --lg-page-2:#E7ECEF;
+  --lg-ink:#17181A;
+  --lg-muted:#77736C;
+  --lg-soft:#A19A90;
+  --lg-line:rgba(134,128,119,.24);
+  --lg-glass:rgba(255,255,255,.52);
+  --lg-glass-strong:rgba(255,255,255,.72);
+  --lg-shadow:0 22px 54px rgba(56,52,46,.14),0 2px 9px rgba(56,52,46,.08);
+  --lg-inner:inset 0 1px 0 rgba(255,255,255,.76),inset 0 -1px 0 rgba(255,255,255,.28);
+}
+html,body{
+  background:
+    radial-gradient(circle at 20% 9%,rgba(255,255,255,.94) 0 17%,rgba(255,255,255,0) 42%),
+    radial-gradient(circle at 80% 4%,rgba(186,205,215,.58) 0 18%,rgba(186,205,215,0) 42%),
+    linear-gradient(145deg,var(--lg-page) 0%,#FBFAF7 42%,var(--lg-page-2) 100%)!important;
+}
+.app-shell{
+  background:
+    linear-gradient(132deg,rgba(255,255,255,.36),rgba(206,218,225,.22) 45%,rgba(236,229,218,.42)),
+    var(--lg-page)!important;
+  color:var(--lg-ink);
+}
+main.main-cont{
+  max-width:402px!important;
+  padding:calc(var(--sa-t) + 8px) 12px calc(var(--tabbar-h) + 24px)!important;
+}
+.hdr{
+  display:none!important;
+}
+.hdr-inner{
+  max-width:402px!important;
+  margin:0 auto!important;
+  padding:10px 16px 8px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.avatar-ring{display:none!important}
+.hdr-title{
+  font-size:18px!important;
+  line-height:1.08!important;
+  font-weight:640!important;
+  letter-spacing:0!important;
+  color:var(--lg-ink)!important;
+}
+.hdr-subtitle{
+  font-size:10.5px!important;
+  font-weight:450!important;
+  color:var(--lg-muted)!important;
+  margin-top:3px!important;
+  letter-spacing:0!important;
+}
+.hdr-subtitle + div{display:none!important}
+.hdr-iconbtn{
+  width:34px!important;
+  height:34px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(255,255,255,.54)!important;
+  background:rgba(255,255,255,.30)!important;
+  color:var(--lg-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.64),0 8px 22px rgba(63,58,52,.10)!important;
+  backdrop-filter:saturate(1.5) blur(18px)!important;
+  -webkit-backdrop-filter:saturate(1.5) blur(18px)!important;
+}
+.card,.inp,.ms{
+  backdrop-filter:saturate(1.55) blur(22px);
+  -webkit-backdrop-filter:saturate(1.55) blur(22px);
+}
+.lg-home{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-top:2px;
+}
+.lg-glass-card,
+.lg-metric-card,
+.lg-upcoming-card,
+.lg-action,
+.lg-rate-card,
+.lg-period-card,
+.lg-profit-card{
+  background:linear-gradient(148deg,rgba(255,255,255,.68),rgba(255,255,255,.38) 52%,rgba(233,239,242,.42));
+  border:1px solid rgba(255,255,255,.56);
+  box-shadow:var(--lg-shadow),var(--lg-inner);
+  backdrop-filter:saturate(1.65) blur(26px);
+  -webkit-backdrop-filter:saturate(1.65) blur(26px);
+}
+.lg-greeting-card{
+  border-radius:16px;
+  padding:13px 14px;
+  min-height:76px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  overflow:hidden;
+  position:relative;
+}
+.lg-greeting-card:after{
+  content:"";
+  position:absolute;
+  inset:-24% -12% auto 38%;
+  height:118px;
+  background:linear-gradient(120deg,rgba(255,255,255,.74),rgba(255,255,255,0));
+  transform:rotate(16deg);
+  pointer-events:none;
+}
+.lg-eyebrow{
+  font-size:10.5px;
+  color:var(--lg-muted);
+  font-weight:520;
+  letter-spacing:0;
+  line-height:1.2;
+}
+.lg-greeting-title{
+  margin-top:5px;
+  font-size:14px;
+  color:var(--lg-ink);
+  font-weight:620;
+  letter-spacing:0;
+}
+.lg-date{
+  margin-top:3px;
+  font-size:10.5px;
+  color:var(--lg-muted);
+  font-weight:430;
+  letter-spacing:0;
+}
+.lg-weather{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 9px;
+  border-radius:13px;
+  background:rgba(255,255,255,.38);
+  border:1px solid rgba(255,255,255,.54);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74);
+  position:relative;
+  z-index:1;
+}
+.lg-greeting-tools{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:7px;
+  position:relative;
+  z-index:1;
+  flex:0 0 auto;
+}
+.lg-backup-btn{
+  min-height:25px;
+  border-radius:12px;
+  padding:5px 9px;
+  border:1px solid rgba(255,255,255,.56);
+  background:rgba(255,255,255,.34);
+  color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.66),0 8px 18px rgba(56,52,46,.10);
+  font-size:9.5px;
+  font-weight:540;
+  backdrop-filter:saturate(1.55) blur(18px);
+  -webkit-backdrop-filter:saturate(1.55) blur(18px);
+}
+.lg-weather-mark{
+  width:22px;height:22px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#FFE7A4,#FFFFFF 64%,#BFD6E4);
+  color:#3B3A37;
+  font-size:12px;
+  box-shadow:0 5px 14px rgba(141,122,84,.18);
+}
+.lg-weather-main{
+  font-size:13px;
+  color:var(--lg-ink);
+  font-weight:620;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.lg-weather-sub{
+  margin-top:3px;
+  font-size:9.5px;
+  color:var(--lg-muted);
+  font-weight:430;
+  line-height:1;
+}
+.lg-rate-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+.lg-rate-card{
+  border-radius:13px;
+  padding:8px 9px;
+  min-height:50px;
+  text-align:left;
+  color:var(--lg-ink);
+}
+.lg-rate-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:var(--lg-muted);
+  font-size:9.5px;
+  font-weight:560;
+  letter-spacing:0;
+}
+.lg-rate-val{
+  margin-top:5px;
+  color:var(--lg-ink);
+  font-size:12.5px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:0;
+}
+.lg-section-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:2px;
+}
+.lg-section-title{
+  color:var(--lg-ink);
+  font-size:12.5px;
+  font-weight:620;
+  letter-spacing:0;
+}
+.lg-link-btn{
+  border:0;
+  background:transparent;
+  color:var(--lg-muted);
+  font-size:10.5px;
+  font-weight:520;
+  padding:5px 0;
+}
+.lg-badge{
+  min-width:24px;
+  height:18px;
+  padding:0 7px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  background:rgba(255,255,255,.48);
+  border:1px solid rgba(255,255,255,.56);
+  color:var(--lg-ink);
+  font-size:10px;
+  font-weight:560;
+  font-variant-numeric:tabular-nums;
+}
+.lg-metric-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.lg-metric-card{
+  border-radius:15px;
+  padding:12px 10px 11px;
+  min-height:88px;
+}
+.lg-metric-label{
+  color:var(--lg-muted);
+  font-size:9.5px;
+  font-weight:520;
+  line-height:1.2;
+  letter-spacing:0;
+}
+.lg-metric-value{
+  margin-top:8px;
+  color:var(--lg-ink);
+  font-size:17px;
+  font-weight:630;
+  line-height:1;
+  letter-spacing:0;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.lg-metric-delta{
+  margin-top:7px;
+  color:#247145;
+  font-size:9.5px;
+  font-weight:520;
+  letter-spacing:0;
+  white-space:nowrap;
+}
+.lg-metric-muted{color:var(--lg-muted)}
+.lg-period-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.lg-period-card{
+  border-radius:14px;
+  padding:9px;
+  min-height:68px;
+  text-align:left;
+  color:var(--lg-ink);
+  position:relative;
+  overflow:hidden;
+}
+.lg-period-card.is-active{
+  background:linear-gradient(148deg,rgba(255,255,255,.82),rgba(234,239,242,.54));
+  border-color:rgba(255,255,255,.78);
+  box-shadow:0 22px 54px rgba(56,52,46,.18),inset 0 1px 0 rgba(255,255,255,.86);
+}
+.lg-period-label{
+  color:var(--lg-muted);
+  font-size:9.5px;
+  font-weight:520;
+}
+.lg-period-value{
+  margin-top:6px;
+  color:var(--lg-ink);
+  font-size:17px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+}
+.lg-period-sub{
+  margin-top:3px;
+  color:var(--lg-muted);
+  font-size:9px;
+  font-weight:450;
+}
+.lg-calendar-mini{
+  width:32px;
+  height:34px;
+  border-radius:10px;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:8px 1fr;
+  border:1px solid rgba(255,255,255,.62);
+  background:rgba(255,255,255,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74),0 8px 18px rgba(56,52,46,.10);
+}
+.lg-calendar-mini span:first-child{
+  background:linear-gradient(90deg,#FF3B30,#FF9F0A,#FFD60A);
+}
+.lg-calendar-mini span:last-child{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#17181A;
+  font-size:14px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,246,218,.74));
+}
+.lg-period-panel{
+  border-radius:16px;
+  padding:10px;
+  max-height:278px;
+  overflow:auto;
+}
+.lg-period-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:2px 2px 9px;
+}
+.lg-period-panel-title{
+  color:var(--lg-ink);
+  font-size:11px;
+  font-weight:600;
+}
+.lg-period-panel-count{
+  color:var(--lg-muted);
+  font-size:10px;
+  font-weight:470;
+}
+.lg-home-transfer-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.lg-mini-upcoming{
+  border-radius:15px;
+  padding:10px 11px;
+  opacity:.78;
+}
+.lg-mini-upcoming-row{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:7px 0;
+  border-top:1px solid rgba(134,128,119,.14);
+}
+.lg-mini-upcoming-row:first-child{border-top:0}
+.lg-mini-time{
+  color:var(--lg-ink);
+  font-size:12px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+}
+.lg-mini-route{
+  color:var(--lg-ink);
+  font-size:10.5px;
+  font-weight:480;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.lg-mini-date{
+  color:var(--lg-muted);
+  font-size:9.2px;
+  font-weight:430;
+  margin-top:2px;
+}
+.lg-mini-pill{
+  min-height:20px;
+  border-radius:10px;
+  padding:4px 7px;
+  background:rgba(255,255,255,.34);
+  border:1px solid rgba(255,255,255,.46);
+  color:var(--lg-muted);
+  font-size:9px;
+  font-weight:520;
+}
+.lg-profit-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.lg-profit-card{
+  border-radius:14px;
+  padding:11px 12px;
+  text-align:left;
+  color:var(--lg-ink);
+}
+.lg-profit-card.is-active{
+  background:linear-gradient(148deg,rgba(255,255,255,.82),rgba(234,239,242,.54));
+  border-color:rgba(255,255,255,.78);
+}
+.lg-profit-label{
+  color:var(--lg-muted);
+  font-size:9.5px;
+  font-weight:520;
+}
+.lg-profit-value{
+  margin-top:6px;
+  font-size:15px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+}
+.lg-profit-value.is-pos{color:#126C37}
+.lg-profit-value.is-neg{color:#B95A54}
+.lg-profit-detail{
+  border-radius:16px;
+  padding:12px;
+}
+.lg-profit-detail-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 2px;
+  border-top:1px solid rgba(134,128,119,.18);
+}
+.lg-profit-detail-row:first-child{border-top:0}
+.lg-profit-detail-label{
+  color:var(--lg-muted);
+  font-size:10.5px;
+  font-weight:480;
+}
+.lg-profit-detail-value{
+  color:var(--lg-ink);
+  font-size:12.5px;
+  font-weight:620;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.lg-profit-detail-value.is-pos{color:#126C37}
+.lg-profit-detail-value.is-neg{color:#B95A54}
+.lg-upcoming-card{
+  border-radius:16px;
+  padding:15px 14px 12px;
+}
+.lg-upcoming-top{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+}
+.lg-upcoming-time{
+  color:var(--lg-ink);
+  font-size:21px;
+  font-weight:630;
+  letter-spacing:0;
+  font-variant-numeric:tabular-nums;
+}
+.lg-route{
+  color:var(--lg-ink);
+  font-size:13px;
+  font-weight:560;
+  letter-spacing:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.lg-transfer-date{
+  color:var(--lg-muted);
+  font-size:9.8px;
+  font-weight:450;
+  margin-top:3px;
+}
+.lg-flight{
+  border:1px solid rgba(40,48,60,.14);
+  background:rgba(255,255,255,.52);
+  color:#202531;
+  border-radius:14px;
+  padding:6px 9px;
+  font-size:10.5px;
+  font-weight:620;
+  letter-spacing:0;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74);
+}
+.lg-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--lg-ink);
+  font-size:11.5px;
+  font-weight:470;
+  margin-top:10px;
+  min-width:0;
+}
+.lg-row span:last-child{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.lg-row-ico{
+  width:18px;
+  color:var(--lg-muted);
+  text-align:center;
+  font-size:12px;
+  flex:0 0 auto;
+}
+.lg-chip-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+}
+.lg-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:5px 10px;
+  border-radius:9px;
+  background:rgba(255,255,255,.44);
+  border:1px solid rgba(255,255,255,.58);
+  color:var(--lg-ink);
+  font-size:10px;
+  font-weight:560;
+  letter-spacing:0;
+}
+.lg-chip-ok{
+  background:rgba(214,237,220,.74);
+  border-color:rgba(113,174,130,.52);
+  color:#126C37;
+}
+.lg-chip-soft{
+  color:var(--lg-muted);
+}
+.lg-chevron{
+  margin-left:auto;
+  color:var(--lg-muted);
+  font-size:18px;
+  line-height:1;
+}
+.lg-empty{
+  border-radius:16px;
+  padding:18px 14px;
+  text-align:center;
+  color:var(--lg-muted);
+  font-size:11.5px;
+  font-weight:450;
+}
+.lg-actions{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.lg-action{
+  border-radius:14px;
+  min-height:68px;
+  padding:9px 6px;
+  border-color:rgba(255,255,255,.56);
+  color:var(--lg-ink);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.lg-action-icon{
+  width:25px;
+  height:25px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  background:rgba(255,255,255,.42);
+  border:1px solid rgba(255,255,255,.52);
+  color:#202531;
+  font-size:13px;
+}
+.lg-action-label{
+  color:var(--lg-ink);
+  font-size:9.5px;
+  font-weight:520;
+  line-height:1.12;
+  letter-spacing:0;
+}
+.flight-track-btn{
+  cursor:pointer;
+}
+.flight-track-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 9px 22px rgba(40,48,60,.12),inset 0 1px 0 rgba(255,255,255,.8);
+}
+.tabbar{
+  background:transparent!important;
+  border-top:0!important;
+  box-shadow:none!important;
+  pointer-events:none;
+}
+.tabbar-inner{
+  pointer-events:auto;
+  width:calc(100% - 28px)!important;
+  max-width:412px!important;
+  height:64px!important;
+  margin:0 auto calc(var(--sa-b) + 8px)!important;
+  padding:7px 8px!important;
+  border-radius:21px!important;
+  background:rgba(255,255,255,.52)!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  box-shadow:0 20px 54px rgba(56,52,46,.18),inset 0 1px 0 rgba(255,255,255,.76)!important;
+  backdrop-filter:saturate(1.7) blur(28px)!important;
+  -webkit-backdrop-filter:saturate(1.7) blur(28px)!important;
+}
+.tab{
+  min-height:50px!important;
+  border-radius:16px!important;
+  font-weight:500!important;
+  color:var(--lg-muted)!important;
+}
+.tab-icon{
+  font-size:18px!important;
+  height:21px!important;
+  min-width:21px!important;
+  line-height:21px!important;
+  font-weight:520!important;
+}
+.tab-label{
+  font-size:9px!important;
+  font-weight:480!important;
+  letter-spacing:0!important;
+}
+.tab.is-active{
+  background:rgba(255,255,255,.46)!important;
+  color:var(--lg-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.70),0 8px 20px rgba(56,52,46,.09)!important;
+}
+.tab.is-active::before{display:none!important}
+.tab-fab{
+  width:50px!important;
+  height:50px!important;
+  border-radius:25px!important;
+  background:linear-gradient(180deg,rgba(42,49,56,.92),rgba(28,31,35,.96))!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  color:#fff!important;
+  box-shadow:0 18px 34px rgba(33,37,42,.28),inset 0 1px 0 rgba(255,255,255,.24)!important;
+  font-weight:360!important;
+  font-size:30px!important;
+  line-height:1!important;
+}
+/* Liquid Glass language across Transferler, Hesap and Araç */
+main.main-cont .card{
+  background:linear-gradient(148deg,rgba(255,255,255,.68),rgba(255,255,255,.38) 52%,rgba(233,239,242,.42))!important;
+  border:1px solid rgba(255,255,255,.56)!important;
+  border-radius:16px!important;
+  box-shadow:var(--lg-shadow),var(--lg-inner)!important;
+  backdrop-filter:saturate(1.65) blur(26px)!important;
+  -webkit-backdrop-filter:saturate(1.65) blur(26px)!important;
+}
+.inp,
+main.main-cont input,
+main.main-cont select,
+main.main-cont textarea{
+  background:rgba(255,255,255,.44)!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  border-radius:13px!important;
+  color:var(--lg-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.58)!important;
+  font-weight:460!important;
+}
+.lbl{
+  color:var(--lg-muted)!important;
+  font-weight:540!important;
+  letter-spacing:.35px!important;
+}
+.tcard{
+  background:linear-gradient(148deg,rgba(255,255,255,.70),rgba(255,255,255,.40) 54%,rgba(233,239,242,.40))!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  border-radius:16px!important;
+  box-shadow:0 18px 44px rgba(56,52,46,.13),var(--lg-inner)!important;
+  backdrop-filter:saturate(1.55) blur(22px)!important;
+  -webkit-backdrop-filter:saturate(1.55) blur(22px)!important;
+  overflow:hidden;
+}
+.tcard-header{min-height:78px!important}
+.tcard-body{padding:10px 11px!important}
+.tcard-time-big{font-size:15px!important;font-weight:620!important;color:var(--lg-ink)!important}
+.tcard-agency,.tcard-route{font-weight:500!important;color:var(--lg-ink)!important}
+.tcard-passenger,.tcard-amount-sub{color:var(--lg-muted)!important;font-weight:430!important}
+.tcard-pill,.tcard-paystatus{
+  border-radius:10px!important;
+  font-weight:540!important;
+  letter-spacing:0!important;
+}
+.tcard-expanded{
+  background:rgba(255,255,255,.30)!important;
+  border-top:1px solid rgba(255,255,255,.42)!important;
+}
+.date-hdr{
+  background:linear-gradient(148deg,rgba(255,255,255,.70),rgba(255,255,255,.40))!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  border-radius:15px!important;
+  color:var(--lg-ink)!important;
+  box-shadow:var(--lg-inner),0 14px 34px rgba(56,52,46,.10)!important;
+}
+.date-hdr-txt{color:var(--lg-ink)!important;font-weight:620!important}
+main.main-cont button:not(.tab):not(.tab-fab):not(.hdr-iconbtn){
+  letter-spacing:0!important;
+}
+.app-shell main.main-cont > div{
+  max-width:100%;
+}
+.app-shell main.main-cont div[style*="background"],
+.app-shell main.main-cont section[style*="background"],
+.app-shell main.main-cont aside[style*="background"]{
+  background:linear-gradient(148deg,rgba(255,255,255,.56),rgba(255,255,255,.30) 54%,rgba(233,239,242,.32))!important;
+  border-color:rgba(255,255,255,.50)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.56),0 10px 28px rgba(56,52,46,.08)!important;
+  backdrop-filter:saturate(1.45) blur(18px)!important;
+  -webkit-backdrop-filter:saturate(1.45) blur(18px)!important;
+}
+.app-shell main.main-cont button[style*="background"]:not(.tab):not(.tab-fab):not(.lg-rate-card):not(.lg-period-card):not(.lg-profit-card):not(.lg-flight):not(.flight-track-btn){
+  background:linear-gradient(148deg,rgba(255,255,255,.58),rgba(255,255,255,.34))!important;
+  border:1px solid rgba(255,255,255,.54)!important;
+  color:var(--lg-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.64),0 8px 22px rgba(56,52,46,.10)!important;
+  backdrop-filter:saturate(1.5) blur(18px)!important;
+  -webkit-backdrop-filter:saturate(1.5) blur(18px)!important;
+}
+.app-shell main.main-cont [style*="border:"]{
+  border-color:rgba(255,255,255,.46)!important;
+}
+.app-shell main.main-cont [style*="borderRadius"],
+.app-shell main.main-cont [style*="border-radius"]{
+  border-radius:13px!important;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1114;
+    --card:#1B1D21;
+    --surface:#171A1E;
+    --line:rgba(255,255,255,.10);
+    --ink:#F4F2EE;
+    --ink-2:#E5E1DA;
+    --ink-3:#B8B2A8;
+    --ink-4:#8D887F;
+    --lg-page:#111317;
+    --lg-page-2:#1A1D22;
+    --lg-ink:#F4F2EE;
+    --lg-muted:#A8A29A;
+    --lg-soft:#716B64;
+    --lg-line:rgba(255,255,255,.12);
+    --lg-glass:rgba(29,31,36,.56);
+    --lg-glass-strong:rgba(37,40,46,.72);
+    --lg-shadow:0 24px 58px rgba(0,0,0,.34),0 2px 10px rgba(0,0,0,.22);
+    --lg-inner:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(255,255,255,.05);
+  }
+  html,body{
+    background:
+      radial-gradient(circle at 22% 5%,rgba(80,87,94,.42) 0 18%,rgba(80,87,94,0) 42%),
+      radial-gradient(circle at 84% 8%,rgba(117,100,74,.24) 0 16%,rgba(117,100,74,0) 40%),
+      linear-gradient(145deg,#0F1114 0%,#171A1E 54%,#0B0D10 100%)!important;
+  }
+  .app-shell{
+    background:linear-gradient(132deg,rgba(255,255,255,.04),rgba(95,105,112,.10) 45%,rgba(118,102,75,.08)),#0F1114!important;
+  }
+  .lg-glass-card,
+  .lg-metric-card,
+  .lg-upcoming-card,
+  .lg-action,
+  .lg-rate-card,
+  .lg-period-card,
+  .lg-profit-card,
+  .lg-period-panel,
+  .lg-profit-detail,
+  main.main-cont .card,
+  .tcard{
+    background:linear-gradient(148deg,rgba(42,45,51,.72),rgba(28,31,36,.50) 54%,rgba(49,54,60,.38));
+    border-color:rgba(255,255,255,.12);
+  }
+  .lg-period-card.is-active,
+  .lg-profit-card.is-active{
+    background:linear-gradient(148deg,rgba(58,62,69,.82),rgba(35,38,44,.62));
+    border-color:rgba(255,255,255,.18);
+  }
+  .hdr-iconbtn,.lg-weather,.lg-backup-btn,.lg-flight,.lg-chip,.lg-mini-pill,.tabbar-inner,.tab.is-active,.lg-action-icon{
+    background:rgba(42,45,51,.52)!important;
+    border-color:rgba(255,255,255,.12)!important;
+    color:var(--lg-ink)!important;
+  }
+  .inp,
+  main.main-cont input,
+  main.main-cont select,
+  main.main-cont textarea{
+    background:rgba(42,45,51,.48)!important;
+    border-color:rgba(255,255,255,.12)!important;
+    color:var(--lg-ink)!important;
+  }
+  .date-hdr{
+    background:linear-gradient(148deg,rgba(42,45,51,.72),rgba(28,31,36,.50))!important;
+    border-color:rgba(255,255,255,.12)!important;
+  }
+  .app-shell main.main-cont div[style*="background"],
+  .app-shell main.main-cont section[style*="background"],
+  .app-shell main.main-cont aside[style*="background"]{
+    background:linear-gradient(148deg,rgba(42,45,51,.64),rgba(28,31,36,.42) 54%,rgba(49,54,60,.30))!important;
+    border-color:rgba(255,255,255,.12)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 30px rgba(0,0,0,.22)!important;
+  }
+  .app-shell main.main-cont button[style*="background"]:not(.tab):not(.tab-fab):not(.lg-rate-card):not(.lg-period-card):not(.lg-profit-card):not(.lg-flight):not(.flight-track-btn){
+    background:linear-gradient(148deg,rgba(42,45,51,.62),rgba(28,31,36,.44))!important;
+    border-color:rgba(255,255,255,.12)!important;
+    color:var(--lg-ink)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 22px rgba(0,0,0,.20)!important;
+  }
+  .lg-weather-mark{
+    background:linear-gradient(135deg,#A98035,#2B3138 72%);
+    color:#F6EFE3;
+  }
+  .lg-metric-delta,.lg-profit-value.is-pos{color:#7ED39B}
+  .lg-chip-ok{
+    background:rgba(43,92,60,.56)!important;
+    border-color:rgba(126,211,155,.30)!important;
+    color:#9BE0AF!important;
+  }
+  .tab-fab{
+    background:linear-gradient(180deg,rgba(245,242,236,.90),rgba(185,179,170,.96))!important;
+    color:#121417!important;
+  }
+}
+
 /* Final para rengi kilidi: pozitif / tahsil / alacak değerleri koyu yeşil */
 .tcard-amount:not(.is-none),
 .tcard-paystatus.is-paid,
@@ -1536,6 +2402,14 @@ const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRAN
 const fr = n => Math.abs(Math.round(n)).toLocaleString('tr-TR');
 const fn = n => (n >= 0 ? '+' : '') + Math.round(n).toLocaleString('tr-TR');
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
+const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const openFlightTracker = code => {
+    const clean = flightCodeClean(code);
+    if (!clean)
+        return false;
+    window.open('https://www.flightradar24.com/data/flights/' + clean.toLowerCase(), '_blank');
+    return true;
+};
 const firmSlug = v => nm(v).replace(/\s+/g, '');
 const isBalenturFirm = v => ['balentur', 'balontur', 'balontour'].includes(firmSlug(v));
 const isOdeloFirm = v => firmSlug(v) === 'odelo';
@@ -3977,7 +4851,7 @@ function App() {
     const [T, setT] = useState([]);
     const [tab, setTab] = useState('home');
     const [openKarPanel, setOpenKarPanel] = useState(false);
-    const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50 });
+    const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50, KWD: 144.40 });
     const [form, setForm] = useState(BF);
     const [agencies, setAgencies] = useState([OL]);
     const [drivers, setDrivers] = useState([]);
@@ -4032,8 +4906,12 @@ function App() {
     const tip = m => { setToast(m); setTimeout(() => setToast(''), 2300); };
     const sf = p => setForm(f => ({ ...f, ...p }));
     const refreshRates = () => fetch('https://open.er-api.com/v6/latest/TRY').then(r => r.json()).then(d => {
-        if (d && d.rates && d.rates.USD && d.rates.EUR) {
-            const next = { USD: parseFloat((1 / d.rates.USD).toFixed(2)), EUR: parseFloat((1 / d.rates.EUR).toFixed(2)) };
+        if (d && d.rates && d.rates.USD && d.rates.EUR && d.rates.KWD) {
+            const next = {
+                USD: parseFloat((1 / d.rates.USD).toFixed(2)),
+                EUR: parseFloat((1 / d.rates.EUR).toFixed(2)),
+                KWD: parseFloat((1 / d.rates.KWD).toFixed(2))
+            };
             setRates(next);
             const now = new Date().toISOString();
             setLastRateUpdate(now);
@@ -4051,7 +4929,7 @@ function App() {
         setDrivers(d.dr || []);
         setAgencyPhones(d.ap || {});
         if (d.r)
-            setRates(d.r);
+            setRates(prev => ({ ...prev, ...d.r }));
         if (d.ru)
             setLastRateUpdate(d.ru);
         setAracK(d.ak || []);
@@ -4210,7 +5088,8 @@ function App() {
     }, [rememberMe, authUser]);
     const toTRY = (a, c) => { const n = parseFloat(a) || 0; if (c === 'USD')
         return n * rates.USD; if (c === 'EUR')
-        return n * rates.EUR; return n; };
+        return n * rates.EUR; if (c === 'KWD')
+        return n * (rates.KWD || (rates.USD * 3.27)); return n; };
     const gS = v => { if (!v || v.length < 2)
         return []; const s = nm(v); return LOCS.filter(l => nm(l.n).includes(s) || nm(l.q || '').includes(s)).slice(0, 10); };
     const chL = (f, v) => { sf({ [f]: v }); setSugg(p => ({ ...p, [f]: gS(v) })); setShowSg(p => ({ ...p, [f]: true })); };
@@ -4750,7 +5629,7 @@ function App() {
             ? 'Ödeme yok'
             : (t.paymentAmount ? (Number(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—');
         const typeClass = 't-' + (t.transferType || 'arrival');
-        const currencySym = payCurrency === 'USD' ? '$' : payCurrency === 'EUR' ? '€' : '₺';
+        const currencySym = payCurrency === 'USD' ? '$' : payCurrency === 'EUR' ? '€' : payCurrency === 'KWD' ? 'KD' : '₺';
 
         // ═══ YENİ PREMIUM KART TASARIMI ═══
         return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : '') },
@@ -4767,7 +5646,7 @@ function App() {
                     React.createElement("div", { className: 'tcard-main' },
                         React.createElement("div", { className: 'tcard-pills' },
                             React.createElement("span", { className: 'tcard-pill ' + statusClass }, sl),
-                            t.flightCode && React.createElement("span", { className: 'tcard-pill tcard-pill-flight' }, '✈ ' + t.flightCode),
+                            t.flightCode && React.createElement("button", { className: 'tcard-pill tcard-pill-flight flight-track-btn', onClick: e => { e.stopPropagation(); if (!openFlightTracker(t.flightCode)) tip('Uçuş kodu yok'); }, title: "Uçuşu takip et" }, '✈ ' + flightCodeClean(t.flightCode)),
                             t.altAcenta && React.createElement("span", { className: 'tcard-pill tcard-pill-alt' }, 'ALT: ' + t.altAcenta)
                         )
                     ),
@@ -5122,7 +6001,7 @@ function App() {
                 ),
                 React.createElement("div", { style: { flex: 1, minWidth: 0, lineHeight: 1.2 } },
                     React.createElement("div", { className: "hdr-title" }, "KÖ Transfer Takip"),
-                    React.createElement("div", { className: "hdr-subtitle" }, "Canlı operasyon paneli"),
+                    React.createElement("div", { className: "hdr-subtitle" }, "Transfer Operasyonları"),
                     React.createElement("div", { style: { fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 } },
                         React.createElement("span", { style: { color: authUser ? 'var(--ok)' : 'var(--brand)', fontWeight: 700 } }, authUser ? "● Senkron aktif" : "● Çevrimdışı"),
                         React.createElement("span", { style: { color: 'var(--ink-4)' } }, "·"),
@@ -5322,6 +6201,255 @@ function App() {
                         border: '1px solid ' + (cnt > 0 ? 'var(--brand-bd)' : 'var(--line)'),
                         padding: '3px 10px', borderRadius: 999, fontVariantNumeric: 'tabular-nums'
                     } }, cnt + " transfer")
+                );
+
+                const fmtTLHome = n => Math.round(n || 0).toLocaleString('tr-TR') + '₺';
+                const fmtTLHomeSigned = n => (Math.round(n || 0) >= 0 ? '+' : '') + Math.round(n || 0).toLocaleString('tr-TR') + '₺';
+                const homeDateLabel = d => {
+                    if (!d)
+                        return 'Tarihsiz';
+                    if (d === todayKey)
+                        return 'Bugün';
+                    const dt = new Date(d + 'T12:00:00');
+                    return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+                };
+                const homeAmountTRY = t => {
+                    const stored = parseFloat(t.customerTRY);
+                    if (!isNaN(stored) && stored !== 0)
+                        return stored;
+                    return toTRY(t.paymentAmount, t.paymentCurrency || 'TRY');
+                };
+                const homeStats = stats();
+                const activeRows = T.filter(x => x.status !== 'iptal' && !transferLooksDone(x, now));
+                const monthNetHome = Math.round(homeStats.mPpotential || homeStats.mP || 0);
+                const yearNetHome = Math.round(homeStats.yPpotential || homeStats.yP || 0);
+                const selectedPeriod = expandedT.__lgPeriod || 'today';
+                const selectedProfit = expandedT.__lgProfit || null;
+                const periodRows = {
+                    today: todayT.slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))),
+                    month: monthT.slice().sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || ''))),
+                    year: yearT.slice().sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')))
+                };
+                const rateValue = code => {
+                    const v = rates[code] || (code === 'KWD' ? (rates.USD * 3.27) : 0);
+                    return v ? '₺' + Number(v).toFixed(2) : '—';
+                };
+                const profitClass = n => 'lg-profit-value ' + (n >= 0 ? 'is-pos' : 'is-neg');
+                const detailValueClass = n => 'lg-profit-detail-value ' + (n >= 0 ? 'is-pos' : 'is-neg');
+                const plateBreakdown = scope => {
+                    const rows = aracK.filter(k => {
+                        if (!k.date)
+                            return false;
+                        if (scope === 'month')
+                            return k.date.startsWith(mPfx);
+                        return k.date.startsWith(String(yyyy));
+                    });
+                    const gelir = Math.round(rows.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
+                    const gider = Math.round(rows.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+                    return { gelir, gider, net: gelir - gider };
+                };
+                const profitDetail = scope => {
+                    const rows = scope === 'month' ? monthT : yearT;
+                    const plate = plateBreakdown(scope);
+                    const olmez = Math.round(rows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
+                    return {
+                        title: scope === 'month' ? 'Aylık Net Kar Detayı' : 'Yıllık Net Kar Detayı',
+                        count: rows.length,
+                        olmez,
+                        plate,
+                        total: olmez + plate.net
+                    };
+                };
+                const setPeriod = p => setExpandedT(x => ({ ...x, __lgPeriod: p }));
+                const setProfit = p => setExpandedT(x => ({ ...x, __lgProfit: x.__lgProfit === p ? null : p }));
+                const renderPeriodCard = (id, label, count, sub) => React.createElement("button", {
+                    className: "lg-period-card" + (selectedPeriod === id ? " is-active" : ""),
+                    onClick: () => setPeriod(id)
+                },
+                    id === 'today'
+                        ? React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                            React.createElement("div", null,
+                                React.createElement("div", { className: "lg-period-label" }, label),
+                                React.createElement("div", { className: "lg-period-sub" }, sub)
+                            ),
+                            React.createElement("div", { className: "lg-calendar-mini" },
+                                React.createElement("span", null),
+                                React.createElement("span", null, String(now.getDate()))
+                            )
+                        )
+                        : React.createElement(React.Fragment, null,
+                            React.createElement("div", { className: "lg-period-label" }, label),
+                            React.createElement("div", { className: "lg-period-value" }, count),
+                            React.createElement("div", { className: "lg-period-sub" }, sub)
+                        )
+                );
+                const renderHomeTransfer = t => {
+                    if (!t)
+                        return React.createElement("div", { className: "lg-empty" }, "Bu dönem transfer yok");
+                    const pas = (t.passengers || []).map(p => p && p.name).filter(Boolean).join(', ') || 'Misafir';
+                    const gvn = t.givenBy || '—';
+                    const asg = t.assignedTo || '—';
+                    const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
+                    const collectionState = getCollectionState(t);
+                    const flight = flightCodeClean(t.flightCode);
+                    const routeText = (t.pickup || '—') + ' → ' + (t.dropoff || '—');
+                    return React.createElement("div", {
+                        key: t.id,
+                        className: "lg-upcoming-card",
+                        onClick: () => { setTab('list'); setExpandedT(p => ({ ...p, [t.id]: true })); }
+                    },
+                        React.createElement("div", { className: "lg-upcoming-top" },
+                            React.createElement("div", { className: "lg-upcoming-time" }, t.time || '--:--'),
+                            React.createElement("div", { style: { minWidth: 0 } },
+                                React.createElement("div", { className: "lg-route" }, routeText),
+                                React.createElement("div", { className: "lg-transfer-date" }, homeDateLabel(t.date))
+                            ),
+                            flight && React.createElement("button", {
+                                className: "lg-flight flight-track-btn",
+                                onClick: e => { e.stopPropagation(); if (!openFlightTracker(t.flightCode)) tip('Uçuş kodu yok'); },
+                                title: "Uçuşu takip et"
+                            }, flight)
+                        ),
+                        React.createElement("div", { className: "lg-row" },
+                            React.createElement("span", { className: "lg-row-ico" }, "☉"),
+                            React.createElement("span", null, pas)
+                        ),
+                        React.createElement("div", { className: "lg-row" },
+                            React.createElement("span", { className: "lg-row-ico" }, "⌂"),
+                            React.createElement("span", null, gvn + ' → ' + asg)
+                        ),
+                        React.createElement("div", { className: "lg-chip-row" },
+                            React.createElement("span", { className: "lg-chip lg-chip-soft" }, sl),
+                            React.createElement("span", { className: "lg-chip " + (collectionState === 'collected' ? 'lg-chip-ok' : 'lg-chip-soft') }, collectionState === 'collected' ? 'Tahsil edildi' : 'Tahsil bekliyor'),
+                            React.createElement("span", { className: "lg-chevron" }, "›")
+                        )
+                    );
+                };
+                const miniUpcomingRows = activeRows
+                    .filter(x => !x.date || x.date >= todayKey)
+                    .slice()
+                    .sort((a, b) => ((a.date || '9999-99-99') + ' ' + (a.time || '99:99')).localeCompare((b.date || '9999-99-99') + ' ' + (b.time || '99:99')))
+                    .slice(0, 2);
+                const renderUpcomingMini = () => React.createElement("div", { className: "lg-glass-card lg-mini-upcoming" },
+                    React.createElement("div", { className: "lg-period-panel-head" },
+                        React.createElement("div", { className: "lg-period-panel-title" }, "Yaklaşan Transferler"),
+                        React.createElement("div", { className: "lg-period-panel-count" }, miniUpcomingRows.length ? miniUpcomingRows.length + " yakın" : "sakin")
+                    ),
+                    miniUpcomingRows.length
+                        ? miniUpcomingRows.map(t => React.createElement("div", { key: 'mini_' + t.id, className: "lg-mini-upcoming-row" },
+                            React.createElement("div", { className: "lg-mini-time" }, t.time || '--:--'),
+                            React.createElement("div", { style: { minWidth: 0 } },
+                                React.createElement("div", { className: "lg-mini-route" }, (t.pickup || '—') + ' → ' + (t.dropoff || '—')),
+                                React.createElement("div", { className: "lg-mini-date" }, homeDateLabel(t.date))
+                            ),
+                            React.createElement("div", { className: "lg-mini-pill" }, flightCodeClean(t.flightCode) || "plan")
+                        ))
+                        : React.createElement("div", { className: "lg-empty", style: { padding: '8px 4px' } }, "Yaklaşan transfer yok")
+                );
+                const renderPeriodPanel = mode => {
+                    const rows = periodRows[mode] || [];
+                    const title = mode === 'today' ? 'Bugünün Transferleri' : mode === 'month' ? 'Bu Ayın Transferleri' : 'Bu Yılın Transferleri';
+                    return React.createElement("div", { className: "lg-glass-card lg-period-panel" },
+                        React.createElement("div", { className: "lg-period-panel-head" },
+                            React.createElement("div", { className: "lg-period-panel-title" }, title),
+                            React.createElement("div", { className: "lg-period-panel-count" }, rows.length + " iş")
+                        ),
+                        rows.length
+                            ? React.createElement("div", { className: "lg-home-transfer-list" }, rows.map(renderHomeTransfer))
+                            : renderHomeTransfer(null)
+                    );
+                };
+                const renderProfitDetail = scope => {
+                    if (!scope)
+                        return null;
+                    const d = profitDetail(scope);
+                    return React.createElement("div", { className: "lg-glass-card lg-profit-detail" },
+                        React.createElement("div", { className: "lg-period-panel-head" },
+                            React.createElement("div", { className: "lg-period-panel-title" }, d.title),
+                            React.createElement("div", { className: "lg-period-panel-count" }, d.count + " transfer")
+                        ),
+                        React.createElement("div", { className: "lg-profit-detail-row" },
+                            React.createElement("div", { className: "lg-profit-detail-label" }, "Ölmeztur Net Kar"),
+                            React.createElement("div", { className: detailValueClass(d.olmez) }, fmtTLHomeSigned(d.olmez))
+                        ),
+                        React.createElement("div", { className: "lg-profit-detail-row" },
+                            React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Gelir"),
+                            React.createElement("div", { className: "lg-profit-detail-value" }, fmtTLHome(d.plate.gelir))
+                        ),
+                        React.createElement("div", { className: "lg-profit-detail-row" },
+                            React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Gider"),
+                            React.createElement("div", { className: "lg-profit-detail-value is-neg" }, "-" + fmtTLHome(d.plate.gider))
+                        ),
+                        React.createElement("div", { className: "lg-profit-detail-row" },
+                            React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Net"),
+                            React.createElement("div", { className: detailValueClass(d.plate.net) }, fmtTLHomeSigned(d.plate.net))
+                        ),
+                        React.createElement("div", { className: "lg-profit-detail-row" },
+                            React.createElement("div", { className: "lg-profit-detail-label" }, "Toplam Net Kar"),
+                            React.createElement("div", { className: detailValueClass(d.total) }, fmtTLHomeSigned(d.total))
+                        )
+                    );
+                };
+
+                return React.createElement("div", { className: "lg-home" },
+                    React.createElement("div", { className: "lg-glass-card lg-greeting-card" },
+                        React.createElement("div", { style: { position: 'relative', zIndex: 1, minWidth: 0 } },
+                            React.createElement("div", { className: "lg-eyebrow" }, "İyi Çalışmalar"),
+                            React.createElement("div", { className: "lg-greeting-title" }, "KÖ Transfer Takip Sistemi"),
+                            React.createElement("div", { className: "lg-date" }, todayFmt)
+                        ),
+                        React.createElement("div", { className: "lg-greeting-tools" },
+                            React.createElement("div", { className: "lg-weather" },
+                                React.createElement("div", { className: "lg-weather-mark" }, "✦"),
+                                React.createElement("div", null,
+                                    React.createElement("div", { className: "lg-weather-main" }, activeRows.length),
+                                    React.createElement("div", { className: "lg-weather-sub" }, "aktif")
+                                )
+                            ),
+                            React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek")
+                        )
+                    ),
+
+                    React.createElement("div", { className: "lg-rate-row" },
+                        ['USD', 'EUR', 'KWD'].map(code => React.createElement("button", { key: code, className: "lg-rate-card", onClick: refreshRates, title: "Kurları yenile" },
+                            React.createElement("div", { className: "lg-rate-top" },
+                                React.createElement("span", null, code + "/TRY"),
+                                React.createElement("span", null, "↻")
+                            )
+                            ,
+                            React.createElement("div", { className: "lg-rate-val" }, rateValue(code))
+                        ))
+                    ),
+
+                    React.createElement("div", { className: "lg-section-row" },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                            React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
+                            React.createElement("span", { className: "lg-badge" }, todayT.length)
+                        )
+                    ),
+
+                    React.createElement("div", { className: "lg-period-row" },
+                        renderPeriodCard('today', 'Bugün', todayT.length, todayT.length + ' iş'),
+                        renderPeriodCard('month', 'Aylık', monthT.length, AYLAR[now.getMonth()]),
+                        renderPeriodCard('year', 'Yıllık', yearT.length, String(yyyy))
+                    ),
+                    renderPeriodPanel(selectedPeriod),
+                    renderUpcomingMini(),
+
+                    React.createElement("div", { className: "lg-section-row" },
+                        React.createElement("div", { className: "lg-section-title" }, "Net Kar")
+                    ),
+                    React.createElement("div", { className: "lg-profit-row" },
+                        React.createElement("button", { className: "lg-profit-card" + (selectedProfit === 'month' ? " is-active" : ""), onClick: () => setProfit('month') },
+                            React.createElement("div", { className: "lg-profit-label" }, "Aylık Net Kar"),
+                            React.createElement("div", { className: profitClass(monthNetHome) }, fmtTLHomeSigned(monthNetHome))
+                        ),
+                        React.createElement("button", { className: "lg-profit-card" + (selectedProfit === 'year' ? " is-active" : ""), onClick: () => setProfit('year') },
+                            React.createElement("div", { className: "lg-profit-label" }, "Yıllık Net Kar"),
+                            React.createElement("div", { className: profitClass(yearNetHome) }, fmtTLHomeSigned(yearNetHome))
+                        )
+                    ),
+                    renderProfitDetail(selectedProfit)
                 );
 
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -6008,7 +7136,8 @@ function App() {
                                 React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 700, cursor: 'pointer', fontSize: 14, width: '100%' } },
                                     React.createElement("option", { value: "TRY" }, "\u20BA TRY"),
                                     React.createElement("option", { value: "USD" }, "$ USD"),
-                                    React.createElement("option", { value: "EUR" }, "\u20AC EUR")))),
+                                    React.createElement("option", { value: "EUR" }, "\u20AC EUR"),
+                                    React.createElement("option", { value: "KWD" }, "KD KWD")))),
                         form.paymentAmount && form.paymentCurrency !== 'TRY' && React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 7 } },
                             "\u2248 ",
                             cTRY2.toFixed(2),
@@ -6036,7 +7165,8 @@ function App() {
                                 React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 700, cursor: 'pointer', fontSize: 14, width: '100%' } },
                                     React.createElement("option", { value: "TRY" }, "\u20BA TRY"),
                                     React.createElement("option", { value: "USD" }, "$ USD"),
-                                    React.createElement("option", { value: "EUR" }, "\u20AC EUR"))))),
+                                    React.createElement("option", { value: "EUR" }, "\u20AC EUR"),
+                                    React.createElement("option", { value: "KWD" }, "KD KWD"))))),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti (₺)' : 'Firmaya Araç Ücreti (₺)'),
                         React.createElement("input", { type: "number", value: form.driverPayment, onChange: e => sf({ driverPayment: e.target.value }), placeholder: "0", className: "inp" })),
