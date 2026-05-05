@@ -58,7 +58,7 @@
   --accent-soft:#F2EFEA;
 
   /* — semantik — */
-  --ok:#6F8F72; --ok-bg:#EEF5EE; --ok-bd:#C9DBC9;
+  --ok:#2F7A46; --ok-bg:#E7F2E9; --ok-bd:#9FC7AA;
   --warn:#FF9F0A; --warn-bg:#FFF5E5; --warn-bd:#FFD69A;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
@@ -502,7 +502,7 @@ select.inp,select{
 }
 .tcard-amount{
   font-size:16px;font-weight:800;
-  color:var(--brand);
+  color:var(--ok);
   font-variant-numeric:tabular-nums;
   line-height:1.15;letter-spacing:0;
   white-space:nowrap;
@@ -673,17 +673,17 @@ main.main-cont{
 .tk-wrap{
   display:flex;flex-direction:column;gap:14px;padding:0 2px;
   /* Lokal Natural Titanium palet */
-  --tk-green:#6F8F72;
-  --tk-green-deep:#55775B;
-  --tk-green-deepest:#304D36;
-  --tk-green-soft:#AFC7AE;
-  --tk-green-pale:#EEF5EE;
+  --tk-green:#2F7A46;
+  --tk-green-deep:#225C35;
+  --tk-green-deepest:#153C24;
+  --tk-green-soft:#83B98F;
+  --tk-green-pale:#E7F2E9;
   --tk-green-paler:#FAFCF8;
   --tk-ti:#9B9187;
   --tk-ti-deep:#6E665E;
   --tk-ti-glow:#D1D1D6;
   --tk-ti-pale:#F6F3EF;
-  --tk-line-green:rgba(111,143,114,0.22);
+  --tk-line-green:rgba(47,122,70,0.26);
   --tk-line-gold:rgba(118,118,128,0.18);
 }
 .tk-card{
@@ -732,7 +732,7 @@ main.main-cont{
 .tk-cell.tk-today{
   background:linear-gradient(180deg,var(--tk-green-pale),var(--tk-green-paler));
   border-color:var(--tk-green);
-  box-shadow:0 0 0 2px rgba(111,143,114,.22);
+  box-shadow:0 0 0 2px rgba(47,122,70,.24);
 }
 .tk-cell.tk-selected{
   background:linear-gradient(180deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
@@ -904,7 +904,7 @@ main.main-cont{
 }
 .tk-type-opt.sel{
   background:linear-gradient(135deg,var(--tk-green-pale) 0%,var(--tk-green-paler) 100%);
-  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(111,143,114,.22);
+  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(47,122,70,.24);
 }
 .tk-type-opt-icon{font-size:18px;margin-bottom:3px}
 .tk-type-opt-lbl{font-size:11px;font-weight:600;color:var(--ink)}
@@ -1012,7 +1012,7 @@ main.main-cont{
   --nude-deep:#6E665E;
   --nude-soft:#F6F3EF;
   --nude-glow:#DED8D0;
-  --ok:#6F8F72; --ok-bg:#EEF5EE; --ok-bd:#C9DBC9;
+  --ok:#2F7A46; --ok-bg:#E7F2E9; --ok-bd:#9FC7AA;
   --warn:#B8863B; --warn-bg:#FFF7EA; --warn-bd:#E8C988;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
@@ -1224,7 +1224,7 @@ main.main-cont{
 .tcard-agency{font-weight:540;color:var(--ink)}
 .tcard-route{color:var(--ink-2)}
 .tcard-passenger{color:var(--ink-3)}
-.tcard-amount{font-size:15px;color:var(--brand-2);font-weight:620}
+.tcard-amount{font-size:15px;color:var(--ok);font-weight:620}
 .tcard-pill{
   border-radius:9px;
   padding:4px 8px;
@@ -1371,7 +1371,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#8A8378', NAV2 = '#4F4A43', GOLD = '#B6ADA1';
-const G = '#6F8F72', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
+const G = '#2F7A46', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
 const TX = '#1F1D1A', SB = '#6E665E', INP = '#F6F3EF', BOR = '#DED8D0';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#7F786E', bg: '#F2EFEA', b: '#D8D0C6' },
@@ -2912,8 +2912,8 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const accent = isBorc ? R : G;
         const accentBgGrad = isBorc
             ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)'
-            : 'linear-gradient(135deg, #EEF5EE 0%, #E7F0E7 100%)';
-        const accentBorder = isBorc ? '#FFC4C0' : '#C9DBC9';
+            : 'linear-gradient(135deg, #E7F2E9 0%, #DCECDF 100%)';
+        const accentBorder = isBorc ? '#FFC4C0' : '#9FC7AA';
         return React.createElement("div", {
             key: d.id,
             style: {
@@ -4557,8 +4557,8 @@ function App() {
                     const isPlate16 = isPlate16Transfer(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
                     const netColor = potKar > 0 ? G : (potKar < 0 ? R : SB);
-                    const netBg    = potKar > 0 ? '#EEF5EE' : (potKar < 0 ? '#FFF1EF' : '#F6F3EF');
-                    const netBord  = potKar > 0 ? '#C9DBC9' : (potKar < 0 ? '#E3B8B4' : '#DED8D0');
+                    const netBg    = potKar > 0 ? '#E7F2E9' : (potKar < 0 ? '#FFF1EF' : '#F6F3EF');
+                    const netBord  = potKar > 0 ? '#9FC7AA' : (potKar < 0 ? '#E3B8B4' : '#DED8D0');
                     return React.createElement("div", { style: { background: netBg, border: '1px solid ' + netBord, borderRadius: 10, padding: '9px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase' } }, lbl),
                         React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: netColor, fontVariantNumeric: 'tabular-nums' } }, (potKar >= 0 ? '+' : '') + Math.round(potKar).toLocaleString('tr-TR') + '₺'));
