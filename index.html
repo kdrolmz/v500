@@ -58,9 +58,9 @@
   --accent-soft:#F2EFEA;
 
   /* — semantik — */
-  --ok:#8A8378; --ok-bg:#F2EFEA; --ok-bd:#D8D0C6;
+  --ok:#6F8F72; --ok-bg:#EEF5EE; --ok-bd:#C9DBC9;
   --warn:#FF9F0A; --warn-bg:#FFF5E5; --warn-bd:#FFD69A;
-  --err:#FF3B30; --err-bg:#FFF0EF; --err-bd:#FFC4C0;
+  --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
 
   /* — transfer tipi pasteller — */
@@ -478,18 +478,21 @@ select.inp,select{
 .tcard-agency{
   font-size:13px;font-weight:700;color:var(--ink);
   line-height:1.3;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  white-space:normal;overflow:visible;text-overflow:clip;
+  overflow-wrap:anywhere;word-break:break-word;
 }
 .tcard-agency .arrow{color:var(--ink-4);margin:0 6px;font-weight:500}
 .tcard-route{
   font-size:12px;font-weight:600;color:var(--ink-2);
   line-height:1.3;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  white-space:normal;overflow:visible;text-overflow:clip;
+  overflow-wrap:anywhere;word-break:break-word;
 }
 .tcard-route .arrow{color:var(--ink-4);margin:0 4px}
 .tcard-passenger{
   font-size:11px;color:var(--ink-3);font-weight:500;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  white-space:normal;overflow:visible;text-overflow:clip;
+  overflow-wrap:anywhere;word-break:break-word;
 }
 .tcard-right{
   flex-shrink:0;
@@ -670,17 +673,17 @@ main.main-cont{
 .tk-wrap{
   display:flex;flex-direction:column;gap:14px;padding:0 2px;
   /* Lokal Natural Titanium palet */
-  --tk-green:#8A8378;
-  --tk-green-deep:#4F4A43;
-  --tk-green-deepest:#1F1D1A;
-  --tk-green-soft:#B6ADA1;
-  --tk-green-pale:#F2EFEA;
-  --tk-green-paler:#FAF8F5;
+  --tk-green:#6F8F72;
+  --tk-green-deep:#55775B;
+  --tk-green-deepest:#304D36;
+  --tk-green-soft:#AFC7AE;
+  --tk-green-pale:#EEF5EE;
+  --tk-green-paler:#FAFCF8;
   --tk-ti:#9B9187;
   --tk-ti-deep:#6E665E;
   --tk-ti-glow:#D1D1D6;
   --tk-ti-pale:#F6F3EF;
-  --tk-line-green:rgba(79,74,67,0.18);
+  --tk-line-green:rgba(111,143,114,0.22);
   --tk-line-gold:rgba(118,118,128,0.18);
 }
 .tk-card{
@@ -729,7 +732,7 @@ main.main-cont{
 .tk-cell.tk-today{
   background:linear-gradient(180deg,var(--tk-green-pale),var(--tk-green-paler));
   border-color:var(--tk-green);
-  box-shadow:0 0 0 2px rgba(74,107,134,.22);
+  box-shadow:0 0 0 2px rgba(111,143,114,.22);
 }
 .tk-cell.tk-selected{
   background:linear-gradient(180deg,var(--tk-green) 0%,var(--tk-green-deep) 100%);
@@ -857,7 +860,7 @@ main.main-cont{
   transition:all .15s;
 }
 .tk-ledger-check.tk-checked{
-  background:linear-gradient(135deg,var(--ok) 0%,#4F4A43 100%);
+  background:linear-gradient(135deg,var(--ok) 0%,var(--tk-green-deep) 100%);
   border-color:var(--ok);color:#fff;
 }
 .tk-ledger-body{flex:1;min-width:0}
@@ -881,7 +884,7 @@ main.main-cont{
   margin-left:auto;font-size:10px;font-weight:600;
   padding:2px 8px;border-radius:9px;letter-spacing:0.2px;
 }
-.tk-section-count.tk-cn-in{background:#F2EFEA;color:var(--ok);border:1px solid #D8D0C6}
+.tk-section-count.tk-cn-in{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
 .tk-section-count.tk-cn-out{background:#FFF0EF;color:var(--err);border:1px solid #FFC4C0}
 
 /* Takvim form modal */
@@ -901,7 +904,7 @@ main.main-cont{
 }
 .tk-type-opt.sel{
   background:linear-gradient(135deg,var(--tk-green-pale) 0%,var(--tk-green-paler) 100%);
-  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(74,107,134,.22);
+  border-color:var(--tk-green);box-shadow:0 0 0 2px rgba(111,143,114,.22);
 }
 .tk-type-opt-icon{font-size:18px;margin-bottom:3px}
 .tk-type-opt-lbl{font-size:11px;font-weight:600;color:var(--ink)}
@@ -1009,7 +1012,7 @@ main.main-cont{
   --nude-deep:#6E665E;
   --nude-soft:#F6F3EF;
   --nude-glow:#DED8D0;
-  --ok:#8A8378; --ok-bg:#F2EFEA; --ok-bd:#D8D0C6;
+  --ok:#6F8F72; --ok-bg:#EEF5EE; --ok-bd:#C9DBC9;
   --warn:#B8863B; --warn-bg:#FFF7EA; --warn-bd:#E8C988;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
   --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
@@ -1227,7 +1230,7 @@ main.main-cont{
   padding:4px 8px;
 }
 .tcard-pill-status-tam,.tcard-paystatus.is-paid{
-  background:var(--ok-bg);color:var(--brand-2);border-color:var(--ok-bd);
+  background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd);
 }
 .tcard-pill-status-bos,.tcard-paystatus.is-pending{
   background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd);
@@ -1236,7 +1239,7 @@ main.main-cont{
   background:linear-gradient(180deg,#FAF8F5,#FFFFFF);
   border-top:1px solid var(--line);
 }
-.amt-pos{color:var(--brand-2)}
+.amt-pos{color:var(--ok)}
 .amt-neg{color:var(--err)}
 .tabbar{
   background:rgba(250,248,245,.9);
@@ -1368,7 +1371,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#8A8378', NAV2 = '#4F4A43', GOLD = '#B6ADA1';
-const G = '#8A8378', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
+const G = '#6F8F72', O = '#B8863B', R = '#B95A54', BR = '#6E665E';
 const TX = '#1F1D1A', SB = '#6E665E', INP = '#F6F3EF', BOR = '#DED8D0';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#7F786E', bg: '#F2EFEA', b: '#D8D0C6' },
@@ -1521,6 +1524,20 @@ const shortLoc = name => {
     const slash = n.match(/^([A-ZÇĞİÖŞÜa-zçğıöşü]+)\s*\//);
     if (slash) return slash[1];
     return n.split('(')[0].trim();
+};
+const transferStartDate = t => {
+    if (!t || !t.date || !t.time) return null;
+    const d = String(t.date).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const tm = String(t.time).match(/^(\d{1,2}):(\d{2})/);
+    if (!d || !tm) return null;
+    const dt = new Date(Number(d[1]), Number(d[2]) - 1, Number(d[3]), Number(tm[1]), Number(tm[2]), 0, 0);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+};
+const transferLooksDone = (t, now = new Date()) => {
+    if (!t || t.status === 'iptal') return false;
+    if (t.status === 'tam') return true;
+    const start = transferStartDate(t);
+    return !!start && (now.getTime() - start.getTime()) >= 3 * 60 * 60 * 1000;
 };
 const transferIdentity = t => {
     if (!t) return '';
@@ -2159,7 +2176,7 @@ function AracTab({ tip, aracK, setAracK }) {
                     React.createElement("button", { onClick: () => { setOpenMonth(mAcik ? '' : ayItem.key); setAy(ayItem.key); }, style: { width: '100%', background: mAcik ? 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')' : '#fff', border: '1px solid ' + (mAcik ? NAV : BOR), borderRadius: 13, padding: '13px 15px', cursor: 'pointer', textAlign: 'left', boxShadow: mAcik ? '0 4px 14px rgba(0,0,0,.12)' : '0 1px 6px rgba(0,0,0,.05)' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
                             React.createElement("div", null,
-                                React.createElement("div", { style: { fontSize: 15, fontWeight: 800, color: mAcik ? '#fff' : TX, textTransform: 'capitalize' } }, '📅 ' + ayItem.ad),
+                                React.createElement("div", { style: { fontSize: 15, fontWeight: 800, color: mAcik ? '#fff' : TX, textTransform: 'capitalize' } }, ayItem.ad),
                                 React.createElement("div", { style: { fontSize: 11, color: mAcik ? 'rgba(255,255,255,.7)' : SB, marginTop: 2 } },
                                     ayItem.sefer + ' sefer · +' + fr(ayItem.gelir) + '₺ · -' + fr(ayItem.gider) + '₺')),
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -2895,8 +2912,8 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const accent = isBorc ? R : G;
         const accentBgGrad = isBorc
             ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)'
-            : 'linear-gradient(135deg, #F2EFEA 0%, #ECE7E0 100%)';
-        const accentBorder = isBorc ? '#FFC4C0' : '#D8D0C6';
+            : 'linear-gradient(135deg, #EEF5EE 0%, #E7F0E7 100%)';
+        const accentBorder = isBorc ? '#FFC4C0' : '#C9DBC9';
         return React.createElement("div", {
             key: d.id,
             style: {
@@ -2921,7 +2938,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 9, paddingLeft: 6 } },
                 React.createElement("div", { style: { background: 'linear-gradient(135deg,#F6F3EF,#ECE7E0)', border: '1px solid ' + BOR, borderRadius: 10, padding: 8, textAlign: 'center' } },
                     React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700 } }, isBorc ? 'Ödenen' : 'Tahsilat'),
-                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: NAV } }, fr(d.paid || 0) + '₺')),
+                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: G } }, fr(d.paid || 0) + '₺')),
                 React.createElement("div", {
                     style: {
                         background: kalan > 0 ? accentBgGrad : 'linear-gradient(135deg,#F2EFEA,#ECE7E0)',
@@ -3082,7 +3099,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
             title: (t.pickup || '—') + ' → ' + (t.dropoff || '—'),
             sub: ['Araç: ' + vehicleName(t), t.plate ? '🚐 ' + t.plate : '', t.givenBy || '', t.assignedTo && t.assignedTo !== t.givenBy ? '· ' + t.assignedTo : '', (t.passengers && t.passengers[0] && t.passengers[0].name) ? '· ' + t.passengers[0].name : ''].filter(Boolean).join(' '),
             time: t.time || '',
-            done: t.status === 'tam',
+            done: transferLooksDone(t),
             vehicle: vehicleName(t),
             origData: t
         }));
@@ -4077,7 +4094,7 @@ function App() {
             return line;
         }).join('\n');
         let msg = 'Misafir Bilgileri\n\n';
-        msg += '📅 Tarih: ' + dt + '\n';
+        msg += 'Tarih: ' + dt + '\n';
         msg += '🕒 Saat: ' + t.time + '\n';
         if (t.flightCode) msg += '✈️ Uçuş: ' + t.flightCode + '\n';
         if (t.plate) msg += '🚐 Plaka: ' + t.plate + '\n';
@@ -4106,7 +4123,7 @@ function App() {
         const name = (t.passengers && t.passengers[0] && t.passengers[0].name) ? t.passengers[0].name : (lang === 'ar' ? 'ضيفنا الكريم' : lang === 'en' ? 'Dear Guest' : 'Değerli Misafirimiz');
         if (lang === 'en') {
             let msg = 'Dear ' + name + ',\n\nYour transfer reservation has been confirmed.\n\n';
-            msg += '📅 Date: ' + dtEn + '\n🕒 Time: ' + t.time + '\n';
+            msg += 'Date: ' + dtEn + '\n🕒 Time: ' + t.time + '\n';
             if (t.flightCode) msg += '✈️ Flight: ' + t.flightCode + '\n';
             msg += '📍 Pickup: ' + t.pickup + '\n';
             (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Stop ' + (i + 1) + ': ' + s2 + '\n'; });
@@ -4117,7 +4134,7 @@ function App() {
         }
         if (lang === 'ar') {
             let msg = 'السيد/السيدة ' + name + '،\n\nتم تأكيد حجز خدمة النقل الخاصة بكم.\n\n';
-            msg += '📅 التاريخ: ' + dtEn + '\n🕒 الوقت: ' + t.time + '\n';
+            msg += 'التاريخ: ' + dtEn + '\n🕒 الوقت: ' + t.time + '\n';
             if (t.flightCode) msg += '✈️ رقم الرحلة: ' + t.flightCode + '\n';
             msg += '📍 نقطة الانطلاق: ' + t.pickup + '\n';
             (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 محطة ' + (i + 1) + ': ' + s2 + '\n'; });
@@ -4127,7 +4144,7 @@ function App() {
             return msg.trim();
         }
         let msg = 'Sayın ' + name + ',\n\nTransfer rezervasyonunuz oluşturulmuştur. Bilgileriniz aşağıdadır.\n\n';
-        msg += '📅 Tarih: ' + dtTr + '\n🕒 Saat: ' + t.time + '\n';
+        msg += 'Tarih: ' + dtTr + '\n🕒 Saat: ' + t.time + '\n';
         if (t.flightCode) msg += '✈️ Uçuş: ' + t.flightCode + '\n';
         msg += '📍 Alış Noktası: ' + t.pickup + '\n';
         (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Ara Durak ' + (i + 1) + ': ' + s2 + '\n'; });
@@ -4508,9 +4525,9 @@ function App() {
                             React.createElement("span", null, asg)
                         ),
                         React.createElement("div", { className: 'tcard-route' },
-                            React.createElement("span", null, shortLoc(pickup)),
+                            React.createElement("span", null, pickup),
                             React.createElement("span", { className: 'arrow' }, '→'),
-                            React.createElement("span", null, shortLoc(dropoff)),
+                            React.createElement("span", null, dropoff),
                             vh && React.createElement("span", { style: { marginLeft: 8, color: 'var(--ink-4)', fontWeight: 500 } }, vh.ico + ' ' + vh.n)
                         ),
                         (pasName || t.passengerCount) && React.createElement("div", { className: 'tcard-passenger' },
@@ -4539,9 +4556,9 @@ function App() {
                     const potKar = olmezPotentialKar(t);
                     const isPlate16 = isPlate16Transfer(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
-                    const netColor = potKar > 0 ? '#4F4A43' : (potKar < 0 ? '#FF3B30' : SB);
-                    const netBg    = potKar > 0 ? '#F2EFEA' : (potKar < 0 ? '#FFF0EF' : '#F6F3EF');
-                    const netBord  = potKar > 0 ? '#D8D0C6' : (potKar < 0 ? '#FFC4C0' : '#DED8D0');
+                    const netColor = potKar > 0 ? G : (potKar < 0 ? R : SB);
+                    const netBg    = potKar > 0 ? '#EEF5EE' : (potKar < 0 ? '#FFF1EF' : '#F6F3EF');
+                    const netBord  = potKar > 0 ? '#C9DBC9' : (potKar < 0 ? '#E3B8B4' : '#DED8D0');
                     return React.createElement("div", { style: { background: netBg, border: '1px solid ' + netBord, borderRadius: 10, padding: '9px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 800, letterSpacing: .4, textTransform: 'uppercase' } }, lbl),
                         React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: netColor, fontVariantNumeric: 'tabular-nums' } }, (potKar >= 0 ? '+' : '') + Math.round(potKar).toLocaleString('tr-TR') + '₺'));
@@ -4671,7 +4688,7 @@ function App() {
                                 }
                             }, 50);
                         }
-                    }, "📅 Bugüne Dön"),
+                    }, "Bugüne Dön"),
                     dayIsOpen && React.createElement("div", null, dayRows.map(renderTransferItem)));
             }));
         };      const renderCollectionBlock = (title, rows, tone) => {
@@ -4706,7 +4723,7 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                     React.createElement("button", { onClick: () => shiftRange(-1), style: { background: INP, border: '1px solid ' + BOR, borderRadius: 9, width: 34, height: 34, cursor: 'pointer', fontSize: 16, fontWeight: 800, color: NAV, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '◂'),
                     React.createElement("div", { style: { textAlign: 'center' } },
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: TX } }, '📅 ' + rangeLabel),
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: TX } }, rangeLabel),
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 600 } }, rangeRows.length + ' transfer · ' + (rangeProfit >= 0 ? '+' : '') + rangeProfit.toLocaleString('tr-TR') + '₺')),
                     React.createElement("button", { onClick: () => shiftRange(1), style: { background: INP, border: '1px solid ' + BOR, borderRadius: 9, width: 34, height: 34, cursor: 'pointer', fontSize: 16, fontWeight: 800, color: NAV, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '▸')),
                 !isCurrentRange && React.createElement("button", { onClick: goToday, style: { width: '100%', background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 9, padding: '7px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer', marginBottom: 6 } }, '↻ Bugüne Dön'),
@@ -4878,7 +4895,7 @@ function App() {
 
                 // ═══ BUGÜN ═══
                 const todayT = T.filter(x => x.date === todayKey);
-                const todayDone = todayT.filter(x => x.status === 'tam').length;
+                const todayDone = todayT.filter(x => transferLooksDone(x, now)).length;
 
                 // ═══ BU HAFTA (Pzt-Paz) ═══
                 const ws = new Date(now); const dow = ws.getDay() || 7; ws.setDate(ws.getDate() - (dow - 1)); ws.setHours(0,0,0,0);
@@ -4931,6 +4948,25 @@ function App() {
                 // Panel aç-kapa
                 const panel = (expandedT['__hp'] === undefined) ? 'day' : expandedT['__hp'];
                 const tp = n => setExpandedT(p => ({ ...p, __hp: (p.__hp === undefined ? 'day' : p.__hp) === n ? false : n }));
+                const todayCalendarIcon = isActive => React.createElement("span", {
+                    style: {
+                        width: 24, height: 28, borderRadius: 7, overflow: 'hidden',
+                        background: isActive ? 'rgba(255,255,255,.9)' : '#fff',
+                        border: '1px solid ' + (isActive ? 'rgba(255,255,255,.75)' : 'var(--brand-bd)'),
+                        display: 'grid', gridTemplateRows: '7px 1fr',
+                        boxShadow: '0 1px 2px rgba(0,0,0,.08)'
+                    }
+                },
+                    React.createElement("span", { style: { background: isActive ? 'var(--ok)' : 'var(--brand)', display: 'block' } }),
+                    React.createElement("span", {
+                        style: {
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: isActive ? 'var(--ok)' : 'var(--brand-2)',
+                            fontSize: 13, fontWeight: 900, lineHeight: 1,
+                            fontVariantNumeric: 'tabular-nums'
+                        }
+                    }, String(now.getDate()))
+                );
 
                 // ═══ Premium Stat Card ═══
                 const SC = (ico, lbl, val, sub, name) => {
@@ -4960,7 +4996,7 @@ function App() {
                                 border: isActive ? '1px solid rgba(255,255,255,.3)' : '1px solid var(--brand-bd)',
                                 boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,.25)' : 'none',
                                 fontSize: 15
-                            } }, ico),
+                            } }, typeof ico === 'function' ? ico(isActive) : ico),
                             React.createElement("span", { style: { 
                                 fontSize: 10, 
                                 color: isActive ? 'rgba(255,255,255,.85)' : 'var(--ink-4)',
@@ -5022,7 +5058,7 @@ function App() {
                     }
                 },
                     React.createElement("div", { style: { fontSize: 12.5, fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 8 } },
-                        React.createElement("span", { style: { fontSize: 14 } }, icn || (cur ? "📍" : "📅")),
+                        React.createElement("span", { style: { fontSize: 14 } }, icn || (cur ? "📍" : "▣")),
                         React.createElement("span", null, lbl)
                     ),
                     React.createElement("div", { style: {
@@ -5119,15 +5155,15 @@ function App() {
 
                     /* ═══════ 4 PREMIUM KART ═══════ */
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 9 } },
-                        SC("📅", "Bugün", todayT.length, todayT.length === 0 ? "Transfer yok" : (function(){
-                            const tam = todayT.filter(x => x.status === 'tam').length;
+                        SC(todayCalendarIcon, "Bugün", todayT.length, todayT.length === 0 ? "Transfer yok" : (function(){
+                            const tamamlandi = todayT.filter(x => transferLooksDone(x, now)).length;
                             const ipt = todayT.filter(x => x.status === 'iptal').length;
-                            const bos = todayT.length - tam - ipt;
+                            const bekliyor = todayT.filter(x => x.status !== 'iptal' && !transferLooksDone(x, now)).length;
                             const parts = [];
-                            if (tam > 0) parts.push(tam + ' tamam');
-                            if (bos > 0) parts.push(bos + ' bekliyor');
+                            if (tamamlandi > 0) parts.push(tamamlandi + ' tamamlandı');
+                            if (bekliyor > 0) parts.push(bekliyor + ' bekliyor');
                             if (ipt > 0) parts.push(ipt + ' iptal');
-                            return parts.length ? parts.join(' · ') : 'Tümü tamam';
+                            return parts.length ? parts.join(' · ') : 'Tümü tamamlandı';
                         })(), "day"),
                         SC("🗓️", "Bu Hafta", weekT.length, "Pazartesi – Pazar", "week"),
                         SC("📆", "Bu Ay", monthT.length, AYLAR[now.getMonth()] + " " + yyyy, "month"),
@@ -5135,7 +5171,7 @@ function App() {
                     ),
 
                     /* ═══ 1) BUGÜN PANELİ ═══ */
-                    panel === 'day' && DP("📅 Bugünkü Transferler (" + todayT.length + ")", () => tp('day'),
+                    panel === 'day' && DP("Bugünkü Transferler (" + todayT.length + ")", () => tp('day'),
                         todayT.length === 0
                             ? React.createElement("div", { style: { textAlign: 'center', padding: '20px 10px', color: 'var(--ink-3)' } },
                                 React.createElement("div", { style: { fontSize: 34, marginBottom: 8 } }, "✨"),
@@ -5204,7 +5240,7 @@ function App() {
                         const buAyNet = buAyOlmez + buAyPlate;
 
                         const fmtTL = n => (n >= 0 ? '+' : '') + n.toLocaleString('tr-TR') + '₺';
-                        const colorFor = n => n > 0 ? '#8A8378' : n < 0 ? 'var(--brand)' : 'var(--ink-3)';
+                        const colorFor = n => n > 0 ? G : n < 0 ? R : 'var(--ink-3)';
 
                         return React.createElement("div", {
                             style: {
@@ -5845,21 +5881,21 @@ function App() {
                     React.createElement("div", { onClick: () => setShowSt(v => !v), style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F6F3EF', borderRadius: 10, padding: '8px 12px', border: '1px solid #DED8D0', cursor: 'pointer' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                             React.createElement("span", { style: { fontSize: 11, color: '#6E665E', fontWeight: 700 } }, listIsPlate16 ? ('🚐 ' + visibleListRows.length + ' transfer') : ('Bu ay · ' + listMiniStats.mC + ' transfer')),
-                            React.createElement("span", { style: { fontSize: 13, fontWeight: 800, color: listMiniStats.mP >= 0 ? '#4F4A43' : '#FF3B30', fontVariantNumeric: 'tabular-nums' } }, (listMiniStats.mP >= 0 ? '+' : '') + listMiniStats.mP.toLocaleString('tr-TR') + '₺')),
+                            React.createElement("span", { style: { fontSize: 13, fontWeight: 800, color: listMiniStats.mP >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, (listMiniStats.mP >= 0 ? '+' : '') + listMiniStats.mP.toLocaleString('tr-TR') + '₺')),
                         React.createElement("span", { style: { fontSize: 11, color: '#6E665E', fontWeight: 700 } }, showSt ? '▲ Detay' : '▼ Detay')),
                     /* Detaylı açılır özet */
                     showSt && React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px', border: '1px solid #DED8D0' } },
-                        [['Geçen ay dış iş neti', st.lP.toLocaleString('tr-TR') + '₺', '#1D1C1A'],
-                         ['Bu ay Ölmeztur dış iş neti', (st.monthExternalPotential >= 0 ? '+' : '') + st.monthExternalPotential.toLocaleString('tr-TR') + '₺', '#4F4A43'],
-                         ['Bu ay 16 LMZ 55 neti (gider sonrası)', (st.monthPlate16Net >= 0 ? '+' : '') + st.monthPlate16Net.toLocaleString('tr-TR') + '₺', '#4F4A43'],
-                         [st.yr + ' toplam net', (st.yPpotential >= 0 ? '+' : '') + st.yPpotential.toLocaleString('tr-TR') + '₺', '#4F4A43']].map(([l, v, col]) => (React.createElement("div", { key: l, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #E5E5EA' } },
+                        [['Geçen ay dış iş neti', st.lP.toLocaleString('tr-TR') + '₺', st.lP > 0 ? G : st.lP < 0 ? R : '#1D1C1A'],
+                         ['Bu ay Ölmeztur dış iş neti', (st.monthExternalPotential >= 0 ? '+' : '') + st.monthExternalPotential.toLocaleString('tr-TR') + '₺', st.monthExternalPotential > 0 ? G : st.monthExternalPotential < 0 ? R : '#1D1C1A'],
+                         ['Bu ay 16 LMZ 55 neti (gider sonrası)', (st.monthPlate16Net >= 0 ? '+' : '') + st.monthPlate16Net.toLocaleString('tr-TR') + '₺', st.monthPlate16Net > 0 ? G : st.monthPlate16Net < 0 ? R : '#1D1C1A'],
+                         [st.yr + ' toplam net', (st.yPpotential >= 0 ? '+' : '') + st.yPpotential.toLocaleString('tr-TR') + '₺', st.yPpotential > 0 ? G : st.yPpotential < 0 ? R : '#1D1C1A']].map(([l, v, col]) => (React.createElement("div", { key: l, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #E5E5EA' } },
                             React.createElement("span", { style: { fontSize: 11, color: '#6E665E', fontWeight: 600 } }, l),
                             React.createElement("span", { style: { fontSize: 12, fontWeight: 800, color: col } }, v)))),
                         st.ym.length > 0 && React.createElement("div", { style: { marginTop: 8 } },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#6E665E', marginBottom: 6, letterSpacing: .4, textTransform: 'uppercase' } }, st.yr + ' aylık dağılım'),
                             st.ym.map(m => React.createElement("div", { key: m.key, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0' } },
                                 React.createElement("span", { style: { fontSize: 10, color: '#6E665E', textTransform: 'capitalize' } }, m.label + ' (' + m.count + ')'),
-                                React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: m.net >= 0 ? '#4F4A43' : '#FF3B30' } }, (m.net >= 0 ? '+' : '') + m.net.toLocaleString('tr-TR') + '₺')))))),
+                                React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: m.net >= 0 ? G : R } }, (m.net >= 0 ? '+' : '') + m.net.toLocaleString('tr-TR') + '₺')))))),
                     /* Filtreler — iç kart görünümlü kutu */
                     React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 12, padding: '10px 12px', border: '1px solid #DED8D0', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
                     /* Filtreler başlığı */
