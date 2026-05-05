@@ -1536,6 +1536,37 @@ const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRAN
 const fr = n => Math.abs(Math.round(n)).toLocaleString('tr-TR');
 const fn = n => (n >= 0 ? '+' : '') + Math.round(n).toLocaleString('tr-TR');
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
+const firmSlug = v => nm(v).replace(/\s+/g, '');
+const isBalenturFirm = v => ['balentur', 'balontur', 'balontour'].includes(firmSlug(v));
+const isOdeloFirm = v => firmSlug(v) === 'odelo';
+const hasOdeloMark = t => !!(t && (isOdeloFirm(t.givenBy) || isOdeloFirm(t.assignedTo) || isOdeloFirm(t.altAcenta) || nm(t.notes).includes('odelo')));
+function balenturOdeloCalc(t) {
+    if (!t || !hasOdeloMark(t))
+        return null;
+    const gBal = isBalenturFirm(t.givenBy);
+    const aBal = isBalenturFirm(t.assignedTo);
+    const altBal = isBalenturFirm(t.altAcenta);
+    const gOdelo = isOdeloFirm(t.givenBy);
+    const balenturInvolved = gBal || aBal || altBal;
+    const odeloToOlmez = gOdelo && t.assignedTo === OL;
+    if (!balenturInvolved && !odeloToOlmez)
+        return null;
+    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
+    const d = parseFloat(t.driverPayment) || 0;
+    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const odeloGross = c || d || alt;
+    if (altBal && alt > 0) {
+        return { netOl: odeloGross - alt, yon: 'odeloBalentur', odeloGross, balenturCost: alt };
+    }
+    if (aBal || (t.givenBy === OL && aBal)) {
+        return { netOl: odeloGross - d, yon: 'odeloBalentur', odeloGross, balenturCost: d };
+    }
+    if (odeloToOlmez || (gBal && t.assignedTo === OL) || t.assignedTo === OL) {
+        return { netOl: odeloGross, yon: 'odeloOlmez', odeloGross, balenturCost: 0 };
+    }
+    return null;
+}
+const isBalenturOdeloTransfer = t => !!balenturOdeloCalc(t);
 const np = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const uniq = arr => Array.from(new Set((arr || []).filter(Boolean)));
 const shortLoc = name => {
@@ -2373,8 +2404,57 @@ function HesapTab({ T, sT, agencies, tip }) {
         });
         return { ts: detay, al, ver, net: al - ver };
     };
+    const hesapSum = liste => {
+        let al = 0, ver = 0;
+        (liste || []).forEach(t => {
+            if (t.firmSettled)
+                return;
+            if ((t.netOl || 0) > 0)
+                al += t.netOl;
+            else
+                ver += Math.abs(t.netOl || 0);
+        });
+        return { al, ver, net: al - ver };
+    };
+    const balenturOdeloOzet = () => {
+        const detay = [];
+        T.forEach(t => {
+            const b = balenturOdeloCalc(t);
+            if (!b)
+                return;
+            const km = isFirmSettled(t, 'Balentur_odelo');
+            detay.push({
+                ...t,
+                netOl: b.netOl,
+                odeloGross: b.odeloGross,
+                balenturCost: b.balenturCost,
+                firmSettled: km,
+                kaynak: 'odelo',
+                settleFirmKey: 'Balentur_odelo',
+                yon: b.yon
+            });
+        });
+        const s = hesapSum(detay);
+        return { ts: detay, al: s.al, ver: s.ver, net: s.net };
+    };
+    const hesapData = firm => {
+        const base = ozet(firm);
+        if (!isBalenturFirm(firm))
+            return { ...base, regularTs: base.ts, odelo: { ts: [], al: 0, ver: 0, net: 0 } };
+        const regularTs = base.ts.filter(t => !isBalenturOdeloTransfer(t));
+        const regular = hesapSum(regularTs);
+        const odelo = balenturOdeloOzet();
+        return {
+            ts: [...regularTs, ...odelo.ts],
+            al: regular.al + odelo.al,
+            ver: regular.ver + odelo.ver,
+            net: regular.net + odelo.net,
+            regularTs,
+            odelo
+        };
+    };
     const sirketMsg = firm => {
-        const { ts, al, ver, net } = ozet(firm);
+        const { ts, al, ver, net } = hesapData(firm);
         const rows = ts.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => {
             const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'short' });
             const odeme = t.paymentCollect === 'no' ? '—' : (t.paymentAmount ? t.paymentAmount + ' ' + t.paymentCurrency : '—');
@@ -2392,7 +2472,7 @@ function HesapTab({ T, sT, agencies, tip }) {
     const csvExport = firm => {
         // iPhone Numbers uyumlu CSV - UTF-8 BOM ile Türkçe karakter desteği
         // İki grup: (1) Firma'nın verdiği işler (oVerdi)  (2) Ölmeztur'un verdiği işler (benVerdim)
-        const { ts, al, ver, net } = ozet(firm);
+        const { ts, al, ver, net } = hesapData(firm);
         const esc = v => {
             const s = String(v == null ? '' : v);
             if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes(';')) {
@@ -2402,9 +2482,11 @@ function HesapTab({ T, sT, agencies, tip }) {
         };
         // Firma bazında grupla
         const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : String(a.time || '').localeCompare(String(b.time || '')));
-        const oVerdi = ts.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);   // Firma verdi, biz götürdük (ALACAK)
-        const benVerdim = ts.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate); // Biz verdik, firma götürdü (VERECEK)
-        const altGrup = ts.filter(t => t.yon === 'alt').slice().sort(sortByDate);   // Alt transferler
+        const normalTs = ts.filter(t => t.kaynak !== 'odelo');
+        const oVerdi = normalTs.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);   // Firma verdi, biz götürdük (ALACAK)
+        const benVerdim = normalTs.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate); // Biz verdik, firma götürdü (VERECEK)
+        const altGrup = normalTs.filter(t => t.yon === 'alt').slice().sort(sortByDate);   // Alt transferler
+        const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
 
         // Grup toplamları
         const grupToplam = (arr) => {
@@ -2534,6 +2616,29 @@ function HesapTab({ T, sT, agencies, tip }) {
             csv += '\n';
         }
 
+        if (odeloGrup.length > 0) {
+            csv += '═══ ODELO İŞLERİ ═══\n';
+            csv += 'Transfer Sayısı,' + odeloGrup.length + '\n';
+            csv += '\n';
+            csv += 'No,Tarih,Saat,Alış,Bırakış,İş Tipi,Odelo Bedeli (TL),Balentur Ücreti (TL),Net (TL),Hesap\n';
+            odeloGrup.forEach((t, i) => {
+                const row = [
+                    i + 1,
+                    esc(t.date || ''),
+                    esc(t.time || ''),
+                    esc(t.pickup || ''),
+                    esc(t.dropoff || ''),
+                    esc(t.yon === 'odeloBalentur' ? 'Balentur yaptı' : 'Ölmeztur yaptı'),
+                    Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || t.driverPayment || 0),
+                    Math.round(t.yon === 'odeloBalentur' ? (t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0),
+                    Math.round(t.netOl || 0),
+                    esc(t.firmSettled ? 'Kapandı' : 'Açık')
+                ];
+                csv += row.join(',') + '\n';
+            });
+            csv += '\n';
+        }
+
         // ═══ KAPANIŞ — HESAPLAMA ÖZETİ ═══
         csv += '═══ HESAPLAMA ÖZETİ ═══\n';
         csv += 'Grup,Alacak (TL),Verecek (TL),Net (TL)\n';
@@ -2554,6 +2659,121 @@ function HesapTab({ T, sT, agencies, tip }) {
         const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
         const fname = 'Olmeztur_' + firm.replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.csv';
         saveBlob(blob, fname).then(ok => tip(ok ? (IS_IOS ? 'Numbers\'da aç' : 'CSV indirildi') : 'CSV oluşturulamadı'));
+    };
+    const numbersExport = firm => {
+        const { ts } = hesapData(firm);
+        const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : String(a.time || '').localeCompare(String(b.time || '')));
+        const normalTs = ts.filter(t => t.kaynak !== 'odelo');
+        const oVerdi = normalTs.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);
+        const benVerdim = normalTs.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate);
+        const altGrup = normalTs.filter(t => t.yon === 'alt').slice().sort(sortByDate);
+        const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
+        const clean = v => String(v || '').replace(/\s+/g, ' ').trim();
+        const up = v => clean(v).toLocaleUpperCase('tr-TR');
+        const money = n => {
+            const v = Math.round(parseFloat(n) || 0);
+            return (v < 0 ? '-' : '') + '₺' + fr(v);
+        };
+        const dateTxt = d => d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        const paxTxt = t => {
+            const ps = (t.passengers || []).map(p => p.name || p.fullName || '').filter(Boolean);
+            return up(ps[0] || t.passengerName || '');
+        };
+        const placeTxt = v => up(String(v || '').replace(/^İstanbul\s*\/\s*/i, '').replace(/^Bursa\s*\/\s*/i, ''));
+        const routeTxt = t => {
+            const id = t.route || t.routeBridge || '';
+            if (id === 'br' || id === 'brhw') return id === 'brhw' ? 'OSMANGAZİ KÖPRÜSÜ + OTOBAN' : 'OSMANGAZİ KÖPRÜSÜ';
+            if (id === 'yoa') return 'YAV.SUL.SEL.KÖP.OSM.KÖP.';
+            if (id === 'fy') return 'FERİBOT';
+            if (id === 'hw') return 'OTOBAN';
+            const r = ROTALAR.find(x => x.id === id);
+            return up(r ? r.n : '');
+        };
+        const rows = [];
+        rows.push([]);
+        rows.push(['TARİH', 'SAAT', 'MÜŞTERİ ADI', 'ALIŞ NOKTASI', 'GÜZERGAH', 'VARIŞ NOKTASI', 'MÜŞTERİ ÜCRETİ', 'ARABA ÜCRETİ', 'KALAN', 'NOTLAR']);
+        const sectionRows = [];
+        const addSection = (title, list, type) => {
+            sectionRows.push(rows.length);
+            rows.push([up(title), '', '', '', '', '', '', '', '', '']);
+            list.forEach(t => {
+                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || t.driverPayment || 0);
+                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
+                const musteri = type === 'odelo' ? odeloGross : (t.paymentCollect === 'yes' ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
+                const araba = type === 'odelo' ? odeloCar : Math.round(parseFloat(t.driverPayment) || 0);
+                rows.push([
+                    dateTxt(t.date),
+                    t.time || '',
+                    paxTxt(t),
+                    placeTxt(t.pickup),
+                    routeTxt(t),
+                    placeTxt(t.dropoff),
+                    money(musteri),
+                    money(araba),
+                    money(t.netOl || (musteri - araba)),
+                    clean(t.notes || t.tourCommissionShop || '')
+                ]);
+            });
+            if (!list.length) rows.push(['', '', 'KAYIT YOK', '', '', '', '', '', '', '']);
+        };
+        if (isBalenturFirm(firm)) {
+            addSection(OL + ' - ' + firm, benVerdim, 'normal');
+            addSection(firm + ' - ' + OL, oVerdi, 'normal');
+            addSection('Odelo', odeloGrup, 'odelo');
+        } else {
+            addSection(OL + ' - ' + firm, benVerdim, 'normal');
+            addSection(firm + ' - ' + OL, oVerdi, 'normal');
+            if (altGrup.length) addSection('Alt acenta', altGrup, 'normal');
+        }
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [
+            { wch: 13 }, { wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 24 },
+            { wch: 22 }, { wch: 13 }, { wch: 13 }, { wch: 12 }, { wch: 28 }
+        ];
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let Rw = range.s.r; Rw <= range.e.r; Rw++) {
+            for (let C = range.s.c; C <= range.e.c; C++) {
+                const ref = XLSX.utils.encode_cell({ r: Rw, c: C });
+                if (!ws[ref]) continue;
+                ws[ref].s = ws[ref].s || {};
+                ws[ref].s.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+                ws[ref].s.border = {
+                    top: { style: 'thin', color: { rgb: '888888' } },
+                    bottom: { style: 'thin', color: { rgb: '888888' } },
+                    left: { style: 'thin', color: { rgb: '888888' } },
+                    right: { style: 'thin', color: { rgb: '888888' } }
+                };
+            }
+        }
+        rows[1].forEach((_, C) => {
+            const ref = XLSX.utils.encode_cell({ r: 1, c: C });
+            if (!ws[ref]) return;
+            ws[ref].s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
+                fill: { fgColor: { rgb: '183B5B' } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                border: {
+                    top: { style: 'thin', color: { rgb: '6F8294' } },
+                    bottom: { style: 'thin', color: { rgb: '6F8294' } },
+                    left: { style: 'thin', color: { rgb: '6F8294' } },
+                    right: { style: 'thin', color: { rgb: '6F8294' } }
+                }
+            };
+        });
+        sectionRows.forEach(r => {
+            const ref = XLSX.utils.encode_cell({ r, c: 0 });
+            if (!ws[ref]) return;
+            ws[ref].s = {
+                font: { bold: true, color: { rgb: '183B5B' }, sz: 10 },
+                fill: { fgColor: { rgb: 'EAF0F6' } },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
+            };
+        });
+        ws['!rows'] = rows.map((_, i) => ({ hpt: i === 1 ? 34 : sectionRows.includes(i) ? 24 : 20 }));
+        XLSX.utils.book_append_sheet(wb, ws, clean(firm).slice(0, 28) || 'Hesap');
+        const fname = 'Olmeztur_' + clean(firm).replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+        downloadWorkbook(wb, fname).then(ok => tip(ok ? (IS_IOS ? 'Numbers dosyası hazır' : 'Numbers dosyası indirildi') : 'Numbers dosyası oluşturulamadı'));
     };
 
     const sortHesapTs = (a, b) => {
@@ -2576,7 +2796,9 @@ function HesapTab({ T, sT, agencies, tip }) {
         const pos = detayT.netOl >= 0;
         const odeme = detayT.paymentCollect === 'no' ? 'Müşteri ödemez' : (detayT.paymentAmount ? (detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY')) : 'Tutar yok');
         const yolcu = detayT.passengers && detayT.passengers.length ? detayT.passengers.map(p => p.name || p.fullName || '').filter(Boolean).join(', ') : ((detayT.passengerCount || 0) > 0 ? (detayT.passengerCount + ' kişi') : '');
-        const yonTxt = detayT.yon === 'oVerdi' ? (sel + ' → ' + OL) : detayT.yon === 'benVerdim' ? (OL + ' → ' + sel) : ('Alt Acenta: ' + (detayT.altAcenta || sel));
+        const yonTxt = detayT.kaynak === 'odelo'
+            ? (detayT.yon === 'odeloBalentur' ? 'Odelo → Balentur yaptı, net Ölmeztur kârı' : 'Odelo → Ölmeztur yaptı, ödeme Balenturdan alınacak')
+            : detayT.yon === 'oVerdi' ? (sel + ' → ' + OL) : detayT.yon === 'benVerdim' ? (OL + ' → ' + sel) : ('Alt Acenta: ' + (detayT.altAcenta || sel));
         const hakedisTutar = tourCommissionTotal(detayT);
         const hakedisPay = tourCommissionShare(detayT);
         const hakedisVar = hakedisTutar > 0;
@@ -2591,8 +2813,8 @@ function HesapTab({ T, sT, agencies, tip }) {
             ['Yolcu', yolcu || '—'],
             ['Kaptan', detayT.driverName || '—'],
             ['Plaka', detayT.plate || '—'],
-            ['Müşteri', odeme],
-            ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
+            detayT.kaynak === 'odelo' ? ['Odelo Bedeli', fr(detayT.odelloGross || detayT.odeloGross || detayT.customerTRY || detayT.paymentAmount || detayT.driverPayment || 0) + '₺'] : ['Müşteri', odeme],
+            detayT.kaynak === 'odelo' && detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
             detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + ((parseFloat(detayT.altAcentaUcreti) || 0) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
             hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
@@ -2661,7 +2883,14 @@ function HesapTab({ T, sT, agencies, tip }) {
         const kar = transferNetAmount({ ...t });
         const kartKomisyonToplam = tourCommissionTotal(t);
         const kartKomisyonPay = tourCommissionShare(t);
-        const yonBilgi = t.yon === 'oVerdi'
+        const settleKey = t.settleFirmKey || (t.kaynak === 'alt' ? sel + '_alt' : sel);
+        const yonBilgi = t.kaynak === 'odelo'
+            ? {
+                txt: t.yon === 'odeloBalentur' ? 'Odelo - Balentur yaptı' : 'Odelo - Ölmeztur yaptı',
+                bg: '#E3F1E7',
+                col: G
+            }
+            : t.yon === 'oVerdi'
             ? { txt: sel + ' verdi', bg: '#F6F3EF', col: NAV }
             : t.yon === 'benVerdim'
                 ? { txt: 'Ben verdim', bg: '#FFF5E5', col: BR }
@@ -2672,7 +2901,7 @@ function HesapTab({ T, sT, agencies, tip }) {
             React.createElement("span", { style: { fontSize: 9, color: NAV, fontWeight: 800 } }, 'Detay ›'));
         const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 } },
             React.createElement("div", { style: { fontSize: 15, fontWeight: 900, color: pos ? G : R, letterSpacing: 0 } }, (pos ? '+' : '−') + fr(t.netOl) + '₺'),
-            React.createElement("button", { onClick: e => { e.stopPropagation(); togSettle(t.id, t.kaynak === 'alt' ? sel + '_alt' : sel); }, style: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0' } },
+            React.createElement("button", { onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey); }, style: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0' } },
                 React.createElement("div", { style: { width: 18, height: 18, borderRadius: 4, border: '2px solid ' + (t.firmSettled ? G : BOR), background: t.firmSettled ? G : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 } }, "✓")),
                 React.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: t.firmSettled ? G : SB } }, t.firmSettled ? 'Kapandı' : 'Açık')));
         return React.createElement("div", {
@@ -2745,14 +2974,18 @@ function HesapTab({ T, sT, agencies, tip }) {
             React.createElement("span", { style: { color: SB, fontSize: 14 } }, openFirms ? '\u2212' : '+')),
         (openFirms || hasFirmSearch || sel) && React.createElement("div", { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
             sel ? (function() {
-                const { ts, al, ver, net } = ozet(sel);
+                const hData = hesapData(sel);
+                const { ts, al, ver, net } = hData;
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
                 const mAl = Math.round(mts.filter(t => !t.firmSettled && t.netOl > 0).reduce((s, t) => s + t.netOl, 0));
                 const mVer = Math.round(mts.filter(t => !t.firmSettled && t.netOl < 0).reduce((s, t) => s + Math.abs(t.netOl), 0));
                 const sirali = ts.slice().sort(sortHesapTs);
-                const onunVerdikleri = sirali.filter(t => t.yon === 'oVerdi');
-                const benimVerdiklerim = sirali.filter(t => t.yon === 'benVerdim');
-                const altKayitlar = sirali.filter(t => t.yon === 'alt');
+                const normalSirali = sirali.filter(t => t.kaynak !== 'odelo');
+                const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi');
+                const benimVerdiklerim = normalSirali.filter(t => t.yon === 'benVerdim');
+                const altKayitlar = normalSirali.filter(t => t.yon === 'alt');
+                const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
+                const isBalenturAccount = isBalenturFirm(sel);
                 return React.createElement(React.Fragment, null,
                     React.createElement("button", { onClick: () => { setDetayT(null); setSel(null); }, style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 12px', color: TX, fontWeight: 700, fontSize: 12, cursor: 'pointer', textAlign: 'left' } }, "\u2190 T\u00FCm Firmalar"),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -2817,51 +3050,22 @@ function HesapTab({ T, sT, agencies, tip }) {
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 700, letterSpacing: .3 } }, l))))),
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                        renderHesapBolum(sel + ' verdi\u011Fi i\u015Fler', onunVerdikleri, NAV),
-                        renderHesapBolum('\u00D6lmeztur verdi\u011Fi i\u015Fler', benimVerdiklerim, R),
-                        altKayitlar.length > 0 && renderHesapBolum('Alt acenta işleri', altKayitlar, O),
-                        
-                        (sel === 'Balontur' || sel === 'Balentur' || sel === 'Balon tur') && React.createElement("div", { style: { marginTop: 20, borderTop: '2px solid ' + BOR, paddingTop: 15 } },
-                            React.createElement("button", {
-                                onClick: () => setOdeloOpen(!odeloOpen),
-                                style: { width: '100%', background: '#F6F3EF', border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }
-                            },
-                                React.createElement("div", null,
-                                    React.createElement("div", { style: { fontWeight: 800, fontSize: 13, color: TX } }, "📂 Odelo Acenta Hesabı"),
-                                    React.createElement("div", { style: { fontSize: 10, color: SB } }, "Balontur bünyesindeki Odelo kayıtları")),
-                                React.createElement("span", { style: { color: SB, fontSize: 16 } }, odeloOpen ? '▲' : '▼')
-                            ),
-                            odeloOpen && (function() {
-                                const oData = ozet('Odelo');
-                                return React.createElement("div", { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 } },
-                                    React.createElement("div", {
-                                        style: {
-                                            background: oData.net >= 0
-                                                ? 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)'
-                                                : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                                            padding: '12px',
-                                            borderRadius: 13,
-                                            textAlign: 'center',
-                                            border: '1.5px solid ' + (oData.net >= 0 ? '#7DB68B' : '#FFC4C0'),
-                                            boxShadow: oData.net >= 0
-                                                ? '0 3px 10px rgba(18,108,55,.16), inset 0 1px 0 rgba(255,255,255,.5)'
-                                                : '0 3px 10px rgba(255,59,48,.16), inset 0 1px 0 rgba(255,255,255,.5)'
-                                        }
-                                    },
-                                        React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: oData.net >= 0 ? G : R, letterSpacing: 1 } }, "ODELO NET DURUM"),
-                                        React.createElement("div", { style: { fontSize: 20, fontWeight: 900, color: oData.net >= 0 ? G : R, marginTop: 2 } }, (oData.net >= 0 ? '+' : '−') + fr(Math.abs(oData.net)) + " ₺ " + (oData.net >= 0 ? '(Alacak)' : '(Borç)'))
-                                    ),
-                                    renderHesapBolum('Odelo Verilen İşler', oData.ts.filter(x => x.yon === 'benVerdim').sort(sortHesapTs), R),
-                                    renderHesapBolum('Odelo Gelen İşler', oData.ts.filter(x => x.yon === 'oVerdi').sort(sortHesapTs), NAV)
-                                );
-                            })()
-                        )
+                        isBalenturAccount
+                            ? React.createElement(React.Fragment, null,
+                                renderHesapBolum("\u00D6lmeztur - " + sel, benimVerdiklerim, R),
+                                renderHesapBolum(sel + " - \u00D6lmeztur", onunVerdikleri, NAV),
+                                renderHesapBolum('Odelo', odeloKayitlar, G),
+                                altKayitlar.length > 0 && renderHesapBolum('Alt acenta işleri', altKayitlar, O))
+                            : React.createElement(React.Fragment, null,
+                                renderHesapBolum('\u00D6lmeztur - ' + sel, benimVerdiklerim, R),
+                                renderHesapBolum(sel + ' - \u00D6lmeztur', onunVerdikleri, NAV),
+                                altKayitlar.length > 0 && renderHesapBolum('Alt acenta işleri', altKayitlar, O))
                     ),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
                         React.createElement("button", { onClick: () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCE4 \u015Eirkete\nKopyala"),
-                        React.createElement("button", { onClick: () => csvExport(sel), style: { background: G, color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCA Numbers\nCSV"),
+                        React.createElement("button", { onClick: () => numbersExport(sel), style: { background: G, color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCA Numbers\nA\u00E7"),
                         React.createElement("button", { onClick: () => {
-                                const { ts: ts2, al: al2, ver: ver2, net: net2 } = ozet(sel);
+                                const { ts: ts2, al: al2, ver: ver2, net: net2 } = hData;
                                 const rows2 = ts2.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => { const kar2 = transferNetAmount({ ...t }); return (i + 1) + '. ' + t.date + ' ' + t.time + ' | ' + (t.pickup || '\u2014') + ' \u2192 ' + (t.dropoff || '\u2014') + '\n   Ara\u00E7:' + fr(t.driverPayment) + '\u20BA K\u00E2r:' + (kar2 >= 0 ? '+' : '') + fr(kar2) + '\u20BA ' + (t.firmSettled ? '[KAPALI]' : '[A\u00C7IK]'); }).join('\n\n');
                                 copyText('KEND\u0130 HESABIM \u2014 ' + sel + '\nAlacak:' + fr(al2) + '\u20BA Verecek:' + fr(ver2) + '\u20BA Net:' + (net2 >= 0 ? '+' : '') + fr(net2) + '\u20BA\n' + '\u2500'.repeat(24) + '\n\n' + rows2);
                                 tip('Kopyaland\u0131!');
@@ -2870,7 +3074,7 @@ function HesapTab({ T, sT, agencies, tip }) {
             })()
             : React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
                 filtered.map(firm => {
-                    const { ts, al, ver, net } = ozet(firm);
+                    const { ts, al, ver, net } = hesapData(firm);
                     if (ts.length === 0) return null;
                     return React.createElement("button", { key: firm, onClick: () => setSel(firm), style: { width: '100%', background: '#fff', border: '1px solid ' + BOR, borderRadius: 13, padding: '11px 12px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,.06)' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9 } },
@@ -4383,7 +4587,7 @@ function App() {
             ym
         };
     };
-    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 20, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
         const payload = JSON.stringify(snapshotPayload(), null, 2);
         const ok = await copyText(payload);
@@ -4852,6 +5056,7 @@ function App() {
     const altPreviewBal = calcAltBal(formPreviewT);
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
     const altPreviewNet = altPreviewBal ? altPreviewBal.netOl : 0;
+    const formBalenturOdelo = balenturOdeloCalc(formPreviewT);
     const formTourCommissionTotal = tourCommissionTotal(formPreviewT);
     const formTourCommissionShare = tourCommissionShare(formPreviewT);
     const formTourCommissionRightSide = form.altAcenta ? (form.altAcenta || 'Alt acenta') : (form.assignedTo || 'İş alan');
@@ -5812,10 +6017,46 @@ function App() {
                             React.createElement("span", { style: { fontSize: 15 } }, m.ico),
                             React.createElement("span", null, m.n))))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginBottom: 8 } }, [['pending', '⏳ Bekliyor'], ['paid', '✅ Ödendi'], ['cancelled', '❌ İptal']].map(([id, lbl]) => (React.createElement("button", { key: id, onClick: () => sf({ paymentStatus: id }), style: { background: form.paymentStatus === id ? NAV : INP, color: form.paymentStatus === id ? '#fff' : TX, border: 'none', borderRadius: 8, padding: '7px 2px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 } }, lbl)))))),
+                    form.paymentCollect === 'no' && formBalenturOdelo && React.createElement("div", {
+                        style: {
+                            background: '#E3F1E7',
+                            border: '1px solid #7DB68B',
+                            borderRadius: 11,
+                            padding: '10px 11px',
+                            marginBottom: 8
+                        }
+                    },
+                        React.createElement("div", { style: { fontSize: 10, color: G, fontWeight: 800, marginBottom: 7, letterSpacing: .4 } }, "ODELO BEDELİ - MİSAFİRDEN TAHSİLAT YOK"),
+                        React.createElement("div", { style: { display: 'flex', gap: 6 } },
+                            React.createElement("div", { style: { flex: 1 } },
+                                React.createElement("span", { className: "lbl" }, "Odelo Tutarı"),
+                                React.createElement("input", { type: "number", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
+                            React.createElement("div", { style: { width: 75 } },
+                                React.createElement("span", { className: "lbl" }, "D\u00F6viz"),
+                                React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 700, cursor: 'pointer', fontSize: 14, width: '100%' } },
+                                    React.createElement("option", { value: "TRY" }, "\u20BA TRY"),
+                                    React.createElement("option", { value: "USD" }, "$ USD"),
+                                    React.createElement("option", { value: "EUR" }, "\u20AC EUR"))))),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti (₺)' : 'Firmaya Araç Ücreti (₺)'),
                         React.createElement("input", { type: "number", value: form.driverPayment, onChange: e => sf({ driverPayment: e.target.value }), placeholder: "0", className: "inp" })),
                     (form.driverPayment || form.paymentAmount) && (React.createElement("div", { style: { marginTop: 10 } },
+                        formBalenturOdelo && React.createElement("div", {
+                            style: {
+                                padding: '10px 13px',
+                                borderRadius: 11,
+                                background: formBalenturOdelo.netOl >= 0 ? 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)' : 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
+                                border: '1.5px solid ' + (formBalenturOdelo.netOl >= 0 ? '#7DB68B' : '#FFC4C0'),
+                                marginBottom: 8,
+                                boxShadow: formBalenturOdelo.netOl >= 0 ? '0 2px 8px rgba(18,108,55,.14)' : '0 2px 8px rgba(255,59,48,.14)'
+                            }
+                        },
+                            React.createElement("div", { style: { fontSize: 9, color: formBalenturOdelo.netOl >= 0 ? G : R, fontWeight: 800, letterSpacing: .6, marginBottom: 2 } },
+                                "BALENTUR ODELO HESABI"),
+                            React.createElement("div", { style: { fontSize: 17, fontWeight: 900, color: formBalenturOdelo.netOl >= 0 ? G : R } },
+                                formBalenturOdelo.netOl >= 0 ? '+' : '−',
+                                Math.abs(formBalenturOdelo.netOl).toFixed(0),
+                                " \u20BA")),
                         (firmPreviewBal && firmPreviewNet !== 0) && (React.createElement("div", {
                             style: {
                                 padding: '10px 13px',
@@ -6044,8 +6285,8 @@ function App() {
                     React.createElement("div", { style: { fontWeight: 600, fontSize: 16, color: TX } }, "\uD83D\uDEE1\uFE0F Veri Yedekleme"),
                     React.createElement("button", { onClick: () => setBkpM(false), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "\u2715")),
                 React.createElement("div", { style: { background: '#F2EFEA', border: '1px solid #D8D0C6', borderRadius: 14, padding: 14, marginBottom: 12 } },
-                    React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: G, marginBottom: 6 } }, "\uD83D\uDCE4 Yede\u011Fi Kopyala"),
-                    React.createElement("div", { style: { fontSize: 11, color: G, marginBottom: 8 } }, "JSON direkt panoya kopyalan\u0131r. MacBook veya iPhone\u2019da uygulamay\u0131 a\u00E7\u0131p \u201CPanodakini Y\u00FCkle\u201D demen yeterli."),
+                    React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: G, marginBottom: 6 } }, "\uD83D\uDCE4 G\u00FCvenli Yedek"),
+                    React.createElement("div", { style: { fontSize: 11, color: G, marginBottom: 8 } }, "En sa\u011Flam yol: yede\u011Fi dosya olarak indirip Dosyalar / iCloud Drive i\u00E7inde saklamak. Panoya kopyalama sadece h\u0131zl\u0131 alternatif."),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 10, padding: '10px 12px', background: '#fff', borderRadius: 10, border: '1px solid #D8D0C6' } },
                         React.createElement("div", { style: { textAlign: 'center' } },
                             React.createElement("div", { style: { fontSize: 18, fontWeight: 900, color: '#4F4A43', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'tam').length),
@@ -6060,10 +6301,12 @@ function App() {
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: SB, marginTop: 2 } }, 'İPTAL')
                         )
                     ),
-                    React.createElement("button", { onClick: doBackup, style: { width: '100%', background: G, color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
+                    React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: G, color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
+                        "\uD83D\uDCC1 iCloud / Dosyalar'a Yedek \u0130ndir"),
+                    React.createElement("button", { onClick: doBackup, style: { width: '100%', background: '#FFFFFF', color: G, border: '1.5px solid #7DB68B', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
                         "\uD83D\uDCCB Toplam ",
                         T.length,
-                        " transfer\u2019\u0131 Yedekle"),
+                        " transfer\u2019\u0131 Panoya Kopyala"),
                     React.createElement("button", { onClick: doGithubBackup, style: { width: '100%', background: 'linear-gradient(135deg,#1F1D1A 0%,#4F4A43 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '13.5px', cursor: 'pointer', marginBottom: 8, letterSpacing: 0.2, boxShadow: '0 2px 6px rgba(79,74,67,.25)' } },
                         "\u2601\uFE0F Widget'a Aktar (GitHub)"),
                     React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#FAF8F5', borderRadius: 8, border: '1px dashed #DED8D0', lineHeight: 1.4 } },
@@ -6071,7 +6314,8 @@ function App() {
                     React.createElement("textarea", { readOnly: true, value: rstTxt, placeholder: "Yedek burada da g\u00F6r\u00FCn\u00FCr...", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #D8D0C6', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
                 React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
                     React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: NAV, marginBottom: 6 } }, "\uD83D\uDCE5 Geri Y\u00FCkle"),
-                    React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 8 } }, "Di\u011Fer cihazda direkt \u201CPanodakini Y\u00FCkle\u201D butonuna bas. \u0130stersen alttaki kutuya da yap\u0131\u015Ft\u0131rabilirsin."),
+                    React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 8 } }, "Dosyalar/iCloud Drive\u2019daki .json yede\u011Fini se\u00E7ebilir veya eski y\u00F6ntemle panodan y\u00FCkleyebilirsin."),
+                    React.createElement("input", { type: "file", accept: ".json,application/json", onChange: e => { const f = e.target.files && e.target.files[0]; restoreFromFile(f); e.target.value = ''; }, className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 12px', marginBottom: 8, background: '#fff' } }),
                     React.createElement("button", { onClick: pasteAndRestore, style: { width: '100%', background: '#1F1D1A', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } }, "\uD83D\uDCCB Panodakini Y\u00FCkle"),
                     React.createElement("textarea", { value: rstTxt, onChange: e => setRstTxt(e.target.value), onPaste: e => { const pasted = (e.clipboardData || window.clipboardData).getData('text'); if (pasted) setTimeout(() => setRstTxt(pasted), 0); }, placeholder: "Yedek veriyi buraya yap\u0131\u015Ft\u0131r\u0131n...", rows: 4, style: { width: '100%', background: 'white', border: '1.5px solid ' + BOR, borderRadius: 10, padding: '10px 12px', fontSize: '13px', color: TX, resize: 'none', outline: 'none', marginBottom: 8, display: 'block' } }),
                     React.createElement("button", { onClick: doRestore, disabled: !rstTxt.trim(), style: { width: '100%', background: rstTxt.trim() ? NAV : '#AEAEB2', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: rstTxt.trim() ? 'pointer' : 'default' } }, "\u2B06\uFE0F Yap\u0131\u015Ft\u0131r\u0131lan Yede\u011Fi Y\u00FCkle")))))));
