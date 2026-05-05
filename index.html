@@ -2329,7 +2329,19 @@ function HesapTab({ T, sT, agencies, tip }) {
         return x; const sf = { ...(x.settledFirms || {}) }; sf[firm] = !sf[firm]; return { ...x, settledFirms: sf }; }));
     const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
     const firmalar = [...new Set([...T.map(t => t.givenBy), ...T.map(t => t.assignedTo), ...T.filter(t => t.altAcenta).map(t => t.altAcenta), ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
-    const filtered = firmalar.filter(f => !ara || f.toLowerCase().includes(ara.toLowerCase()));
+    const firmSearch = ara.trim();
+    const hasFirmSearch = !!firmSearch;
+    const filtered = firmalar.filter(f => !hasFirmSearch || nm(f).includes(nm(firmSearch)));
+    const setFirmSearch = v => {
+        setAra(v);
+        const q = (v || '').trim();
+        if (!q) {
+            setSel(null);
+            return;
+        }
+        const matches = firmalar.filter(f => nm(f).includes(nm(q)));
+        setSel(matches.length === 1 ? matches[0] : null);
+    };
     const ozet = firm => {
         let al = 0, ver = 0;
         const detay = [];
@@ -2719,13 +2731,19 @@ function HesapTab({ T, sT, agencies, tip }) {
 
 
 
-    const [openFirms, setOpenFirms] = useState(true);
+    const [openFirms, setOpenFirms] = useState(false);
     return (React.createElement("div", { className: "card" },
+        React.createElement("input", {
+            value: ara,
+            onChange: e => setFirmSearch(e.target.value),
+            placeholder: "\uD83D\uDD0D Firma ara...",
+            className: "inp",
+            style: { fontSize: '13px', marginBottom: 10 }
+        }),
         React.createElement("button", { onClick: () => setOpenFirms(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 800, color: TX, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
             React.createElement("span", null, '\uD83D\uDCCA Firma Hesaplar\u0131'),
             React.createElement("span", { style: { color: SB, fontSize: 14 } }, openFirms ? '\u2212' : '+')),
-        openFirms && React.createElement("div", { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
-            React.createElement("input", { value: ara, onChange: e => { setAra(e.target.value); setSel(null); }, placeholder: "\uD83D\uDD0D Firma ara...", className: "inp", style: { fontSize: '13px' } }),
+        (openFirms || hasFirmSearch || sel) && React.createElement("div", { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
             sel ? (function() {
                 const { ts, al, ver, net } = ozet(sel);
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
@@ -4982,10 +5000,10 @@ function App() {
                 const tp = n => setExpandedT(p => ({ ...p, __hp: (p.__hp === undefined ? 'day' : p.__hp) === n ? false : n }));
                 const todayCalendarIcon = isActive => React.createElement("span", {
                     style: {
-                        width: 24, height: 28, borderRadius: 7, overflow: 'hidden',
+                        width: 22, height: 25, borderRadius: 7, overflow: 'hidden',
                         background: isActive ? 'rgba(255,255,255,.9)' : '#fff',
                         border: '1px solid ' + (isActive ? 'rgba(255,255,255,.75)' : 'var(--brand-bd)'),
-                        display: 'grid', gridTemplateRows: '7px 1fr',
+                        display: 'grid', gridTemplateRows: '6px 1fr',
                         boxShadow: '0 1px 2px rgba(0,0,0,.08)'
                     }
                 },
@@ -4994,7 +5012,7 @@ function App() {
                         style: {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: isActive ? 'var(--ok)' : 'var(--brand-2)',
-                            fontSize: 13, fontWeight: 900, lineHeight: 1,
+                            fontSize: 12, fontWeight: 900, lineHeight: 1,
                             fontVariantNumeric: 'tabular-nums'
                         }
                     }, String(now.getDate()))
@@ -5010,27 +5028,27 @@ function App() {
                                 ? 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)'
                                 : 'linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%)',
                             border: '1px solid ' + (isActive ? 'var(--brand-2)' : 'var(--line)'),
-                            borderRadius: 'var(--r-lg)', padding: '13px 12px', textAlign: 'left', cursor: 'pointer',
+                            borderRadius: 'var(--r-lg)', padding: '10px 10px', textAlign: 'left', cursor: 'pointer',
                             boxShadow: isActive
-                                ? '0 12px 26px rgba(79,74,67,.24), 0 2px 6px rgba(79,74,67,.14)'
-                                : '0 2px 8px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.7)',
-                            position: 'relative', overflow: 'hidden', minHeight: 92,
+                                ? '0 8px 18px rgba(79,74,67,.22), 0 1px 4px rgba(79,74,67,.12)'
+                                : '0 1px 5px rgba(0,0,0,.055), inset 0 1px 0 rgba(255,255,255,.7)',
+                            position: 'relative', overflow: 'hidden', minHeight: 78,
                             display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                             transition: 'all .2s cubic-bezier(.22,.9,.3,1)'
                         }
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' } },
                             React.createElement("div", { style: {
-                                width: 36, height: 36, borderRadius: 10,
+                                width: 31, height: 31, borderRadius: 9,
                                 background: isActive ? 'rgba(255,255,255,.22)' : 'var(--brand-softer)',
                                 color: isActive ? '#fff' : 'var(--brand)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
                                 border: isActive ? '1px solid rgba(255,255,255,.3)' : '1px solid var(--brand-bd)',
                                 boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,.25)' : 'none',
-                                fontSize: 15
+                                fontSize: 14
                             } }, typeof ico === 'function' ? ico(isActive) : ico),
                             React.createElement("span", { style: { 
-                                fontSize: 10, 
+                                fontSize: 9, 
                                 color: isActive ? 'rgba(255,255,255,.85)' : 'var(--ink-4)',
                                 transition: 'transform .25s', 
                                 transform: isActive ? 'rotate(180deg)' : 'none', 
@@ -5038,20 +5056,20 @@ function App() {
                                 fontWeight: 700
                             } }, "▼")
                         ),
-                        React.createElement("div", { style: { marginTop: 8, position: 'relative' } },
+                        React.createElement("div", { style: { marginTop: 5, position: 'relative' } },
                             React.createElement("div", { style: { 
-                                fontSize: 9.5, fontWeight: 800, 
+                                fontSize: 8.8, fontWeight: 800, 
                                 color: isActive ? 'rgba(255,255,255,.78)' : 'var(--ink-3)', 
                                 letterSpacing: .7, textTransform: 'uppercase' 
                             } }, lbl),
                             React.createElement("div", { style: { 
-                                fontSize: 22, fontWeight: 900, 
+                                fontSize: 20, fontWeight: 900, 
                                 color: isActive ? '#fff' : 'var(--ink)', 
                                 letterSpacing: 0, lineHeight: 1.02, marginTop: 2, 
                                 fontVariantNumeric: 'tabular-nums' 
                             } }, val),
                             React.createElement("div", { style: { 
-                                fontSize: 9.5, 
+                                fontSize: 9, 
                                 color: isActive ? 'rgba(255,255,255,.7)' : 'var(--ink-3)', 
                                 fontWeight: 600, marginTop: 2 
                             } }, sub)
@@ -5063,21 +5081,21 @@ function App() {
                 const DP = (title, onClose, children) => React.createElement("div", {
                     style: {
                         background: 'var(--card)', border: '1px solid var(--line)', borderRadius: 'var(--r-lg)',
-                        overflow: 'hidden', marginTop: 6, boxShadow: '0 2px 8px rgba(0,0,0,.05)',
+                        overflow: 'hidden', marginTop: 2, boxShadow: '0 1px 5px rgba(0,0,0,.05)',
                         animation: 'moSlide .25s cubic-bezier(.22,.9,.3,1)'
                     }
                 },
                     React.createElement("div", { style: {
-                        padding: '12px 16px', background: 'linear-gradient(135deg,var(--brand-softer),var(--brand-soft))',
+                        padding: '9px 12px', background: 'linear-gradient(135deg,var(--brand-softer),var(--brand-soft))',
                         borderBottom: '1px solid var(--brand-bd)', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                     } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: 'var(--brand)' } }, title),
                         React.createElement("button", { onClick: onClose, style: {
-                            width: 28, height: 28, borderRadius: 50, background: 'var(--card)', border: '1px solid var(--brand-bd)',
+                            width: 26, height: 26, borderRadius: 50, background: 'var(--card)', border: '1px solid var(--brand-bd)',
                             color: 'var(--brand)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
                         } }, "✕")
                     ),
-                    React.createElement("div", { style: { padding: '10px 14px 14px', maxHeight: '55vh', overflowY: 'auto' } }, children)
+                    React.createElement("div", { style: { padding: '8px 10px 10px', maxHeight: '50vh', overflowY: 'auto' } }, children)
                 );
 
                 // Dönem satırı
@@ -5101,7 +5119,7 @@ function App() {
                     } }, cnt + " transfer")
                 );
 
-                return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
 
                     /* ─── TARİH + KUR BAŞLIK KARTI ─── */
                     React.createElement("div", { 
@@ -5109,9 +5127,9 @@ function App() {
                         style: {
                             background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)',
                             borderRadius: 'var(--r-lg)',
-                            padding: '14px 16px',
+                            padding: '11px 13px',
                             color: '#fff',
-                            boxShadow: '0 6px 20px rgba(79,74,67,.26), 0 1px 3px rgba(79,74,67,.16)',
+                            boxShadow: '0 4px 14px rgba(79,74,67,.24), 0 1px 3px rgba(79,74,67,.14)',
                             position: 'relative',
                             overflow: 'hidden',
                             cursor: 'pointer',
@@ -5135,7 +5153,7 @@ function App() {
                                 )
                             )
                         ),
-                        lastRateUpdate && React.createElement("div", { style: { fontSize: 9.5, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 5, position: 'relative', justifyContent: 'space-between' } },
+                        lastRateUpdate && React.createElement("div", { style: { fontSize: 9.2, color: 'rgba(255,255,255,.6)', fontWeight: 600, marginTop: 4, display: 'flex', alignItems: 'center', gap: 5, position: 'relative', justifyContent: 'space-between' } },
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5 } },
                                 React.createElement("span", null, "↻"),
                                 React.createElement("span", null, "Son güncelleme: " + new Date(lastRateUpdate).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }))
@@ -5186,7 +5204,7 @@ function App() {
                     ),
 
                     /* ═══════ 4 PREMIUM KART ═══════ */
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 9 } },
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 7 } },
                         SC(todayCalendarIcon, "Bugün", todayT.length, todayT.length === 0 ? "Transfer yok" : (function(){
                             const tamamlandi = todayT.filter(x => transferLooksDone(x, now)).length;
                             const ipt = todayT.filter(x => x.status === 'iptal').length;
