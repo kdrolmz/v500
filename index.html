@@ -1488,6 +1488,41 @@ main.main-cont{
   backdrop-filter:saturate(1.55) blur(18px);
   -webkit-backdrop-filter:saturate(1.55) blur(18px);
 }
+.lg-tools-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.lg-refresh-btn{
+  width:26px;
+  height:25px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.56);
+  background:rgba(255,255,255,.34);
+  color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.66),0 8px 18px rgba(56,52,46,.10);
+  font-size:12px;
+  font-weight:560;
+}
+.lg-inline-rates{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  margin-top:9px;
+  flex-wrap:wrap;
+}
+.lg-inline-rate{
+  min-height:22px;
+  border-radius:11px;
+  padding:4px 7px;
+  background:rgba(255,255,255,.36);
+  border:1px solid rgba(255,255,255,.52);
+  color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.62);
+  font-size:9px;
+  font-weight:560;
+  white-space:nowrap;
+}
 .lg-weather-mark{
   width:22px;height:22px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
@@ -1678,6 +1713,16 @@ main.main-cont{
   max-height:278px;
   overflow:auto;
 }
+.lg-period-panel.mode-today{
+  background:
+    linear-gradient(145deg,rgba(56,54,52,.72),rgba(111,104,96,.56) 50%,rgba(229,223,214,.30)),
+    rgba(78,73,67,.56)!important;
+  border-color:rgba(255,255,255,.38)!important;
+}
+.lg-period-panel.mode-today .lg-period-panel-title,
+.lg-period-panel.mode-today .lg-period-panel-count{
+  color:#fff!important;
+}
 .lg-period-panel-head{
   display:flex;
   align-items:center;
@@ -1799,6 +1844,50 @@ main.main-cont{
 }
 .lg-profit-detail-value.is-pos{color:#126C37}
 .lg-profit-detail-value.is-neg{color:#B95A54}
+.lg-profit-months{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-top:10px;
+}
+.lg-profit-month{
+  border-radius:13px;
+  padding:9px 10px;
+  background:rgba(255,255,255,.36);
+  border:1px solid rgba(255,255,255,.52);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.62),0 8px 20px rgba(56,52,46,.08);
+}
+.lg-profit-month-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+}
+.lg-profit-month-name{
+  color:var(--lg-ink);
+  font-size:11px;
+  font-weight:620;
+}
+.lg-profit-month-total{
+  font-size:11px;
+  font-weight:640;
+  font-variant-numeric:tabular-nums;
+}
+.lg-profit-month-total.is-pos{color:#126C37}
+.lg-profit-month-total.is-neg{color:#B95A54}
+.lg-profit-month-lines{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px 8px;
+  color:var(--lg-muted);
+  font-size:9.5px;
+  font-weight:460;
+}
+.lg-profit-month-lines strong{
+  color:var(--lg-ink);
+  font-weight:620;
+}
 .lg-upcoming-card{
   border-radius:16px;
   padding:15px 14px 12px;
@@ -2093,6 +2182,146 @@ main.main-cont button:not(.tab):not(.tab-fab):not(.hdr-iconbtn){
 .app-shell main.main-cont [style*="border-radius"]{
   border-radius:13px!important;
 }
+body .card,
+.ms,
+.mo .card{
+  background:
+    linear-gradient(148deg,rgba(255,255,255,.62),rgba(244,241,236,.42) 48%,rgba(207,216,220,.42)),
+    rgba(238,235,229,.50)!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  box-shadow:0 24px 58px rgba(56,52,46,.16),0 2px 10px rgba(56,52,46,.08),inset 0 1px 0 rgba(255,255,255,.76)!important;
+  backdrop-filter:saturate(1.7) blur(28px)!important;
+  -webkit-backdrop-filter:saturate(1.7) blur(28px)!important;
+}
+.auth-shell{
+  background:
+    radial-gradient(circle at 20% 10%,rgba(255,255,255,.88),rgba(255,255,255,0) 36%),
+    linear-gradient(145deg,#F1EEE9,#E7ECEF)!important;
+}
+.auth-shell > div{
+  max-width:402px!important;
+}
+.auth-shell .card{
+  background:
+    linear-gradient(145deg,rgba(48,50,54,.34),rgba(255,255,255,.58) 38%,rgba(232,226,216,.46) 70%,rgba(138,131,120,.22)),
+    rgba(245,243,238,.58)!important;
+  border:1px solid rgba(255,255,255,.68)!important;
+  border-radius:18px!important;
+}
+.auth-shell img{
+  box-shadow:0 20px 46px rgba(56,52,46,.18),inset 0 1px 0 rgba(255,255,255,.80)!important;
+}
+.auth-shell [style*="font-weight: 900"],
+.auth-shell [style*="font-weight: 800"]{
+  color:#1C1C1E!important;
+  font-weight:640!important;
+}
+.auth-shell [style*="color:"]{
+  color:var(--lg-muted)!important;
+}
+.auth-shell button{
+  background:linear-gradient(145deg,rgba(70,66,61,.88),rgba(138,128,116,.72))!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.46)!important;
+  box-shadow:0 14px 34px rgba(56,52,46,.18),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+.view-list .card,
+.view-hesap .card,
+.view-arac .card,
+.view-new .card,
+.view-list .tcard,
+.view-hesap .card,
+.view-arac .card{
+  background:
+    linear-gradient(145deg,rgba(48,50,54,.34),rgba(255,255,255,.48) 34%,rgba(232,226,216,.42) 66%,rgba(138,131,120,.22)),
+    rgba(245,243,238,.54)!important;
+  border:1px solid rgba(255,255,255,.66)!important;
+  box-shadow:0 22px 52px rgba(49,45,39,.17),0 2px 8px rgba(49,45,39,.08),inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(255,255,255,.22)!important;
+}
+.view-list .date-hdr,
+.view-list .date-hdr[style],
+.view-list .date-hdr:active{
+  background:
+    linear-gradient(145deg,rgba(58,58,60,.44),rgba(255,255,255,.58) 44%,rgba(210,204,194,.36)),
+    rgba(232,229,222,.58)!important;
+  color:#1C1C1E!important;
+  border:1px solid rgba(255,255,255,.70)!important;
+  box-shadow:0 16px 38px rgba(49,45,39,.14),inset 0 1px 0 rgba(255,255,255,.84)!important;
+}
+.view-list .date-hdr *,
+.view-list .date-hdr-txt,
+.view-list .date-hdr-meta{
+  color:#1C1C1E!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+.lg-datebox,
+.view-list .lg-datebox[style]{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.62),rgba(221,216,207,.42)),
+    rgba(244,241,236,.56)!important;
+  border:1px solid rgba(255,255,255,.66)!important;
+  color:#1C1C1E!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 9px 22px rgba(56,52,46,.10)!important;
+}
+.lg-datebox.is-selected,
+.lg-datebox.is-today{
+  background:
+    linear-gradient(145deg,rgba(79,74,67,.92),rgba(132,122,111,.78) 52%,rgba(231,225,214,.36))!important;
+  border-color:rgba(255,255,255,.74)!important;
+}
+.lg-datebox.has-work{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.70),rgba(225,217,207,.54))!important;
+}
+.lg-datebox div,
+.lg-datebox span{
+  color:#1C1C1E!important;
+  opacity:1!important;
+}
+.lg-datebox.is-selected div,
+.lg-datebox.is-selected span,
+.lg-datebox.is-today div,
+.lg-datebox.is-today span{
+  color:#FFFFFF!important;
+  opacity:1!important;
+}
+.view-list button[style*="background"]:not(.tab):not(.tab-fab):not(.lg-datebox),
+.view-hesap button[style*="background"]:not(.tab):not(.tab-fab),
+.view-arac button[style*="background"]:not(.tab):not(.tab-fab),
+.view-new button[style*="background"]:not(.tab):not(.tab-fab){
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.56),rgba(224,219,211,.34)),
+    rgba(244,241,236,.46)!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  color:#1C1C1E!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.76),0 9px 22px rgba(56,52,46,.10)!important;
+}
+.view-list .tcard-pill,
+.view-list .tcard-paystatus,
+.view-list .lg-chip,
+.view-hesap [style*="borderRadius"],
+.view-arac [style*="borderRadius"]{
+  background:rgba(255,255,255,.42)!important;
+  border-color:rgba(255,255,255,.58)!important;
+  color:#1C1C1E!important;
+}
+.lg-greeting-card{
+  background:
+    linear-gradient(145deg,rgba(54,53,52,.40),rgba(255,255,255,.58) 40%,rgba(204,198,188,.38) 72%,rgba(116,109,99,.26)),
+    rgba(235,232,225,.60)!important;
+}
+.lg-section-title{
+  padding:7px 10px;
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(68,65,61,.78),rgba(125,116,105,.58));
+  border:1px solid rgba(255,255,255,.40);
+  color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 9px 24px rgba(56,52,46,.16);
+}
+.lg-calendar-mini span:first-child{
+  background:linear-gradient(90deg,#9B5B54,#B98278,#D7B0A7)!important;
+}
 @media (prefers-color-scheme: dark){
   :root{
     --bg:#0F1114;
@@ -2206,6 +2435,427 @@ main.main-cont button:not(.tab):not(.tab-fab):not(.hdr-iconbtn){
 .tk-mini-btn.is-green{
   background:#E3F1E7!important;
   border-color:#7DB68B!important;
+}
+
+/* Final titanium glass pass: old inline cards in Transferler / Hesap / Arac */
+.lg-greeting-card{
+  background:
+    linear-gradient(138deg,rgba(42,43,46,.82) 0%,rgba(112,106,98,.62) 42%,rgba(238,234,226,.52) 100%),
+    rgba(105,100,92,.54)!important;
+  border-color:rgba(255,255,255,.58)!important;
+  box-shadow:0 22px 52px rgba(45,42,38,.22),inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(255,255,255,.10)!important;
+}
+.lg-greeting-card .lg-eyebrow,
+.lg-greeting-card .lg-greeting-title{
+  color:#FFFFFF!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.22);
+}
+.lg-greeting-card .lg-date{
+  color:rgba(255,255,255,.74)!important;
+}
+.lg-greeting-card .lg-inline-rate,
+.lg-greeting-card .lg-weather,
+.lg-greeting-card .lg-backup-btn,
+.lg-greeting-card .lg-refresh-btn{
+  background:rgba(255,255,255,.24)!important;
+  border-color:rgba(255,255,255,.36)!important;
+  color:#FFFFFF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 9px 22px rgba(0,0,0,.12)!important;
+}
+.lg-greeting-card .lg-weather-main,
+.lg-greeting-card .lg-weather-sub{
+  color:#FFFFFF!important;
+}
+.lg-section-title:first-child,
+.lg-period-panel.mode-today{
+  background:
+    linear-gradient(145deg,rgba(46,46,48,.86),rgba(102,96,88,.70) 56%,rgba(205,197,184,.30)),
+    rgba(58,56,53,.62)!important;
+  border-color:rgba(255,255,255,.42)!important;
+}
+main.main-cont.view-list,
+main.main-cont.view-hesap,
+main.main-cont.view-arac,
+main.main-cont.view-new{
+  gap:10px;
+}
+main.main-cont.view-list .card,
+main.main-cont.view-hesap .card,
+main.main-cont.view-arac .card,
+main.main-cont.view-new .card,
+main.main-cont.view-list .tcard,
+main.main-cont.view-hesap > div,
+main.main-cont.view-arac > div{
+  background:
+    linear-gradient(145deg,rgba(54,55,58,.22),rgba(255,255,255,.58) 34%,rgba(225,220,211,.44) 66%,rgba(105,99,91,.20)),
+    rgba(241,238,232,.58)!important;
+  border:1px solid rgba(255,255,255,.66)!important;
+  border-radius:17px!important;
+  box-shadow:0 22px 54px rgba(45,42,38,.17),0 2px 9px rgba(45,42,38,.08),inset 0 1px 0 rgba(255,255,255,.82),inset 0 -1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:saturate(1.75) blur(30px)!important;
+  -webkit-backdrop-filter:saturate(1.75) blur(30px)!important;
+}
+main.main-cont.view-list div[style*="background"],
+main.main-cont.view-hesap div[style*="background"],
+main.main-cont.view-arac div[style*="background"],
+main.main-cont.view-new div[style*="background"],
+main.main-cont.view-list section[style*="background"],
+main.main-cont.view-hesap section[style*="background"],
+main.main-cont.view-arac section[style*="background"],
+main.main-cont.view-new section[style*="background"]{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.58),rgba(235,231,223,.38) 58%,rgba(166,160,150,.16)),
+    rgba(244,241,236,.48)!important;
+  border-color:rgba(255,255,255,.58)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 10px 28px rgba(45,42,38,.09)!important;
+  backdrop-filter:saturate(1.55) blur(22px)!important;
+  -webkit-backdrop-filter:saturate(1.55) blur(22px)!important;
+}
+main.main-cont.view-list button[style*="background"]:not(.tab):not(.tab-fab):not(.lg-datebox),
+main.main-cont.view-hesap button[style*="background"]:not(.tab):not(.tab-fab),
+main.main-cont.view-arac button[style*="background"]:not(.tab):not(.tab-fab),
+main.main-cont.view-new button[style*="background"]:not(.tab):not(.tab-fab){
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.54),rgba(223,218,209,.36)),
+    rgba(244,241,236,.44)!important;
+  border:1px solid rgba(255,255,255,.58)!important;
+  color:#1C1C1E!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74),0 9px 22px rgba(45,42,38,.10)!important;
+  backdrop-filter:saturate(1.55) blur(20px)!important;
+  -webkit-backdrop-filter:saturate(1.55) blur(20px)!important;
+}
+main.main-cont.view-list [style*="font-weight: 900"],
+main.main-cont.view-hesap [style*="font-weight: 900"],
+main.main-cont.view-arac [style*="font-weight: 900"],
+main.main-cont.view-new [style*="font-weight: 900"],
+main.main-cont.view-list [style*="font-weight: 800"],
+main.main-cont.view-hesap [style*="font-weight: 800"],
+main.main-cont.view-arac [style*="font-weight: 800"],
+main.main-cont.view-new [style*="font-weight: 800"]{
+  font-weight:640!important;
+  letter-spacing:0!important;
+}
+main.main-cont.view-list input,
+main.main-cont.view-list select,
+main.main-cont.view-list textarea,
+main.main-cont.view-hesap input,
+main.main-cont.view-hesap select,
+main.main-cont.view-hesap textarea,
+main.main-cont.view-arac input,
+main.main-cont.view-arac select,
+main.main-cont.view-arac textarea,
+main.main-cont.view-new input,
+main.main-cont.view-new select,
+main.main-cont.view-new textarea{
+  background:rgba(255,255,255,.50)!important;
+  border:1px solid rgba(255,255,255,.62)!important;
+  color:#1C1C1E!important;
+  border-radius:13px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.76),0 8px 20px rgba(45,42,38,.06)!important;
+  color-scheme:light;
+}
+main.main-cont.view-list input:focus,
+main.main-cont.view-list select:focus,
+main.main-cont.view-list textarea:focus,
+main.main-cont.view-hesap input:focus,
+main.main-cont.view-hesap select:focus,
+main.main-cont.view-hesap textarea:focus,
+main.main-cont.view-arac input:focus,
+main.main-cont.view-arac select:focus,
+main.main-cont.view-arac textarea:focus,
+main.main-cont.view-new input:focus,
+main.main-cont.view-new select:focus,
+main.main-cont.view-new textarea:focus{
+  background:rgba(246,244,239,.74)!important;
+  border-color:rgba(120,112,102,.45)!important;
+  outline:2px solid rgba(120,112,102,.18)!important;
+}
+.view-list .date-hdr,
+.view-list .date-hdr[style],
+.view-list .date-hdr:active,
+.view-list .date-hdr:focus{
+  background:
+    linear-gradient(145deg,rgba(48,49,52,.86),rgba(104,98,90,.72) 55%,rgba(214,206,192,.28)),
+    rgba(60,58,55,.62)!important;
+  border:1px solid rgba(255,255,255,.46)!important;
+  box-shadow:0 18px 42px rgba(45,42,38,.20),inset 0 1px 0 rgba(255,255,255,.30)!important;
+}
+.view-list .date-hdr *,
+.view-list .date-hdr-txt,
+.view-list .date-hdr-meta{
+  color:#FFFFFF!important;
+  opacity:1!important;
+}
+.lg-datebox,
+.view-list .lg-datebox[style],
+.view-list .lg-datebox:focus,
+.view-list .lg-datebox:active{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.64),rgba(227,222,214,.44)),
+    rgba(244,241,236,.58)!important;
+  border:1px solid rgba(255,255,255,.70)!important;
+  color:#1C1C1E!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.84),0 10px 24px rgba(45,42,38,.11)!important;
+}
+.lg-datebox.is-selected,
+.lg-datebox.is-today,
+.view-list .lg-datebox.is-selected[style],
+.view-list .lg-datebox.is-today[style],
+.view-list .lg-datebox:focus-visible{
+  background:
+    linear-gradient(145deg,rgba(45,46,49,.92),rgba(116,108,99,.78) 56%,rgba(216,208,193,.30)),
+    rgba(62,59,55,.70)!important;
+  border-color:rgba(255,255,255,.68)!important;
+}
+.lg-datebox *,
+.view-list .lg-datebox *{
+  color:#1C1C1E!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+.lg-datebox.is-selected *,
+.lg-datebox.is-today *,
+.view-list .lg-datebox:focus-visible *{
+  color:#FFFFFF!important;
+}
+.tcard-paystatus.is-paid,
+.tcard-pill-status-tam,
+.view-list .tcard-pill,
+.view-list .tcard-paystatus,
+.view-hesap span[style*="background"],
+.view-arac span[style*="background"]{
+  background:rgba(255,255,255,.38)!important;
+  border-color:rgba(255,255,255,.58)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.64)!important;
+}
+.tcard-paystatus.is-paid,
+.tcard-pill-status-tam,
+.amt-pos,
+.tk-ledger-amt.tk-amt-in,
+.tk-widget-ledger-total.is-in,
+.tk-section-title.tk-tt-in,
+.tk-section-count.tk-cn-in,
+.tk-mini-btn.is-green{
+  color:#126C37!important;
+}
+.auth-shell .card{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(142deg,rgba(46,47,50,.62) 0%,rgba(255,255,255,.62) 43%,rgba(224,218,207,.48) 72%,rgba(105,99,91,.24)),
+    rgba(241,238,232,.62)!important;
+  border-color:rgba(255,255,255,.72)!important;
+  box-shadow:0 28px 62px rgba(45,42,38,.22),inset 0 1px 0 rgba(255,255,255,.82)!important;
+}
+.auth-shell .card:before{
+  content:"";
+  position:absolute;
+  inset:-34% -16% auto 34%;
+  height:150px;
+  background:linear-gradient(115deg,rgba(255,255,255,.66),rgba(255,255,255,0));
+  transform:rotate(16deg);
+  pointer-events:none;
+}
+.auth-shell .card > *{
+  position:relative;
+  z-index:1;
+}
+
+@media (prefers-color-scheme: dark){
+  .lg-greeting-card{
+    background:
+      linear-gradient(138deg,rgba(29,31,35,.90) 0%,rgba(70,68,64,.68) 48%,rgba(129,122,112,.28) 100%),
+      rgba(31,33,37,.70)!important;
+    border-color:rgba(255,255,255,.16)!important;
+  }
+  main.main-cont.view-list .card,
+  main.main-cont.view-hesap .card,
+  main.main-cont.view-arac .card,
+  main.main-cont.view-new .card,
+  main.main-cont.view-list .tcard,
+  main.main-cont.view-hesap > div,
+  main.main-cont.view-arac > div,
+  main.main-cont.view-list div[style*="background"],
+  main.main-cont.view-hesap div[style*="background"],
+  main.main-cont.view-arac div[style*="background"],
+  main.main-cont.view-new div[style*="background"]{
+    background:
+      linear-gradient(145deg,rgba(255,255,255,.08),rgba(38,41,46,.70) 42%,rgba(23,25,29,.58) 100%),
+      rgba(29,31,36,.66)!important;
+    border-color:rgba(255,255,255,.13)!important;
+    box-shadow:0 24px 56px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  }
+  main.main-cont.view-list button[style*="background"]:not(.tab):not(.tab-fab):not(.lg-datebox),
+  main.main-cont.view-hesap button[style*="background"]:not(.tab):not(.tab-fab),
+  main.main-cont.view-arac button[style*="background"]:not(.tab):not(.tab-fab),
+  main.main-cont.view-new button[style*="background"]:not(.tab):not(.tab-fab),
+  main.main-cont.view-list input,
+  main.main-cont.view-list select,
+  main.main-cont.view-list textarea,
+  main.main-cont.view-hesap input,
+  main.main-cont.view-hesap select,
+  main.main-cont.view-hesap textarea,
+  main.main-cont.view-arac input,
+  main.main-cont.view-arac select,
+  main.main-cont.view-arac textarea,
+  main.main-cont.view-new input,
+  main.main-cont.view-new select,
+  main.main-cont.view-new textarea{
+    background:rgba(42,45,51,.58)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:#F4F2EE!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 9px 22px rgba(0,0,0,.22)!important;
+    color-scheme:dark;
+  }
+  .lg-datebox,
+  .view-list .lg-datebox[style]{
+    background:linear-gradient(145deg,rgba(49,52,58,.72),rgba(31,34,39,.54))!important;
+    border-color:rgba(255,255,255,.14)!important;
+  }
+  .lg-datebox *,
+  .view-list .lg-datebox *{
+    color:#F4F2EE!important;
+  }
+  .auth-shell .card{
+    background:
+      linear-gradient(142deg,rgba(255,255,255,.08),rgba(39,42,48,.72) 48%,rgba(18,20,24,.62)),
+      rgba(29,31,36,.70)!important;
+    border-color:rgba(255,255,255,.15)!important;
+  }
+}
+
+/* Correction: restore clean top glass and stop tap/focus text washout */
+body,
+button,
+input,
+select,
+textarea{
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+.lg-greeting-card{
+  background:
+    linear-gradient(148deg,rgba(255,255,255,.70),rgba(255,255,255,.40) 52%,rgba(233,239,242,.42)),
+    rgba(245,243,238,.58)!important;
+  border:1px solid rgba(255,255,255,.62)!important;
+  box-shadow:var(--lg-shadow),var(--lg-inner)!important;
+}
+.lg-greeting-card .lg-eyebrow{
+  color:var(--lg-muted)!important;
+  text-shadow:none!important;
+}
+.lg-greeting-card .lg-greeting-title{
+  color:var(--lg-ink)!important;
+  text-shadow:none!important;
+}
+.lg-greeting-card .lg-date{
+  color:var(--lg-muted)!important;
+}
+.lg-greeting-card .lg-inline-rate,
+.lg-greeting-card .lg-weather,
+.lg-greeting-card .lg-backup-btn,
+.lg-greeting-card .lg-refresh-btn{
+  background:rgba(255,255,255,.36)!important;
+  border-color:rgba(255,255,255,.54)!important;
+  color:var(--lg-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.66),0 8px 18px rgba(56,52,46,.10)!important;
+}
+.lg-greeting-card .lg-weather-main{
+  color:var(--lg-ink)!important;
+}
+.lg-greeting-card .lg-weather-sub{
+  color:var(--lg-muted)!important;
+}
+.lg-period-panel.mode-today{
+  background:
+    linear-gradient(148deg,rgba(255,255,255,.68),rgba(255,255,255,.38) 52%,rgba(233,239,242,.42)),
+    rgba(245,243,238,.58)!important;
+  border-color:rgba(255,255,255,.58)!important;
+}
+.lg-period-panel.mode-today .lg-period-panel-title{
+  color:var(--lg-ink)!important;
+}
+.lg-period-panel.mode-today .lg-period-panel-count{
+  color:var(--lg-muted)!important;
+}
+.lg-today-title-row{
+  margin-top:0!important;
+}
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):active,
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus,
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus-visible{
+  color:#1C1C1E!important;
+  -webkit-text-fill-color:#1C1C1E!important;
+}
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):active *,
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus *,
+main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus-visible *{
+  color:#1C1C1E!important;
+  -webkit-text-fill-color:#1C1C1E!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+main.main-cont input,
+main.main-cont select,
+main.main-cont textarea,
+main.main-cont input:focus,
+main.main-cont select:focus,
+main.main-cont textarea:focus{
+  color:#1C1C1E!important;
+  -webkit-text-fill-color:#1C1C1E!important;
+}
+.lg-datebox.is-selected,
+.lg-datebox.is-today,
+.view-list .lg-datebox.is-selected[style],
+.view-list .lg-datebox.is-today[style]{
+  color:#FFFFFF!important;
+  -webkit-text-fill-color:#FFFFFF!important;
+}
+.lg-datebox.is-selected *,
+.lg-datebox.is-today *{
+  color:#FFFFFF!important;
+  -webkit-text-fill-color:#FFFFFF!important;
+}
+
+@media (prefers-color-scheme: dark){
+  .lg-greeting-card,
+  .lg-period-panel.mode-today{
+    background:linear-gradient(148deg,rgba(42,45,51,.72),rgba(28,31,36,.50) 54%,rgba(49,54,60,.38))!important;
+    border-color:rgba(255,255,255,.12)!important;
+  }
+  .lg-greeting-card .lg-eyebrow,
+  .lg-greeting-card .lg-date,
+  .lg-greeting-card .lg-weather-sub,
+  .lg-period-panel.mode-today .lg-period-panel-count{
+    color:var(--lg-muted)!important;
+  }
+  .lg-greeting-card .lg-greeting-title,
+  .lg-greeting-card .lg-weather-main,
+  .lg-period-panel.mode-today .lg-period-panel-title{
+    color:var(--lg-ink)!important;
+  }
+  .lg-greeting-card .lg-inline-rate,
+  .lg-greeting-card .lg-weather,
+  .lg-greeting-card .lg-backup-btn,
+  .lg-greeting-card .lg-refresh-btn{
+    background:rgba(42,45,51,.52)!important;
+    border-color:rgba(255,255,255,.12)!important;
+    color:var(--lg-ink)!important;
+  }
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):active,
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus,
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus-visible,
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):active *,
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus *,
+  main.main-cont button:not(.tab):not(.tab-fab):not(.lg-datebox):focus-visible *,
+  main.main-cont input,
+  main.main-cont select,
+  main.main-cont textarea,
+  main.main-cont input:focus,
+  main.main-cont select:focus,
+  main.main-cont textarea:focus{
+    color:var(--lg-ink)!important;
+    -webkit-text-fill-color:var(--lg-ink)!important;
+  }
 }
 
 </style>
@@ -5871,7 +6521,7 @@ function App() {
                         const doneCnt = dayTransfers.filter(x => x.status === 'tam').length;
                         const boxBg = isSelected ? 'linear-gradient(135deg,#7F786E,#4F4A43)' : isToday ? 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')' : cnt > 0 ? '#FFFFFF' : INP;
                         const boxBorder = isSelected ? '#4F4A43' : isToday ? NAV : cnt > 0 ? '#FF9F0A' : BOR;
-                        return React.createElement("button", { key: dk, onClick: () => { setSelectedRangeDay(prev => { const next = prev === dk ? null : dk; if (next) { setOpenDays(p => ({ ...p, [dk]: true })); } return next; }); }, style: { textAlign: 'center', padding: '6px 2px', borderRadius: 10, background: boxBg, border: '1.5px solid ' + boxBorder, cursor: 'pointer', display: 'block', width: '100%' } },
+                        return React.createElement("button", { key: dk, className: 'lg-datebox' + (isSelected ? ' is-selected' : isToday ? ' is-today' : cnt > 0 ? ' has-work' : ''), onClick: () => { setSelectedRangeDay(prev => { const next = prev === dk ? null : dk; if (next) { setOpenDays(p => ({ ...p, [dk]: true })); } return next; }); }, style: { textAlign: 'center', padding: '6px 2px', borderRadius: 10, background: boxBg, border: '1.5px solid ' + boxBorder, cursor: 'pointer', display: 'block', width: '100%' } },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: (isSelected || isToday) ? 'rgba(255,255,255,.7)' : SB, textTransform: 'capitalize' } }, rd.toLocaleDateString('tr-TR', { weekday: 'short' })),
                             React.createElement("div", { style: { fontSize: 16, fontWeight: 900, color: (isSelected || isToday) ? '#fff' : TX, lineHeight: 1.2 } }, rd.getDate()),
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: (isSelected || isToday) ? '#FFD69A' : cnt > 0 ? G : SB, marginTop: 2 } }, cnt > 0 ? cnt + ' transf.' : '—'));
@@ -5940,13 +6590,13 @@ function App() {
     const formTourCommissionShare = tourCommissionShare(formPreviewT);
     const formTourCommissionRightSide = form.altAcenta ? (form.altAcenta || 'Alt acenta') : (form.assignedTo || 'İş alan');
     if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !authReady) {
-        return (React.createElement("div", { style: { minHeight: '100%', background: '#F1EEE9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
+        return (React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: '#F1EEE9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
             React.createElement("div", { className: 'card', style: { width: '100%', maxWidth: 420, textAlign: 'center' } },
                 React.createElement("div", { style: { fontWeight: 900, fontSize: 20, color: NAV, marginBottom: 8 } }, 'Ödeme/KÖ Transfer Takip'),
                 React.createElement("div", { style: { color: SB, fontSize: 14 } }, 'Güvenli giriş hazırlanıyor...'))));
     }
     if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !authUser) {
-        return React.createElement("div", { style: { minHeight: '100%', background: 'linear-gradient(180deg,#F1EEE9 0%,#FAF8F5 45%,#F1EEE9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 } },
+        return React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: 'linear-gradient(180deg,#F1EEE9 0%,#FAF8F5 45%,#F1EEE9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 } },
             React.createElement("div", { style: { width: '100%', maxWidth: 460 } },
                 React.createElement("div", { style: { textAlign: 'center', marginBottom: 14 } },
                     React.createElement("img", { src: LOGO_URI, alt: 'Ödeme/Transfer', style: { width: 66, height: 66, borderRadius: 18, objectFit: 'cover', boxShadow: '0 12px 32px rgba(0,0,0,.16)', border: '1px solid rgba(118,118,128,.30)', marginBottom: 10 } }),
@@ -6014,7 +6664,7 @@ function App() {
                 )
             )
         ),
-        React.createElement("main", { className: "main-cont" },
+        React.createElement("main", { className: "main-cont view-" + tab },
             /* ═══════════════════════════════════════════════════════════════
                🏠 ANA SAYFA (HOME)
                ═══════════════════════════════════════════════════════════════ */
@@ -6236,30 +6886,51 @@ function App() {
                 };
                 const profitClass = n => 'lg-profit-value ' + (n >= 0 ? 'is-pos' : 'is-neg');
                 const detailValueClass = n => 'lg-profit-detail-value ' + (n >= 0 ? 'is-pos' : 'is-neg');
-                const plateBreakdown = scope => {
-                    const rows = aracK.filter(k => {
-                        if (!k.date)
-                            return false;
-                        if (scope === 'month')
-                            return k.date.startsWith(mPfx);
-                        return k.date.startsWith(String(yyyy));
-                    });
+                const plateBreakdownForMonth = monthKey => {
+                    const rows = aracK.filter(k => k.date && String(k.date).startsWith(monthKey));
                     const gelir = Math.round(rows.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
                     const gider = Math.round(rows.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
                     return { gelir, gider, net: gelir - gider };
                 };
-                const profitDetail = scope => {
-                    const rows = scope === 'month' ? monthT : yearT;
-                    const plate = plateBreakdown(scope);
+                const profitMonthBreakdown = monthKey => {
+                    const rows = T.filter(t => t.date && String(t.date).startsWith(monthKey));
+                    const plate = plateBreakdownForMonth(monthKey);
                     const olmez = Math.round(rows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
                     return {
-                        title: scope === 'month' ? 'Aylık Net Kar Detayı' : 'Yıllık Net Kar Detayı',
+                        key: monthKey,
+                        name: monthKey === mPfx ? AYLAR[now.getMonth()] : AYLAR[parseInt(monthKey.slice(5, 7), 10) - 1],
                         count: rows.length,
                         olmez,
                         plate,
                         total: olmez + plate.net
                     };
                 };
+                const profitDetail = scope => {
+                    if (scope === 'month') {
+                        const m = profitMonthBreakdown(mPfx);
+                        return {
+                            title: m.name + ' Net Kar Detayı',
+                            count: m.count,
+                            olmez: m.olmez,
+                            plate: m.plate,
+                            total: m.total,
+                            months: null
+                        };
+                    }
+                    const months = Array.from({ length: 12 }, (_, i) => profitMonthBreakdown(yyyy + '-' + String(i + 1).padStart(2, '0')));
+                    const olmez = months.reduce((s, m) => s + m.olmez, 0);
+                    const plate = months.reduce((s, m) => ({ gelir: s.gelir + m.plate.gelir, gider: s.gider + m.plate.gider, net: s.net + m.plate.net }), { gelir: 0, gider: 0, net: 0 });
+                    return {
+                        title: yyyy + ' Yılı Net Kar Detayı',
+                        count: yearT.length,
+                        olmez,
+                        plate,
+                        total: olmez + plate.net,
+                        months
+                    };
+                };
+                const monthNetShown = profitDetail('month').total;
+                const yearNetShown = profitDetail('year').total;
                 const setPeriod = p => setExpandedT(x => ({ ...x, __lgPeriod: p }));
                 const setProfit = p => setExpandedT(x => ({ ...x, __lgProfit: x.__lgProfit === p ? null : p }));
                 const renderPeriodCard = (id, label, count, sub) => React.createElement("button", {
@@ -6349,7 +7020,7 @@ function App() {
                 const renderPeriodPanel = mode => {
                     const rows = periodRows[mode] || [];
                     const title = mode === 'today' ? 'Bugünün Transferleri' : mode === 'month' ? 'Bu Ayın Transferleri' : 'Bu Yılın Transferleri';
-                    return React.createElement("div", { className: "lg-glass-card lg-period-panel" },
+                    return React.createElement("div", { className: "lg-glass-card lg-period-panel mode-" + mode },
                         React.createElement("div", { className: "lg-period-panel-head" },
                             React.createElement("div", { className: "lg-period-panel-title" }, title),
                             React.createElement("div", { className: "lg-period-panel-count" }, rows.length + " iş")
@@ -6387,6 +7058,20 @@ function App() {
                         React.createElement("div", { className: "lg-profit-detail-row" },
                             React.createElement("div", { className: "lg-profit-detail-label" }, "Toplam Net Kar"),
                             React.createElement("div", { className: detailValueClass(d.total) }, fmtTLHomeSigned(d.total))
+                        ),
+                        d.months && React.createElement("div", { className: "lg-profit-months" },
+                            d.months.map(m => React.createElement("div", { key: m.key, className: "lg-profit-month" },
+                                React.createElement("div", { className: "lg-profit-month-head" },
+                                    React.createElement("div", { className: "lg-profit-month-name" }, m.name),
+                                    React.createElement("div", { className: "lg-profit-month-total " + (m.total >= 0 ? "is-pos" : "is-neg") }, fmtTLHomeSigned(m.total))
+                                ),
+                                React.createElement("div", { className: "lg-profit-month-lines" },
+                                    React.createElement("div", null, "Ölmeztur ", React.createElement("strong", null, fmtTLHomeSigned(m.olmez))),
+                                    React.createElement("div", null, "16 LMZ Net ", React.createElement("strong", null, fmtTLHomeSigned(m.plate.net))),
+                                    React.createElement("div", null, "16 LMZ Gelir ", React.createElement("strong", null, fmtTLHome(m.plate.gelir))),
+                                    React.createElement("div", null, "Gider ", React.createElement("strong", null, "-" + fmtTLHome(m.plate.gider)))
+                                )
+                            ))
                         )
                     );
                 };
@@ -6396,7 +7081,10 @@ function App() {
                         React.createElement("div", { style: { position: 'relative', zIndex: 1, minWidth: 0 } },
                             React.createElement("div", { className: "lg-eyebrow" }, "İyi Çalışmalar"),
                             React.createElement("div", { className: "lg-greeting-title" }, "KÖ Transfer Takip Sistemi"),
-                            React.createElement("div", { className: "lg-date" }, todayFmt)
+                            React.createElement("div", { className: "lg-date" }, todayFmt),
+                            React.createElement("div", { className: "lg-inline-rates" },
+                                ['USD', 'EUR', 'KWD'].map(code => React.createElement("button", { key: code, className: "lg-inline-rate", onClick: refreshRates, title: code + "/TRY yenile" }, code + " " + rateValue(code)))
+                            )
                         ),
                         React.createElement("div", { className: "lg-greeting-tools" },
                             React.createElement("div", { className: "lg-weather" },
@@ -6406,25 +7094,10 @@ function App() {
                                     React.createElement("div", { className: "lg-weather-sub" }, "aktif")
                                 )
                             ),
-                            React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek")
-                        )
-                    ),
-
-                    React.createElement("div", { className: "lg-rate-row" },
-                        ['USD', 'EUR', 'KWD'].map(code => React.createElement("button", { key: code, className: "lg-rate-card", onClick: refreshRates, title: "Kurları yenile" },
-                            React.createElement("div", { className: "lg-rate-top" },
-                                React.createElement("span", null, code + "/TRY"),
-                                React.createElement("span", null, "↻")
+                            React.createElement("div", { className: "lg-tools-row" },
+                                React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek"),
+                                React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile" }, "↻")
                             )
-                            ,
-                            React.createElement("div", { className: "lg-rate-val" }, rateValue(code))
-                        ))
-                    ),
-
-                    React.createElement("div", { className: "lg-section-row" },
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                            React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
-                            React.createElement("span", { className: "lg-badge" }, todayT.length)
                         )
                     ),
 
@@ -6432,6 +7105,12 @@ function App() {
                         renderPeriodCard('today', 'Bugün', todayT.length, todayT.length + ' iş'),
                         renderPeriodCard('month', 'Aylık', monthT.length, AYLAR[now.getMonth()]),
                         renderPeriodCard('year', 'Yıllık', yearT.length, String(yyyy))
+                    ),
+                    React.createElement("div", { className: "lg-section-row lg-today-title-row" },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                            React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
+                            React.createElement("span", { className: "lg-badge" }, todayT.length)
+                        )
                     ),
                     renderPeriodPanel(selectedPeriod),
                     renderUpcomingMini(),
@@ -6442,11 +7121,11 @@ function App() {
                     React.createElement("div", { className: "lg-profit-row" },
                         React.createElement("button", { className: "lg-profit-card" + (selectedProfit === 'month' ? " is-active" : ""), onClick: () => setProfit('month') },
                             React.createElement("div", { className: "lg-profit-label" }, "Aylık Net Kar"),
-                            React.createElement("div", { className: profitClass(monthNetHome) }, fmtTLHomeSigned(monthNetHome))
+                            React.createElement("div", { className: profitClass(monthNetShown) }, fmtTLHomeSigned(monthNetShown))
                         ),
                         React.createElement("button", { className: "lg-profit-card" + (selectedProfit === 'year' ? " is-active" : ""), onClick: () => setProfit('year') },
                             React.createElement("div", { className: "lg-profit-label" }, "Yıllık Net Kar"),
-                            React.createElement("div", { className: profitClass(yearNetHome) }, fmtTLHomeSigned(yearNetHome))
+                            React.createElement("div", { className: profitClass(yearNetShown) }, fmtTLHomeSigned(yearNetShown))
                         )
                     ),
                     renderProfitDetail(selectedProfit)
