@@ -11432,7 +11432,8 @@ function App() {
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
-                React.createElement("button", { className: "tab-fab", onClick: () => setTab('new'), "aria-label": "Yeni Transfer" }, "+"),
+                React.createElement("button", { className: "tab-fab", onClick: () => setTab('new'), "aria-label": "Yeni Transfer" },
+                    React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, "₺"),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
@@ -11628,9 +11629,9 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
 
     installSimpleGoldStyle();
 
-    const TARGET = 'button,[role="button"],[tabindex]:not([tabindex="-1"]),[style*="cursor: pointer"],[style*="cursor:pointer"],.card,.lg-glass-card,.lg-metric-card,.lg-upcoming-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.tk-panel,.tk-ledger,.tk-cell,.tk-mini-btn,.tk-nav-btn,input,select,textarea';
-    const CONTROL_TARGET = 'button,[role="button"],input,select,textarea,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tk-cell,.tk-mini-btn,.tk-nav-btn';
-    const FRAME_TARGET = '.tcard,.card,.lg-glass-card,.lg-metric-card,.lg-upcoming-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.tk-panel,.tk-ledger';
+    const TARGET = 'button,[role="button"],[tabindex]:not([tabindex="-1"]),[style*="cursor: pointer"],[style*="cursor:pointer"],.lg-upcoming-card,.lg-mini-upcoming-row,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard-header,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-panel-action,.tk-type-opt,.tk-color-swatch,input,select,textarea';
+    const CONTROL_TARGET = 'button,[role="button"],input,select,textarea,.lg-upcoming-card,.lg-mini-upcoming-row,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard-header,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-panel-action,.tk-type-opt,.tk-color-swatch';
+    const FRAME_TARGET = '';
     const ACTION_RE = /(kaydet|güncelle|kapat|kopyala|whatsapp|\bwa\b|sil|düzenle|yükle|indir|aktar|kur|yedek|ekle|restore|commit|panodaki|dosyalar|icloud)/i;
     const SELECT_RE = /^(tümü|✅?\s*tam|🔄?\s*boş|❌?\s*iptal|✓?\s*alınmış|⏳?\s*alınmamış|.*16\s*lmz.*net|müşteri öder|ödemez|nakit|kart|havale|bekliyor|ödendi|var|yok|olsun|olmasın|türkçe|english|العربية|geliş|dönüş|tur|şehirler arası|sedan|vito|sprinter|otobüs|vip)$/i;
     let lastHit = null;
@@ -11644,9 +11645,11 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
         if (!node || !node.closest) return null;
         const app = root();
         if (!app) return null;
+        const tab = node.closest('.tabbar .tab:not(.tab-fab)');
+        if (tab && app.contains(tab)) return tab.querySelector('.tab-icon') || tab;
         const control = node.closest(CONTROL_TARGET);
         if (control && app.contains(control)) return control;
-        const frame = node.closest(FRAME_TARGET);
+        const frame = FRAME_TARGET ? node.closest(FRAME_TARGET) : null;
         if (frame && app.contains(frame)) return frame;
         const el = node.closest(TARGET);
         if (el && app.contains(el)) return el;
@@ -11670,7 +11673,7 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
     }
 
     function selectedByLook(el){
-        if (!el.matches('button,[role="button"],select,.card,.lg-glass-card,.lg-metric-card,.lg-upcoming-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.date-hdr,.tcard,.tk-panel,.tk-ledger,.tk-cell')) return false;
+        if (!el.matches('button,[role="button"],select,.lg-upcoming-card,.lg-mini-upcoming-row,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard-header,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-panel-action,.tk-type-opt,.tk-color-swatch')) return false;
         const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
         if (!label || ACTION_RE.test(label)) return false;
         if (el.classList.contains('tab-fab')) return false;
@@ -11684,6 +11687,13 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
         if (!app) return;
         app.querySelectorAll('.ko-auto-selected,.ko-sync-gold').forEach(el => el.classList.remove('ko-auto-selected', 'ko-sync-gold'));
         app.querySelectorAll(TARGET).forEach(el => {
+            if (el.closest('.tabbar')) {
+                if (el.classList && el.classList.contains('tab') && selectedByState(el)) {
+                    const icon = el.querySelector('.tab-icon');
+                    if (icon) icon.classList.add('ko-auto-selected', 'ko-sync-gold');
+                }
+                return;
+            }
             if (selectedByState(el) || selectedByLook(el)) el.classList.add('ko-auto-selected', 'ko-sync-gold');
         });
     }
@@ -11738,8 +11748,6 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
         'button',
         '[role="button"]',
         '[tabindex]:not([tabindex="-1"])',
-        '[style*="cursor: pointer"]',
-        '[style*="cursor:pointer"]',
         '.tab',
         '.tab-fab',
         '.hdr-iconbtn',
@@ -11923,14 +11931,14 @@ button[disabled]{
   cursor:not-allowed!important;
 }
 
-main.main-cont :is(button,[role="button"],[style*="cursor: pointer"],[style*="cursor:pointer"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not(.flight-track-btn){
+main.main-cont :is(button,[role="button"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not(.flight-track-btn){
   border-color:rgba(64,53,38,.14)!important;
 }
-main.main-cont :is(button,[role="button"],[style*="cursor: pointer"],[style*="cursor:pointer"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not([disabled]):hover{
+main.main-cont :is(button,[role="button"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not([disabled]):hover{
   filter:brightness(1.015) saturate(1.06)!important;
   box-shadow:0 12px 26px rgba(37,31,24,.095),var(--ko-inner)!important;
 }
-main.main-cont :is(button,[role="button"],[style*="cursor: pointer"],[style*="cursor:pointer"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not([disabled]):active,
+main.main-cont :is(button,[role="button"],.lg-choice,.lg-datebox,.lg-arac-date-toggle,.tk-cell,.tk-mini-btn,.tk-nav-btn,.tk-type-opt,.tk-color-swatch):not(.tab):not(.tab-fab):not([disabled]):active,
 .ko-pressing{
   transform:translateY(1px) scale(.976)!important;
 }
@@ -11997,25 +12005,43 @@ main.main-cont :is(.lg-choice,.lg-datebox,.lg-arac-date-toggle,.lg-period-card,.
   height:78px!important;
   padding:8px 8px 9px!important;
   gap:6px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
 }
 .tab{
-  border-radius:12px!important;
+  border-radius:999px!important;
   color:var(--ko-muted)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
 }
 .tab.is-active{
-  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(245,238,224,.88))!important;
-  border:1.5px solid var(--ko-border-gold)!important;
+  background:transparent!important;
+  border:0!important;
   color:var(--ko-graphite)!important;
-  box-shadow:0 9px 18px rgba(69,48,18,.12),var(--ko-inner)!important;
+  box-shadow:none!important;
 }
 .tab.is-active::before{
-  background:linear-gradient(90deg,var(--ko-gold),var(--ko-champagne))!important;
+  display:none!important;
+}
+.tab .tab-icon{
+  width:34px!important;
+  height:30px!important;
+  border-radius:999px!important;
+}
+.tab.is-active .tab-icon{
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(245,238,224,.92))!important;
+  border:1.5px solid var(--ko-border-gold)!important;
+  box-shadow:0 8px 18px rgba(69,48,18,.12),var(--ko-inner)!important;
+  color:var(--ko-graphite)!important;
 }
 .tab-fab{
   background:linear-gradient(145deg,#151311 0%,#3c352b 64%,#8e682c 130%)!important;
   border:2px solid var(--ko-border-gold)!important;
   color:#fff!important;
   box-shadow:0 15px 30px rgba(37,31,24,.25),var(--ko-inner)!important;
+  border-radius:999px!important;
 }
 
 .lg-greeting-card{
@@ -12186,6 +12212,241 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
   text-shadow:none!important;
 }
 
+html body .app-shell :is(.card,.lg-glass-card,.lg-metric-card,.lg-period-panel,.lg-profit-detail,.tk-panel,.tk-ledger,.lg-greeting-card,.lg-mini-upcoming):not(button):not([role="button"]):is(:active,:focus,:focus-visible,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed){
+  border:1px solid rgba(255,255,255,.86)!important;
+  box-shadow:var(--ko-shadow),var(--ko-inner)!important;
+  transform:none!important;
+  cursor:default!important;
+}
+html body .app-shell :is(.card,.lg-glass-card,.lg-metric-card,.lg-period-panel,.lg-profit-detail,.tk-panel,.tk-ledger,.lg-greeting-card,.lg-mini-upcoming):not(button):not([role="button"]):is(:active,:focus,:focus-visible,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed) *{
+  text-shadow:none!important;
+}
+
+html body .app-shell .tabbar,
+html body .app-shell nav.tabbar{
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  padding:0 12px calc(var(--sa-b) + 10px)!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html body .app-shell .tabbar-inner,
+html body .app-shell .tabbar .tabbar-inner{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:center!important;
+  justify-items:center!important;
+  max-width:420px!important;
+  height:70px!important;
+  min-height:0!important;
+  padding:8px 10px!important;
+  gap:4px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.92),rgba(248,244,235,.78)),
+    rgba(255,255,255,.68)!important;
+  background-color:rgba(255,255,255,.68)!important;
+  border:1px solid rgba(255,255,255,.92)!important;
+  border-radius:999px!important;
+  box-shadow:0 18px 40px rgba(35,30,24,.16),0 4px 12px rgba(35,30,24,.075),inset 0 1px 0 rgba(255,255,255,.94),inset 0 -1px 0 rgba(30,24,17,.04)!important;
+  backdrop-filter:saturate(1.28) blur(20px)!important;
+  -webkit-backdrop-filter:saturate(1.28) blur(20px)!important;
+}
+html body .app-shell .tabbar .tab,
+html body .app-shell .tabbar button.tab,
+html body .app-shell .tabbar .tab.is-active,
+html body .app-shell .tabbar button.tab.is-active,
+html body .app-shell .tabbar .tab:active,
+html body .app-shell .tabbar .tab:focus,
+html body .app-shell .tabbar .tab:focus-visible,
+html body .app-shell .tabbar .tab.ko-gold-hit,
+html body .app-shell .tabbar .tab.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab.ko-click-confirmed{
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:none!important;
+  transform:none!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  padding:4px 0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+}
+html body .app-shell .tabbar .tab::before,
+html body .app-shell .tabbar .tab::after,
+html body .app-shell .tabbar .tab.is-active::before,
+html body .app-shell .tabbar .tab.is-active::after{
+  content:none!important;
+  display:none!important;
+}
+html body .app-shell .tabbar .tab .tab-icon{
+  width:38px!important;
+  height:30px!important;
+  min-width:38px!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+  margin:0!important;
+}
+html body .app-shell .tabbar .tab.is-active .tab-icon,
+html body .app-shell .tabbar .tab:active .tab-icon,
+html body .app-shell .tabbar .tab .tab-icon.ko-gold-hit,
+html body .app-shell .tabbar .tab .tab-icon.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab .tab-icon.ko-click-confirmed,
+html body .app-shell .tabbar .tab .tab-icon.ko-auto-selected,
+html body .app-shell .tabbar .tab .tab-icon.ko-sync-gold,
+html body .app-shell .tabbar .tab .tab-icon.ko-selected-gold,
+html body .app-shell .tabbar .tab.ko-gold-hit .tab-icon,
+html body .app-shell .tabbar .tab.ko-simple-gold-frame .tab-icon,
+html body .app-shell .tabbar .tab.ko-auto-selected .tab-icon,
+html body .app-shell .tabbar .tab.ko-sync-gold .tab-icon,
+html body .app-shell .tabbar .tab.ko-selected-gold .tab-icon,
+html body .app-shell .tabbar .tab.ko-click-confirmed .tab-icon{
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(241,236,226,.90))!important;
+  border:1.5px solid rgba(185,133,45,.68)!important;
+  box-shadow:0 7px 16px rgba(35,30,24,.10),inset 0 1px 0 rgba(255,255,255,.96),0 0 0 1px rgba(255,255,255,.72)!important;
+  color:var(--ko-graphite)!important;
+  -webkit-text-fill-color:var(--ko-graphite)!important;
+}
+html body .app-shell .tabbar .tab-fab,
+html body .app-shell .tabbar button.tab-fab,
+html body .app-shell .tabbar .tab-fab:active,
+html body .app-shell .tabbar .tab-fab:focus,
+html body .app-shell .tabbar .tab-fab:focus-visible,
+html body .app-shell .tabbar .tab-fab.ko-gold-hit,
+html body .app-shell .tabbar .tab-fab.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab-fab.ko-click-confirmed{
+  border-radius:999px!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  max-width:48px!important;
+  max-height:48px!important;
+  margin:0!important;
+  padding:0!important;
+  place-self:center!important;
+  align-self:center!important;
+  justify-self:center!important;
+  top:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+  font-size:0!important;
+  font-weight:360!important;
+  background:linear-gradient(145deg,#171512 0%,#3b352c 68%,#756038 125%)!important;
+  border:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 13px 28px rgba(37,31,24,.28),inset 0 1px 0 rgba(255,255,255,.18),0 0 0 1px rgba(255,255,255,.82)!important;
+  transform:none!important;
+  outline:none!important;
+  overflow:hidden!important;
+}
+html body .app-shell .tabbar .tab-fab .tab-fab-plus{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:28px!important;
+  font-weight:360!important;
+  line-height:1!important;
+  transform:translateY(-1px)!important;
+  pointer-events:none!important;
+}
+
+html body .app-shell .tabbar *,
+html body .app-shell .tabbar *.ko-gold-hit,
+html body .app-shell .tabbar *.ko-simple-gold-frame,
+html body .app-shell .tabbar *.ko-click-confirmed,
+html body .app-shell .tabbar *.ko-auto-selected,
+html body .app-shell .tabbar *.ko-sync-gold,
+html body .app-shell .tabbar *.ko-selected-gold{
+  outline:none!important;
+}
+html body .app-shell .tabbar .tab,
+html body .app-shell .tabbar button.tab,
+html body .app-shell .tabbar .tab.ko-gold-hit,
+html body .app-shell .tabbar .tab.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab.ko-click-confirmed,
+html body .app-shell .tabbar .tab.ko-auto-selected,
+html body .app-shell .tabbar .tab.ko-sync-gold,
+html body .app-shell .tabbar .tab.ko-selected-gold,
+html body .app-shell .tabbar button.tab.ko-gold-hit,
+html body .app-shell .tabbar button.tab.ko-simple-gold-frame,
+html body .app-shell .tabbar button.tab.ko-click-confirmed{
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+html body .app-shell .tabbar .tab .tab-icon,
+html body .app-shell .tabbar .tab .tab-icon:not(.ko-gold-hit):not(.ko-simple-gold-frame):not(.ko-click-confirmed):not(.ko-auto-selected):not(.ko-sync-gold):not(.ko-selected-gold){
+  border:0!important;
+}
+html body .app-shell .tabbar .tab.is-active .tab-icon,
+html body .app-shell .tabbar .tab:active .tab-icon,
+html body .app-shell .tabbar .tab .tab-icon.ko-gold-hit,
+html body .app-shell .tabbar .tab .tab-icon.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab .tab-icon.ko-click-confirmed,
+html body .app-shell .tabbar .tab .tab-icon.ko-auto-selected,
+html body .app-shell .tabbar .tab .tab-icon.ko-sync-gold,
+html body .app-shell .tabbar .tab .tab-icon.ko-selected-gold,
+html body .app-shell .tabbar .tab.ko-gold-hit .tab-icon,
+html body .app-shell .tabbar .tab.ko-simple-gold-frame .tab-icon,
+html body .app-shell .tabbar .tab.ko-click-confirmed .tab-icon,
+html body .app-shell .tabbar .tab.ko-auto-selected .tab-icon,
+html body .app-shell .tabbar .tab.ko-sync-gold .tab-icon,
+html body .app-shell .tabbar .tab.ko-selected-gold .tab-icon{
+  border:1.5px solid rgba(185,133,45,.68)!important;
+}
+html body .app-shell .tabbar .tab-fab,
+html body .app-shell .tabbar button.tab-fab,
+html body .app-shell .tabbar .tab-fab.ko-gold-hit,
+html body .app-shell .tabbar .tab-fab.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab-fab.ko-click-confirmed,
+html body .app-shell .tabbar .tab-fab.ko-auto-selected,
+html body .app-shell .tabbar .tab-fab.ko-sync-gold,
+html body .app-shell .tabbar .tab-fab.ko-selected-gold{
+  border:0!important;
+}
+html body .app-shell .tabbar button.tab:not(.tab-fab):is(:active,:focus,:focus-visible,.is-active,.active,.is-selected,.selected,.is-open,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed,.ko-auto-selected,.ko-sync-gold,.ko-selected-gold),
+html body .app-shell .tabbar .tab:not(.tab-fab):is(:active,:focus,:focus-visible,.is-active,.active,.is-selected,.selected,.is-open,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed,.ko-auto-selected,.ko-sync-gold,.ko-selected-gold){
+  background:transparent!important;
+  background-color:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+html body .app-shell .tabbar button.tab:not(.tab-fab):is(:active,:focus,:focus-visible,.is-active,.active,.is-selected,.selected,.is-open,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed,.ko-auto-selected,.ko-sync-gold,.ko-selected-gold) > .tab-icon,
+html body .app-shell .tabbar .tab:not(.tab-fab):is(:active,:focus,:focus-visible,.is-active,.active,.is-selected,.selected,.is-open,.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed,.ko-auto-selected,.ko-sync-gold,.ko-selected-gold) > .tab-icon,
+html body .app-shell .tabbar .tab:not(.tab-fab) > .tab-icon:is(.ko-gold-hit,.ko-simple-gold-frame,.ko-click-confirmed,.ko-auto-selected,.ko-sync-gold,.ko-selected-gold){
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(241,236,226,.90))!important;
+  border:1.5px solid rgba(185,133,45,.68)!important;
+  border-radius:999px!important;
+  box-shadow:0 7px 16px rgba(35,30,24,.10),inset 0 1px 0 rgba(255,255,255,.96),0 0 0 1px rgba(255,255,255,.72)!important;
+}
+
 @media (max-width:430px){
   .hdr-inner{border-radius:12px!important}
   .card,
@@ -12198,7 +12459,17 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
     border-radius:11px!important;
   }
   main.main-cont{padding-left:12px!important;padding-right:12px!important}
-  .tabbar-inner{height:74px!important}
+  html body .app-shell .tabbar-inner,
+  html body .app-shell .tabbar .tabbar-inner{
+    max-width:calc(100vw - 24px)!important;
+    height:68px!important;
+    padding:8px 9px!important;
+    border-radius:999px!important;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.92),rgba(248,244,235,.78)),
+      rgba(255,255,255,.68)!important;
+    box-shadow:0 16px 34px rgba(35,30,24,.16),0 4px 12px rgba(35,30,24,.07),inset 0 1px 0 rgba(255,255,255,.94)!important;
+  }
   .tab-label{font-size:9.5px!important}
 }
 @media (prefers-reduced-motion:reduce){
@@ -12223,6 +12494,8 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
     function closestTarget(node){
         if (!node || !node.closest) return null;
         const root = appRoot();
+        const tab = node.closest('.tabbar .tab:not(.tab-fab)');
+        if (tab && root && root.contains(tab)) return tab.querySelector('.tab-icon') || tab;
         const el = node.closest(TARGET);
         if (el && root && root.contains(el)) return el;
         let cur = node.nodeType === 1 ? node : node.parentElement;
