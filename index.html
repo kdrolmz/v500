@@ -7189,14 +7189,14 @@ function AracTab({ tip, aracK, setAracK }) {
             ay,
             ")"))));
 }
-function HesapTab({ T, sT, agencies, tip }) {
+function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer }) {
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
     const [detayT, setDetayT] = useState(null);
   const [odeloOpen, setOdeloOpen] = useState(false);
-    const togSettle = (id, firm) => sT(p => p.map(x => { if (x.id !== id)
-        return x; const sf = { ...(x.settledFirms || {}) }; sf[firm] = !sf[firm]; return { ...x, settledFirms: sf }; }));
+    const togSettle = (id, firm, forceState) => sT(p => p.map(x => { if (x.id !== id)
+        return x; const sf = { ...(x.settledFirms || {}) }; sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm]; return { ...x, settledFirms: sf }; }));
     const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
     const firmalar = [...new Set([...T.map(t => t.givenBy), ...T.map(t => t.assignedTo), ...T.filter(t => t.altAcenta).map(t => t.altAcenta), ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
     const firmSearch = ara.trim();
@@ -7625,6 +7625,79 @@ function HesapTab({ T, sT, agencies, tip }) {
         }
         return ad < bd ? 1 : -1;
     };
+    const accountTone = name => {
+        const key = nm(name || '');
+        if (!key || key.includes('olmeztur')) return { bg: '#E7F2EE', fg: '#3F806D', bd: 'rgba(63,128,109,.34)', cls: 'ko-account-olmez' };
+        return { bg: '#F8F6F2', fg: '#5F5A51', bd: 'rgba(120,110,96,.20)', cls: 'ko-account-agency' };
+    };
+    const renderAgencyChip = (name, compact) => {
+        const tone = accountTone(name);
+        const isOlmez = tone.cls === 'ko-account-olmez';
+        return React.createElement("span", {
+            className: "ko-account-chip " + tone.cls,
+            "data-account-name": name || '',
+            style: {
+                display: 'inline',
+                minHeight: 'auto',
+                padding: 0,
+                borderRadius: 0,
+                background: 'transparent',
+                color: isOlmez ? '#2F765F' : '#5F5A51',
+                border: 'none',
+                fontSize: compact ? 10 : 11.2,
+                fontWeight: isOlmez ? 620 : 540,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+                boxShadow: 'none'
+            }
+        }, name || '—');
+    };
+    const renderAccountRoute = (parts, suffix, compact) => React.createElement("span", {
+        className: "ko-account-route",
+        style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: compact ? 4 : 6,
+            lineHeight: 1.15
+        }
+    },
+        (parts || []).filter(Boolean).map((part, i) => React.createElement(React.Fragment, { key: String(part) + i },
+            i > 0 && React.createElement("span", { className: "ko-account-arrow", style: { color: SB, fontSize: compact ? 10 : 12, fontWeight: 520, opacity: .75 } }, "→"),
+            renderAgencyChip(part, compact)
+        )),
+        suffix && React.createElement("span", { className: "ko-account-suffix", style: { color: SB, fontSize: compact ? 9 : 10, fontWeight: 520, marginLeft: compact ? 1 : 2 } }, suffix)
+    );
+    const renderAccountTitle = baslik => {
+        const parts = String(baslik || '').split(/\s*-\s*/).filter(Boolean);
+        if (parts.length > 1) return renderAccountRoute(parts, '', false);
+        return renderAgencyChip(baslik, false);
+    };
+    const hesapRouteParts = t => {
+        if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? ['Odelo', 'Balentur'] : ['Odelo', OL];
+        if (t.yon === 'oVerdi') return [sel, OL];
+        if (t.yon === 'benVerdim') return [OL, sel];
+        return ['Alt acenta', t.altAcenta || sel];
+    };
+    const hesapRouteSuffix = t => t.kaynak === 'odelo'
+        ? 'yaptı'
+        : t.yon === 'oVerdi'
+            ? 'iş verdi'
+            : t.yon === 'benVerdim'
+                ? 'iş verdi'
+                : 'işi';
+    const openTransferFromHesap = t => {
+        if (!t || !t.id) return;
+        const src = T.find(x => x.id === t.id) || t;
+        setDetayT(null);
+        if (onEditTransfer) {
+            onEditTransfer(src);
+            if (tip) tip('Hesap içinde düzenleme açıldı');
+            return;
+        }
+        setDetayT(src);
+    };
     const detaySatiri = (etiket, deger) => React.createElement("div", { key: etiket, style: { display: 'grid', gridTemplateColumns: '92px 1fr', gap: 10, alignItems: 'start', padding: '8px 0', borderBottom: '1px solid ' + BOR } },
         React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: SB, textTransform: 'uppercase', letterSpacing: .4 } }, etiket),
         React.createElement("div", { style: { fontSize: 13, color: TX, fontWeight: 600, lineHeight: 1.45, wordBreak: 'break-word' } }, deger || '—'));
@@ -7737,15 +7810,15 @@ function HesapTab({ T, sT, agencies, tip }) {
         const badges = React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
             t.driverName && React.createElement("span", { style: { fontSize: 9, color: SB, background: '#F6F3EF', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👨🏻‍✈️ ' + t.driverName),
             ((t.passengerCount || 0) > 0) && React.createElement("span", { style: { fontSize: 9, color: SB, background: '#F6F3EF', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👥 ' + t.passengerCount),
-            React.createElement("span", { style: { fontSize: 9, color: NAV, fontWeight: 800 } }, 'Detay ›'));
+            React.createElement("span", { style: { fontSize: 9, color: NAV, fontWeight: 800 } }, 'Düzenle ›'));
         const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 } },
             React.createElement("div", { style: { fontSize: 15, fontWeight: 900, color: pos ? G : R, letterSpacing: 0 } }, (pos ? '+' : '−') + fr(t.netOl) + '₺'),
-            React.createElement("button", { onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey); }, style: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0' } },
+            React.createElement("button", { onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey, !t.firmSettled); }, style: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0' } },
                 React.createElement("div", { style: { width: 18, height: 18, borderRadius: 4, border: '2px solid ' + (t.firmSettled ? G : BOR), background: t.firmSettled ? G : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 } }, "✓")),
                 React.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: t.firmSettled ? G : SB } }, t.firmSettled ? 'Kapandı' : 'Açık')));
         return React.createElement("div", {
             key: t.id + (t.kaynak || '') + (t.yon || ''),
-            onClick: () => setDetayT(t),
+            onClick: () => openTransferFromHesap(t),
             style: {
                 background: t.firmSettled
                     ? '#F6F3EF'
@@ -7768,7 +7841,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                 React.createElement("div", { style: { flex: 1, minWidth: 0 } },
                     React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center', marginBottom: 4 } },
                         React.createElement("span", { style: { fontSize: 10, color: SB, fontWeight: 600 } }, (t.date ? new Date(t.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—') + ' · ' + (t.time || '—')),
-                        React.createElement("span", { style: { background: yonBilgi.bg, color: yonBilgi.col, borderRadius: 5, padding: '2px 6px', fontSize: 9, fontWeight: 800 } }, yonBilgi.txt)),
+                        React.createElement("span", { style: { background: yonBilgi.bg, color: yonBilgi.col, borderRadius: 999, padding: '2px 6px', fontSize: 9, fontWeight: 800, border: '1px solid rgba(255,255,255,.66)' } }, renderAccountRoute(hesapRouteParts(t), hesapRouteSuffix(t), true))),
                     React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: TX } }, t.pickup || '—'),
                     React.createElement("div", { style: { fontSize: 11, color: SB } }, '→ ' + (t.dropoff || '—')),
                     badges,
@@ -7789,13 +7862,59 @@ function HesapTab({ T, sT, agencies, tip }) {
                 rightSide));
     };
 
-    const renderHesapBolum = (baslik, liste, renk) => React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
-        React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-            React.createElement("div", { style: { fontWeight: 800, fontSize: 12, color: renk } }, baslik),
-            React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 700 } }, liste.length + ' kayıt')),
-        liste.length
-            ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } }, liste.map(renderHesapKart))
-            : React.createElement("div", { style: { textAlign: 'center', padding: '14px', color: SB, fontSize: 12, background: INP, borderRadius: 10, border: '1px dashed ' + BOR } }, 'Kayıt yok'));
+    const renderHesapBolum = (baslik, liste, renk) => {
+        const title = String(baslik || '');
+        const parts = title.split(/\s*-\s*/).filter(Boolean);
+        const firstIsOlmez = parts.length > 1 && nm(parts[0]).includes('olmeztur');
+        const secondIsOlmez = parts.length > 1 && nm(parts[1]).includes('olmeztur');
+        const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
+        const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
+        const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + (parseFloat(t.netOl) || 0), 0));
+        const tone = isOlmezToAgency
+            ? {
+                bg: 'rgba(255,255,255,.72)',
+                bd: '#2F8F5B',
+                accent: G,
+                soft: 'rgba(255,255,255,.72)',
+                shadow: 'none'
+            }
+            : isAgencyToOlmez
+                ? {
+                    bg: 'rgba(255,255,255,.72)',
+                    bd: '#C69318',
+                    accent: '#9A6A1F',
+                    soft: 'rgba(255,255,255,.72)',
+                    shadow: 'none'
+                }
+                : {
+                    bg: 'rgba(255,255,255,.72)',
+                    bd: BOR,
+                    accent: renk || NAV,
+                    soft: 'rgba(255,255,255,.72)',
+                    shadow: 'none'
+                };
+        return React.createElement("div", {
+            className: "ko-hesap-group " + (isOlmezToAgency ? 'ko-hesap-olmez-agency' : isAgencyToOlmez ? 'ko-hesap-agency-olmez' : 'ko-hesap-neutral'),
+            style: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                background: tone.bg,
+                border: '3.5px solid ' + tone.bd,
+                borderRadius: 14,
+                padding: '10px 10px 11px',
+                boxShadow: tone.shadow
+            }
+        },
+            React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                React.createElement("div", { style: { minWidth: 0, flex: 1 } }, renderAccountTitle(baslik)),
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 } },
+                    React.createElement("span", { style: { fontSize: 9.5, color: SB, background: 'rgba(255,255,255,.72)', border: '1px solid rgba(120,110,96,.16)', borderRadius: 999, padding: '3px 7px', fontWeight: 560 } }, liste.length + ' kayıt'),
+                    openNet !== 0 && React.createElement("span", { style: { fontSize: 9.5, color: openNet >= 0 ? G : R, background: '#fff', border: '1px solid rgba(255,255,255,.82)', borderRadius: 999, padding: '3px 7px', fontWeight: 680, fontVariantNumeric: 'tabular-nums' } }, (openNet >= 0 ? '+' : '−') + fr(openNet) + '₺'))),
+            liste.length
+                ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } }, liste.map(renderHesapKart))
+                : React.createElement("div", { style: { textAlign: 'center', padding: '14px', color: SB, fontSize: 12, background: 'rgba(255,255,255,.62)', borderRadius: 10, border: '1px dashed ' + tone.bd } }, 'Kayıt yok'));
+    };
 
 
 
@@ -7830,7 +7949,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                         React.createElement("div", { style: { width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0 } }, "\uD83C\uDFE2"),
                         React.createElement("div", null,
-                            React.createElement("div", { style: { fontWeight: 800, fontSize: 15, color: TX } }, sel),
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 } }, renderAgencyChip(sel, false)),
                             React.createElement("div", { style: { fontSize: 10, color: SB } }, ts.length + " kay\u0131t"))),
                     React.createElement("div", {
                         style: {
@@ -7854,37 +7973,39 @@ function HesapTab({ T, sT, agencies, tip }) {
                             (net >= 0 ? '+' : '−') + fr(Math.abs(net)) + " ₺")),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                         React.createElement("div", {
+                            className: "ko-hesap-green-frame",
                             style: {
                                 background: 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)',
-                                border: '1px solid #7DB68B',
+                                border: '1.4px solid rgba(47,143,91,.58)',
                                 borderRadius: 11,
                                 padding: '10px 8px',
                                 textAlign: 'center',
-                                boxShadow: '0 2px 6px rgba(18,108,55,.14)'
+                                boxShadow: '0 2px 8px rgba(47,143,91,.08)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
                             React.createElement("div", { style: { fontSize: 16, fontWeight: 900, color: G } }, "+" + fr(al) + " ₺")),
                         React.createElement("div", {
+                            className: "ko-hesap-green-frame",
                             style: {
                                 background: 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                                border: '1px solid #FFC4C0',
+                                border: '1.4px solid rgba(47,143,91,.58)',
                                 borderRadius: 11,
                                 padding: '10px 8px',
                                 textAlign: 'center',
-                                boxShadow: '0 2px 6px rgba(255,59,48,.12)'
+                                boxShadow: '0 2px 8px rgba(47,143,91,.08)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ VERECEK"),
                             React.createElement("div", { style: { fontSize: 16, fontWeight: 900, color: R } }, "−" + fr(ver) + " ₺"))),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: TX } }, "Ayl\u0131k"),
-                        React.createElement("input", { type: "month", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid ' + BOR, borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
-                        [mts.length, 'Transfer', NAV, '#F6F3EF', '#C9C1B8'],
-                        ['+' + fr(mAl) + '₺', 'Alacak', G, '#E3F1E7', '#7DB68B'],
-                        ['−' + fr(mVer) + '₺', 'Verecek', R, '#FFF0EF', '#FFC4C0']
-                    ].map(([v, l, col, bg, br]) => (React.createElement("div", { key: l, style: { background: bg, border: '1px solid ' + br, borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,.04)' } },
+                        React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(47,143,91,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
+                    React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
+                        [mts.length, 'Transfer', NAV, '#F7FAF8'],
+                        ['+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5'],
+                        ['−' + fr(mVer) + '₺', 'Verecek', R, '#FFF8F7']
+                    ].map(([v, l, col, bg]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(47,143,91,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(47,143,91,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 900, color: col } }, v),
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 700, letterSpacing: .3 } }, l))))),
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
@@ -7919,7 +8040,7 @@ function HesapTab({ T, sT, agencies, tip }) {
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9 } },
                             React.createElement("div", { style: { width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, color: '#fff' } }, "\uD83C\uDFE2"),
                             React.createElement("div", { style: { flex: 1 } },
-                                React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, firm),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 5 } }, renderAgencyChip(firm, true)),
                                 React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 1 } }, ts.length + " kay\u0131t")),
                             React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 } },
                                 al > 0 && React.createElement("span", {
@@ -8835,10 +8956,13 @@ function App() {
     const [showSg, setShowSg] = useState({ pickup: false, dropoff: false });
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
+    const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
     const [rstTxt, setRstTxt] = useState('');
     const [flt, setFlt] = useState({ status: 'all', search: '', collect: 'all', plateView: 'all', plateCollect: 'all' });
     const [showSt, setShowSt] = useState(false);
+    const [openListFilters, setOpenListFilters] = useState(false);
+    const [openArchiveList, setOpenArchiveList] = useState(false);
     const [aracK, setAracK] = useState([]);
     const [debts, setDebts] = useState([]);
     const [todos, setTodos] = useState([]);
@@ -9168,7 +9292,67 @@ function App() {
         setForm(BF);
         setTab('list');
     };
-    const editT = t => { setForm({ ...BF, ...normalizeTransfer(t), extraStops: t.extraStops || [], passengers: t.passengers || [{ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }] }); setEditId(t.id); setTab('new'); };
+    const ensureQuickPassengers = t => {
+        const raw = (t && Array.isArray(t.passengers) && t.passengers.length)
+            ? t.passengers
+            : [{ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }];
+        return raw.map(p => ({ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR', ...(p || {}) }));
+    };
+    const openQuickEditT = t => {
+        if (!t || !t.id) return;
+        const src = T.find(x => x.id === t.id) || t;
+        const n = normalizeTransfer(src);
+        const passengers = ensureQuickPassengers(n);
+        setQuickEditT({
+            ...BF,
+            ...n,
+            extraStops: Array.isArray(n.extraStops) ? n.extraStops : [],
+            passengers,
+            passengerCount: Math.max(1, parseInt(n.passengerCount, 10) || passengers.length || 1)
+        });
+    };
+    const quickSet = patch => setQuickEditT(q => q ? ({ ...q, ...patch }) : q);
+    const quickPassengerSet = (field, value) => setQuickEditT(q => {
+        if (!q) return q;
+        const passengers = ensureQuickPassengers(q);
+        passengers[0] = { ...(passengers[0] || {}), [field]: value };
+        return { ...q, passengers, passengerCount: Math.max(1, parseInt(q.passengerCount, 10) || passengers.length || 1) };
+    });
+    const saveQuickEditT = () => {
+        if (!quickEditT || !quickEditT.id) return;
+        const prev = T.find(x => x.id === quickEditT.id) || {};
+        const cTRY = toTRY(quickEditT.paymentAmount, quickEditT.paymentCurrency);
+        const companyCollected = !!(quickEditT.companyCollected || quickEditT.settled);
+        const passengers = ensureQuickPassengers(quickEditT);
+        const base = {
+            ...prev,
+            ...quickEditT,
+            passengers,
+            passengerCount: Math.max(1, parseInt(quickEditT.passengerCount, 10) || passengers.length || 1),
+            plate: (quickEditT.plate || '').toUpperCase(),
+            customerTRY: cTRY,
+            profit: olmezKar({ ...quickEditT, customerTRY: cTRY }),
+            settled: companyCollected,
+            companyCollected,
+            customerCollected: !!quickEditT.customerCollected,
+            vehiclePaid: !!quickEditT.vehiclePaid,
+            updatedAt: new Date().toISOString()
+        };
+        const next = normalizeTransfer(base);
+        setT(p => p.map(x => x.id === next.id ? next : x));
+        setQuickEditT(null);
+        tip('Transfer güncellendi');
+    };
+    const deleteQuickEditT = () => {
+        if (!quickEditT || !quickEditT.id) return;
+        if (!window.confirm('Bu transfer silinsin mi?')) return;
+        const deletedIds = readDeletedTransferIds();
+        writeDeletedTransferIds([...(deletedIds || []), String(quickEditT.id)]);
+        setT(p => p.filter(x => x.id !== quickEditT.id));
+        setQuickEditT(null);
+        tip('Silindi');
+    };
+    const editT = t => openQuickEditT(t);
     const copyT = t => {
         const companyCollected = isCompanyCollected(t);
         const customerCollected = isCustomerCollected(t);
@@ -9354,6 +9538,91 @@ function App() {
         setMsgM({ txt: brdMsg(t), tp, t });
     };
     const activeMsg = msgM ? (msgM.tp === 'drv' ? drvMsg(msgM.t, !!msgM.withMaps) : msgM.tp === 'cus' ? cusMsg(msgM.t, msgM.lang || 'tr') : msgM.tp === 'bos' ? msgM.txt : msgM.txt) : '';
+    const renderQuickEditModal = () => {
+        if (!quickEditT) return null;
+        const q = quickEditT;
+        const passengers = ensureQuickPassengers(q);
+        const pax = passengers[0] || {};
+        const cTRY = toTRY(q.paymentAmount, q.paymentCurrency);
+        const previewNet = Math.round(olmezKar({ ...q, customerTRY: cTRY }));
+        const field = (label, child, full) => React.createElement("label", { style: { display: 'flex', flexDirection: 'column', gap: 5, gridColumn: full ? '1 / -1' : undefined, minWidth: 0 } },
+            React.createElement("span", { style: { fontSize: 9.5, color: SB, fontWeight: 750, letterSpacing: .45, textTransform: 'uppercase' } }, label),
+            child);
+        const input = (props, extraStyle) => React.createElement("input", {
+            className: "inp",
+            ...props,
+            style: { width: '100%', fontSize: 13, padding: '10px 11px', ...(extraStyle || {}) }
+        });
+        const select = (props, options) => React.createElement("select", {
+            className: "inp",
+            ...props,
+            style: { width: '100%', fontSize: 13, padding: '10px 11px', background: '#fff' }
+        }, options.map(o => React.createElement("option", { key: o[0], value: o[0] }, o[1])));
+        const toggle = (label, value, patch) => React.createElement("button", {
+            type: "button",
+            onClick: () => quickSet(patch),
+            style: {
+                background: value ? 'rgba(84,132,103,.14)' : '#fff',
+                color: value ? G : SB,
+                border: '1px solid ' + (value ? '#9DB9A7' : BOR),
+                borderRadius: 11,
+                padding: '9px 10px',
+                fontSize: 11,
+                fontWeight: 750,
+                cursor: 'pointer',
+                textAlign: 'center'
+            }
+        }, label);
+        return React.createElement("div", { className: "mo", onClick: () => setQuickEditT(null) },
+            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24, maxHeight: '86vh', overflowY: 'auto' } },
+                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 12 } },
+                    React.createElement("div", { style: { minWidth: 0 } },
+                        React.createElement("div", { style: { fontWeight: 850, fontSize: 16, color: TX, letterSpacing: 0 } }, "Transfer Düzenle"),
+                        React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3, lineHeight: 1.35 } }, "Sekme değişmeden aynı transfer kaydı güncellenir.")),
+                    React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14, flexShrink: 0 } }, "✕")),
+                React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#C8D8CC' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+                    React.createElement("div", { style: { minWidth: 0 } },
+                        React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 750, textTransform: 'uppercase', letterSpacing: .4 } }, (q.date || 'Tarih yok') + ' · ' + (q.time || '--:--')),
+                        React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 700, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (q.pickup || 'Alış') + ' → ' + (q.dropoff || 'Bırakış'))),
+                    React.createElement("div", { style: { fontSize: 18, fontWeight: 850, color: previewNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } }, (previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺')),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 9 } },
+                    field('Tarih', input({ type: 'date', value: q.date || '', onChange: e => quickSet({ date: e.target.value }) })),
+                    field('Saat', input({ type: 'time', value: q.time || '', onChange: e => quickSet({ time: e.target.value }) })),
+                    field('İş Veren', input({ value: q.givenBy || '', onChange: e => quickSet({ givenBy: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('İşi Alan', input({ value: q.assignedTo || '', onChange: e => quickSet({ assignedTo: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('Alış', input({ value: q.pickup || '', onChange: e => quickSet({ pickup: e.target.value }), placeholder: 'Alış noktası' }), true),
+                    field('Bırakış', input({ value: q.dropoff || '', onChange: e => quickSet({ dropoff: e.target.value }), placeholder: 'Bırakış noktası' }), true),
+                    field('Yolcu', input({ value: pax.name || '', onChange: e => quickPassengerSet('name', e.target.value), placeholder: 'Yolcu adı' })),
+                    field('Kişi', input({ type: 'number', min: 1, value: q.passengerCount || 1, onChange: e => quickSet({ passengerCount: Math.max(1, parseInt(e.target.value, 10) || 1) }) })),
+                    field('Kaptan', input({ value: q.driverName || '', onChange: e => quickSet({ driverName: e.target.value }), placeholder: 'Kaptan adı' })),
+                    field('Kaptan Tel', input({ value: q.driverPhone || '', onChange: e => quickSet({ driverPhone: e.target.value }), placeholder: 'Telefon' })),
+                    field('Plaka', input({ value: q.plate || '', onChange: e => quickSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
+                    field('Uçuş', input({ value: q.flightCode || '', onChange: e => quickSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK...' })),
+                    field('Müşteri Öder mi?', select({ value: q.paymentCollect || 'yes', onChange: e => quickSet({ paymentCollect: e.target.value }) }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
+                    field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Tam'], ['bos', 'Boş'], ['iptal', 'İptal']])),
+                    field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet({ transferType: e.target.value }) }, TIPLER.map(tp => [tp.id, tp.n]))),
+                    field('Alt Acenta', input({ value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
+                    field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
+                        input({ type: 'number', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
+                        select({ value: q.paymentCurrency || 'TRY', onChange: e => quickSet({ paymentCurrency: e.target.value }) }, [['TRY', 'TRY'], ['USD', 'USD'], ['EUR', 'EUR'], ['KWD', 'KWD']])
+                    ), true),
+                    field('Araç Ödemesi', input({ type: 'number', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
+                    field('Alt Acenta Ücreti', input({ type: 'number', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
+                    q.transferType === 'tour' && field('Tur Hakedişi', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
+                        input({ type: 'number', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
+                        input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
+                    ), true),
+                    field('Not', React.createElement("textarea", { className: "inp", value: q.notes || '', onChange: e => quickSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
+                    toggle('Müşteri alındı', !!q.customerCollected, { customerCollected: !q.customerCollected }),
+                    toggle('Şirket alındı', !!(q.companyCollected || q.settled), { companyCollected: !(q.companyCollected || q.settled), settled: !(q.companyCollected || q.settled) }),
+                    toggle('Araç ödendi', !!q.vehiclePaid, { vehiclePaid: !q.vehiclePaid })),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '86px 1fr 1.4fr', gap: 8, marginTop: 14 } },
+                    React.createElement("button", { onClick: deleteQuickEditT, style: { background: '#FFF0EF', color: R, border: '1px solid #E8BCB7', borderRadius: 12, padding: '12px 8px', fontWeight: 750, fontSize: 12, cursor: 'pointer' } }, "Sil"),
+                    React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, color: TX, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 8px', fontWeight: 750, fontSize: 12, cursor: 'pointer' } }, "Vazgeç"),
+                    React.createElement("button", { onClick: saveQuickEditT, style: { background: 'linear-gradient(135deg,' + G + ',#315B42)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 8px', fontWeight: 850, fontSize: 13, cursor: 'pointer', boxShadow: '0 8px 18px rgba(84,132,103,.22)' } }, "Kaydet"))));
+    };
     const plate16MonthBreakdown = monthKey => {
         const akm = aracK.filter(k => k.date && String(k.date).slice(0, 7) === monthKey);
         const gelir = Math.round(akm.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
@@ -9870,9 +10139,16 @@ function App() {
                     React.createElement("div", { style: { fontSize: 28, marginBottom: 4 } }, '📭'),
                     React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: SB } }, 'Bu haftada ' + rangeRows.length + ' transfer var')));
         /* ── Yıllara Göre Gruplar (2026 > 2025 > ... > aylar > günler) ── */
+        const archiveNet = summaryNetKar(visibleListRows);
         const yearSection = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            React.createElement("div", { style: { fontSize: 11, fontWeight: 800, color: SB, textTransform: 'uppercase', padding: '2px 0' } }, '🗓️ Yıllara Göre Tüm Transferler'),
-            yearGroupKeys.map(yearKey => {
+            React.createElement("button", { onClick: () => setOpenArchiveList(v => !v), style: { width: '100%', background: '#FFFFFF', border: '1px solid ' + BOR, borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, cursor: 'pointer', boxShadow: '0 1px 5px rgba(0,0,0,.04)' } },
+                React.createElement("div", { style: { minWidth: 0, textAlign: 'left' } },
+                    React.createElement("div", { style: { fontSize: 11, fontWeight: 760, color: SB, textTransform: 'uppercase', letterSpacing: .25 } }, 'Yıllara Göre Tüm Transferler'),
+                    React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 3, fontWeight: 520 } }, visibleListRows.length + ' transfer · ' + yearGroupKeys.length + ' yıl')),
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 } },
+                    React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: archiveNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, (archiveNet >= 0 ? '+' : '') + archiveNet.toLocaleString('tr-TR') + '₺'),
+                    React.createElement("span", { style: { fontSize: 12, color: SB, fontWeight: 700 } }, openArchiveList ? '▲' : '▼'))),
+            openArchiveList && yearGroupKeys.map(yearKey => {
                 const yearMonths = yearGroups[yearKey] || {};
                 const monthKeysInYear = Object.keys(yearMonths).sort((a, b) => a < b ? 1 : -1);
                 const yearRows = monthKeysInYear.flatMap(mk => Object.values(yearMonths[mk] || {}).flat());
@@ -10200,6 +10476,15 @@ function App() {
                     const dt = new Date(d + 'T12:00:00');
                     return isNaN(dt.getTime()) ? d : dt.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
                 };
+                const homeVehicleLabel = t => {
+                    const v = VEHS.find(x => x.id === (t && t.vehicle));
+                    return v ? v.n : ((t && t.vehicle) ? String(t.vehicle) : '');
+                };
+                const homeDateVehicleLabel = t => {
+                    const base = homeDateLabel(t && t.date);
+                    const vehicle = homeVehicleLabel(t);
+                    return vehicle ? base + ' (' + vehicle + ')' : base;
+                };
                 const homeAmountTRY = t => {
                     const stored = parseFloat(t.customerTRY);
                     if (!isNaN(stored) && stored !== 0)
@@ -10336,7 +10621,7 @@ function App() {
                             React.createElement("div", { className: "lg-upcoming-time" }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0 } },
                                 React.createElement("div", { className: "lg-route" }, routeText),
-                                React.createElement("div", { className: "lg-transfer-date" }, homeDateLabel(t.date))
+                                React.createElement("div", { className: "lg-transfer-date" }, homeDateVehicleLabel(t))
                             ),
                             flight && React.createElement("button", {
                                 className: "lg-flight flight-track-btn",
@@ -10404,9 +10689,9 @@ function App() {
                     const rows = periodRows[mode] || [];
                     const title = mode === 'today' ? 'Bugünün Transferleri' : mode === 'month' ? 'Bu Ayın Transferleri' : 'Bu Yılın Transferleri';
                     if (mode === 'today') {
-                        return rows.length
-                            ? React.createElement("div", { className: "lg-home-transfer-list lg-today-list-standalone" }, rows.map(renderHomeTransfer))
-                            : React.createElement("div", { className: "lg-home-transfer-list lg-today-list-standalone" }, renderHomeTransfer(null));
+                        return React.createElement("div", { className: "lg-home-transfer-list lg-today-list-standalone" },
+                            rows.length ? rows.map(renderHomeTransfer) : renderHomeTransfer(null)
+                        );
                     }
                     return React.createElement("div", { className: "lg-glass-card lg-period-panel mode-" + mode },
                         React.createElement("div", { className: "lg-period-panel-head" },
@@ -11385,14 +11670,16 @@ function App() {
                     /* Filtreler — iç kart görünümlü kutu */
                     React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 12, padding: '10px 12px', border: '1px solid #DED8D0', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
                     /* Filtreler başlığı */
-                    React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: '#6E665E', letterSpacing: .5, textTransform: 'uppercase', marginTop: 0, marginBottom: 0 } }, '🎚️ Filtreler'),
+                    React.createElement("button", { onClick: () => setOpenListFilters(v => !v), style: { width: '100%', background: '#F6F3EF', border: '1px solid #DED8D0', borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' } },
+                        React.createElement("span", { style: { fontSize: 10, fontWeight: 760, color: '#6E665E', letterSpacing: .35, textTransform: 'uppercase' } }, '🎚️ Filtreler'),
+                        React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: '#6E665E' } }, openListFilters ? '▲' : '▼')),
                     /* Durum filtreleri */
-                    React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
+                    openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
                         [['all', 'Tümü', T.length], ['tam', '✅ Tam', st.tam], ['bos', '🔄 Boş', st.bos], ['iptal', '❌ İptal', st.ipt]].map(([v, l, cnt]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, status: v })), style: { background: flt.status === v ? '#6E665E' : '#F6F3EF', color: flt.status === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.status === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 } },
                             React.createElement("span", null, l),
                             React.createElement("span", { style: { background: flt.status === v ? 'rgba(255,255,255,.22)' : '#DED8D0', color: flt.status === v ? '#fff' : '#6E665E', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 800, minWidth: 20, textAlign: 'center' } }, cnt))))),
                     /* Plaka + tahsil filtreleri */
-                    React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
+                    openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
                         React.createElement("button", { onClick: () => setFlt(p => ({ ...p, plateView: p.plateView === 'plate16' ? 'all' : 'plate16' })), style: { background: flt.plateView === 'plate16' ? '#1D1C1A' : '#F6F3EF', color: flt.plateView === 'plate16' ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.plateView === 'plate16' ? '#1D1C1A' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, '🚐 ' + PLAKA + ' NET'),
                         flt.plateView !== 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, collect: v })), style: { background: flt.collect === v ? '#6E665E' : '#F6F3EF', color: flt.collect === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.collect === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l))),
                         flt.plateView === 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, plateCollect: v })), style: { background: flt.plateCollect === v ? '#6E665E' : '#F6F3EF', color: flt.plateCollect === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.plateCollect === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l))))))),
@@ -11402,7 +11689,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openQuickEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
             tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
@@ -11451,6 +11738,7 @@ function App() {
                 )
             )
         ),
+        quickEditT && renderQuickEditModal(),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
@@ -11692,16 +11980,9 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
     function syncSelected(){
         const app = root();
         if (!app) return;
-        app.querySelectorAll('.ko-auto-selected,.ko-sync-gold').forEach(el => el.classList.remove('ko-auto-selected', 'ko-sync-gold'));
-        app.querySelectorAll(TARGET).forEach(el => {
-            if (el.closest('.tabbar')) {
-                if (el.classList && el.classList.contains('tab') && selectedByState(el)) {
-                    const icon = el.querySelector('.tab-icon');
-                    if (icon) icon.classList.add('ko-auto-selected', 'ko-sync-gold');
-                }
-                return;
-            }
-            if (selectedByState(el) || selectedByLook(el)) el.classList.add('ko-auto-selected', 'ko-sync-gold');
+        app.querySelectorAll('.tabbar .tab-icon.ko-auto-selected,.tabbar .tab-icon.ko-sync-gold').forEach(el => el.classList.remove('ko-auto-selected', 'ko-sync-gold'));
+        app.querySelectorAll('.tabbar .tab.is-active .tab-icon').forEach(icon => {
+            icon.classList.add('ko-auto-selected', 'ko-sync-gold');
         });
     }
 
@@ -11717,12 +11998,10 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
             }
         }, 1800);
         setTimeout(syncSelected, 0);
-        setTimeout(syncSelected, 80);
-        setTimeout(syncSelected, 260);
     }
 
-    document.addEventListener('pointerdown', e => hit(closestTarget(e.target)), true);
-    document.addEventListener('click', e => hit(closestTarget(e.target)), true);
+    document.addEventListener('pointerdown', e => hit(closestTarget(e.target)), { capture: true, passive: true });
+    document.addEventListener('click', e => hit(closestTarget(e.target)), { capture: true, passive: true });
     document.addEventListener('focusin', e => hit(closestTarget(e.target)), true);
     document.addEventListener('focusout', () => {
         setTimeout(() => {
@@ -11733,17 +12012,12 @@ html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle.is-activ
         }, 60);
     }, true);
 
-    const observer = new MutationObserver(() => {
-        clearTimeout(observer._t);
-        observer._t = setTimeout(syncSelected, 60);
-    });
     const start = () => {
         const app = root();
         if (app) {
-            observer.observe(app, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style','aria-selected','aria-pressed','aria-expanded'] });
             syncSelected();
         } else {
-            setTimeout(start, 80);
+            setTimeout(start, 160);
         }
     };
     start();
@@ -12524,11 +12798,11 @@ html body .app-shell .tabbar .tab:not(.tab-fab) > .tab-icon:is(.ko-gold-hit,.ko-
     }
 
     installStyle();
-    document.addEventListener('pointerdown', e => press(closestTarget(e.target)), true);
+    document.addEventListener('pointerdown', e => press(closestTarget(e.target)), { capture: true, passive: true });
     document.addEventListener('click', e => {
         const el = closestTarget(e.target);
         press(el);
-    }, true);
+    }, { capture: true, passive: true });
     document.addEventListener('focusin', e => press(closestTarget(e.target)), true);
 })();
 
@@ -13886,8 +14160,8 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcomin
 }
 
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-time{
-  font-size:18px!important;
-  font-weight:760!important;
+  font-size:17.4px!important;
+  font-weight:620!important;
   line-height:1!important;
   letter-spacing:0!important;
   color:#132227!important;
@@ -13895,8 +14169,8 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcomin
 }
 
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-route{
-  font-size:11.6px!important;
-  font-weight:680!important;
+  font-size:11.4px!important;
+  font-weight:520!important;
   line-height:1.18!important;
   color:#15272d!important;
   -webkit-text-fill-color:#15272d!important;
@@ -13907,6 +14181,7 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-route{
 
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-transfer-date{
   margin-top:2px!important;
+  margin-bottom:5px!important;
   font-size:9.2px!important;
   font-weight:560!important;
   line-height:1.12!important;
@@ -13933,7 +14208,7 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-flight{
 
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-row{
   gap:6px!important;
-  margin-top:6px!important;
+  margin-top:7px!important;
   min-width:0!important;
   font-size:10.7px!important;
   font-weight:560!important;
@@ -14288,7 +14563,7 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
         if (!card) return;
         homeTouches.set(e.pointerId, { card, x:e.clientX, y:e.clientY, moved:false });
         requestAnimationFrame(() => clearHomePress(card));
-    }, true);
+    }, { capture: true, passive: true });
     document.addEventListener('pointermove', e => {
         const rec = homeTouches.get(e.pointerId);
         if (!rec) return;
@@ -14296,7 +14571,7 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
             rec.moved = true;
             clearHomePress(rec.card);
         }
-    }, true);
+    }, { capture: true, passive: true });
     document.addEventListener('pointerup', e => {
         const rec = homeTouches.get(e.pointerId);
         if (!rec) return;
@@ -14308,12 +14583,12 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
                 window.setTimeout(() => rec.card.classList.remove('ko-home-real-tap'), 260);
             }
         });
-    }, true);
+    }, { capture: true, passive: true });
     document.addEventListener('pointercancel', e => {
         const rec = homeTouches.get(e.pointerId);
         if (rec) clearHomePress(rec.card);
         homeTouches.delete(e.pointerId);
-    }, true);
+    }, { capture: true, passive: true });
 
     installMoneyTapStyle();
     markMoney();
@@ -15129,6 +15404,569 @@ html body .app-shell .tabbar button.tab-fab:active .tab-fab-plus{
     }
 
     installFinalUiStyle();
+})();
+
+(function(){
+    const PREMIUM_FIX_STYLE_ID = 'ko-account-transfer-typography-final-v7';
+    const PREMIUM_FIX_STYLE = `
+:root{
+  --ko-chip-olmez-bg:#e4f1ec;
+  --ko-chip-olmez-fg:#2f765f;
+  --ko-chip-olmez-bd:rgba(47,118,95,.34);
+  --ko-chip-balentur-bg:#fff0ee;
+  --ko-chip-balentur-fg:#b2605c;
+  --ko-chip-balentur-bd:rgba(178,96,92,.34);
+  --ko-chip-odelo-bg:#e8f0f4;
+  --ko-chip-odelo-fg:#315f72;
+  --ko-chip-odelo-bd:rgba(49,95,114,.32);
+  --ko-chip-alt-bg:#fff5e5;
+  --ko-chip-alt-fg:#9a6a1f;
+  --ko-chip-alt-bd:rgba(154,106,31,.30);
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-route{
+  display:inline-flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  max-width:100%!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:22px!important;
+  padding:4px 10px!important;
+  border-radius:999px!important;
+  font-size:10.5px!important;
+  font-weight:560!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.82),
+    0 5px 12px rgba(35,30,24,.045)!important;
+  text-shadow:none!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group .ko-account-chip{
+  font-weight:540!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez{
+  background:linear-gradient(145deg,var(--ko-chip-olmez-bg),rgba(255,255,255,.82))!important;
+  color:var(--ko-chip-olmez-fg)!important;
+  -webkit-text-fill-color:var(--ko-chip-olmez-fg)!important;
+  border:1px solid var(--ko-chip-olmez-bd)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-balentur{
+  background:linear-gradient(145deg,var(--ko-chip-balentur-bg),rgba(255,255,255,.82))!important;
+  color:var(--ko-chip-balentur-fg)!important;
+  -webkit-text-fill-color:var(--ko-chip-balentur-fg)!important;
+  border:1px solid var(--ko-chip-balentur-bd)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-odelo{
+  background:linear-gradient(145deg,var(--ko-chip-odelo-bg),rgba(255,255,255,.82))!important;
+  color:var(--ko-chip-odelo-fg)!important;
+  -webkit-text-fill-color:var(--ko-chip-odelo-fg)!important;
+  border:1px solid var(--ko-chip-odelo-bd)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-alt{
+  background:linear-gradient(145deg,var(--ko-chip-alt-bg),rgba(255,255,255,.84))!important;
+  color:var(--ko-chip-alt-fg)!important;
+  -webkit-text-fill-color:var(--ko-chip-alt-fg)!important;
+  border:1px solid var(--ko-chip-alt-bd)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip:is(.ko-account-other-a,.ko-account-other-b,.ko-account-other-c,.ko-account-other-d,.ko-account-other-e){
+  background:linear-gradient(145deg,#f2f0f7,rgba(255,255,255,.84))!important;
+  color:#6f5e8a!important;
+  -webkit-text-fill-color:#6f5e8a!important;
+  border:1px solid rgba(111,94,138,.28)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip:not(.ko-account-olmez){
+  background:linear-gradient(145deg,#f8f6f2,rgba(255,255,255,.88))!important;
+  color:#5f5a51!important;
+  -webkit-text-fill-color:#5f5a51!important;
+  border:1px solid rgba(120,110,96,.20)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez{
+  background:rgba(255,255,255,.72)!important;
+  border:2.4px solid #d7ae45!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency{
+  background:rgba(255,255,255,.72)!important;
+  border:2.4px solid #7fb796!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-arrow{
+  color:rgba(31,29,26,.54)!important;
+  -webkit-text-fill-color:rgba(31,29,26,.54)!important;
+  font-size:11px!important;
+  font-weight:560!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-suffix{
+  color:rgba(31,29,26,.52)!important;
+  -webkit-text-fill-color:rgba(31,29,26,.52)!important;
+  font-size:9px!important;
+  font-weight:540!important;
+}
+
+html body .app-shell main.main-cont.view-home .tcard,
+html body .app-shell main.main-cont.view-list .tcard{
+  letter-spacing:0!important;
+  text-rendering:optimizeLegibility!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+html body .app-shell main.main-cont :is(.tcard-agency,.tcard-route,.tcard-passenger,.tcard-amount,.tcard-amount-sub,.tcard-pill,.tcard-paystatus){
+  letter-spacing:0!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .tcard-time-big{
+  font-size:16px!important;
+  font-weight:620!important;
+  color:#202826!important;
+  -webkit-text-fill-color:#202826!important;
+}
+
+html body .app-shell main.main-cont .tcard-agency{
+  font-size:12.4px!important;
+  font-weight:560!important;
+  line-height:1.34!important;
+  color:#24302d!important;
+  -webkit-text-fill-color:#24302d!important;
+}
+
+html body .app-shell main.main-cont .tcard-route{
+  font-size:11.6px!important;
+  font-weight:480!important;
+  line-height:1.34!important;
+  color:#59645f!important;
+  -webkit-text-fill-color:#59645f!important;
+}
+
+html body .app-shell main.main-cont .tcard-passenger{
+  font-size:10.6px!important;
+  font-weight:460!important;
+  line-height:1.3!important;
+  color:#737b76!important;
+  -webkit-text-fill-color:#737b76!important;
+}
+
+html body .app-shell main.main-cont .tcard-pill{
+  font-size:9.2px!important;
+  font-weight:560!important;
+  padding:2px 7px!important;
+  border-radius:999px!important;
+}
+
+html body .app-shell main.main-cont .tcard-amount{
+  font-size:14.6px!important;
+  font-weight:640!important;
+  line-height:1.08!important;
+}
+
+html body .app-shell main.main-cont .tcard-amount-sub{
+  font-size:9px!important;
+  font-weight:440!important;
+  color:rgba(89,100,95,.76)!important;
+  -webkit-text-fill-color:rgba(89,100,95,.76)!important;
+}
+
+html body .app-shell main.main-cont .tcard-amount.is-none,
+html body .app-shell main.main-cont .ko-payment-none.tcard-amount{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:19px!important;
+  padding:2px 6px!important;
+  border-radius:999px!important;
+  font-size:10px!important;
+  font-weight:540!important;
+  line-height:1!important;
+  background:linear-gradient(145deg,rgba(255,241,239,.92),rgba(255,255,255,.74))!important;
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+  border:1px solid rgba(178,96,92,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 4px 10px rgba(178,96,92,.06)!important;
+}
+
+html body .app-shell main.main-cont .tcard-paystatus{
+  min-height:22px!important;
+  padding:3px 8px!important;
+  font-size:9.1px!important;
+  font-weight:520!important;
+}
+`;
+
+    function installPremiumFixStyle(){
+        let style = document.getElementById(PREMIUM_FIX_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = PREMIUM_FIX_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = PREMIUM_FIX_STYLE;
+    }
+
+    installPremiumFixStyle();
+})();
+
+(function(){
+    const PERF_STYLE_ID = 'ko-scroll-performance-final-v1';
+    const PERF_STYLE = `
+#root,
+html body .app-shell,
+html body .app-shell main.main-cont{
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior-y:contain;
+}
+
+html body .app-shell main.main-cont :is(.card,.lg-glass-card,.lg-metric-card,.lg-upcoming-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.tcard,.tk-card,.tk-panel,.tk-ledger){
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  contain:layout paint;
+}
+
+html body .app-shell main.main-cont :is(.lg-upcoming-card,.tcard,.card,.tk-panel,.tk-ledger) *{
+  text-rendering:optimizeLegibility;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group{
+  background:rgba(255,255,255,.72)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez{
+  border:2.4px solid #d7ae45!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency{
+  border:2.4px solid #7fb796!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral{
+  border:1.2px solid rgba(120,110,96,.18)!important;
+}
+`;
+    let style = document.getElementById(PERF_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = PERF_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = PERF_STYLE;
+})();
+
+(function(){
+    const FINAL_FRAME_STYLE_ID = 'ko-final-hesap-frame-today-air-v2';
+    const FINAL_FRAME_STYLE = `
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group{
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:none!important;
+  outline:none!important;
+  background-clip:padding-box!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez[style]{
+  border:3.5px solid #c69318!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency[style]{
+  border:3.5px solid #2f8f5b!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group::before{
+  content:""!important;
+  position:absolute!important;
+  inset:3px!important;
+  border-radius:10px!important;
+  border:1px solid transparent!important;
+  pointer-events:none!important;
+  z-index:3!important;
+  box-sizing:border-box!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez::before{
+  border-color:rgba(198,147,24,.34)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency::before{
+  border-color:rgba(47,143,91,.34)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral[style]{
+  border:1.4px solid rgba(120,110,96,.20)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-route{
+  gap:4px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip,
+html body .app-shell main.main-cont.view-hesap .ko-account-chip[style]{
+  display:inline!important;
+  min-height:auto!important;
+  padding:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#5f5a51!important;
+  -webkit-text-fill-color:#5f5a51!important;
+  font-size:11.2px!important;
+  font-weight:540!important;
+  line-height:1.2!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez[style]{
+  color:#2f765f!important;
+  -webkit-text-fill-color:#2f765f!important;
+  font-weight:620!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat[style]{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(247,251,248,.74))!important;
+  border:1.4px solid rgba(47,143,91,.62)!important;
+  outline:none!important;
+  outline-offset:0!important;
+  box-shadow:0 0 0 1px rgba(47,143,91,.18),0 3px 10px rgba(47,143,91,.08),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame::after,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  border:1.4px solid rgba(47,143,91,.72)!important;
+  border-radius:inherit!important;
+  pointer-events:none!important;
+  z-index:8!important;
+  box-sizing:border-box!important;
+}
+
+html body .app-shell main.main-cont.view-hesap input.ko-hesap-month-input,
+html body .app-shell main.main-cont.view-hesap input.ko-hesap-month-input[style]{
+  background:rgba(255,255,255,.78)!important;
+  border:1.3px solid rgba(47,143,91,.40)!important;
+  color:#24302d!important;
+  -webkit-text-fill-color:#24302d!important;
+}
+
+html body .app-shell main.main-cont.view-hesap input.ko-hesap-month-input::-webkit-calendar-picker-indicator{
+  opacity:1!important;
+  filter:invert(36%) sepia(20%) saturate(837%) hue-rotate(98deg) brightness(85%) contrast(88%)!important;
+  background:rgba(47,143,91,.14)!important;
+  border-radius:6px!important;
+  padding:2px!important;
+  cursor:pointer!important;
+}
+
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle:not(.is-active),
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle:not(.is-active)[style]{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.90),rgba(247,251,248,.76))!important;
+  border:1.4px solid rgba(47,143,91,.62)!important;
+  outline:none!important;
+  outline-offset:0!important;
+  box-shadow:0 0 0 1px rgba(47,143,91,.18),0 3px 10px rgba(47,143,91,.08),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle.is-active,
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle.is-active[style]{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#2f8f5b,#1f7448)!important;
+  border:1.4px solid rgba(47,143,91,.82)!important;
+  outline:none!important;
+  outline-offset:0!important;
+  box-shadow:0 0 0 1px rgba(47,143,91,.20),0 5px 14px rgba(47,143,91,.14),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  border:1.4px solid rgba(47,143,91,.72)!important;
+  border-radius:inherit!important;
+  pointer-events:none!important;
+  z-index:8!important;
+  box-sizing:border-box!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today,
+html body .app-shell .lg-period-panel.mode-today[style]{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.88),rgba(249,250,247,.74) 58%,rgba(235,239,235,.46)) padding-box,
+    linear-gradient(135deg,rgba(47,143,91,.46),rgba(47,143,91,.18)) border-box!important;
+  border:1.2px solid transparent!important;
+  box-shadow:0 12px 28px rgba(31,46,39,.075),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-period-panel-title,
+html body .app-shell .lg-period-panel.mode-today .lg-period-panel-count{
+  color:var(--lg-ink)!important;
+  -webkit-text-fill-color:var(--lg-ink)!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-upcoming-card,
+html body .app-shell .lg-period-panel.mode-today .lg-upcoming-card[style],
+html body .app-shell .lg-period-panel.mode-month .lg-upcoming-card,
+html body .app-shell .lg-period-panel.mode-month .lg-upcoming-card[style]{
+  padding:15px 14px 12px!important;
+  border-radius:16px!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-upcoming-top,
+html body .app-shell .lg-period-panel.mode-month .lg-upcoming-top{
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:center!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-upcoming-time,
+html body .app-shell .lg-period-panel.mode-month .lg-upcoming-time{
+  font-size:21px!important;
+  font-weight:630!important;
+  line-height:1.05!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-route,
+html body .app-shell .lg-period-panel.mode-month .lg-route{
+  font-size:13px!important;
+  font-weight:560!important;
+  line-height:1.2!important;
+}
+
+html body .app-shell .lg-period-panel.mode-today .lg-transfer-date,
+html body .app-shell .lg-period-panel.mode-month .lg-transfer-date{
+  font-size:9.8px!important;
+  font-weight:450!important;
+  margin-top:3px!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone{
+  gap:9px!important;
+  padding:0 1px!important;
+  text-rendering:optimizeLegibility!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card[style]{
+  padding:12px 12px 11px!important;
+  border-radius:15px!important;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,255,255,.74) 58%,rgba(246,248,246,.62)) padding-box,
+    linear-gradient(135deg,rgba(47,143,91,.26),rgba(255,255,255,.72)) border-box!important;
+  border:1.1px solid transparent!important;
+  box-shadow:
+    0 8px 20px rgba(24,31,38,.045),
+    inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card *{
+  letter-spacing:0!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-top{
+  grid-template-columns:54px minmax(0,1fr) minmax(42px,auto)!important;
+  gap:9px!important;
+  align-items:center!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-time{
+  font-size:17px!important;
+  font-weight:560!important;
+  line-height:1.08!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-route{
+  font-size:11.6px!important;
+  font-weight:480!important;
+  line-height:1.34!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-transfer-date{
+  margin-top:5px!important;
+  margin-bottom:7px!important;
+  font-size:9.4px!important;
+  font-weight:440!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-row{
+  margin-top:7px!important;
+  gap:7px!important;
+  font-size:10.4px!important;
+  font-weight:440!important;
+  line-height:1.32!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-chip-row{
+  margin-top:8px!important;
+  gap:6px!important;
+  flex-wrap:wrap!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-chip{
+  min-height:20px!important;
+  padding:3px 8px!important;
+  font-size:9.1px!important;
+  font-weight:540!important;
+}
+
+@media (max-width:430px){
+  html body .app-shell .lg-home-transfer-list.lg-today-list-standalone{
+    gap:8px!important;
+  }
+  html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card,
+  html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card[style]{
+    padding:11px 11px 10px!important;
+    border-radius:14px!important;
+  }
+  html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-top{
+    grid-template-columns:52px minmax(0,1fr) minmax(40px,auto)!important;
+    gap:8px!important;
+  }
+}
+`;
+    let style = document.getElementById(FINAL_FRAME_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = FINAL_FRAME_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = FINAL_FRAME_STYLE;
 })();
 
 </script>
