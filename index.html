@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#F1EEE9">
+<meta name="theme-color" content="#FFFFFF">
 <title>KÖ Transfer Takip</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -23,12 +23,12 @@
 
 :root{
   /* — yüzeyler — Natural Titanium / soft glass — */
-  --bg:#F1EEE9;
-  --bg-2:#FAF8F5;
+  --bg:#FFFFFF;
+  --bg-2:#FFFFFF;
   --card:#FFFFFF;
-  --card-2:#F6F3EF;
-  --surface:#F6F3EF;
-  --surface-2:#ECE7E0;
+  --card-2:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-2:#F7F8F8;
 
   /* — çizgiler — */
   --line:#DED8D0;
@@ -45,12 +45,12 @@
   --brand:#8A8378;
   --brand-2:#4F4A43;
   --brand-3:#B6ADA1;
-  --brand-soft:#F2EFEA;
-  --brand-softer:#FAF8F5;
+  --brand-soft:#FFFFFF;
+  --brand-softer:#FFFFFF;
   --brand-bd:#D8D0C6;
   --nude:#B6ADA1;
   --nude-deep:#6E665E;
-  --nude-soft:#F6F3EF;
+  --nude-soft:#FFFFFF;
   --nude-glow:#DED8D0;
 
   --accent:#8A8378;
@@ -61,7 +61,7 @@
   --ok:#126C37; --ok-bg:#E3F1E7; --ok-bd:#7DB68B;
   --warn:#FF9F0A; --warn-bg:#FFF5E5; --warn-bd:#FFD69A;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
-  --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
+  --info:#8A8378; --info-bg:#FFFFFF; --info-bd:#D8D0C6;
 
   /* — transfer tipi pasteller — */
   --t-arrival-bg:#F2EFEA;   --t-arrival-bd:#D8D0C6;
@@ -88,7 +88,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{
   height:100%;overflow:hidden;
-  background:linear-gradient(180deg,#FAF8F5 0%,#F1EEE9 52%,#ECE7E0 100%);
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 100%);
   background-attachment:fixed;
   font-family:var(--sans);
   color:var(--ink);
@@ -301,12 +301,12 @@ select.inp,select{
   box-shadow:0 10px 24px rgba(79,74,67,.28),inset 0 1px 0 rgba(255,255,255,.18);
 }
 .qa-circle-red-soft{
-  background:linear-gradient(135deg,#FAF8F5 0%,#F2EFEA 100%);
+  background:linear-gradient(135deg,#FFFFFF 0%,rgba(255,255,255,.78) 100%);
   border-color:var(--brand-bd);
   color:var(--brand);
 }
 .qa-circle-nude{
-  background:linear-gradient(135deg,#F6F3EF 0%,#ECE7E0 100%);
+  background:linear-gradient(135deg,#FFFFFF 0%,rgba(255,255,255,.78) 100%);
   border-color:#C9C1B8;
   color:#38342F;
 }
@@ -317,7 +317,7 @@ select.inp,select{
   box-shadow:0 10px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08);
 }
 .qa-circle-vehicle{
-  background:linear-gradient(135deg,#F1EEE9 0%,#E5E5EA 100%);
+  background:linear-gradient(135deg,#FFFFFF 0%,#F7F8F8 100%);
   border-color:var(--line-2);
   color:var(--ink-2);
 }
@@ -379,7 +379,7 @@ select.inp,select{
   border-color:var(--line);
 }
 .hero-card-softred{
-  background:linear-gradient(135deg,#FAF8F5 0%,#F2EFEA 100%);
+  background:linear-gradient(135deg,#FFFFFF 0%,rgba(255,255,255,.76) 100%);
   color:var(--brand);
   border-color:var(--brand-bd);
 }
@@ -663,7 +663,7 @@ main.main-cont{
 
 /* Desktop */
 @media (min-width:900px){
-  html,body{background:linear-gradient(180deg,#FAF8F5 0%,#F1EEE9 100%)}
+  html,body{background:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 100%)}
   main.main-cont{max-width:1200px!important;padding:18px 24px calc(var(--tabbar-h) + 40px)!important}
   .desk-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
   .desk-wide{grid-column:1/-1}
@@ -997,12 +997,12 @@ main.main-cont{
    Görsel katman sıfırlandı, veri ve hesap mantığına dokunmaz.
    ═══════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#F1EEE9;
-  --bg-2:#FAF8F5;
+  --bg:#FFFFFF;
+  --bg-2:#FFFFFF;
   --card:#FFFFFF;
-  --card-2:#F6F3EF;
-  --surface:#F6F3EF;
-  --surface-2:#ECE7E0;
+  --card-2:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-2:#F7F8F8;
   --line:#DED8D0;
   --line-2:#C9C1B8;
   --line-strong:#B6ADA1;
@@ -1013,17 +1013,17 @@ main.main-cont{
   --brand:#8A8378;
   --brand-2:#4F4A43;
   --brand-3:#B6ADA1;
-  --brand-soft:#F2EFEA;
-  --brand-softer:#FAF8F5;
+  --brand-soft:#FFFFFF;
+  --brand-softer:#FFFFFF;
   --brand-bd:#D8D0C6;
   --nude:#B6ADA1;
   --nude-deep:#6E665E;
-  --nude-soft:#F6F3EF;
+  --nude-soft:#FFFFFF;
   --nude-glow:#DED8D0;
   --ok:#126C37; --ok-bg:#E3F1E7; --ok-bd:#7DB68B;
   --warn:#B8863B; --warn-bg:#FFF7EA; --warn-bd:#E8C988;
   --err:#B95A54; --err-bg:#FFF1EF; --err-bd:#E3B8B4;
-  --info:#8A8378; --info-bg:#F2EFEA; --info-bd:#D8D0C6;
+  --info:#8A8378; --info-bg:#FFFFFF; --info-bd:#D8D0C6;
   --t-arrival-bg:#F2EFEA; --t-arrival-bd:#D8D0C6;
   --t-departure-bg:#F2EFEA; --t-departure-bd:#D8D0C6;
   --t-tour-bg:#F2EFEA; --t-tour-bd:#D8D0C6;
@@ -1031,14 +1031,10 @@ main.main-cont{
   --tabbar-h:82px;
 }
 html,body{
-  background:
-    radial-gradient(circle at 18% -8%,rgba(182,173,161,.24),transparent 34%),
-    linear-gradient(180deg,#FAF8F5 0%,#F1EEE9 46%,#ECE7E0 100%);
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 100%);
 }
 #root{
-  background:
-    linear-gradient(90deg,rgba(255,255,255,.34) 0 1px,transparent 1px) 0 0/44px 44px,
-    linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,0) 260px);
+  background:transparent;
 }
 .app-shell{
   background:transparent!important;
@@ -1096,7 +1092,7 @@ main.main-cont{
   padding:16px 16px calc(var(--tabbar-h) + var(--sa-b) + 24px);
 }
 .card{
-  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(250,248,245,.94));
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.78));
   border:1px solid rgba(216,208,198,.9);
   border-radius:16px;
   box-shadow:0 18px 44px rgba(79,74,67,.08),0 1px 1px rgba(255,255,255,.9) inset;
@@ -1105,7 +1101,7 @@ main.main-cont{
 }
 .inp{
   min-height:48px;
-  background:linear-gradient(180deg,#FFFFFF,#FAF8F5);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.78));
   border:1px solid var(--line);
   border-radius:12px;
   color:var(--ink);
@@ -1131,7 +1127,7 @@ main.main-cont{
 .qa-item{width:66px;gap:6px}
 .qa-circle{
   width:56px;height:56px;border-radius:16px;
-  background:linear-gradient(180deg,#FFFFFF,#F6F3EF);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.78));
   border:1px solid var(--brand-bd);
   color:var(--brand);
   box-shadow:0 14px 30px rgba(79,74,67,.10),inset 0 1px 0 rgba(255,255,255,.95);
@@ -1143,7 +1139,7 @@ main.main-cont{
   box-shadow:0 18px 36px rgba(79,74,67,.22),inset 0 1px 0 rgba(255,255,255,.22);
 }
 .qa-circle-red-soft,.qa-circle-nude,.qa-circle-vehicle{
-  background:linear-gradient(180deg,#FFFFFF,#F1EEE9);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.78));
   border-color:var(--brand-bd);
   color:var(--brand);
 }
@@ -1168,11 +1164,11 @@ main.main-cont{
   background:linear-gradient(145deg,#4F4A43 0%,#8A8378 58%,#B6ADA1 130%);
 }
 .hero-card-nude,.hero-card-ivory{
-  background:linear-gradient(180deg,#FFFFFF 0%,#F6F3EF 100%);
+  background:linear-gradient(180deg,#FFFFFF 0%,rgba(255,255,255,.76) 100%);
   border-color:var(--brand-bd);
 }
 .hero-card-softred{
-  background:linear-gradient(145deg,#F2EFEA 0%,#FAF8F5 100%);
+  background:linear-gradient(145deg,#FFFFFF 0%,rgba(255,255,255,.76) 100%);
   border-color:var(--brand-bd);
   color:var(--brand);
 }
@@ -1206,7 +1202,7 @@ main.main-cont{
 .tcard{
   border-radius:16px;
   border:1px solid rgba(216,208,198,.92);
-  background:linear-gradient(180deg,#FFFFFF,#FAF8F5);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.76));
   box-shadow:0 14px 34px rgba(79,74,67,.08),inset 0 1px 0 rgba(255,255,255,.9);
 }
 .tcard.is-open{
@@ -1245,13 +1241,13 @@ main.main-cont{
   background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd);
 }
 .tcard-expanded{
-  background:linear-gradient(180deg,#FAF8F5,#FFFFFF);
+  background:linear-gradient(180deg,rgba(255,255,255,.80),#FFFFFF);
   border-top:1px solid var(--line);
 }
 .amt-pos{color:var(--ok)}
 .amt-neg{color:var(--err)}
 .tabbar{
-  background:rgba(250,248,245,.9);
+  background:rgba(255,255,255,.76);
   border-top:1px solid rgba(216,208,198,.92);
   box-shadow:0 -18px 44px rgba(79,74,67,.10);
 }
@@ -1275,7 +1271,7 @@ main.main-cont{
   letter-spacing:0;
 }
 .tab.is-active{
-  background:linear-gradient(180deg,#FFFFFF,#F2EFEA);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.72));
   color:var(--brand-2);
   box-shadow:0 10px 24px rgba(79,74,67,.10),inset 0 1px 0 rgba(255,255,255,.95);
 }
@@ -1293,7 +1289,7 @@ main.main-cont{
 }
 .ms{
   border:1px solid rgba(216,208,198,.9);
-  background:linear-gradient(180deg,#FFFFFF,#FAF8F5);
+  background:linear-gradient(180deg,#FFFFFF,rgba(255,255,255,.78));
   box-shadow:0 -28px 70px rgba(24,33,42,.24);
 }
 @media (min-width:900px){
@@ -1338,13 +1334,13 @@ main.main-cont{
 html,body{
   background:
     radial-gradient(circle at 20% 9%,rgba(255,255,255,.94) 0 17%,rgba(255,255,255,0) 42%),
-    radial-gradient(circle at 80% 4%,rgba(186,205,215,.58) 0 18%,rgba(186,205,215,0) 42%),
-    linear-gradient(145deg,var(--lg-page) 0%,#FBFAF7 42%,var(--lg-page-2) 100%)!important;
+    radial-gradient(circle at 80% 4%,rgba(255,255,255,.76) 0 18%,rgba(255,255,255,0) 42%),
+    linear-gradient(145deg,#FFFFFF 0%,#FFFFFF 100%)!important;
 }
 .app-shell{
   background:
-    linear-gradient(132deg,rgba(255,255,255,.36),rgba(206,218,225,.22) 45%,rgba(236,229,218,.42)),
-    var(--lg-page)!important;
+    linear-gradient(132deg,rgba(255,255,255,.72),rgba(255,255,255,.46) 45%,rgba(255,255,255,.62)),
+    #FFFFFF!important;
   color:var(--lg-ink);
 }
 main.main-cont{
@@ -2196,7 +2192,7 @@ body .card,
 .auth-shell{
   background:
     radial-gradient(circle at 20% 10%,rgba(255,255,255,.88),rgba(255,255,255,0) 36%),
-    linear-gradient(145deg,#F1EEE9,#E7ECEF)!important;
+    linear-gradient(145deg,#FFFFFF,#FFFFFF)!important;
 }
 .auth-shell > div{
   max-width:402px!important;
@@ -6985,9 +6981,9 @@ function AracTab({ tip, aracK, setAracK }) {
             React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
                 React.createElement("img", { src: LOGO_URI, style: { width: 44, height: 44, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(168,164,154,.45)', flexShrink: 0, background: '#fff' }, alt: PLAKA + ' logo' }),
                 React.createElement("div", { style: { flex: 1 } },
-                    React.createElement("div", { style: { fontWeight: 800, fontSize: 16, color: TX } }, PLAKA),
+                    React.createElement("div", { style: { fontWeight: 520, fontSize: 16, color: TX } }, PLAKA),
                     React.createElement("div", { style: { fontSize: 11, color: SB } }, "Mercedes Vito \u00B7 Ara\u00E7 Defteri")),
-                React.createElement("input", { type: "month", value: ay, onChange: e => setAy(e.target.value), style: { background: INP, border: '1.5px solid ' + BOR, borderRadius: 9, padding: '5px 9px', color: TX, fontSize: 13, fontWeight: 700 } })),
+                React.createElement("input", { type: "month", value: ay, onChange: e => setAy(e.target.value), style: { background: INP, border: '1.5px solid ' + BOR, borderRadius: 9, padding: '5px 9px', color: TX, fontSize: 13, fontWeight: 430 } })),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } }, [
                 ['+' + fr(topG) + '₺', 'Gelir', G, 'linear-gradient(135deg,#F2EFEA,#ECE7E0)', '#D8D0C6'],
                 ['−' + fr(topGid) + '₺', 'Gider', R, 'linear-gradient(135deg,#FFF0EF,#FFE2E0)', '#FFC4C0'],
@@ -6995,15 +6991,15 @@ function AracTab({ tip, aracK, setAracK }) {
                     topNet >= 0 ? 'linear-gradient(135deg,#F2EFEA,#ECE7E0)' : 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
                     topNet >= 0 ? '#D8D0C6' : '#FFC4C0']
             ].map(([v, l, col, bg, br]) => (React.createElement("div", { key: l, style: { background: bg, border: '1px solid ' + br, borderRadius: 11, padding: '9px 4px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,.06)' } },
-                React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: col, letterSpacing: .5, marginBottom: 2 } }, l.toUpperCase()),
-                React.createElement("div", { style: { fontSize: 15, fontWeight: 900, color: col } }, v)))))),
+                React.createElement("div", { style: { fontSize: 9, fontWeight: 430, color: col, letterSpacing: .5, marginBottom: 2 } }, l.toUpperCase()),
+                React.createElement("div", { style: { fontSize: 15, fontWeight: 470, color: col, fontVariantNumeric: 'tabular-nums' } }, v)))))),
         React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             React.createElement("button", { className: "lg-arac-date-toggle lg-arac-year-toggle" + (openYearly ? " is-active ko-selected-gold" : ""), onClick: () => setOpenYearly(v => !v), style: { width: '100%', background: '#F6F3EF', border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, cursor: 'pointer' } },
                 React.createElement("div", null,
-                    React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX } }, '📈 ' + yil + ' Yıllık Kazanç'),
+                    React.createElement("div", { style: { fontWeight: 500, fontSize: 14, color: TX } }, '📈 ' + yil + ' Yıllık Kazanç'),
                     React.createElement("div", { style: { fontSize: 11, color: SB } }, yilSeferleri.length + ' sefer kaydı')),
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                    React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: yilNet >= 0 ? G : R } }, fn(yilNet) + '₺'),
+                    React.createElement("div", { style: { fontSize: 16, fontWeight: 470, color: yilNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(yilNet) + '₺'),
                     React.createElement("div", { style: { fontSize: 16, color: SB } }, openYearly ? '▾' : '▸'))),
             openYearly && React.createElement(React.Fragment, null,
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } }, [
@@ -7013,14 +7009,14 @@ function AracTab({ tip, aracK, setAracK }) {
                         yilNet >= 0 ? 'linear-gradient(135deg,#F2EFEA,#ECE7E0)' : 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
                         yilNet >= 0 ? '#D8D0C6' : '#FFC4C0']
                 ].map(([v, l, col, bg, br]) => (React.createElement("div", { key: l, style: { background: bg, border: '1px solid ' + br, borderRadius: 11, padding: '9px 4px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,.06)' } },
-                    React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: col, letterSpacing: .3, marginBottom: 2 } }, l.toUpperCase()),
-                    React.createElement("div", { style: { fontSize: 14, fontWeight: 900, color: col } }, v))))),
+                    React.createElement("div", { style: { fontSize: 9, fontWeight: 430, color: col, letterSpacing: .3, marginBottom: 2 } }, l.toUpperCase()),
+                    React.createElement("div", { style: { fontSize: 14, fontWeight: 470, color: col, fontVariantNumeric: 'tabular-nums' } }, v))))),
                 yilAylari.length > 0 ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     yilAylari.map(item => React.createElement("div", { key: item.key, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: 10, background: '#F6F3EF', border: '1px solid ' + BOR } },
                         React.createElement("div", null,
-                            React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: TX, textTransform: 'capitalize' } }, item.ad),
+                            React.createElement("div", { style: { fontSize: 12, fontWeight: 460, color: TX, textTransform: 'capitalize' } }, item.ad),
                             React.createElement("div", { style: { fontSize: 10, color: SB } }, item.sefer + ' sefer · +' + fr(item.gelir) + '₺ · -' + fr(item.gider) + '₺')),
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: item.net >= 0 ? G : R } }, fn(item.net) + '₺')))
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 470, color: item.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(item.net) + '₺')))
                 ) : React.createElement("div", { style: { fontSize: 12, color: SB, textAlign: 'center', padding: '8px 0' } }, 'Bu yıl için araç kazanç kaydı yok'))),
         React.createElement("button", { onClick: acSefer, style: { width: '100%', background: showForm ? R : NAV, color: '#fff', border: 'none', borderRadius: 13, padding: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' } }, showForm ? '✕ Kapat' : '+ Yeni Sefer Ekle'),
         showForm && (React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -7062,7 +7058,7 @@ function AracTab({ tip, aracK, setAracK }) {
                 editId && React.createElement("button", { onClick: () => { setEditId(null); setShowForm(false); }, style: { background: INP, border: 'none', borderRadius: 11, padding: '12px 16px', fontWeight: 700, cursor: 'pointer', fontSize: 14 } }, "\u2715")))),
         msf.length === 0 && !showForm && (React.createElement("div", { style: { textAlign: 'center', padding: '30px 0', color: SB } },
             React.createElement("div", { style: { fontSize: 36, marginBottom: 8 } }, "\uD83D\uDE90"),
-            React.createElement("div", { style: { fontSize: 13, fontWeight: 600 } }, "Bu ay sefer kayd\u0131 yok"))),
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 430 } }, "Bu ay sefer kayd\u0131 yok"))),
         /* ── AYLIK AÇILIR PANEL ── */
         yilAylari.length > 0 && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             yilAylari.map(ayItem => {
@@ -7075,11 +7071,11 @@ function AracTab({ tip, aracK, setAracK }) {
                     React.createElement("button", { className: "lg-arac-date-toggle lg-arac-month-toggle" + (mAcik ? " is-active ko-selected-gold" : ""), onClick: () => { setOpenMonth(mAcik ? '' : ayItem.key); setAy(ayItem.key); }, style: { width: '100%', background: mAcik ? 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')' : '#fff', border: '1px solid ' + (mAcik ? NAV : BOR), borderRadius: 13, padding: '13px 15px', cursor: 'pointer', textAlign: 'left', boxShadow: mAcik ? '0 4px 14px rgba(0,0,0,.12)' : '0 1px 6px rgba(0,0,0,.05)' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
                             React.createElement("div", null,
-                                React.createElement("div", { style: { fontSize: 15, fontWeight: 800, color: mAcik ? '#fff' : TX, textTransform: 'capitalize' } }, ayItem.ad),
+                                React.createElement("div", { style: { fontSize: 15, fontWeight: 460, color: mAcik ? '#fff' : TX, textTransform: 'capitalize' } }, ayItem.ad),
                                 React.createElement("div", { style: { fontSize: 11, color: mAcik ? 'rgba(255,255,255,.7)' : SB, marginTop: 2 } },
                                     ayItem.sefer + ' sefer · +' + fr(ayItem.gelir) + '₺ · -' + fr(ayItem.gider) + '₺')),
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                                React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: mAcik ? '#fff' : ayItem.net >= 0 ? G : R } }, fn(ayItem.net) + '₺'),
+                                React.createElement("div", { style: { fontSize: 16, fontWeight: 470, color: mAcik ? '#fff' : ayItem.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(ayItem.net) + '₺'),
                                 React.createElement("span", { style: { fontSize: 14, color: mAcik ? 'rgba(255,255,255,.7)' : SB } }, mAcik ? '▲' : '▼')))),
                     mAcik && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 6 } },
                         Object.entries(ayGunler).map(([tarih, seferler]) => {
@@ -7091,13 +7087,13 @@ function AracTab({ tip, aracK, setAracK }) {
                                 React.createElement("button", { className: "lg-arac-date-toggle lg-arac-day-toggle" + (gunAcik ? " is-active ko-selected-gold" : ""), onClick: () => setExpanded(p => ({ ...p, ['g_' + tarih]: !p['g_' + tarih] })), style: { width: '100%', background: gunAcik ? '#1F1D1A' : '#fff', border: '1px solid ' + (gunAcik ? '#1F1D1A' : BOR), borderRadius: 11, padding: '10px 13px', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 4px rgba(0,0,0,.05)' } },
                                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
                                         React.createElement("div", null,
-                                            React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: gunAcik ? '#fff' : TX } }, tarihL),
+                                            React.createElement("div", { style: { fontSize: 12, fontWeight: 460, color: gunAcik ? '#fff' : TX } }, tarihL),
                                             React.createElement("div", { style: { fontSize: 10, color: gunAcik ? 'rgba(255,255,255,.65)' : SB, marginTop: 2 } },
                                                 seferler.length,
                                                 " sefer",
                                                 gunGid > 0 ? ' · Gider: -' + fr(gunGid) + '₺' : '')),
                                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                                            React.createElement("div", { style: { fontSize: 15, fontWeight: 800, color: gunAcik ? '#fff' : gunNet >= 0 ? G : R } },
+                                            React.createElement("div", { style: { fontSize: 15, fontWeight: 470, color: gunAcik ? '#fff' : gunNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } },
                                                 fn(gunNet),
                                                 "\u20BA"),
                                             React.createElement("span", { style: { color: gunAcik ? 'rgba(255,255,255,.6)' : SB, fontSize: 13 } }, gunAcik ? '▲' : '▼')))),
@@ -7111,10 +7107,10 @@ function AracTab({ tip, aracK, setAracK }) {
                                         React.createElement("div", { style: { padding: '10px 13px', cursor: 'pointer' }, onClick: () => toggle(sefer.id) },
                                             React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
                                                 React.createElement("div", { style: { flex: 1, marginRight: 8 } },
-                                                    sefer.isVeren && React.createElement("span", { style: { background: INP, color: NAV, borderRadius: 5, padding: '1px 6px', fontSize: 9, fontWeight: 700, marginBottom: 3, display: 'inline-block' } }, sefer.isVeren),
-                                                    React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: TX } },
+                                                    sefer.isVeren && React.createElement("span", { style: { background: INP, color: NAV, borderRadius: 5, padding: '1px 6px', fontSize: 9, fontWeight: 430, marginBottom: 3, display: 'inline-block' } }, sefer.isVeren),
+                                                    React.createElement("div", { style: { fontSize: 13, fontWeight: 450, color: TX } },
                                                         sefer.yolcu || 'Sefer',
-                                                        sefer.guzergah && React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 500, marginLeft: 5 } },
+                                                        sefer.guzergah && React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 390, marginLeft: 5 } },
                                                             "\u00B7 ",
                                                             sefer.guzergah)),
                                                     React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 2 } },
@@ -7125,12 +7121,12 @@ function AracTab({ tip, aracK, setAracK }) {
                                                         "+",
                                                         fr(sefer.arac),
                                                         "\u20BA",
-                                                        gd.length > 0 && React.createElement("span", { style: { color: R, fontWeight: 700 } },
+                                                        gd.length > 0 && React.createElement("span", { style: { color: R, fontWeight: 430 } },
                                                             " \u00B7 \u2212",
                                                             fr(gTop),
                                                             "\u20BA"))),
                                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 } },
-                                                    React.createElement("div", { style: { fontSize: 14, fontWeight: 800, color: sNet >= 0 ? G : R } },
+                                                    React.createElement("div", { style: { fontSize: 14, fontWeight: 470, color: sNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } },
                                                         fn(sNet),
                                                         "\u20BA"),
                                                     React.createElement("span", { style: { color: SB, fontSize: 12 } }, isOpen ? '▲' : '▼')))),
@@ -7140,7 +7136,7 @@ function AracTab({ tip, aracK, setAracK }) {
                                                     cat ? cat.ico + ' ' + cat.n : 'Gider',
                                                     k.not ? ' · ' + k.not : ''),
                                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                                                    React.createElement("span", { style: { fontSize: 12, fontWeight: 800, color: R } },
+                                                    React.createElement("span", { style: { fontSize: 12, fontWeight: 470, color: R, fontVariantNumeric: 'tabular-nums' } },
                                                         "\u2212",
                                                         fr(k.tutar),
                                                         "\u20BA"),
@@ -7160,8 +7156,8 @@ function AracTab({ tip, aracK, setAracK }) {
                                                     boxShadow: sNet >= 0 ? '0 2px 6px rgba(79,74,67,.12)' : '0 2px 6px rgba(255,59,48,.14)'
                                                 }
                                             },
-                                                React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 700 } }, "Net K\u00E2r"),
-                                                React.createElement("span", { style: { fontSize: 19, fontWeight: 900, color: sNet >= 0 ? G : R } },
+                                                React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 430 } }, "Net K\u00E2r"),
+                                                React.createElement("span", { style: { fontSize: 19, fontWeight: 470, color: sNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } },
                                                     fn(sNet),
                                                     "\u20BA")),
                                             isAddG ? (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 10 } },
@@ -7811,11 +7807,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             t.driverName && React.createElement("span", { style: { fontSize: 9, color: SB, background: '#F6F3EF', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👨🏻‍✈️ ' + t.driverName),
             ((t.passengerCount || 0) > 0) && React.createElement("span", { style: { fontSize: 9, color: SB, background: '#F6F3EF', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👥 ' + t.passengerCount),
             React.createElement("span", { style: { fontSize: 9, color: NAV, fontWeight: 800 } }, 'Düzenle ›'));
-        const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 } },
-            React.createElement("div", { style: { fontSize: 15, fontWeight: 900, color: pos ? G : R, letterSpacing: 0 } }, (pos ? '+' : '−') + fr(t.netOl) + '₺'),
-            React.createElement("button", { onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey, !t.firmSettled); }, style: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: '3px 0' } },
-                React.createElement("div", { style: { width: 18, height: 18, borderRadius: 4, border: '2px solid ' + (t.firmSettled ? G : BOR), background: t.firmSettled ? G : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 11, fontWeight: 900, lineHeight: 1 } }, "✓")),
-                React.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: t.firmSettled ? G : SB } }, t.firmSettled ? 'Kapandı' : 'Açık')));
+        const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 7, flexShrink: 0 } },
+            React.createElement("div", { style: { fontSize: 15, fontWeight: 560, color: pos ? G : R, letterSpacing: 0, fontVariantNumeric: 'tabular-nums' } }, (pos ? '+' : '−') + fr(t.netOl) + '₺'),
+            React.createElement("button", { className: "ko-hesap-settle-toggle " + (t.firmSettled ? "is-settled" : "is-open"), "aria-label": t.firmSettled ? "Hesap kapandı" : "Hesap açık", onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey, !t.firmSettled); }, style: { display: 'inline-flex', alignItems: 'center', gap: 6, background: t.firmSettled ? 'rgba(63,128,109,.10)' : 'rgba(178,96,92,.10)', border: '1px solid ' + (t.firmSettled ? 'rgba(63,128,109,.34)' : 'rgba(178,96,92,.34)'), borderRadius: 999, cursor: 'pointer', padding: '5px 8px', minHeight: 27, boxShadow: 'inset 0 1px 0 rgba(255,255,255,.82)' } },
+                React.createElement("div", { className: "ko-hesap-settle-dot", style: { width: 17, height: 17, borderRadius: 999, border: '1.5px solid ' + (t.firmSettled ? G : R), background: t.firmSettled ? G : 'rgba(255,255,255,.78)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 10, fontWeight: 560, lineHeight: 1 } }, "✓")),
+                React.createElement("span", { className: "ko-hesap-settle-text", style: { fontSize: 10.5, fontWeight: 560, color: t.firmSettled ? G : R, letterSpacing: .1 } }, t.firmSettled ? 'Kapandı' : 'Açık')));
         return React.createElement("div", {
             key: t.id + (t.kaynak || '') + (t.yon || ''),
             onClick: () => openTransferFromHesap(t),
@@ -7827,11 +7823,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         : 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
                 borderRadius: 12,
                 padding: '10px 12px',
-                border: '1px solid ' + (t.firmSettled ? BOR : pos ? '#D8D0C6' : '#FFC4C0'),
-                opacity: t.firmSettled ? .55 : 1,
+                border: '1px solid ' + (t.firmSettled ? 'rgba(63,128,109,.34)' : pos ? '#D8D0C6' : '#FFC4C0'),
+                opacity: t.firmSettled ? .92 : 1,
                 cursor: 'pointer',
                 boxShadow: t.firmSettled
-                    ? 'none'
+                    ? 'inset 0 0 0 1px rgba(63,128,109,.06)'
                     : pos
                         ? '0 1px 4px rgba(79,74,67,.08)'
                         : '0 1px 4px rgba(255,59,48,.10)'
@@ -13747,9 +13743,9 @@ html body .app-shell .tk-cell.ko-selected-gold{
 html,body{
   background:
     radial-gradient(circle at 12% 0%,rgba(255,255,255,.92),transparent 34%),
-    radial-gradient(circle at 88% 4%,rgba(244,238,226,.34),transparent 30%),
-    radial-gradient(circle at 50% 110%,rgba(226,232,240,.34),transparent 34%),
-    linear-gradient(135deg,#fbfaf7 0%,#f7f8f7 46%,#f1f3f2 100%)!important;
+    radial-gradient(circle at 88% 4%,rgba(255,255,255,.42),transparent 30%),
+    radial-gradient(circle at 50% 110%,rgba(255,255,255,.38),transparent 34%),
+    linear-gradient(135deg,#FFFFFF 0%,#FFFFFF 100%)!important;
   color:var(--wl-ink)!important;
 }
 .app-shell::before{
@@ -14484,7 +14480,7 @@ html body .app-shell main.main-cont :is(.ko-money-token.ko-money-neg,.ko-transfe
 html body .app-shell main.main-cont.view-hesap :is(.ko-money-pos,.ko-money-neg),
 html body .app-shell main.main-cont.view-arac :is(.ko-money-pos,.ko-money-neg),
 html body .app-shell main.main-cont.view-list .tcard-expanded :is(.ko-money-pos,.ko-money-neg){
-  font-weight:760!important;
+  font-weight:430!important;
   font-variant-numeric:tabular-nums!important;
 }
 
@@ -14627,7 +14623,7 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
 
 html body .app-shell main.main-cont .ko-money-token{
   display:inline!important;
-  font-weight:760!important;
+  font-weight:430!important;
   font-variant-numeric:tabular-nums!important;
   text-shadow:none!important;
 }
@@ -14704,7 +14700,7 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
 
     function tokenStyle(kind){
         const color = kind === 'pos' ? POS : NEG;
-        return 'color:' + color + ' !important;-webkit-text-fill-color:' + color + ' !important;font-weight:760 !important;';
+        return 'color:' + color + ' !important;-webkit-text-fill-color:' + color + ' !important;font-weight:430 !important;';
     }
 
     function moneyHtml(text){
@@ -14735,7 +14731,7 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
         const color = isNeg ? NEG : POS;
         token.style.setProperty('color', color, 'important');
         token.style.setProperty('-webkit-text-fill-color', color, 'important');
-        token.style.setProperty('font-weight', '760', 'important');
+        token.style.setProperty('font-weight', '430', 'important');
         token.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
         token.style.setProperty('text-shadow', 'none', 'important');
     }
@@ -14858,7 +14854,7 @@ html body .app-shell main.main-cont .ko-money-pos .ko-money-token.ko-money-neg *
         span.setAttribute('data-ko-money-token', '1');
         span.style.setProperty('color', color, 'important');
         span.style.setProperty('-webkit-text-fill-color', color, 'important');
-        span.style.setProperty('font-weight', '760', 'important');
+        span.style.setProperty('font-weight', '430', 'important');
         span.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
         span.style.setProperty('text-shadow', 'none', 'important');
     }
@@ -14959,7 +14955,7 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
 }
 
 html body .app-shell main.main-cont .ko-money-token{
-  font-weight:760!important;
+  font-weight:430!important;
   font-variant-numeric:tabular-nums!important;
   text-shadow:none!important;
 }
@@ -14988,7 +14984,7 @@ html body .app-shell main.main-cont .ko-money-token{
         el.setAttribute('data-ko-sign', isMinus ? 'minus' : 'plus');
         el.style.setProperty('color', color, 'important');
         el.style.setProperty('-webkit-text-fill-color', color, 'important');
-        el.style.setProperty('font-weight', '760', 'important');
+        el.style.setProperty('font-weight', '430', 'important');
         el.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
         el.style.setProperty('text-shadow', 'none', 'important');
     }
@@ -15106,7 +15102,7 @@ html body .app-shell main.main-cont .ko-payment-none{
 
 html body .app-shell main.main-cont .tcard-amount.is-none,
 html body .app-shell main.main-cont .ko-payment-none{
-  font-weight:760!important;
+  font-weight:430!important;
   text-shadow:none!important;
 }
 
@@ -15119,7 +15115,7 @@ html body .app-shell main.main-cont .tcard-amount.is-none{
 }
 
 html body .app-shell main.main-cont .ko-money-currency{
-  font-weight:760!important;
+  font-weight:430!important;
   font-variant-numeric:tabular-nums!important;
   text-shadow:none!important;
 }
@@ -15153,7 +15149,7 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
         el.setAttribute('data-ko-sign', isMinus ? 'minus' : 'plus');
         el.style.setProperty('color', color, 'important');
         el.style.setProperty('-webkit-text-fill-color', color, 'important');
-        el.style.setProperty('font-weight', '760', 'important');
+        el.style.setProperty('font-weight', '430', 'important');
         el.style.setProperty('text-shadow', 'none', 'important');
     }
 
@@ -16335,7 +16331,29 @@ html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(.lbl,label,.d
     const WHITE_GLASS_NO_GREEN_STYLE_ID = 'ko-white-glass-no-green-shadow-final-v1';
     const WHITE_GLASS_NO_GREEN_STYLE = `
 :root{
-  --lg-bg:#fbfcfb!important;
+  --bg:#ffffff!important;
+  --bg-2:#ffffff!important;
+  --card:#ffffff!important;
+  --card-2:rgba(255,255,255,.86)!important;
+  --surface:rgba(255,255,255,.82)!important;
+  --surface-2:rgba(255,255,255,.72)!important;
+  --brand-soft:rgba(255,255,255,.82)!important;
+  --brand-softer:#ffffff!important;
+  --nude-soft:rgba(255,255,255,.82)!important;
+  --info-bg:rgba(255,255,255,.82)!important;
+  --t-arrival-bg:rgba(255,255,255,.84)!important;
+  --t-departure-bg:rgba(255,255,255,.84)!important;
+  --t-tour-bg:rgba(255,255,255,.84)!important;
+  --ko-bg-a:#ffffff!important;
+  --ko-bg-b:#ffffff!important;
+  --ko-bg-c:#ffffff!important;
+  --wl-card:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80) 58%,rgba(255,255,255,.66))!important;
+  --wl-card-strong:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,255,255,.84) 58%,rgba(255,255,255,.70))!important;
+  --lg-bg:#ffffff!important;
+  --lg-page:#ffffff!important;
+  --lg-page-2:#ffffff!important;
+  --lg-glass:rgba(255,255,255,.74)!important;
+  --lg-glass-strong:rgba(255,255,255,.86)!important;
   --lg-shadow:0 10px 26px rgba(24,31,38,.045)!important;
   --wl-shadow:0 10px 26px rgba(24,31,38,.045)!important;
   --lp-shadow:0 10px 26px rgba(24,31,38,.045)!important;
@@ -16355,10 +16373,11 @@ html body,
 html body #root,
 html body .app-shell,
 html body .app-shell[style],
+html body .auth-shell,
+html body .auth-shell[style],
 html body .app-shell main.main-cont,
 html body .app-shell main.main-cont[style]{
-  background:
-    linear-gradient(180deg,#ffffff 0%,#ffffff 42%,#f8faf9 100%)!important;
+  background:linear-gradient(180deg,#ffffff 0%,#ffffff 100%)!important;
   background-color:#ffffff!important;
 }
 
@@ -16381,7 +16400,7 @@ html body .app-shell main.main-cont aside,
 html body .app-shell main.main-cont :is(.card,.lg-glass-card,.lg-metric-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.lg-upcoming-card,.lg-greeting-card,.lg-mini-upcoming,.tcard,.tk-card,.tk-panel,.tk-ledger,.ms),
 html body .app-shell main.main-cont :is(.card,.lg-glass-card,.lg-metric-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.lg-upcoming-card,.lg-greeting-card,.lg-mini-upcoming,.tcard,.tk-card,.tk-panel,.tk-ledger,.ms)[style]{
   background:
-    linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,255,255,.72) 58%,rgba(248,249,249,.60))!important;
+    linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80) 58%,rgba(255,255,255,.66))!important;
   box-shadow:0 9px 24px rgba(24,31,38,.045),inset 0 1px 0 rgba(255,255,255,.92)!important;
   filter:none!important;
 }
@@ -16394,7 +16413,7 @@ html body .app-shell main.main-cont :is(.ko-hesap-green-frame,.ko-hesap-month-st
 
 html body .app-shell main.main-cont :is(.ko-hesap-green-frame,.ko-hesap-month-stat),
 html body .app-shell main.main-cont :is(.ko-hesap-green-frame,.ko-hesap-month-stat)[style]{
-  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,255,255,.72) 58%,rgba(248,249,249,.60))!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80) 58%,rgba(255,255,255,.66))!important;
 }
 
 html body .app-shell main.main-cont :is(.ko-hesap-green-frame,.ko-hesap-month-stat)::after,
@@ -16411,7 +16430,7 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcomin
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card:focus,
 html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-home-real-tap{
   background:
-    linear-gradient(145deg,rgba(255,255,255,.95),rgba(255,255,255,.74) 58%,rgba(248,249,249,.62))!important;
+    linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,255,255,.82) 58%,rgba(255,255,255,.68))!important;
   box-shadow:0 8px 20px rgba(24,31,38,.04),inset 0 1px 0 rgba(255,255,255,.92)!important;
 }
 
@@ -16423,6 +16442,25 @@ html body .app-shell main.main-cont [style*="boxShadow"]{
 html body .app-shell main.main-cont :is(.ko-money-pos,.ko-money-neg,.ko-money-token,.ko-money-currency,.tcard-amount,.tcard-paystatus,.ko-payment-none),
 html body .app-shell main.main-cont :is(.ko-money-pos,.ko-money-neg,.ko-money-token,.ko-money-currency,.tcard-amount,.tcard-paystatus,.ko-payment-none)[style]{
   box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont [style*="background"][style*="#FAF8F5"],
+html body .app-shell main.main-cont [style*="background"][style*="#F1EEE9"],
+html body .app-shell main.main-cont [style*="background"][style*="#ECE7E0"],
+html body .app-shell main.main-cont [style*="background"][style*="#F2EFEA"],
+html body .app-shell main.main-cont [style*="background"][style*="#F6F3EF"],
+html body .app-shell main.main-cont [style*="background"][style*="#FBFAF7"],
+html body .app-shell main.main-cont [style*="background"][style*="#fbfaf7"],
+html body .app-shell main.main-cont [style*="background"][style*="#f7f8f7"],
+html body .app-shell main.main-cont [style*="background"][style*="#f1f3f2"],
+html body .app-shell main.main-cont [style*="background"][style*="250,248,245"],
+html body .app-shell main.main-cont [style*="background"][style*="236,229,218"],
+html body .app-shell main.main-cont [style*="background"][style*="255,246,218"],
+html body .app-shell main.main-cont [style*="background"][style*="248,249,249"]{
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80) 58%,rgba(255,255,255,.66))!important;
+  background-color:rgba(255,255,255,.84)!important;
+  box-shadow:0 8px 20px rgba(24,31,38,.04),inset 0 1px 0 rgba(255,255,255,.90)!important;
+  filter:none!important;
 }
 
 html body .app-shell .tabbar,
@@ -16538,7 +16576,7 @@ html body .app-shell main.main-cont [style*="background"][style*="rgba(63, 128, 
 html body .app-shell main.main-cont [style*="background"][style*="rgba(18, 108, 55"],
 html body .app-shell main.main-cont [style*="background"][style*="rgba(15, 118, 110"],
 html body .app-shell main.main-cont [style*="background"][style*="rgba(30, 122, 69"]{
-  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,255,255,.72) 58%,rgba(248,249,249,.60))!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80) 58%,rgba(255,255,255,.66))!important;
   box-shadow:0 8px 20px rgba(24,31,38,.04),inset 0 1px 0 rgba(255,255,255,.90)!important;
 }
 
@@ -16660,6 +16698,158 @@ html body .app-shell main.main-cont [style*="box-shadow"][style*="rgba(30, 122, 
         new MutationObserver(schedule).observe(obsTarget, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
     }
     setInterval(clearGreenBar, 300);
+})();
+
+(function(){
+    const FINAL_HESAP_ARAC_POLISH_ID = 'ko-final-hesap-status-arac-light-v1';
+    const FINAL_HESAP_ARAC_POLISH = `
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle[style]{
+  min-width:76px!important;
+  justify-content:center!important;
+  border-radius:999px!important;
+  padding:5px 9px!important;
+  gap:6px!important;
+  opacity:1!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86)!important;
+  backdrop-filter:saturate(1.18) blur(14px)!important;
+  -webkit-backdrop-filter:saturate(1.18) blur(14px)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-open,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-open[style]{
+  background:linear-gradient(145deg,rgba(255,241,239,.96),rgba(255,255,255,.76))!important;
+  border:1px solid rgba(178,96,92,.42)!important;
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-settled,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-settled[style]{
+  background:linear-gradient(145deg,rgba(237,246,242,.96),rgba(255,255,255,.76))!important;
+  border:1px solid rgba(63,128,109,.44)!important;
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-dot,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-dot[style]{
+  width:16px!important;
+  height:16px!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-open .ko-hesap-settle-dot{
+  border-color:#b2605c!important;
+  background:rgba(255,255,255,.78)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-settled .ko-hesap-settle-dot{
+  border-color:#3f806d!important;
+  background:#3f806d!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-text,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-text[style]{
+  font-size:10.2px!important;
+  font-weight:540!important;
+  line-height:1!important;
+  letter-spacing:.16px!important;
+  text-transform:uppercase!important;
+  white-space:nowrap!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-open .ko-hesap-settle-text{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-settle-toggle.is-settled .ko-hesap-settle-text{
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+}
+
+html body .app-shell main.main-cont.view-arac,
+html body .app-shell main.main-cont.view-arac *:not(svg):not(path){
+  font-weight:390!important;
+}
+
+html body .app-shell main.main-cont.view-arac :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg),
+html body .app-shell main.main-cont.view-arac :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg)[style],
+html body .app-shell main.main-cont.view-arac [style*="₺"],
+html body .app-shell main.main-cont.view-arac [style*="TL"],
+html body .app-shell main.main-cont.view-arac [style*="TRY"]{
+  font-weight:420!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:0!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-arac button.lg-arac-date-toggle,
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle,
+html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle,
+html body .app-shell main.main-cont.view-arac button.lg-arac-year-toggle,
+html body .app-shell main.main-cont.view-arac button.lg-arac-date-toggle *,
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle *,
+html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle *,
+html body .app-shell main.main-cont.view-arac button.lg-arac-year-toggle *{
+  font-weight:390!important;
+}
+
+html body .app-shell main.main-cont.view-arac button.lg-arac-date-toggle [style*="₺"],
+html body .app-shell main.main-cont.view-arac button.lg-arac-month-toggle [style*="₺"],
+html body .app-shell main.main-cont.view-arac button.lg-arac-day-toggle [style*="₺"],
+html body .app-shell main.main-cont.view-arac button.lg-arac-year-toggle [style*="₺"],
+html body .app-shell main.main-cont.view-arac .ko-money-token,
+html body .app-shell main.main-cont.view-arac .ko-money-currency{
+  font-weight:420!important;
+}
+`;
+    let style = document.getElementById(FINAL_HESAP_ARAC_POLISH_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = FINAL_HESAP_ARAC_POLISH_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = FINAL_HESAP_ARAC_POLISH;
+
+    const setLightNumbers = () => {
+        const root = document.querySelector('main.main-cont.view-arac');
+        if (!root) return;
+        root.querySelectorAll('.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg').forEach(el => {
+            el.style.setProperty('font-weight', '420', 'important');
+            el.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
+            el.style.setProperty('letter-spacing', '0', 'important');
+            el.style.setProperty('text-shadow', 'none', 'important');
+        });
+        root.querySelectorAll('div,span,button,input').forEach(el => {
+            const txt = (el.textContent || el.value || '').trim();
+            if (!/[0-9]/.test(txt) && !/[₺]|TL|TRY/i.test(txt)) return;
+            if (el.closest('.tabbar')) return;
+            const current = Number(window.getComputedStyle(el).fontWeight) || 400;
+            if (/[₺]|TL|TRY|[+−-]\s*\d|\d[\d.]*,\d/.test(txt) || current >= 600) {
+                el.style.setProperty('font-weight', '420', 'important');
+                el.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
+                el.style.setProperty('letter-spacing', '0', 'important');
+                el.style.setProperty('text-shadow', 'none', 'important');
+            }
+        });
+    };
+    const scheduleLightNumbers = () => {
+        setLightNumbers();
+        requestAnimationFrame(setLightNumbers);
+        setTimeout(setLightNumbers, 80);
+    };
+    scheduleLightNumbers();
+    document.addEventListener('click', scheduleLightNumbers, true);
+    document.addEventListener('input', scheduleLightNumbers, true);
+    const obsTarget = document.getElementById('root') || document.body;
+    if (obsTarget && window.MutationObserver) {
+        new MutationObserver(scheduleLightNumbers).observe(obsTarget, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class'] });
+    }
+    setInterval(setLightNumbers, 250);
 })();
 
 </script>
