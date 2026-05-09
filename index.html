@@ -8000,6 +8000,8 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const kalan = Math.max(0, (parseFloat(d.total) || 0) - (parseFloat(d.paid) || 0));
         const isBorc = d.type === 'borc';
         const accent = isBorc ? R : G;
+        const signedDebt = n => (isBorc ? '−' : '+') + fr(n || 0) + '₺';
+        const signedOpenDebt = n => n > 0 ? signedDebt(n) : '0₺';
         const accentBgGrad = isBorc
             ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)'
             : 'linear-gradient(135deg, #E3F1E7 0%, #D6EBDD 100%)';
@@ -8024,11 +8026,11 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3 } }, d.note || 'Açıklama yok')),
                 React.createElement("div", { style: { textAlign: 'right' } },
                     React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700, letterSpacing: .3 } }, 'TOPLAM'),
-                    React.createElement("div", { style: { fontWeight: 900, fontSize: 14, color: TX } }, fr(d.total) + '₺'))),
+                    React.createElement("div", { style: { fontWeight: 900, fontSize: 14, color: accent } }, signedDebt(d.total)))),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 9, paddingLeft: 6 } },
                 React.createElement("div", { style: { background: 'linear-gradient(135deg,#F6F3EF,#ECE7E0)', border: '1px solid ' + BOR, borderRadius: 10, padding: 8, textAlign: 'center' } },
                     React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700 } }, isBorc ? 'Ödenen' : 'Tahsilat'),
-                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: G } }, fr(d.paid || 0) + '₺')),
+                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: accent } }, signedOpenDebt(d.paid || 0))),
                 React.createElement("div", {
                     style: {
                         background: kalan > 0 ? accentBgGrad : 'linear-gradient(135deg,#F2EFEA,#ECE7E0)',
@@ -8039,13 +8041,13 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     }
                 },
                     React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700 } }, 'Kalan'),
-                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: kalan > 0 ? accent : G } }, fr(kalan) + '₺')),
+                    React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: kalan > 0 ? accent : G } }, signedOpenDebt(kalan))),
                 React.createElement("div", { style: { background: 'linear-gradient(135deg,#F6F3EF,#ECE7E0)', border: '1px solid ' + BOR, borderRadius: 10, padding: 8, textAlign: 'center' } },
                     React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700 } }, 'Durum'),
                     React.createElement("div", { style: { fontWeight: 900, fontSize: 12, color: kalan > 0 ? O : G } }, kalan > 0 ? 'Açık' : 'Kapalı'))),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 8, paddingLeft: 6 } },
-                React.createElement("button", { onClick: () => addPayment(d.id, isBorc ? 'Ödeme' : 'Tahsilat'), style: { background: G, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Ödeme Ekle' : 'Tahsilat Ekle'),
-                React.createElement("button", { onClick: () => addToDebt(d.id, isBorc ? 'Borç' : 'Alacak'), style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Borç Ekle' : 'Alacak Ekle'),
+                React.createElement("button", { onClick: () => addPayment(d.id, isBorc ? 'Ödeme' : 'Tahsilat'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Ödeme Ekle' : 'Tahsilat Ekle'),
+                React.createElement("button", { onClick: () => addToDebt(d.id, isBorc ? 'Borç' : 'Alacak'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Borç Ekle' : 'Alacak Ekle'),
                 React.createElement("button", { onClick: () => { if (window.confirm('Silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 800, fontSize: 11, cursor: 'pointer' } }, 'Sil')));
     };
     const borclar = debts.filter(d => d.type === 'borc');
@@ -8505,7 +8507,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                         React.createElement("div", { className: "tk-ledger-body" },
                             React.createElement("div", { className: "tk-ledger-name" }, l.person),
                             l.note && React.createElement("div", { className: "tk-ledger-sub" }, l.note),
-                            React.createElement("div", { className: "tk-ledger-sub" }, "Toplam: " + fr(ledgerTotal(l)) + "₺ · İşlenen: " + fr(ledgerPaid(l)) + "₺"),
+                            React.createElement("div", { className: "tk-ledger-sub" }, "Toplam: " + (isIn ? "+" : "−") + fr(ledgerTotal(l)) + "₺ · İşlenen: " + (ledgerPaid(l) > 0 ? (isIn ? "+" : "−") + fr(ledgerPaid(l)) + "₺" : "0₺")),
                             l.due && React.createElement("div", { className: "tk-ledger-sub" }, "Vade: " + new Date(l.due).toLocaleDateString('tr-TR'))
                         ),
                         React.createElement("div", { className: "tk-ledger-amt " + (isIn ? "tk-amt-in" : "tk-amt-out") }, (isIn ? "+" : "−") + fr(ledgerRemaining(l)) + "₺"),
@@ -8545,7 +8547,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                 React.createElement("div", { className: "tk-ledger-name" }, l.person || "İsimsiz kayıt"),
                 l.note && React.createElement("div", { className: "tk-ledger-sub" }, l.note),
                 React.createElement("div", { className: "tk-ledger-sub" },
-                    (isIn ? "Alacak" : "Borç") + " · Toplam: " + fr(ledgerTotal(l)) + "₺ · İşlenen: " + fr(ledgerPaid(l)) + "₺"
+                    (isIn ? "Alacak" : "Borç") + " · Toplam: " + (isIn ? "+" : "−") + fr(ledgerTotal(l)) + "₺ · İşlenen: " + (ledgerPaid(l) > 0 ? (isIn ? "+" : "−") + fr(ledgerPaid(l)) + "₺" : "0₺")
                 ),
                 l.due && React.createElement("div", { className: "tk-ledger-sub" }, "Vade: " + new Date(l.due).toLocaleDateString('tr-TR'))
             ),
@@ -9662,7 +9664,7 @@ function App() {
                                 onClick: e => { e.stopPropagation(); toggleSettled(t.id); },
                                 className: 'tcard-paystatus ' + (collectionState === 'collected' ? 'is-paid' : 'is-pending')
                             },
-                            collectionState === 'collected' ? '✓ Tahsil edildi' : '⏳ Bekliyor'
+                            collectionState === 'collected' ? 'Tahsil edildi' : 'Ödeme bekliyor'
                         )
                     )
                 )
@@ -9722,10 +9724,10 @@ function App() {
                         React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: tk >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, (tk >= 0 ? '+' : '') + tk.toLocaleString('tr-TR') + ' ₺')
                     ),
                     /* Ödeme durumu — full row */
-                    React.createElement("div", { style: { gridColumn: '1 / -1', background: collectionState === 'collected' ? '#F2EFEA' : '#FFF5E5', borderRadius: 9, padding: '8px 10px', border: '1px solid ' + (collectionState === 'collected' ? '#D8D0C6' : '#FFD69A'), display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                    React.createElement("div", { style: { gridColumn: '1 / -1', background: collectionState === 'collected' ? '#F2EFEA' : '#FFF1EF', borderRadius: 9, padding: '8px 10px', border: '1px solid ' + (collectionState === 'collected' ? '#D8D0C6' : '#E3B8B4'), display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                         React.createElement("div", null,
                             React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase' } }, 'Ödeme Durumu'),
-                            React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: collectionState === 'collected' ? G : '#C46D00', marginTop: 2 } }, collectionState === 'collected' ? '✓ Şirket ödemeyi aldı' : '⏳ Ödeme bekleniyor')
+                            React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: collectionState === 'collected' ? G : R, marginTop: 2 } }, collectionState === 'collected' ? 'Şirket ödemeyi aldı' : 'Ödeme bekleniyor')
                         ),
                         t.altAcenta && React.createElement("span", { style: { background: '#fff', color: BR, border: '1px solid #DED8D0', borderRadius: 6, padding: '3px 7px', fontSize: 10, fontWeight: 700 } }, 'Alt: ' + t.altAcenta)
                     ),
@@ -14167,6 +14169,966 @@ html body .app-shell .lg-home .lg-mini-upcoming-row{
     }
 
     installTypographyStyle();
+})();
+
+(function(){
+    const MONEY_TAP_STYLE_ID = 'ko-money-signs-home-tap-final-v1';
+    const MONEY_TAP_STYLE = `
+:root{
+  --ko-money-pos:#3f806d;
+  --ko-money-pos-soft:#edf6f2;
+  --ko-money-pos-line:#bdd4ca;
+  --ko-money-neg:#b2605c;
+  --ko-money-neg-soft:#fff1ef;
+  --ko-money-neg-line:#ecc4c0;
+}
+
+html body .app-shell main.main-cont :is(.ko-money-token.ko-money-pos,.ko-transfer-net-box.ko-money-pos){
+  color:var(--ko-money-pos)!important;
+  -webkit-text-fill-color:var(--ko-money-pos)!important;
+}
+html body .app-shell main.main-cont :is(.ko-money-token.ko-money-neg,.ko-transfer-net-box.ko-money-neg){
+  color:var(--ko-money-neg)!important;
+  -webkit-text-fill-color:var(--ko-money-neg)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-money-pos,.ko-money-neg),
+html body .app-shell main.main-cont.view-arac :is(.ko-money-pos,.ko-money-neg),
+html body .app-shell main.main-cont.view-list .tcard-expanded :is(.ko-money-pos,.ko-money-neg){
+  font-weight:760!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont .ko-transfer-net-box{
+  border-radius:11px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.70),0 8px 18px rgba(24,31,38,.05)!important;
+}
+html body .app-shell main.main-cont .ko-transfer-net-box.ko-money-pos{
+  background:linear-gradient(145deg,var(--ko-money-pos-soft),rgba(255,255,255,.72))!important;
+  border-color:var(--ko-money-pos-line)!important;
+}
+html body .app-shell main.main-cont .ko-transfer-net-box.ko-money-neg{
+  background:linear-gradient(145deg,var(--ko-money-neg-soft),rgba(255,255,255,.74))!important;
+  border-color:var(--ko-money-neg-line)!important;
+}
+
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card),
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card):active,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card):focus,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card):focus-visible,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).is-active,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-gold-hit,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-click-confirmed,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-simple-gold-frame,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-auto-selected,
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-selected-gold{
+  background:
+    radial-gradient(circle at 14% 0%,rgba(255,255,255,.82),rgba(255,255,255,0) 34%),
+    linear-gradient(145deg,rgba(255,255,255,.84),rgba(249,250,249,.62) 58%,rgba(242,246,245,.56))!important;
+  border:1px solid rgba(255,255,255,.84)!important;
+  color:var(--wl-ink,var(--lp-ink,#121417))!important;
+  -webkit-text-fill-color:var(--wl-ink,var(--lp-ink,#121417))!important;
+  box-shadow:0 12px 28px rgba(24,31,38,.07),inset 0 1px 0 rgba(255,255,255,.86)!important;
+  transform:none!important;
+}
+
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).is-active{
+  border-color:rgba(63,128,109,.34)!important;
+  box-shadow:0 13px 30px rgba(63,128,109,.10),inset 0 1px 0 rgba(255,255,255,.86)!important;
+}
+
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card).ko-home-real-tap{
+  background:
+    radial-gradient(circle at 24% 14%,rgba(255,255,255,.78),rgba(255,255,255,0) 38%),
+    linear-gradient(145deg,rgba(237,246,242,.94),rgba(255,255,255,.68) 54%,rgba(220,236,229,.78))!important;
+  border:1.6px solid rgba(63,128,109,.46)!important;
+  box-shadow:0 15px 32px rgba(63,128,109,.16),inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-card,.lg-profit-card) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important;
+}
+`;
+
+    function installMoneyTapStyle(){
+        let style = document.getElementById(MONEY_TAP_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = MONEY_TAP_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = MONEY_TAP_STYLE;
+    }
+
+    const SIGNED_TL_RE = /(?:^|[\\s:])([+−-])\\s*[\\d.]+(?:,\\d+)?\\s*₺/;
+    function classifyMoneyText(text){
+        const s = String(text || '').replace(/\\u2212/g, '−').trim();
+        const m = s.match(SIGNED_TL_RE);
+        if (!m) return null;
+        return m[1] === '+' ? 'pos' : 'neg';
+    }
+    function markMoney(){
+        document.querySelectorAll('main.main-cont .ko-money-pos:not(.ko-money-token):not(.ko-transfer-net-box),main.main-cont .ko-money-neg:not(.ko-money-token):not(.ko-transfer-net-box)').forEach(el => {
+            el.classList.remove('ko-money-pos', 'ko-money-neg');
+        });
+    }
+
+    const homeTouches = new Map();
+    function homeCardFromTarget(target){
+        return target && target.closest ? target.closest('.lg-home .lg-period-card,.lg-home .lg-profit-card') : null;
+    }
+    function clearHomePress(card){
+        if (!card) return;
+        card.classList.remove('ko-gold-hit','ko-click-confirmed','ko-pressing','ko-home-real-tap');
+    }
+    document.addEventListener('pointerdown', e => {
+        const card = homeCardFromTarget(e.target);
+        if (!card) return;
+        homeTouches.set(e.pointerId, { card, x:e.clientX, y:e.clientY, moved:false });
+        requestAnimationFrame(() => clearHomePress(card));
+    }, true);
+    document.addEventListener('pointermove', e => {
+        const rec = homeTouches.get(e.pointerId);
+        if (!rec) return;
+        if (Math.abs(e.clientX - rec.x) > 8 || Math.abs(e.clientY - rec.y) > 8) {
+            rec.moved = true;
+            clearHomePress(rec.card);
+        }
+    }, true);
+    document.addEventListener('pointerup', e => {
+        const rec = homeTouches.get(e.pointerId);
+        if (!rec) return;
+        homeTouches.delete(e.pointerId);
+        requestAnimationFrame(() => {
+            rec.card.classList.remove('ko-gold-hit','ko-click-confirmed','ko-pressing');
+            if (!rec.moved) {
+                rec.card.classList.add('ko-home-real-tap');
+                window.setTimeout(() => rec.card.classList.remove('ko-home-real-tap'), 260);
+            }
+        });
+    }, true);
+    document.addEventListener('pointercancel', e => {
+        const rec = homeTouches.get(e.pointerId);
+        if (rec) clearHomePress(rec.card);
+        homeTouches.delete(e.pointerId);
+    }, true);
+
+    installMoneyTapStyle();
+    markMoney();
+    const mo = new MutationObserver(() => {
+        window.clearTimeout(window.__koMoneyMarkTimer);
+        window.__koMoneyMarkTimer = window.setTimeout(markMoney, 60);
+    });
+    mo.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+})();
+
+(function(){
+    const GLOBAL_MONEY_STYLE_ID = 'ko-global-money-token-color-final-v2';
+    const GLOBAL_MONEY_STYLE = `
+:root{
+  --ko-pos-strong:#3f806d;
+  --ko-pos-soft:#edf6f2;
+  --ko-pos-line:#bdd4ca;
+  --ko-neg-strong:#b2605c;
+  --ko-neg-soft:#fff1ef;
+  --ko-neg-line:#ecc4c0;
+}
+
+html body .app-shell main.main-cont .ko-money-token{
+  display:inline!important;
+  font-weight:760!important;
+  font-variant-numeric:tabular-nums!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token.ko-money-pos,
+html body .app-shell main.main-cont .ko-money-token.ko-money-pos *{
+  color:var(--ko-pos-strong)!important;
+  -webkit-text-fill-color:var(--ko-pos-strong)!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token.ko-money-neg,
+html body .app-shell main.main-cont .ko-money-token.ko-money-neg *{
+  color:var(--ko-neg-strong)!important;
+  -webkit-text-fill-color:var(--ko-neg-strong)!important;
+}
+
+html body .app-shell main.main-cont :is(.ko-money-token.ko-money-pos,.ko-money-token.ko-money-neg){
+  background:transparent!important;
+}
+
+html body .app-shell main.main-cont.view-list .tcard-expanded .ko-transfer-net-box{
+  border-radius:11px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.76),0 8px 18px rgba(24,31,38,.05)!important;
+}
+
+html body .app-shell main.main-cont.view-list .tcard-expanded .ko-transfer-net-box.ko-money-pos{
+  background:linear-gradient(145deg,var(--ko-pos-soft),rgba(255,255,255,.74))!important;
+  border-color:var(--ko-pos-line)!important;
+}
+
+html body .app-shell main.main-cont.view-list .tcard-expanded .ko-transfer-net-box.ko-money-neg{
+  background:linear-gradient(145deg,var(--ko-neg-soft),rgba(255,255,255,.76))!important;
+  border-color:var(--ko-neg-line)!important;
+}
+
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell).ko-click-confirmed .ko-money-token.ko-money-pos,
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell):active .ko-money-token.ko-money-pos,
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell).is-active .ko-money-token.ko-money-pos{
+  color:var(--ko-pos-strong)!important;
+  -webkit-text-fill-color:var(--ko-pos-strong)!important;
+}
+
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell).ko-click-confirmed .ko-money-token.ko-money-neg,
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell):active .ko-money-token.ko-money-neg,
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell).is-active .ko-money-token.ko-money-neg{
+  color:var(--ko-neg-strong)!important;
+  -webkit-text-fill-color:var(--ko-neg-strong)!important;
+}
+`;
+
+    function installGlobalMoneyStyle(){
+        let style = document.getElementById(GLOBAL_MONEY_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = GLOBAL_MONEY_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = GLOBAL_MONEY_STYLE;
+    }
+
+    const POS = '#3f806d';
+    const NEG = '#b2605c';
+    const CURRENCY_RE = /(₺|TL|TRY)/i;
+    const SIGNED_MONEY_RE = /([+−-])\s*([0-9][0-9.]*)(,[0-9]+)?\s*(₺|TL|TRY)?/g;
+
+    function escapeHtml(s){
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function tokenStyle(kind){
+        const color = kind === 'pos' ? POS : NEG;
+        return 'color:' + color + ' !important;-webkit-text-fill-color:' + color + ' !important;font-weight:760 !important;';
+    }
+
+    function moneyHtml(text){
+        const raw = String(text || '');
+        if (!/[+−-]\s*[0-9]/.test(raw) || !CURRENCY_RE.test(raw)) return null;
+        let out = '';
+        let last = 0;
+        let found = false;
+        SIGNED_MONEY_RE.lastIndex = 0;
+        let m;
+        while ((m = SIGNED_MONEY_RE.exec(raw))) {
+            const token = m[0];
+            if (!CURRENCY_RE.test(token) && !CURRENCY_RE.test(raw.slice(m.index, m.index + token.length + 3))) continue;
+            const sign = m[1];
+            const kind = sign === '+' ? 'pos' : 'neg';
+            out += escapeHtml(raw.slice(last, m.index));
+            out += '<span class="ko-money-token ko-money-' + kind + '" data-ko-money-token="1" style="' + tokenStyle(kind) + '">' + escapeHtml(token) + '</span>';
+            last = m.index + token.length;
+            found = true;
+        }
+        if (!found) return null;
+        out += escapeHtml(raw.slice(last));
+        return out;
+    }
+
+    function forceTokenColor(token){
+        const isNeg = token.classList.contains('ko-money-neg');
+        const color = isNeg ? NEG : POS;
+        token.style.setProperty('color', color, 'important');
+        token.style.setProperty('-webkit-text-fill-color', color, 'important');
+        token.style.setProperty('font-weight', '760', 'important');
+        token.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
+        token.style.setProperty('text-shadow', 'none', 'important');
+    }
+
+    function shouldSkip(el){
+        if (!el || !el.closest) return true;
+        if (el.closest('script,style,textarea,input,select,option,.ko-money-token')) return true;
+        return false;
+    }
+
+    function processLeaf(el){
+        if (shouldSkip(el)) return;
+        if (el.children && el.children.length) return;
+        const text = el.textContent || '';
+        const html = moneyHtml(text);
+        if (!html) return;
+        if (el.getAttribute('data-ko-money-source') === text) return;
+        el.setAttribute('data-ko-money-source', text);
+        el.innerHTML = html;
+    }
+
+    function markNetBoxes(root){
+        (root || document).querySelectorAll('main.main-cont.view-list .tcard-expanded div').forEach(box => {
+            if (box.closest('.ko-money-token')) return;
+            const txt = box.textContent || '';
+            if (!/(Ölmeztur Net|Net Kâr\s*\(Ölmeztur\)|16 LMZ 55 Net)/i.test(txt)) return;
+            const hasPos = /[+]\s*[0-9][0-9.]*(?:,[0-9]+)?\s*₺/.test(txt);
+            const hasNeg = /[−-]\s*[0-9][0-9.]*(?:,[0-9]+)?\s*₺/.test(txt);
+            if (!hasPos && !hasNeg) return;
+            box.classList.add('ko-transfer-net-box');
+            box.classList.toggle('ko-money-pos', hasPos && !hasNeg);
+            box.classList.toggle('ko-money-neg', hasNeg);
+        });
+    }
+
+    let scanning = false;
+    function scanMoney(){
+        if (scanning) return;
+        scanning = true;
+        try {
+            const root = document.getElementById('root') || document.body;
+            root.querySelectorAll('main.main-cont span,main.main-cont div,main.main-cont strong,main.main-cont b,main.main-cont button').forEach(processLeaf);
+            root.querySelectorAll('.ko-money-token').forEach(forceTokenColor);
+            markNetBoxes(root);
+        } finally {
+            scanning = false;
+        }
+    }
+
+    let scheduled = false;
+    function scheduleScan(){
+        if (scheduled) return;
+        scheduled = true;
+        window.setTimeout(() => {
+            scheduled = false;
+            scanMoney();
+        }, 80);
+    }
+
+    installGlobalMoneyStyle();
+    scanMoney();
+    const observer = new MutationObserver(scheduleScan);
+    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
+    document.addEventListener('click', scheduleScan, true);
+    document.addEventListener('input', scheduleScan, true);
+})();
+
+(function(){
+    const STRICT_MONEY_STYLE_ID = 'ko-strict-plus-minus-colors-final-v3';
+    const STRICT_MONEY_STYLE = `
+:root{
+  --ko-strict-pos:#3f806d;
+  --ko-strict-neg:#b2605c;
+}
+
+html body .app-shell main.main-cont .ko-money-pos:not(.ko-money-token):not(.ko-transfer-net-box),
+html body .app-shell main.main-cont .ko-money-neg:not(.ko-money-token):not(.ko-transfer-net-box){
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+}
+
+html body .app-shell main.main-cont .ko-money-pos:not(.ko-money-token):not(.ko-transfer-net-box) *:not(.ko-money-token),
+html body .app-shell main.main-cont .ko-money-neg:not(.ko-money-token):not(.ko-transfer-net-box) *:not(.ko-money-token){
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token.ko-money-pos,
+html body .app-shell main.main-cont .ko-money-token.ko-money-pos *{
+  color:var(--ko-strict-pos)!important;
+  -webkit-text-fill-color:var(--ko-strict-pos)!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token.ko-money-neg,
+html body .app-shell main.main-cont .ko-money-token.ko-money-neg *,
+html body .app-shell main.main-cont .ko-money-pos .ko-money-token.ko-money-neg,
+html body .app-shell main.main-cont .ko-money-pos .ko-money-token.ko-money-neg *{
+  color:var(--ko-strict-neg)!important;
+  -webkit-text-fill-color:var(--ko-strict-neg)!important;
+}
+`;
+
+    function installStrictMoneyStyle(){
+        let style = document.getElementById(STRICT_MONEY_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = STRICT_MONEY_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = STRICT_MONEY_STYLE;
+    }
+
+    const POS = '#3f806d';
+    const NEG = '#b2605c';
+    const MONEY_RE = /([+−-])\s*\d[\d.]*(?:,\d+)?\s*(?:₺|TL|TRY)/g;
+
+    function paintToken(span, kind){
+        const color = kind === 'neg' ? NEG : POS;
+        span.classList.add('ko-money-token', kind === 'neg' ? 'ko-money-neg' : 'ko-money-pos');
+        span.setAttribute('data-ko-money-token', '1');
+        span.style.setProperty('color', color, 'important');
+        span.style.setProperty('-webkit-text-fill-color', color, 'important');
+        span.style.setProperty('font-weight', '760', 'important');
+        span.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
+        span.style.setProperty('text-shadow', 'none', 'important');
+    }
+
+    function tokenizeTextNode(node){
+        const text = node.nodeValue || '';
+        if (!/[+−-]\s*\d/.test(text) || !/(₺|TL|TRY)/i.test(text)) return;
+        MONEY_RE.lastIndex = 0;
+        let match;
+        let last = 0;
+        const frag = document.createDocumentFragment();
+        let found = false;
+        while ((match = MONEY_RE.exec(text))) {
+            if (match.index > last) frag.appendChild(document.createTextNode(text.slice(last, match.index)));
+            const span = document.createElement('span');
+            const sign = match[1];
+            const kind = sign === '+' ? 'pos' : 'neg';
+            span.textContent = match[0];
+            paintToken(span, kind);
+            frag.appendChild(span);
+            last = match.index + match[0].length;
+            found = true;
+        }
+        if (!found) return;
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+    }
+
+    function unwrapWrongWholeLineClasses(root){
+        (root || document).querySelectorAll('main.main-cont .ko-money-pos:not(.ko-money-token):not(.ko-transfer-net-box),main.main-cont .ko-money-neg:not(.ko-money-token):not(.ko-transfer-net-box)').forEach(el => {
+            el.classList.remove('ko-money-pos', 'ko-money-neg');
+        });
+    }
+
+    function forceExistingTokens(root){
+        (root || document).querySelectorAll('main.main-cont .ko-money-token').forEach(token => {
+            paintToken(token, token.classList.contains('ko-money-neg') ? 'neg' : 'pos');
+        });
+    }
+
+    function scanStrictMoney(){
+        const root = document.getElementById('root') || document.body;
+        unwrapWrongWholeLineClasses(root);
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode(node){
+                const parent = node.parentElement;
+                if (!parent) return NodeFilter.FILTER_REJECT;
+                if (parent.closest('script,style,textarea,input,select,option,.ko-money-token')) return NodeFilter.FILTER_REJECT;
+                if (!parent.closest('main.main-cont')) return NodeFilter.FILTER_REJECT;
+                const t = node.nodeValue || '';
+                return /[+−-]\s*\d/.test(t) && /(₺|TL|TRY)/i.test(t) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            }
+        });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(tokenizeTextNode);
+        forceExistingTokens(root);
+    }
+
+    let pending = false;
+    function scheduleStrictMoney(){
+        if (pending) return;
+        pending = true;
+        window.setTimeout(() => {
+            pending = false;
+            scanStrictMoney();
+        }, 40);
+    }
+
+    installStrictMoneyStyle();
+    scanStrictMoney();
+    const observer = new MutationObserver(scheduleStrictMoney);
+    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
+    document.addEventListener('click', scheduleStrictMoney, true);
+})();
+
+(function(){
+    const LOCK_STYLE_ID = 'ko-minus-red-plus-green-lock-final-v4';
+    const LOCK_STYLE = `
+:root{
+  --ko-final-plus:#3f806d;
+  --ko-final-minus:#b2605c;
+}
+
+html body .app-shell main.main-cont .ko-money-token[data-ko-sign="plus"]{
+  color:var(--ko-final-plus)!important;
+  -webkit-text-fill-color:var(--ko-final-plus)!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont .ko-money-pos .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont .ko-money-neg .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell,.card).ko-click-confirmed .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell,.card):active .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell,.card).is-active .ko-money-token[data-ko-sign="minus"]{
+  color:var(--ko-final-minus)!important;
+  -webkit-text-fill-color:var(--ko-final-minus)!important;
+}
+
+html body .app-shell main.main-cont .ko-money-token{
+  font-weight:760!important;
+  font-variant-numeric:tabular-nums!important;
+  text-shadow:none!important;
+}
+`;
+
+    function installLockStyle(){
+        let style = document.getElementById(LOCK_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = LOCK_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = LOCK_STYLE;
+    }
+
+    const PLUS = '#3f806d';
+    const MINUS = '#b2605c';
+    const SIGNED_NUMBER_RE = /(^|[^\d])([+−-])\s*\d[\d.]*(?:,\d+)?(?:\s*(?:₺|TL|TRY))?/g;
+
+    function applySignColor(el, sign){
+        const isMinus = sign === '-' || sign === '−';
+        const color = isMinus ? MINUS : PLUS;
+        el.classList.add('ko-money-token');
+        el.classList.toggle('ko-money-neg', isMinus);
+        el.classList.toggle('ko-money-pos', !isMinus);
+        el.setAttribute('data-ko-sign', isMinus ? 'minus' : 'plus');
+        el.style.setProperty('color', color, 'important');
+        el.style.setProperty('-webkit-text-fill-color', color, 'important');
+        el.style.setProperty('font-weight', '760', 'important');
+        el.style.setProperty('font-variant-numeric', 'tabular-nums', 'important');
+        el.style.setProperty('text-shadow', 'none', 'important');
+    }
+
+    function contextLooksLikeMoney(parent){
+        const txt = parent && parent.textContent ? parent.textContent : '';
+        if (/(₺|TL|TRY)/i.test(txt)) return true;
+        if (parent && parent.closest && parent.closest('main.main-cont.view-hesap,main.main-cont.view-arac,main.main-cont.view-list .tcard-expanded')) return true;
+        return false;
+    }
+
+    function tokenizeSignedNode(node){
+        const parent = node.parentElement;
+        if (!parent || !contextLooksLikeMoney(parent)) return;
+        const text = node.nodeValue || '';
+        if (!/[+−-]\s*\d/.test(text)) return;
+        SIGNED_NUMBER_RE.lastIndex = 0;
+        let match;
+        let last = 0;
+        let found = false;
+        const frag = document.createDocumentFragment();
+        while ((match = SIGNED_NUMBER_RE.exec(text))) {
+            const prefix = match[1] || '';
+            const token = match[0].slice(prefix.length);
+            const tokenStart = match.index + prefix.length;
+            if (tokenStart > last) frag.appendChild(document.createTextNode(text.slice(last, tokenStart)));
+            const span = document.createElement('span');
+            span.textContent = token;
+            applySignColor(span, match[2]);
+            frag.appendChild(span);
+            last = match.index + match[0].length;
+            found = true;
+        }
+        if (!found) return;
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+    }
+
+    function cleanWrongWholeLineClasses(root){
+        (root || document).querySelectorAll('main.main-cont .ko-money-pos:not(.ko-money-token):not(.ko-transfer-net-box),main.main-cont .ko-money-neg:not(.ko-money-token):not(.ko-transfer-net-box)').forEach(el => {
+            el.classList.remove('ko-money-pos', 'ko-money-neg');
+        });
+    }
+
+    function retagExistingTokens(root){
+        (root || document).querySelectorAll('main.main-cont .ko-money-token').forEach(el => {
+            const txt = (el.textContent || '').trim();
+            const sign = txt[0];
+            if (sign === '+' || sign === '-' || sign === '−') applySignColor(el, sign);
+        });
+    }
+
+    function lockMoneyColors(){
+        const root = document.getElementById('root') || document.body;
+        cleanWrongWholeLineClasses(root);
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode(node){
+                const parent = node.parentElement;
+                if (!parent) return NodeFilter.FILTER_REJECT;
+                if (parent.closest('script,style,textarea,input,select,option,.ko-money-token')) return NodeFilter.FILTER_REJECT;
+                if (!parent.closest('main.main-cont')) return NodeFilter.FILTER_REJECT;
+                const text = node.nodeValue || '';
+                return /[+−-]\s*\d/.test(text) && contextLooksLikeMoney(parent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            }
+        });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(tokenizeSignedNode);
+        retagExistingTokens(root);
+    }
+
+    let scheduled = false;
+    function scheduleLock(){
+        if (scheduled) return;
+        scheduled = true;
+        window.setTimeout(() => {
+            scheduled = false;
+            lockMoneyColors();
+        }, 25);
+    }
+
+    installLockStyle();
+    lockMoneyColors();
+    const observer = new MutationObserver(scheduleLock);
+    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
+    document.addEventListener('click', scheduleLock, true);
+    document.addEventListener('input', scheduleLock, true);
+    window.setInterval(lockMoneyColors, 500);
+})();
+
+(function(){
+    const CURRENCY_LOCK_STYLE_ID = 'ko-currency-symbol-payment-final-v5';
+    const CURRENCY_LOCK_STYLE = `
+:root{
+  --ko-paid-green:#3f806d;
+  --ko-none-red:#b2605c;
+  --ko-none-red-soft:#fff1ef;
+  --ko-none-red-line:#ecc4c0;
+}
+
+html body .app-shell main.main-cont .ko-money-currency[data-ko-sign="plus"],
+html body .app-shell main.main-cont .ko-money-token[data-ko-sign="plus"],
+html body .app-shell main.main-cont .tcard-amount:not(.is-none){
+  color:var(--ko-paid-green)!important;
+  -webkit-text-fill-color:var(--ko-paid-green)!important;
+}
+
+html body .app-shell main.main-cont .ko-money-currency[data-ko-sign="minus"],
+html body .app-shell main.main-cont .ko-money-token[data-ko-sign="minus"],
+html body .app-shell main.main-cont .tcard-amount.is-none,
+html body .app-shell main.main-cont .ko-payment-none{
+  color:var(--ko-none-red)!important;
+  -webkit-text-fill-color:var(--ko-none-red)!important;
+}
+
+html body .app-shell main.main-cont .tcard-amount.is-none,
+html body .app-shell main.main-cont .ko-payment-none{
+  font-weight:760!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .tcard-amount.is-none{
+  background:linear-gradient(145deg,var(--ko-none-red-soft),rgba(255,255,255,.70))!important;
+  border:1px solid var(--ko-none-red-line)!important;
+  border-radius:999px!important;
+  padding:3px 8px!important;
+  display:inline-flex!important;
+}
+
+html body .app-shell main.main-cont .ko-money-currency{
+  font-weight:760!important;
+  font-variant-numeric:tabular-nums!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.lg-profit-card,.tk-cell,.card).ko-click-confirmed .ko-money-currency[data-ko-sign="minus"],
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.tk-cell,.card):active .ko-money-currency[data-ko-sign="minus"],
+html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-date-toggle,.date-hdr,.tcard,.lg-period-card,.tk-cell,.card).is-active .ko-money-currency[data-ko-sign="minus"]{
+  color:var(--ko-none-red)!important;
+  -webkit-text-fill-color:var(--ko-none-red)!important;
+}
+`;
+
+    function installCurrencyLockStyle(){
+        let style = document.getElementById(CURRENCY_LOCK_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = CURRENCY_LOCK_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = CURRENCY_LOCK_STYLE;
+    }
+
+    const PLUS = '#3f806d';
+    const MINUS = '#b2605c';
+    const CURRENCY_ONLY_RE = /(₺|TL|TRY)/gi;
+
+    function setCurrencyColor(el, sign){
+        const isMinus = sign === 'minus';
+        const color = isMinus ? MINUS : PLUS;
+        el.classList.add('ko-money-currency');
+        el.setAttribute('data-ko-sign', isMinus ? 'minus' : 'plus');
+        el.style.setProperty('color', color, 'important');
+        el.style.setProperty('-webkit-text-fill-color', color, 'important');
+        el.style.setProperty('font-weight', '760', 'important');
+        el.style.setProperty('text-shadow', 'none', 'important');
+    }
+
+    function signFromToken(token){
+        if (!token) return null;
+        if (token.getAttribute('data-ko-sign') === 'minus' || token.classList.contains('ko-money-neg')) return 'minus';
+        if (token.getAttribute('data-ko-sign') === 'plus' || token.classList.contains('ko-money-pos')) return 'plus';
+        const txt = (token.textContent || '').trim();
+        if (txt.startsWith('-') || txt.startsWith('−')) return 'minus';
+        if (txt.startsWith('+')) return 'plus';
+        return null;
+    }
+
+    function previousTokenSign(node){
+        let cur = node.previousSibling;
+        while (cur) {
+            if (cur.nodeType === 1) {
+                if (cur.classList && cur.classList.contains('ko-money-token')) {
+                    const sign = signFromToken(cur);
+                    if (sign) return sign;
+                }
+                const tokens = cur.querySelectorAll ? cur.querySelectorAll('.ko-money-token') : [];
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    const sign = signFromToken(tokens[i]);
+                    if (sign) return sign;
+                }
+            }
+            cur = cur.previousSibling;
+        }
+        const parent = node.parentElement;
+        if (parent) {
+            const tokens = parent.querySelectorAll('.ko-money-token');
+            if (tokens.length === 1) return signFromToken(tokens[0]);
+        }
+        return null;
+    }
+
+    function tokenizeCurrencyNode(node){
+        const text = node.nodeValue || '';
+        if (!CURRENCY_ONLY_RE.test(text)) return;
+        CURRENCY_ONLY_RE.lastIndex = 0;
+        const sign = previousTokenSign(node);
+        if (!sign) return;
+        let last = 0;
+        let match;
+        const frag = document.createDocumentFragment();
+        while ((match = CURRENCY_ONLY_RE.exec(text))) {
+            if (match.index > last) frag.appendChild(document.createTextNode(text.slice(last, match.index)));
+            const span = document.createElement('span');
+            span.textContent = match[0];
+            setCurrencyColor(span, sign);
+            frag.appendChild(span);
+            last = match.index + match[0].length;
+        }
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+    }
+
+    function markPaymentNone(root){
+        (root || document).querySelectorAll('main.main-cont .tcard-amount.is-none').forEach(el => {
+            el.classList.add('ko-payment-none');
+            el.style.setProperty('color', MINUS, 'important');
+            el.style.setProperty('-webkit-text-fill-color', MINUS, 'important');
+        });
+        (root || document).querySelectorAll('main.main-cont span,main.main-cont div').forEach(el => {
+            if (el.children.length) return;
+            if (!/^\s*Ödeme yok\s*$/i.test(el.textContent || '')) return;
+            el.classList.add('ko-payment-none');
+            el.style.setProperty('color', MINUS, 'important');
+            el.style.setProperty('-webkit-text-fill-color', MINUS, 'important');
+        });
+    }
+
+    function recolorAmounts(root){
+        (root || document).querySelectorAll('main.main-cont .tcard-amount:not(.is-none)').forEach(el => {
+            if (/^\s*Ödeme yok\s*$/i.test(el.textContent || '')) return;
+            el.style.setProperty('color', PLUS, 'important');
+            el.style.setProperty('-webkit-text-fill-color', PLUS, 'important');
+        });
+        (root || document).querySelectorAll('main.main-cont .ko-money-token,main.main-cont .ko-money-currency').forEach(el => {
+            const sign = el.getAttribute('data-ko-sign') || signFromToken(el);
+            if (sign === 'minus') setCurrencyColor(el, 'minus');
+            if (sign === 'plus') setCurrencyColor(el, 'plus');
+        });
+    }
+
+    function lockCurrencyAndPayment(){
+        const root = document.getElementById('root') || document.body;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode(node){
+                const parent = node.parentElement;
+                if (!parent) return NodeFilter.FILTER_REJECT;
+                if (parent.closest('script,style,textarea,input,select,option,.ko-money-token,.ko-money-currency')) return NodeFilter.FILTER_REJECT;
+                if (!parent.closest('main.main-cont')) return NodeFilter.FILTER_REJECT;
+                return /(₺|TL|TRY)/i.test(node.nodeValue || '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            }
+        });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(tokenizeCurrencyNode);
+        markPaymentNone(root);
+        recolorAmounts(root);
+    }
+
+    let scheduled = false;
+    function scheduleLock(){
+        if (scheduled) return;
+        scheduled = true;
+        window.setTimeout(() => {
+            scheduled = false;
+            lockCurrencyAndPayment();
+        }, 35);
+    }
+
+    installCurrencyLockStyle();
+    lockCurrencyAndPayment();
+    const observer = new MutationObserver(scheduleLock);
+    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
+    document.addEventListener('click', scheduleLock, true);
+    document.addEventListener('input', scheduleLock, true);
+    window.setInterval(lockCurrencyAndPayment, 650);
+})();
+
+(function(){
+    const FINAL_UI_STYLE_ID = 'ko-alacak-borc-payment-fab-final-v6';
+    const FINAL_UI_STYLE = `
+:root{
+  --ko-nude-green:#3f806d;
+  --ko-nude-green-soft:#e7f2ee;
+  --ko-nude-green-line:rgba(63,128,109,.34);
+  --ko-nude-red:#b2605c;
+  --ko-nude-red-soft:#fff1ef;
+  --ko-nude-red-line:rgba(178,96,92,.34);
+}
+
+html body .app-shell main.main-cont .tk-widget-ledger-total.is-in,
+html body .app-shell main.main-cont .tk-ledger-amt.tk-amt-in{
+  color:var(--ko-nude-green)!important;
+  -webkit-text-fill-color:var(--ko-nude-green)!important;
+}
+
+html body .app-shell main.main-cont .tk-widget-ledger-total.is-out,
+html body .app-shell main.main-cont .tk-ledger-amt.tk-amt-out{
+  color:var(--ko-nude-red)!important;
+  -webkit-text-fill-color:var(--ko-nude-red)!important;
+}
+
+html body .app-shell main.main-cont .tcard-paystatus{
+  min-height:24px!important;
+  padding:4px 9px!important;
+  border-radius:999px!important;
+  font-size:9.7px!important;
+  font-weight:610!important;
+  letter-spacing:0!important;
+  line-height:1!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 5px 12px rgba(35,30,24,.055)!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .tcard-paystatus.is-paid{
+  background:linear-gradient(145deg,rgba(231,242,238,.96),rgba(255,255,255,.78))!important;
+  color:var(--ko-nude-green)!important;
+  -webkit-text-fill-color:var(--ko-nude-green)!important;
+  border:1px solid var(--ko-nude-green-line)!important;
+}
+
+html body .app-shell main.main-cont .tcard-paystatus.is-pending{
+  background:linear-gradient(145deg,rgba(255,241,239,.96),rgba(255,255,255,.78))!important;
+  color:var(--ko-nude-red)!important;
+  -webkit-text-fill-color:var(--ko-nude-red)!important;
+  border:1px solid var(--ko-nude-red-line)!important;
+}
+
+html body .app-shell .tabbar .tab-fab,
+html body .app-shell .tabbar button.tab-fab,
+html body .app-shell .tabbar .tab-fab:focus,
+html body .app-shell .tabbar button.tab-fab:focus,
+html body .app-shell .tabbar .tab-fab:focus-visible,
+html body .app-shell .tabbar button.tab-fab:focus-visible,
+html body .app-shell .tabbar .tab-fab.ko-gold-hit,
+html body .app-shell .tabbar .tab-fab.ko-simple-gold-frame,
+html body .app-shell .tabbar .tab-fab.ko-click-confirmed,
+html body .app-shell .tabbar .tab-fab.ko-auto-selected,
+html body .app-shell .tabbar .tab-fab.ko-sync-gold,
+html body .app-shell .tabbar .tab-fab.ko-selected-gold{
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
+  max-width:50px!important;
+  max-height:50px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:999px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  place-self:center!important;
+  background:
+    radial-gradient(circle at 32% 18%,rgba(255,255,255,.98),rgba(255,255,255,0) 40%),
+    linear-gradient(145deg,rgba(255,255,255,.88),rgba(236,243,240,.70))!important;
+  border:1px solid rgba(255,255,255,.84)!important;
+  box-shadow:
+    0 14px 30px rgba(20,28,34,.14),
+    0 0 0 1px rgba(63,128,109,.16),
+    inset 0 1px 0 rgba(255,255,255,.92),
+    inset 0 -1px 0 rgba(16,42,50,.05)!important;
+  color:#102a32!important;
+  -webkit-text-fill-color:#102a32!important;
+  line-height:1!important;
+  font-size:0!important;
+  transform:none!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell .tabbar .tab-fab .tab-fab-plus,
+html body .app-shell .tabbar button.tab-fab .tab-fab-plus{
+  position:static!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:#102a32!important;
+  -webkit-text-fill-color:#102a32!important;
+  font-size:30px!important;
+  font-weight:430!important;
+  line-height:1!important;
+  transform:translateY(-1px)!important;
+  pointer-events:none!important;
+}
+
+html body .app-shell .tabbar .tab-fab:active,
+html body .app-shell .tabbar button.tab-fab:active{
+  background:
+    radial-gradient(circle at 30% 18%,rgba(255,255,255,.34),rgba(255,255,255,0) 36%),
+    linear-gradient(145deg,#102a32 0%,#3f806d 62%,#245a4c 128%)!important;
+  border:1px solid rgba(255,255,255,.76)!important;
+  box-shadow:
+    0 10px 22px rgba(63,128,109,.24),
+    inset 0 1px 0 rgba(255,255,255,.28)!important;
+  transform:scale(.96)!important;
+}
+
+html body .app-shell .tabbar .tab-fab:active .tab-fab-plus,
+html body .app-shell .tabbar button.tab-fab:active .tab-fab-plus{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+`;
+
+    function installFinalUiStyle(){
+        let style = document.getElementById(FINAL_UI_STYLE_ID);
+        if (!style) {
+            style = document.createElement('style');
+            style.id = FINAL_UI_STYLE_ID;
+            document.head.appendChild(style);
+        }
+        style.textContent = FINAL_UI_STYLE;
+    }
+
+    installFinalUiStyle();
 })();
 
 </script>
