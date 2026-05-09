@@ -8076,6 +8076,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip }) {
     const [openAg, setOpenAg] = useState(false);
     const [openDebt, setOpenDebt] = useState(false);
+    const [openDebtGroups, setOpenDebtGroups] = useState({ borc: false, alacak: false });
     const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
     const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
     const [newDebt, setNewDebt] = useState({ type: 'borc', name: '', total: '', paid: '', note: '' });
@@ -8173,6 +8174,25 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
     };
     const borclar = debts.filter(d => d.type === 'borc');
     const alacaklar = debts.filter(d => d.type === 'alacak');
+    const debtGroupButton = (key, label, count, accent, isOpen) => React.createElement("button", {
+        onClick: () => setOpenDebtGroups(p => ({ ...p, [key]: !p[key] })),
+        style: {
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            background: 'rgba(255,255,255,.70)',
+            border: '1px solid ' + BOR,
+            borderRadius: 11,
+            padding: '9px 10px',
+            cursor: 'pointer',
+            textAlign: 'left'
+        }
+    },
+        React.createElement("span", { style: { display: 'inline-block', width: 4, height: 14, background: accent, borderRadius: 2, flexShrink: 0 } }),
+        React.createElement("span", { style: { fontWeight: 460, fontSize: 12.5, color: accent, letterSpacing: 0, flex: 1 } }, (isOpen ? '▾ ' : '▸ ') + label),
+        count > 0 && React.createElement("span", { style: { background: 'rgba(255,255,255,.82)', color: accent, border: '1px solid rgba(120,110,96,.16)', borderRadius: 999, padding: '2px 7px', fontSize: 10, fontWeight: 480 } }, count)
+    );
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 } },
         React.createElement("div", { className: "card" },
             React.createElement("button", { onClick: () => setOpenAg(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 800, color: TX, textAlign: 'left', cursor: 'pointer' } }, '🏢 Acenta / Kaptan ' + (openAg ? '−' : '+')),
@@ -8212,18 +8232,12 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("input", { type: "number", value: newDebt.paid, onChange: e => setNewDebt(p => ({ ...p, paid: e.target.value })), placeholder: newDebt.type === 'borc' ? "Ödenen" : "Tahsilat", className: "inp" }),
                     React.createElement("input", { value: newDebt.note, onChange: e => setNewDebt(p => ({ ...p, note: e.target.value })), placeholder: "Küçük açıklama", className: "inp" }),
                     React.createElement("button", { onClick: saveDebt, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, cursor: 'pointer' } }, 'Kaydet')),
-                React.createElement("div", null,
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
-                        React.createElement("span", { style: { display: 'inline-block', width: 4, height: 14, background: R, borderRadius: 2 } }),
-                        React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: R, letterSpacing: .3 } }, '▼ BORÇLAR'),
-                        borclar.length > 0 && React.createElement("span", { style: { background: 'linear-gradient(135deg,#FFF0EF,#FFE2E0)', color: R, border: '1px solid #FFC4C0', borderRadius: 9, padding: '1px 7px', fontSize: 10, fontWeight: 900, marginLeft: 'auto' } }, borclar.length)),
-                    borclar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, borclar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Borç kaydı yok')),
-                React.createElement("div", null,
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
-                        React.createElement("span", { style: { display: 'inline-block', width: 4, height: 14, background: G, borderRadius: 2 } }),
-                        React.createElement("div", { style: { fontWeight: 900, fontSize: 13, color: G, letterSpacing: .3 } }, '▲ ALACAKLAR'),
-                        alacaklar.length > 0 && React.createElement("span", { style: { background: 'linear-gradient(135deg,#E3F1E7,#D6EBDD)', color: G, border: '1px solid #7DB68B', borderRadius: 9, padding: '1px 7px', fontSize: 10, fontWeight: 900, marginLeft: 'auto' } }, alacaklar.length)),
-                    alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok')))));
+                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    debtGroupButton('borc', 'BORÇLAR', borclar.length, R, openDebtGroups.borc),
+                    openDebtGroups.borc && (borclar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, borclar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Borç kaydı yok'))),
+                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    debtGroupButton('alacak', 'ALACAKLAR', alacaklar.length, G, openDebtGroups.alacak),
+                    openDebtGroups.alacak && (alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok'))))));
 }
 
 function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
@@ -15674,6 +15688,34 @@ html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral{
 (function(){
     const FINAL_FRAME_STYLE_ID = 'ko-final-hesap-frame-today-air-v2';
     const FINAL_FRAME_STYLE = `
+html,
+html body,
+html body #root,
+html body .app-shell,
+html body .app-shell[style],
+html body .app-shell main.main-cont,
+html body .app-shell main.main-cont[style]{
+  color-scheme:light!important;
+  background:
+    radial-gradient(circle at 18% -6%,rgba(255,255,255,.98),rgba(255,255,255,0) 38%),
+    radial-gradient(circle at 86% 8%,rgba(239,247,242,.55),rgba(255,255,255,0) 32%),
+    linear-gradient(180deg,#ffffff 0%,#fbfcfb 48%,#f5f8f6 100%)!important;
+  background-color:#fbfcfb!important;
+}
+
+html body .app-shell::before,
+html body .app-shell::after,
+html body .app-shell main.main-cont::before,
+html body .app-shell main.main-cont::after{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont :is(.card,.lg-glass-card,.lg-metric-card,.lg-period-card,.lg-profit-card,.lg-profit-detail,.lg-period-panel,.lg-upcoming-card,.tcard,.tk-card,.tk-panel,.tk-ledger):not(.ko-hesap-green-frame):not(.lg-arac-month-toggle){
+  background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.68) 58%,rgba(246,248,247,.54))!important;
+  box-shadow:0 10px 26px rgba(24,31,38,.055),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+
 html body .app-shell main.main-cont.view-hesap .ko-hesap-group{
   background:rgba(255,255,255,.76)!important;
   box-shadow:none!important;
@@ -15945,6 +15987,47 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-chip{
   font-weight:540!important;
 }
 
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card{
+  touch-action:pan-y!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card:active,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card:focus,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card:focus-visible,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.is-active,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-gold-hit,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-click-confirmed,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-pressing,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-simple-gold-frame,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-scroll-guard-active,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-scroll-guard-moving{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,255,255,.74) 58%,rgba(246,248,246,.62)) padding-box,
+    linear-gradient(135deg,rgba(47,143,91,.20),rgba(255,255,255,.72)) border-box!important;
+  border:1.1px solid transparent!important;
+  box-shadow:0 8px 20px rgba(24,31,38,.045),inset 0 1px 0 rgba(255,255,255,.92)!important;
+  color:var(--lg-ink,#17201d)!important;
+  -webkit-text-fill-color:var(--lg-ink,#17201d)!important;
+  transform:none!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card:is(:active,:focus,:focus-visible,.is-active,.ko-gold-hit,.ko-click-confirmed,.ko-pressing,.ko-simple-gold-frame,.ko-scroll-guard-active,.ko-scroll-guard-moving) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important;
+}
+
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-home-real-tap,
+html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card.ko-home-real-tap[style]{
+  background:
+    radial-gradient(circle at 20% 12%,rgba(255,255,255,.82),rgba(255,255,255,0) 38%),
+    linear-gradient(145deg,rgba(235,246,240,.96),rgba(255,255,255,.72) 58%,rgba(222,237,229,.76))!important;
+  border:1.2px solid rgba(47,143,91,.36)!important;
+  box-shadow:0 10px 24px rgba(47,143,91,.10),inset 0 1px 0 rgba(255,255,255,.90)!important;
+}
+
 @media (max-width:430px){
   html body .app-shell .lg-home-transfer-list.lg-today-list-standalone{
     gap:8px!important;
@@ -15967,6 +16050,285 @@ html body .app-shell .lg-home-transfer-list.lg-today-list-standalone .lg-chip{
         document.head.appendChild(style);
     }
     style.textContent = FINAL_FRAME_STYLE;
+})();
+
+(function(){
+    const HOME_TODAY_PRESS_GUARD_ID = 'ko-home-today-scroll-press-guard-v1';
+    if (window[HOME_TODAY_PRESS_GUARD_ID]) return;
+    window[HOME_TODAY_PRESS_GUARD_ID] = true;
+
+    const CARD_SELECTOR = '.lg-home-transfer-list.lg-today-list-standalone .lg-upcoming-card';
+    const PRESS_CLASSES = ['ko-gold-hit','ko-simple-gold-frame','ko-click-confirmed','ko-pressing'];
+    const STATE_CLASSES = ['ko-scroll-guard-active','ko-scroll-guard-moving','ko-home-real-tap'];
+    const touches = new Map();
+    let suppressClickUntil = 0;
+
+    function cardFromTarget(target){
+        return target && target.closest ? target.closest(CARD_SELECTOR) : null;
+    }
+
+    function clearPress(card){
+        if (!card) return;
+        card.classList.remove(...PRESS_CLASSES);
+    }
+
+    function clearAll(card){
+        if (!card) return;
+        card.classList.remove(...PRESS_CLASSES, ...STATE_CLASSES);
+    }
+
+    function clearSoon(card){
+        clearPress(card);
+        requestAnimationFrame(() => clearPress(card));
+        setTimeout(() => clearPress(card), 90);
+    }
+
+    document.addEventListener('pointerdown', e => {
+        const card = cardFromTarget(e.target);
+        if (!card) return;
+        const id = e.pointerId == null ? 1 : e.pointerId;
+        touches.set(id, { card, x:e.clientX, y:e.clientY, moved:false });
+        card.classList.add('ko-scroll-guard-active');
+        clearSoon(card);
+    }, { capture:true, passive:true });
+
+    document.addEventListener('pointermove', e => {
+        const id = e.pointerId == null ? 1 : e.pointerId;
+        const rec = touches.get(id);
+        if (!rec) return;
+        if (Math.abs(e.clientX - rec.x) > 6 || Math.abs(e.clientY - rec.y) > 6) {
+            rec.moved = true;
+            suppressClickUntil = Date.now() + 500;
+            rec.card.classList.add('ko-scroll-guard-moving');
+            clearSoon(rec.card);
+        }
+    }, { capture:true, passive:true });
+
+    document.addEventListener('pointerup', e => {
+        const id = e.pointerId == null ? 1 : e.pointerId;
+        const rec = touches.get(id);
+        if (!rec) return;
+        touches.delete(id);
+        if (rec.moved) {
+            clearAll(rec.card);
+            return;
+        }
+        clearPress(rec.card);
+        rec.card.classList.add('ko-home-real-tap');
+        setTimeout(() => clearAll(rec.card), 190);
+    }, { capture:true, passive:true });
+
+    document.addEventListener('pointercancel', e => {
+        const id = e.pointerId == null ? 1 : e.pointerId;
+        const rec = touches.get(id);
+        if (!rec) return;
+        touches.delete(id);
+        clearAll(rec.card);
+    }, { capture:true, passive:true });
+
+    document.addEventListener('click', e => {
+        const card = cardFromTarget(e.target);
+        if (!card) return;
+        if (Date.now() < suppressClickUntil) {
+            clearAll(card);
+            return;
+        }
+        clearPress(card);
+        card.classList.add('ko-home-real-tap');
+        setTimeout(() => clearAll(card), 190);
+    }, { capture:true, passive:true });
+
+    document.addEventListener('scroll', () => {
+        document.querySelectorAll(CARD_SELECTOR).forEach(clearAll);
+    }, { capture:true, passive:true });
+})();
+
+(function(){
+    const SOFT_TYPOGRAPHY_STYLE_ID = 'ko-hesap-arac-soft-typography-v1';
+    const SOFT_TYPOGRAPHY_STYLE = `
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac),
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) *{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,sans-serif!important;
+  letter-spacing:0!important;
+  text-shadow:none!important;
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac){
+  font-weight:430!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:900"]{
+  font-weight:600!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:800"]{
+  font-weight:560!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:700"]{
+  font-weight:500!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:600"]{
+  font-weight:470!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(.lbl,label,.date-hdr-meta,.ko-account-suffix),
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(input,select,textarea,.inp){
+  font-weight:430!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(.card > button,button.lg-choice,button.lg-arac-date-toggle,button.lg-arac-month-toggle,button.lg-arac-year-toggle,button.lg-arac-day-toggle),
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(.card > button,button.lg-choice,button.lg-arac-date-toggle,button.lg-arac-month-toggle,button.lg-arac-year-toggle,button.lg-arac-day-toggle) *{
+  font-weight:540!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .card > button:first-child,
+html body .app-shell main.main-cont.view-hesap .card > button:first-child *{
+  font-size:13px!important;
+  font-weight:540!important;
+  line-height:1.25!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-account-chip,.ko-account-arrow,.ko-account-suffix),
+html body .app-shell main.main-cont.view-hesap :is(.ko-account-chip,.ko-account-arrow,.ko-account-suffix)[style]{
+  font-weight:500!important;
+  line-height:1.24!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez[style]{
+  font-weight:570!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group > div:first-child,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group > div:first-child *{
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg,.ko-transfer-net-box),
+html body .app-shell main.main-cont.view-arac :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg),
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-variant-numeric"]{
+  font-weight:620!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) > div:first-child,
+html body .app-shell main.main-cont.view-arac :is(.lg-arac-date-toggle,.lg-arac-month-toggle,.lg-arac-day-toggle,.card) > div:first-child{
+  font-weight:540!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) > div:last-child,
+html body .app-shell main.main-cont.view-arac :is(.lg-arac-date-toggle,.lg-arac-month-toggle,.lg-arac-day-toggle) [style*="₺"],
+html body .app-shell main.main-cont.view-arac [style*="font-size: 16"][style*="₺"],
+html body .app-shell main.main-cont.view-arac [style*="font-size:16"][style*="₺"]{
+  font-weight:620!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) [style*="font-size: 9"],
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) [style*="font-size:9"],
+html body .app-shell main.main-cont.view-arac [style*="font-size: 9"],
+html body .app-shell main.main-cont.view-arac [style*="font-size:9"]{
+  font-weight:500!important;
+  letter-spacing:.08px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.card,button,div,span,input,select,textarea),
+html body .app-shell main.main-cont.view-arac :is(.card,button,div,span,input,select,textarea){
+  line-height:1.32;
+}
+
+html body .app-shell main.main-cont.view-hesap button,
+html body .app-shell main.main-cont.view-arac button{
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .card :is(button,input,select,textarea),
+html body .app-shell main.main-cont.view-arac .card :is(button,input,select,textarea){
+  font-size-adjust:none;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) *:not(svg):not(path){
+  font-weight:400!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 900"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:900"]{
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 800"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:800"]{
+  font-weight:490!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 700"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:700"]{
+  font-weight:450!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight: 600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="font-weight:600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight: 600"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) [style*="fontWeight:600"]{
+  font-weight:420!important;
+}
+
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(button,.card > button,.lg-choice,.lg-arac-date-toggle,.lg-arac-month-toggle,.lg-arac-year-toggle,.lg-arac-day-toggle),
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(button,.card > button,.lg-choice,.lg-arac-date-toggle,.lg-arac-month-toggle,.lg-arac-year-toggle,.lg-arac-day-toggle) *{
+  font-weight:450!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-account-chip,.ko-account-arrow,.ko-account-suffix,.ko-hesap-group > div:first-child *),
+html body .app-shell main.main-cont.view-arac :is(.lbl,label,.inp,input,select,textarea){
+  font-weight:420!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-chip.ko-account-olmez[style]{
+  font-weight:470!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg,.ko-transfer-net-box,.ko-hesap-green-frame > div:last-child,.ko-hesap-month-stat > div:first-child),
+html body .app-shell main.main-cont.view-arac :is(.ko-money-token,.ko-money-currency,.ko-money-pos,.ko-money-neg){
+  font-weight:520!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) [style*="font-size: 9"],
+html body .app-shell main.main-cont.view-hesap :is(.ko-hesap-green-frame,.ko-hesap-month-stat) [style*="font-size:9"],
+html body .app-shell main.main-cont:is(.view-hesap,.view-arac) :is(.lbl,label,.date-hdr-meta){
+  font-weight:390!important;
+}
+`;
+    let style = document.getElementById(SOFT_TYPOGRAPHY_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = SOFT_TYPOGRAPHY_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = SOFT_TYPOGRAPHY_STYLE;
 })();
 
 </script>
