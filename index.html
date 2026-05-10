@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -17017,6 +17017,90 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
         new MutationObserver(schedulePaint).observe(obsTarget, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-selected','aria-pressed','aria-expanded'] });
     }
     schedulePaint();
+})();
+
+(function(){
+    const IOS_PWA_LAYOUT_ID = 'ko-ios-standalone-layout-fix-v1';
+    if (window[IOS_PWA_LAYOUT_ID]) return;
+    window[IOS_PWA_LAYOUT_ID] = true;
+
+    const isStandalone = () => !!(window.navigator && window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
+    const mark = () => {
+        document.documentElement.classList.toggle('ko-ios-standalone', isStandalone());
+    };
+
+    const css = `
+@media all and (display-mode: standalone){
+  html body #root{
+    scroll-padding-top:86px!important;
+  }
+  html body .app-shell main.main-cont{
+    padding-top:calc(var(--sa-t,0px) + 34px)!important;
+    padding-bottom:calc(94px + max(8px, calc(var(--sa-b,0px) - 18px)))!important;
+  }
+  html body .app-shell main.main-cont.view-home{
+    padding-top:calc(var(--sa-t,0px) + 38px)!important;
+  }
+  html body .app-shell main.main-cont.view-home .lg-home{
+    padding-top:0!important;
+  }
+  html body .app-shell main.main-cont.view-home .lg-greeting-card,
+  html body .app-shell main.main-cont.view-home .lg-greeting-card[style]{
+    margin-top:0!important;
+  }
+  html body .app-shell .tabbar,
+  html body .app-shell nav.tabbar{
+    padding:0 12px max(8px, calc(var(--sa-b,0px) - 18px))!important;
+  }
+}
+
+html.ko-ios-standalone body #root{
+  scroll-padding-top:86px!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont{
+  padding-top:calc(var(--sa-t,0px) + 34px)!important;
+  padding-bottom:calc(94px + max(8px, calc(var(--sa-b,0px) - 18px)))!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home{
+  padding-top:calc(var(--sa-t,0px) + 38px)!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-home{
+  padding-top:0!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-greeting-card,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-greeting-card[style]{
+  margin-top:0!important;
+}
+html.ko-ios-standalone body .app-shell .tabbar,
+html.ko-ios-standalone body .app-shell nav.tabbar{
+  padding:0 12px max(8px, calc(var(--sa-b,0px) - 18px))!important;
+}
+
+html.ko-ios-standalone body .app-shell .tabbar-inner,
+html.ko-ios-standalone body .app-shell .tabbar .tabbar-inner{
+  height:70px!important;
+  min-height:70px!important;
+}
+
+@media all and (display-mode: standalone){
+  html body .app-shell .tabbar-inner,
+  html body .app-shell .tabbar .tabbar-inner{
+    height:70px!important;
+    min-height:70px!important;
+  }
+}
+`;
+    let style = document.getElementById(IOS_PWA_LAYOUT_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = IOS_PWA_LAYOUT_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = css;
+
+    mark();
+    window.addEventListener('resize', mark, { passive:true });
+    window.addEventListener('orientationchange', () => setTimeout(mark, 120), { passive:true });
 })();
 
 </script>
