@@ -10763,6 +10763,10 @@ function App() {
                 };
 
                 return React.createElement("div", { className: "lg-home" },
+                    React.createElement("div", { className: "ko-pwa-brand-row", style: { display: 'none' } },
+                        React.createElement("img", { src: LOGO_URI, alt: "Transfer", className: "ko-pwa-brand-logo" }),
+                        React.createElement("div", { className: "ko-pwa-brand-title" }, "Transfer")
+                    ),
                     React.createElement("div", { className: "lg-glass-card lg-greeting-card" },
                         React.createElement("div", { className: "lg-greeting-main", style: { position: 'relative', zIndex: 1, minWidth: 0 } },
                             React.createElement("div", { className: "lg-eyebrow" }, "İyi Çalışmalar"),
@@ -17039,10 +17043,36 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
     padding-bottom:calc(94px + max(8px, calc(var(--sa-b,0px) - 18px)))!important;
   }
   html body .app-shell main.main-cont.view-home{
-    padding-top:calc(var(--sa-t,0px) + 38px)!important;
+    padding-top:calc(var(--sa-t,0px) + 30px)!important;
   }
   html body .app-shell main.main-cont.view-home .lg-home{
     padding-top:0!important;
+  }
+  html body .app-shell main.main-cont.view-home .ko-pwa-brand-row{
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    height:40px!important;
+    margin:0 2px 12px!important;
+    padding:0 4px!important;
+  }
+  html body .app-shell main.main-cont.view-home .ko-pwa-brand-logo{
+    width:38px!important;
+    height:38px!important;
+    border-radius:13px!important;
+    object-fit:cover!important;
+    display:block!important;
+    border:1px solid rgba(47,109,88,.22)!important;
+    box-shadow:0 8px 18px rgba(24,31,38,.08),inset 0 1px 0 rgba(255,255,255,.72)!important;
+    background:#fff!important;
+  }
+  html body .app-shell main.main-cont.view-home .ko-pwa-brand-title{
+    font-size:22px!important;
+    line-height:1!important;
+    font-weight:760!important;
+    letter-spacing:0!important;
+    color:#17231e!important;
+    -webkit-text-fill-color:#17231e!important;
   }
   html body .app-shell main.main-cont.view-home .lg-greeting-card,
   html body .app-shell main.main-cont.view-home .lg-greeting-card[style]{
@@ -17050,7 +17080,8 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
   }
   html body .app-shell .tabbar,
   html body .app-shell nav.tabbar{
-    padding:0 12px max(8px, calc(var(--sa-b,0px) - 18px))!important;
+    padding:0 12px 0!important;
+    transform:translateY(18px)!important;
   }
 }
 
@@ -17062,10 +17093,36 @@ html.ko-ios-standalone body .app-shell main.main-cont{
   padding-bottom:calc(94px + max(8px, calc(var(--sa-b,0px) - 18px)))!important;
 }
 html.ko-ios-standalone body .app-shell main.main-cont.view-home{
-  padding-top:calc(var(--sa-t,0px) + 38px)!important;
+  padding-top:calc(var(--sa-t,0px) + 30px)!important;
 }
 html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-home{
   padding-top:0!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .ko-pwa-brand-row{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  height:40px!important;
+  margin:0 2px 12px!important;
+  padding:0 4px!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .ko-pwa-brand-logo{
+  width:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+  object-fit:cover!important;
+  display:block!important;
+  border:1px solid rgba(47,109,88,.22)!important;
+  box-shadow:0 8px 18px rgba(24,31,38,.08),inset 0 1px 0 rgba(255,255,255,.72)!important;
+  background:#fff!important;
+}
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .ko-pwa-brand-title{
+  font-size:22px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  letter-spacing:0!important;
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
 }
 html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-greeting-card,
 html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-greeting-card[style]{
@@ -17073,7 +17130,8 @@ html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-greeting-car
 }
 html.ko-ios-standalone body .app-shell .tabbar,
 html.ko-ios-standalone body .app-shell nav.tabbar{
-  padding:0 12px max(8px, calc(var(--sa-b,0px) - 18px))!important;
+  padding:0 12px 0!important;
+  transform:translateY(18px)!important;
 }
 
 html.ko-ios-standalone body .app-shell .tabbar-inner,
