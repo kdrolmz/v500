@@ -6605,11 +6605,17 @@ function tourCommissionShare(t) {
     const total = tourCommissionTotal(t);
     return total > 0 ? total / 2 : 0;
 }
+function transferPaymentComesToOlmeztur(t) {
+    return !!(t && t.paymentToMe);
+}
+function transferHasCustomerPayment(t) {
+    return !!(t && (t.paymentToMe || t.paymentCollect === 'yes'));
+}
 function olmezKar(t) {
     const c = parseFloat(t.customerTRY) || 0, d = parseFloat(t.driverPayment) || 0, alt = parseFloat(t.altAcentaUcreti) || 0;
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
-    const yes = t.paymentCollect === 'yes';
+    const yes = transferHasCustomerPayment(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
     /* HAKEDİŞ kuralı:
@@ -6664,7 +6670,7 @@ function calcAltAcentaPaylasim(t) {
     const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
-    const yes = t.paymentCollect === 'yes';
+    const yes = transferHasCustomerPayment(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     if (!alan || !yes || t.paymentToMe)
         return null;
@@ -6689,7 +6695,7 @@ function calcBal(t) {
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
     const com = tourCommissionShare(t);
-    const yes = t.paymentCollect === 'yes';
+    const yes = transferHasCustomerPayment(t);
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     if (!veren && !alan)
@@ -6740,7 +6746,7 @@ function calcAltBal(t) {
     const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
-    const yes = t.paymentCollect === 'yes';
+    const yes = transferHasCustomerPayment(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const altKomisyonKesinti = tourCommissionShare(t);
     if (t.paymentToMe)
@@ -6750,7 +6756,7 @@ function calcAltBal(t) {
         return { firm: t.altAcenta, netOl: altPaylasim.altNetOl };
     if (alan && yes)
         return { firm: t.altAcenta, netOl: c - alt };
-    if (t.paymentCollect === 'yes')
+    if (transferHasCustomerPayment(t))
         return { firm: t.altAcenta, netOl: d + altKomisyonKesinti };
     return { firm: t.altAcenta, netOl: -alt };
 }
@@ -7295,7 +7301,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const { ts, al, ver, net } = hesapData(firm);
         const rows = ts.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => {
             const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'short' });
-            const odeme = t.paymentCollect === 'no' ? '—' : (t.paymentAmount ? t.paymentAmount + ' ' + t.paymentCurrency : '—');
+            const odeme = t.paymentToMe ? ('Hesap bana geldi' + (t.paymentAmount ? ': ' + t.paymentAmount + ' ' + t.paymentCurrency : '')) : (t.paymentCollect === 'no' ? '—' : (t.paymentAmount ? t.paymentAmount + ' ' + t.paymentCurrency : '—'));
             const hd = tourCommissionTotal(t);
             const hdPay = tourCommissionShare(t);
             const hdLine = hd > 0 ? ('\n   🪙 Tur komisyonu: ' + fr(hd) + '₺ (pay ' + fr(hdPay) + '₺ / ' + fr(hdPay) + '₺)' + ((t.tourCommissionShop || '').trim() ? ' (' + t.tourCommissionShop + ')' : '')) : '';
@@ -7384,7 +7390,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                t.paymentCollect === 'yes' ? (parseFloat(t.paymentAmount) || 0) : 0,
+                transferHasCustomerPayment(t) ? (parseFloat(t.paymentAmount) || 0) : 0,
                 esc(t.paymentCurrency || 'TRY'),
                 parseFloat(t.driverPayment) || 0,
                 Math.round(hd),
@@ -7417,7 +7423,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                t.paymentCollect === 'yes' ? (parseFloat(t.paymentAmount) || 0) : 0,
+                transferHasCustomerPayment(t) ? (parseFloat(t.paymentAmount) || 0) : 0,
                 esc(t.paymentCurrency || 'TRY'),
                 parseFloat(t.driverPayment) || 0,
                 Math.round(hd),
@@ -7539,7 +7545,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             list.forEach(t => {
                 const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
                 const odeloCar = Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0);
-                const musteri = type === 'odelo' ? odeloGross : (t.paymentCollect === 'yes' ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
+                const musteri = type === 'odelo' ? odeloGross : (transferHasCustomerPayment(t) ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
                 const araba = type === 'odelo' ? odeloCar : Math.round(parseFloat(t.driverPayment) || 0);
                 const kalan = Number.isFinite(parseFloat(t.netOl)) ? parseFloat(t.netOl) : (musteri - araba);
                 rows.push([
@@ -7708,7 +7714,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             return null;
         const kar = transferNetAmount({ ...detayT });
         const pos = detayT.netOl >= 0;
-        const odeme = detayT.paymentCollect === 'no' ? 'Müşteri ödemez' : (detayT.paymentAmount ? (detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY')) : 'Tutar yok');
+        const odeme = detayT.paymentToMe ? ('Hesap bana geldi' + (detayT.paymentAmount ? ': ' + detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY') : '')) : (detayT.paymentCollect === 'no' ? 'Müşteri ödemez' : (detayT.paymentAmount ? (detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY')) : 'Tutar yok'));
         const yolcu = detayT.passengers && detayT.passengers.length ? detayT.passengers.map(p => p.name || p.fullName || '').filter(Boolean).join(', ') : ((detayT.passengerCount || 0) > 0 ? (detayT.passengerCount + ' kişi') : '');
         const yonTxt = detayT.kaynak === 'odelo'
             ? (detayT.yon === 'odeloBalentur' ? 'Odelo → Balentur yaptı, net Ölmeztur kârı' : 'Odelo → Ölmeztur yaptı, ödeme Balenturdan alınacak')
@@ -16149,7 +16155,8 @@ function App() {
             msg += '🗺️ Varış Konumu: https://maps.google.com/?q=' + encodeURIComponent(getQ(t.dropoff)) + '\n';
         }
         msg += '\n👥 Misafirler (' + t.passengerCount + ')\n' + px;
-        if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
+        if (t.paymentToMe) msg += '\n\n💳 Tahsilat: Hesap/ödeme bana geldi';
+        else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
         else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
         if (t.childSeat) msg += '\n🪑 Çocuk Koltuğu: ' + t.childSeatCount + ' adet';
         if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
@@ -16344,6 +16351,28 @@ function App() {
                         input({ type: 'number', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
                         select({ value: q.paymentCurrency || 'TRY', onChange: e => quickSet({ paymentCurrency: e.target.value }) }, [['TRY', 'TRY'], ['USD', 'USD'], ['EUR', 'EUR'], ['KWD', 'KWD']])
                     ), true),
+                    field('Hesap bana geldi', React.createElement("button", {
+                        type: "button",
+                        onClick: () => {
+                            const next = !q.paymentToMe;
+                            quickSet(next
+                                ? { paymentToMe: true, paymentCollect: 'yes', customerCollected: true }
+                                : { paymentToMe: false });
+                        },
+                        className: "ko-payment-to-me-toggle " + (q.paymentToMe ? "is-on" : "is-off"),
+                        style: {
+                            width: '100%',
+                            minHeight: 43,
+                            borderRadius: 12,
+                            border: '1.2px solid ' + (q.paymentToMe ? 'rgba(63,128,109,.58)' : 'rgba(120,110,96,.18)'),
+                            background: q.paymentToMe ? 'linear-gradient(145deg,rgba(230,242,237,.96),rgba(255,255,255,.86))' : 'linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.78))',
+                            color: q.paymentToMe ? G : TX,
+                            fontSize: 12,
+                            fontWeight: 760,
+                            cursor: 'pointer',
+                            boxShadow: q.paymentToMe ? '0 6px 16px rgba(63,128,109,.10),inset 0 1px 0 rgba(255,255,255,.92)' : 'inset 0 1px 0 rgba(255,255,255,.92)'
+                        }
+                    }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
                     field('Araç Ödemesi', input({ type: 'number', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
                     field('Alt Acenta Ücreti', input({ type: 'number', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
                     q.transferType === 'tour' && field('Tur Hakedişi', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
@@ -16610,14 +16639,14 @@ function App() {
         const custAmtNum = parseFloat(t.customerTRY || t.paymentAmount) || 0;
         const payCurrency = t.paymentCurrency || 'TRY';
         const custAmtRawTxt = t.paymentAmount ? (Number(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—';
-        const payCollectTxt = t.paymentCollect === 'no' ? 'Ödeme yok' : (t.paymentAmount ? custAmtRawTxt : '—');
+        const payCollectTxt = t.paymentToMe ? (t.paymentAmount ? custAmtRawTxt : 'Hesap bana geldi') : (t.paymentCollect === 'no' ? 'Ödeme yok' : (t.paymentAmount ? custAmtRawTxt : '—'));
         const isOpen = !!expandedT[t.id];
         const gvn = t.givenBy || '—';
         const asg = t.assignedTo || '—';
         const pickup = t.pickup || '—';
         const dropoff = t.dropoff || '—';
         const pasName = (t.passengers && t.passengers[0] && t.passengers[0].name) || '';
-        const showNoPayment = t.paymentCollect === 'no';
+        const showNoPayment = t.paymentCollect === 'no' && !t.paymentToMe;
         const headlineAmount = showNoPayment
             ? 'Ödeme yok'
             : (t.paymentAmount ? (Number(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—');
@@ -16640,6 +16669,7 @@ function App() {
                         React.createElement("div", { className: 'tcard-pills' },
                             React.createElement("span", { className: 'tcard-pill ' + statusClass }, sl),
                             t.flightCode && React.createElement("button", { className: 'tcard-pill tcard-pill-flight flight-track-btn', onClick: e => { e.stopPropagation(); if (!openFlightTracker(t.flightCode)) tip('Uçuş kodu yok'); }, title: "Uçuşu takip et" }, '✈ ' + flightCodeClean(t.flightCode)),
+                            t.paymentToMe && React.createElement("span", { className: 'tcard-pill ko-payment-to-me-pill' }, 'HESAP BANA GELDİ'),
                             t.altAcenta && React.createElement("span", { className: 'tcard-pill tcard-pill-alt' }, 'ALT: ' + t.altAcenta)
                         )
                     ),
@@ -16664,7 +16694,7 @@ function App() {
                     React.createElement("div", { className: 'tcard-right' },
                         React.createElement("div", null,
                             React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : ''), style: showNoPayment ? null : { color: G } }, headlineAmount),
-                            React.createElement("div", { className: 'tcard-amount-sub' }, 'müşteriden')
+                            React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : 'müşteriden')
                         ),
                         React.createElement("div", {
                                 onClick: e => { e.stopPropagation(); toggleSettled(t.id); },
@@ -18264,9 +18294,12 @@ function App() {
                        React.createElement("div", { style: { marginBottom: '10px' } },
                             React.createElement("button", { 
                                 className: "lg-choice" + (form.paymentToMe ? " is-active ko-selected-gold" : ""),
-                                onClick: () => sf({ paymentToMe: !form.paymentToMe }), 
+                                onClick: () => {
+                                    const next = !form.paymentToMe;
+                                    sf(next ? { paymentToMe: true, paymentCollect: 'yes', customerCollected: true } : { paymentToMe: false });
+                                }, 
                                 style: { width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid ' + (form.paymentToMe ? '#4F4A43' : '#DED8D0'), background: form.paymentToMe ? '#F2EFEA' : '#F6F3EF', color: form.paymentToMe ? '#4F4A43' : '#6E665E', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' } 
-                            }, form.paymentToMe ? "✅ ÖDEME DİREKT BANA YAPILDI" : "⬜ Ödeme Direkt Bana Yapıldıysa Tıkla"),
+                            }, form.paymentToMe ? "✓ HESAP / ÖDEME BANA GELDİ" : "Hesap bana geldiyse tıkla"),
                             form.paymentToMe && React.createElement("div", { style: { fontSize: '10px', color: '#4F4A43', marginTop: '5px', textAlign: 'center', fontWeight: 'bold' } }, "Hesap Düzenlendi: Alt acenteye sadece araç ücreti (-borç) yazılacak.")
                         ),                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 7 } },
                             React.createElement("div", { style: { flex: 1 } },
@@ -18287,7 +18320,7 @@ function App() {
                             React.createElement("span", { style: { fontSize: 15 } }, m.ico),
                             React.createElement("span", null, m.n))))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginBottom: 8 } }, [['pending', '⏳ Bekliyor'], ['paid', '✅ Ödendi'], ['cancelled', '❌ İptal']].map(([id, lbl]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.paymentStatus === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ paymentStatus: id }), style: { background: form.paymentStatus === id ? NAV : INP, color: form.paymentStatus === id ? '#fff' : TX, border: 'none', borderRadius: 8, padding: '7px 2px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 } }, lbl)))))),
-                    form.paymentCollect === 'no' && formBalenturOdelo && React.createElement("div", {
+                    form.paymentCollect === 'no' && !form.paymentToMe && formBalenturOdelo && React.createElement("div", {
                         style: {
                             background: '#E3F1E7',
                             border: '1px solid #7DB68B',
@@ -25567,6 +25600,40 @@ html body .ko-account-row.ko-account-transfer-row > .ko-account-cell:last-child{
         document.head.appendChild(style);
     }
     style.textContent = ACCOUNT_VISIBLE_OUTER_BORDER;
+})();
+
+(function(){
+    const PAYMENT_TO_ME_STYLE_ID = 'ko-payment-to-me-premium-final-v1';
+    const PAYMENT_TO_ME_STYLE = `
+html body .app-shell .ko-payment-to-me-pill{
+  background:linear-gradient(145deg,rgba(231,242,238,.96),rgba(255,255,255,.82))!important;
+  color:#2f765f!important;
+  -webkit-text-fill-color:#2f765f!important;
+  border:1px solid rgba(63,128,109,.38)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+html body .app-shell .ko-payment-to-me-toggle,
+html body .app-shell .ko-payment-to-me-toggle[style]{
+  letter-spacing:0!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+html body .app-shell .ko-payment-to-me-toggle.is-on,
+html body .app-shell .ko-payment-to-me-toggle.is-on[style]{
+  border-color:rgba(63,128,109,.62)!important;
+  background:linear-gradient(145deg,rgba(230,242,237,.98),rgba(255,255,255,.86))!important;
+  color:#2f765f!important;
+  -webkit-text-fill-color:#2f765f!important;
+}
+`;
+    let style = document.getElementById(PAYMENT_TO_ME_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = PAYMENT_TO_ME_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = PAYMENT_TO_ME_STYLE;
 })();
 
 </script>
