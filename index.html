@@ -6377,10 +6377,10 @@ function balenturOdeloCalc(t) {
     const odeloToOlmez = gOdelo && t.assignedTo === OL;
     if (!balenturInvolved && !odeloToOlmez)
         return null;
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
+    const c = parseFloat(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount) || 0;
     const d = parseFloat(t.driverPayment) || 0;
     const alt = parseFloat(t.altAcentaUcreti) || 0;
-    const odeloGross = c || d || alt;
+    const odeloGross = c;
     if (altBal && alt > 0) {
         return { netOl: odeloGross - alt, yon: 'odeloBalentur', odeloGross, balenturCost: alt };
     }
@@ -6388,7 +6388,7 @@ function balenturOdeloCalc(t) {
         return { netOl: odeloGross - d, yon: 'odeloBalentur', odeloGross, balenturCost: d };
     }
     if (odeloToOlmez || (gBal && t.assignedTo === OL) || t.assignedTo === OL) {
-        return { netOl: odeloGross, yon: 'odeloOlmez', odeloGross, balenturCost: 0 };
+        return { netOl: odeloGross - d, yon: 'odeloOlmez', odeloGross, balenturCost: d };
     }
     return null;
 }
@@ -7458,8 +7458,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             csv += '═══ ODELO İŞLERİ ═══\n';
             csv += 'Transfer Sayısı,' + odeloGrup.length + '\n';
             csv += '\n';
-            csv += 'No,Tarih,Saat,Alış,Bırakış,İş Tipi,Odelo Bedeli (TL),Balentur Ücreti (TL),Net (TL),Hesap\n';
+            csv += 'No,Tarih,Saat,Alış,Bırakış,İş Tipi,Odelo Bedeli (TL),İşi Yapan Ücreti (TL),Net (TL),Hesap\n';
             odeloGrup.forEach((t, i) => {
+                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
+                const odeloCost = Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0);
                 const row = [
                     i + 1,
                     esc(t.date || ''),
@@ -7467,8 +7469,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     esc(t.pickup || ''),
                     esc(t.dropoff || ''),
                     esc(t.yon === 'odeloBalentur' ? 'Balentur yaptı' : 'Ölmeztur yaptı'),
-                    Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || t.driverPayment || 0),
-                    Math.round(t.yon === 'odeloBalentur' ? (t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0),
+                    odeloGross,
+                    odeloCost,
                     Math.round(t.netOl || 0),
                     esc(t.firmSettled ? 'Kapandı' : 'Açık')
                 ];
@@ -7535,10 +7537,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             sectionRows.push(rows.length);
             rows.push([up(title), '', '', '', '', '', '', '', '', '']);
             list.forEach(t => {
-                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || t.driverPayment || 0);
-                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
+                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
+                const odeloCar = Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0);
                 const musteri = type === 'odelo' ? odeloGross : (t.paymentCollect === 'yes' ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
                 const araba = type === 'odelo' ? odeloCar : Math.round(parseFloat(t.driverPayment) || 0);
+                const kalan = Number.isFinite(parseFloat(t.netOl)) ? parseFloat(t.netOl) : (musteri - araba);
                 rows.push([
                     dateTxt(t.date),
                     t.time || '',
@@ -7548,7 +7551,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     placeTxt(t.dropoff),
                     money(musteri),
                     money(araba),
-                    money(t.netOl || (musteri - araba)),
+                    money(kalan),
                     clean(t.notes || t.tourCommissionShop || '')
                 ]);
             });
@@ -7861,6 +7864,93 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 rightSide));
     };
 
+    const hesapDateShort = d => {
+        if (!d) return '—';
+        const dt = new Date(d + 'T00:00:00');
+        if (Number.isNaN(dt.getTime())) return d;
+        return dt.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+    };
+    const hesapDateMeta = d => {
+        if (!d) return '';
+        const dt = new Date(d + 'T00:00:00');
+        if (Number.isNaN(dt.getTime())) return '';
+        return dt.toLocaleDateString('tr-TR', { weekday: 'short' });
+    };
+    const hesapFirstPassenger = t => {
+        const p = Array.isArray(t.passengers) && t.passengers.length ? t.passengers[0] : null;
+        return (p && (p.name || p.ad || p.fullName)) || t.passengerName || t.customerName || t.clientName || '—';
+    };
+    const hesapMoney = v => {
+        const n = Math.round(parseFloat(v) || 0);
+        if (n === 0) return '0₺';
+        return (n > 0 ? '+' : '−') + fr(Math.abs(n)) + '₺';
+    };
+    const hesapPlainMoney = v => {
+        const n = Math.round(parseFloat(v) || 0);
+        return n ? fr(n) + '₺' : '—';
+    };
+    const hesapCustomerAmount = t => {
+        if (t.kaynak === 'odelo') return parseFloat(t.odeloGross || t.customerTRY || 0) || 0;
+        return parseFloat(t.customerTRY || t.paymentAmount || t.totalTRY || 0) || 0;
+    };
+    const hesapDriverAmount = t => {
+        if (t.kaynak === 'odelo') return parseFloat(t.balenturCost || t.driverPayment || 0) || 0;
+        return parseFloat(t.driverPayment || 0) || 0;
+    };
+    const renderHesapSheetRow = (t, idx, borderTone) => {
+        const netVal = Math.round(parseFloat(t.netOl) || 0);
+        const pos = netVal >= 0;
+        const settleKey = t.settleFirmKey || (t.kaynak === 'alt' ? sel + '_alt' : sel);
+        const routeText = [t.pickup, t.dropoff].filter(Boolean).join(' → ') || '—';
+        const carText = t.vehicleType || t.vehicle || t.carType || t.driverVehicle || '—';
+        const driverText = t.driverName || '';
+        const kar = transferNetAmount({ ...t });
+        return React.createElement("div", {
+            key: (t.id || idx) + '-' + (t.kaynak || '') + '-' + (t.yon || ''),
+            className: "ko-account-row ko-account-transfer-row ko-border-" + (borderTone || 'neutral') + " " + (t.firmSettled ? 'is-closed' : 'is-open') + ' ' + (pos ? 'is-positive' : 'is-negative'),
+            role: "button",
+            tabIndex: 0,
+            onClick: () => openTransferFromHesap(t),
+            onKeyDown: e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openTransferFromHesap(t);
+                }
+            }
+        },
+            React.createElement("div", { className: "ko-account-cell ko-account-date-cell" },
+                React.createElement("b", null, hesapDateShort(t.date)),
+                React.createElement("small", null, hesapDateMeta(t.date))),
+            React.createElement("div", { className: "ko-account-cell ko-account-time-cell" },
+                React.createElement("b", null, t.time || '—')),
+            React.createElement("div", { className: "ko-account-cell ko-account-name-cell" },
+                React.createElement("b", null, hesapFirstPassenger(t)),
+                ((t.passengerCount || 0) > 0) && React.createElement("small", null, t.passengerCount + ' kişi')),
+            React.createElement("div", { className: "ko-account-cell ko-account-route-cell" },
+                React.createElement("div", { className: "ko-account-flow" }, renderAccountRoute(hesapRouteParts(t), hesapRouteSuffix(t), true)),
+                React.createElement("small", null, routeText)),
+            React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
+                React.createElement("b", null, hesapPlainMoney(hesapCustomerAmount(t))),
+                React.createElement("small", null, "Müşteri")),
+            React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
+                React.createElement("b", null, hesapPlainMoney(hesapDriverAmount(t))),
+                React.createElement("small", null, driverText || carText)),
+            React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
+                React.createElement("b", null, hesapMoney(netVal)),
+                kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar))),
+            React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
+                React.createElement("button", {
+                    type: "button",
+                    className: "ko-account-settle-btn " + (t.firmSettled ? 'is-settled' : 'is-open'),
+                    onPointerDown: e => e.stopPropagation(),
+                    onClick: e => {
+                        e.stopPropagation();
+                        togSettle(t.id, settleKey, !t.firmSettled);
+                    }
+                }, t.firmSettled ? 'Kapandı' : 'Açık'),
+                React.createElement("small", null, "Düzenle")));
+    };
+
     const renderHesapBolum = (baslik, liste, renk) => {
         const title = String(baslik || '');
         const parts = title.split(/\s*-\s*/).filter(Boolean);
@@ -7869,55 +7959,51 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
         const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + (parseFloat(t.netOl) || 0), 0));
+        const openCount = (liste || []).filter(t => !t.firmSettled).length;
         const tone = isOlmezToAgency
             ? {
-                bg: 'rgba(255,255,255,.72)',
                 bd: '#2F8F5B',
-                accent: G,
-                soft: 'rgba(255,255,255,.72)',
-                shadow: 'none'
+                accent: G
             }
             : isAgencyToOlmez
                 ? {
-                    bg: 'rgba(255,255,255,.72)',
                     bd: '#C69318',
-                    accent: '#9A6A1F',
-                    soft: 'rgba(255,255,255,.72)',
-                    shadow: 'none'
+                    accent: '#9A6A1F'
                 }
                 : {
-                    bg: 'rgba(255,255,255,.72)',
                     bd: BOR,
-                    accent: renk || NAV,
-                    soft: 'rgba(255,255,255,.72)',
-                    shadow: 'none'
+                    accent: renk || NAV
                 };
+        const borderTone = isOlmezToAgency ? 'green' : isAgencyToOlmez ? 'yellow' : 'neutral';
         return React.createElement("div", {
-            className: "ko-hesap-group " + (isOlmezToAgency ? 'ko-hesap-olmez-agency' : isAgencyToOlmez ? 'ko-hesap-agency-olmez' : 'ko-hesap-neutral'),
-            style: {
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-                background: tone.bg,
-                border: '3.5px solid ' + tone.bd,
-                borderRadius: 14,
-                padding: '10px 10px 11px',
-                boxShadow: tone.shadow
-            }
+            className: "ko-account-sheet-section " + (isOlmezToAgency ? 'is-olmez-agency' : isAgencyToOlmez ? 'is-agency-olmez' : 'is-neutral'),
+            style: { '--ko-sheet-border': tone.bd, '--ko-sheet-accent': tone.accent }
         },
-            React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-                React.createElement("div", { style: { minWidth: 0, flex: 1 } }, renderAccountTitle(baslik)),
-                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 } },
-                    React.createElement("span", { style: { fontSize: 9.5, color: SB, background: 'rgba(255,255,255,.72)', border: '1px solid rgba(120,110,96,.16)', borderRadius: 999, padding: '3px 7px', fontWeight: 560 } }, liste.length + ' kayıt'),
-                    openNet !== 0 && React.createElement("span", { style: { fontSize: 9.5, color: openNet >= 0 ? G : R, background: '#fff', border: '1px solid rgba(255,255,255,.82)', borderRadius: 999, padding: '3px 7px', fontWeight: 680, fontVariantNumeric: 'tabular-nums' } }, (openNet >= 0 ? '+' : '−') + fr(openNet) + '₺'))),
+            React.createElement("div", { className: "ko-account-section-head" },
+                React.createElement("div", { className: "ko-account-section-title" }, renderAccountTitle(baslik)),
+                React.createElement("div", { className: "ko-account-section-stats" },
+                    React.createElement("span", null, liste.length + ' kayıt'),
+                    React.createElement("span", null, openCount + ' açık'),
+                    openNet !== 0 && React.createElement("b", { className: openNet >= 0 ? 'is-pos' : 'is-neg' }, hesapMoney(openNet)))),
             liste.length
-                ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } }, liste.map(renderHesapKart))
-                : React.createElement("div", { style: { textAlign: 'center', padding: '14px', color: SB, fontSize: 12, background: 'rgba(255,255,255,.62)', borderRadius: 10, border: '1px dashed ' + tone.bd } }, 'Kayıt yok'));
+                ? React.createElement("div", { className: "ko-account-table-wrap" },
+                    React.createElement("div", { className: "ko-account-table ko-account-transfer-table" },
+                        React.createElement("div", { className: "ko-account-row ko-account-row-head" },
+                            React.createElement("div", { className: "ko-account-cell" }, "Tarih"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Saat"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Yolcu"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Hesap / Güzergah"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Müşteri"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Araç"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Net"),
+                            React.createElement("div", { className: "ko-account-cell" }, "Durum")),
+                        liste.map((t, i) => renderHesapSheetRow(t, i, borderTone))))
+                : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok'));
     };
 
 
 
-    const [openFirms, setOpenFirms] = useState(false);
+    const [openFirms, setOpenFirms] = useState(true);
     return (React.createElement("div", { className: "card" },
         React.createElement("input", {
             value: ara,
@@ -8031,44 +8117,39 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCB Kendi\nHesab\u0131m")),
                     renderHesapDetayModal());
             })()
-            : React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
-                filtered.map(firm => {
+            : (function() {
+                const firmRows = filtered.map(firm => {
                     const { ts, al, ver, net } = hesapData(firm);
                     if (ts.length === 0) return null;
-                    return React.createElement("button", { key: firm, onClick: () => setSel(firm), style: { width: '100%', background: '#fff', border: '1px solid ' + BOR, borderRadius: 13, padding: '11px 12px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,.06)' } },
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9 } },
-                            React.createElement("div", { style: { width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, color: '#fff' } }, "\uD83C\uDFE2"),
-                            React.createElement("div", { style: { flex: 1 } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 5 } }, renderAgencyChip(firm, true)),
-                                React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 1 } }, ts.length + " kay\u0131t")),
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 } },
-                                al > 0 && React.createElement("span", {
-                                    style: {
-                                        background: 'linear-gradient(135deg,#F2EFEA,#ECE7E0)',
-                                        color: G,
-                                        border: '1px solid #D8D0C6',
-                                        borderRadius: 6,
-                                        padding: '2px 8px',
-                                        fontSize: 10,
-                                        fontWeight: 900,
-                                        letterSpacing: .2
-                                    }
-                                }, "+" + fr(al) + "\u20BA"),
-                                ver > 0 && React.createElement("span", {
-                                    style: {
-                                        background: 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
-                                        color: R,
-                                        border: '1px solid #FFC4C0',
-                                        borderRadius: 6,
-                                        padding: '2px 8px',
-                                        fontSize: 10,
-                                        fontWeight: 900,
-                                        letterSpacing: .2,
-                                        boxShadow: '0 1px 3px rgba(255,59,48,.12)'
-                                    }
-                                }, "−" + fr(ver) + "\u20BA")),
-                            React.createElement("span", { style: { color: SB, fontSize: 15, marginLeft: 3 } }, "\u203A")));
-                }))
+                    const netVal = Math.round(parseFloat(net) || 0);
+                    return React.createElement("button", {
+                        key: firm,
+                        type: "button",
+                        className: "ko-account-firm-row ko-account-firm-line",
+                        onClick: () => setSel(firm)
+                    },
+                        React.createElement("div", { className: "ko-account-firm-cell ko-account-firm-name" },
+                            React.createElement("b", null, firm),
+                            React.createElement("small", null, "Firma hesabı")),
+                        React.createElement("div", { className: "ko-account-firm-cell" }, ts.length),
+                        React.createElement("div", { className: "ko-account-firm-cell is-pos" }, al > 0 ? '+' + fr(al) + '₺' : '—'),
+                        React.createElement("div", { className: "ko-account-firm-cell is-neg" }, ver > 0 ? '−' + fr(ver) + '₺' : '—'),
+                        React.createElement("div", { className: "ko-account-firm-cell " + (netVal >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(netVal)),
+                        React.createElement("div", { className: "ko-account-firm-cell ko-account-firm-go" }, "›"));
+                }).filter(Boolean);
+                return React.createElement("div", { className: "ko-account-table-wrap ko-account-firm-wrap" },
+                    React.createElement("div", { className: "ko-account-table ko-account-firm-table" },
+                        React.createElement("div", { className: "ko-account-firm-row ko-account-firm-head" },
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "Acenta"),
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "Kayıt"),
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "Alacak"),
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "Verecek"),
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "Net"),
+                            React.createElement("div", { className: "ko-account-firm-cell" }, "")),
+                        firmRows.length
+                            ? firmRows
+                            : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok")));
+            })()
         )));
 }
 
@@ -24170,6 +24251,1322 @@ html.ko-ios-standalone body .app-shell .tabbar .tabbar-inner{
     mark();
     window.addEventListener('resize', mark, { passive:true });
     window.addEventListener('orientationchange', () => setTimeout(mark, 120), { passive:true });
+})();
+
+(function(){
+    const ACCOUNT_SHEET_STYLE_ID = 'ko-account-numbers-sheet-final-v1';
+    const ACCOUNT_SHEET_STYLE = `
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+  --ko-sheet-border:rgba(63,128,109,.42);
+  --ko-sheet-accent:#3f806d;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.78) 64%,rgba(255,255,255,.68))!important;
+  border:1.7px solid var(--ko-sheet-border)!important;
+  border-radius:15px!important;
+  padding:10px!important;
+  box-shadow:0 9px 22px rgba(24,31,38,.045),inset 0 1px 0 rgba(255,255,255,.94)!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency[style]{
+  border-color:#2f8f5b!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez[style]{
+  border-color:#c69318!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-head{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title{
+  min-width:0!important;
+  flex:1!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  flex-shrink:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats :is(span,b){
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:21px!important;
+  padding:3px 7px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.74)!important;
+  border:1px solid rgba(120,110,96,.14)!important;
+  color:#68716c!important;
+  -webkit-text-fill-color:#68716c!important;
+  font-size:9.5px!important;
+  font-weight:440!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats b.is-pos{
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+  border-color:rgba(63,128,109,.26)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats b.is-neg{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+  border-color:rgba(178,96,92,.26)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  border:1px solid rgba(24,31,38,.08)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.78)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-table{
+  min-width:790px!important;
+  width:100%!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row{
+  display:grid!important;
+  grid-template-columns:74px 66px minmax(126px,1.05fr) minmax(210px,1.55fr) 82px 82px 92px 92px!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-height:48px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head{
+  min-height:32px!important;
+  background:linear-gradient(180deg,rgba(248,250,249,.94),rgba(255,255,255,.84))!important;
+  border-bottom:1px solid rgba(24,31,38,.08)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell{
+  font-size:9px!important;
+  font-weight:520!important;
+  color:#77817b!important;
+  -webkit-text-fill-color:#77817b!important;
+  text-transform:uppercase!important;
+  letter-spacing:.18px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+  cursor:pointer!important;
+  user-select:none!important;
+  border-top:1px solid rgba(24,31,38,.055)!important;
+  background:rgba(255,255,255,.68)!important;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row:first-of-type{
+  border-top:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row:active,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row:focus-visible{
+  background:rgba(232,243,238,.82)!important;
+  outline:1.4px solid rgba(63,128,109,.48)!important;
+  outline-offset:-2px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row.is-closed{
+  opacity:.68!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-cell{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:2px!important;
+  padding:7px 8px!important;
+  border-right:1px solid rgba(24,31,38,.055)!important;
+  color:#26302c!important;
+  -webkit-text-fill-color:#26302c!important;
+  font-size:10.8px!important;
+  font-weight:400!important;
+  line-height:1.18!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-cell:last-child{
+  border-right:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-cell b{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:11.2px!important;
+  font-weight:500!important;
+  line-height:1.15!important;
+  color:#202826!important;
+  -webkit-text-fill-color:#202826!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-cell small{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:9px!important;
+  font-weight:380!important;
+  line-height:1.16!important;
+  color:#6d7771!important;
+  -webkit-text-fill-color:#6d7771!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-route-cell{
+  gap:3px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-flow{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-flow .ko-account-route{
+  max-width:100%!important;
+  flex-wrap:nowrap!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-money-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-net-cell{
+  text-align:right!important;
+  align-items:flex-end!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-net-cell b{
+  font-size:12px!important;
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-net-cell.is-pos b,
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-cell.is-pos{
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-net-cell.is-neg b,
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-cell.is-neg{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-status-cell{
+  align-items:flex-end!important;
+  text-align:right!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:62px!important;
+  min-height:24px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(63,128,109,.30)!important;
+  background:rgba(255,255,255,.78)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  line-height:1!important;
+  cursor:pointer!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn.is-open{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+  border-color:rgba(178,96,92,.32)!important;
+  background:rgba(255,246,245,.78)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-wrap{
+  border-radius:14px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-table{
+  min-width:610px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-row{
+  display:grid!important;
+  grid-template-columns:minmax(170px,1.35fr) 58px 94px 94px 94px 30px!important;
+  align-items:center!important;
+  width:100%!important;
+  min-height:42px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-head{
+  background:linear-gradient(180deg,rgba(248,250,249,.96),rgba(255,255,255,.84))!important;
+  border-bottom:1px solid rgba(24,31,38,.08)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-head .ko-account-firm-cell{
+  font-size:9px!important;
+  font-weight:520!important;
+  color:#77817b!important;
+  -webkit-text-fill-color:#77817b!important;
+  text-transform:uppercase!important;
+  letter-spacing:.18px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-line{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  border:0!important;
+  border-top:1px solid rgba(24,31,38,.055)!important;
+  background:rgba(255,255,255,.68)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  padding:0!important;
+  color:#26302c!important;
+  -webkit-text-fill-color:#26302c!important;
+}
+
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-line:active,
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-line:focus-visible{
+  background:rgba(232,243,238,.82)!important;
+  outline:1.4px solid rgba(63,128,109,.48)!important;
+  outline-offset:-2px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-cell{
+  min-width:0!important;
+  padding:8px 9px!important;
+  border-right:1px solid rgba(24,31,38,.055)!important;
+  font-size:10.8px!important;
+  font-weight:420!important;
+  line-height:1.15!important;
+  color:#26302c!important;
+  -webkit-text-fill-color:#26302c!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-cell:last-child{
+  border-right:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-name{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:2px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-name b{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:11.6px!important;
+  font-weight:520!important;
+  color:#202826!important;
+  -webkit-text-fill-color:#202826!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-name small{
+  font-size:9px!important;
+  font-weight:380!important;
+  color:#77817b!important;
+  -webkit-text-fill-color:#77817b!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-go{
+  text-align:center!important;
+  color:#8b948f!important;
+  -webkit-text-fill-color:#8b948f!important;
+  font-size:18px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-empty-state{
+  padding:18px 12px!important;
+  color:#77817b!important;
+  -webkit-text-fill-color:#77817b!important;
+  text-align:center!important;
+  font-size:11.5px!important;
+  font-weight:400!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+    padding:8px!important;
+    border-radius:14px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-head{
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:7px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
+    justify-content:flex-start!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-table{
+    min-width:720px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-row{
+    grid-template-columns:66px 58px 112px 184px 74px 74px 84px 78px!important;
+    min-height:46px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-cell{
+    padding:6px 6px!important;
+    font-size:10.2px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-cell b{
+    font-size:10.8px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-cell small{
+    font-size:8.6px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-table{
+    min-width:560px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-row{
+    grid-template-columns:minmax(142px,1.25fr) 48px 84px 84px 84px 26px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-cell{
+    padding:8px 7px!important;
+    font-size:10.2px!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_SHEET_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_SHEET_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_SHEET_STYLE;
+})();
+
+(function(){
+    const ACCOUNT_SHEET_FIT_STYLE_ID = 'ko-account-sheet-mobile-fit-final-v2';
+    const ACCOUNT_SHEET_FIT_STYLE = `
+html body .app-shell main.main-cont.view-hesap .ko-account-status-cell{
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-status-cell small{
+  display:block!important;
+  width:100%!important;
+  text-align:right!important;
+  color:#7b8580!important;
+  -webkit-text-fill-color:#7b8580!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap{
+    overflow-x:hidden!important;
+    padding:6px!important;
+    background:rgba(255,255,255,.68)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+    min-width:0!important;
+    width:100%!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:7px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table .ko-account-row-head{
+    display:none!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:56px 50px minmax(0,1fr) 74px!important;
+    grid-template-areas:
+      "date time name status"
+      "route route route route"
+      "customer driver net net"!important;
+    gap:0!important;
+    border:1px solid rgba(24,31,38,.085)!important;
+    border-radius:12px!important;
+    margin:0!important;
+    overflow:hidden!important;
+    background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.76))!important;
+    box-shadow:0 7px 16px rgba(24,31,38,.045),inset 0 1px 0 rgba(255,255,255,.92)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell{
+    min-width:0!important;
+    padding:7px 7px!important;
+    border-right:0!important;
+    border-bottom:1px solid rgba(24,31,38,.045)!important;
+    background:transparent!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell b{
+    font-size:10.8px!important;
+    font-weight:500!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell small{
+    font-size:8.6px!important;
+    font-weight:390!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-date-cell{
+    grid-area:date!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-time-cell{
+    grid-area:time!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-name-cell{
+    grid-area:name!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-route-cell{
+    grid-area:route!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row > .ko-account-money-cell:nth-child(5){
+    grid-area:customer!important;
+    align-items:flex-start!important;
+    text-align:left!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row > .ko-account-money-cell:nth-child(6){
+    grid-area:driver!important;
+    align-items:flex-start!important;
+    text-align:left!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-net-cell{
+    grid-area:net!important;
+    align-items:flex-end!important;
+    text-align:right!important;
+    border-bottom:0!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-status-cell{
+    grid-area:status!important;
+    align-items:flex-end!important;
+    text-align:right!important;
+    justify-content:center!important;
+    border-bottom:1px solid rgba(24,31,38,.045)!important;
+    padding-right:8px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn{
+    min-width:58px!important;
+    max-width:66px!important;
+    min-height:23px!important;
+    padding:4px 7px!important;
+    font-size:9.4px!important;
+    white-space:nowrap!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-status-cell small{
+    font-size:8.2px!important;
+    text-align:right!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-flow,
+  html body .app-shell main.main-cont.view-hesap .ko-account-route-cell small{
+    max-width:100%!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_SHEET_FIT_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_SHEET_FIT_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_SHEET_FIT_STYLE;
+})();
+
+(function(){
+    const ACCOUNT_THIN_FRAME_STYLE_ID = 'ko-account-thin-frames-final-v1';
+    const ACCOUNT_THIN_FRAME_STYLE = `
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+  border-width:1.05px!important;
+  border-color:rgba(63,128,109,.36)!important;
+  box-shadow:0 7px 18px rgba(24,31,38,.038),inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency[style]{
+  border-width:1.05px!important;
+  border-color:rgba(47,143,91,.44)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez[style]{
+  border-width:1.05px!important;
+  border-color:rgba(198,147,24,.42)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency[style]{
+  border-width:1.05px!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez[style]{
+  border-color:rgba(198,147,24,.42)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency[style]{
+  border-color:rgba(47,143,91,.44)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat[style]{
+  border-width:1px!important;
+  border-color:rgba(47,143,91,.34)!important;
+  box-shadow:0 5px 14px rgba(24,31,38,.035),inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame::after,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-grid .ko-hesap-month-stat::after{
+  border-width:.8px!important;
+  border-color:rgba(47,143,91,.32)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-table-wrap,
+html body .app-shell main.main-cont.view-hesap .ko-account-table-wrap[style]{
+  border-width:1px!important;
+  border-color:rgba(24,31,38,.065)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+  border-color:rgba(24,31,38,.06)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn,
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn[style]{
+  border-width:1px!important;
+  border-color:rgba(63,128,109,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn.is-open,
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn.is-open[style]{
+  border-color:rgba(178,96,92,.26)!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+    border-width:1px!important;
+    border-color:rgba(24,31,38,.065)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_THIN_FRAME_STYLE_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_THIN_FRAME_STYLE_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_THIN_FRAME_STYLE;
+})();
+
+(function(){
+    const ACCOUNT_AGENCY_SPACING_FRAME_ID = 'ko-account-agency-spacing-frame-final-v1';
+    const ACCOUNT_AGENCY_SPACING_FRAME = `
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-table{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:2px!important;
+  padding:4px!important;
+  min-width:610px!important;
+  box-sizing:border-box!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-head,
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-line{
+  border-radius:9px!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-line{
+  border:1px solid rgba(24,31,38,.055)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency[style]{
+  border:1.05px solid rgba(47,143,91,.50)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez[style]{
+  border:1.05px solid rgba(198,147,24,.50)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row{
+  border-color:rgba(47,143,91,.30)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row{
+  border-color:rgba(198,147,24,.32)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-table-wrap{
+  border-color:rgba(47,143,91,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-table-wrap{
+  border-color:rgba(198,147,24,.26)!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-table{
+    min-width:560px!important;
+    gap:2px!important;
+    padding:4px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row{
+    border:1px solid rgba(47,143,91,.34)!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row{
+    border:1px solid rgba(198,147,24,.36)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_AGENCY_SPACING_FRAME_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_AGENCY_SPACING_FRAME_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_AGENCY_SPACING_FRAME;
+})();
+
+(function(){
+    const ACCOUNT_INNER_CARD_THIN_ID = 'ko-account-inner-card-thin-final-v1';
+    const ACCOUNT_INNER_CARD_THIN = `
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap[style]{
+  padding:4px!important;
+  border-width:.8px!important;
+  border-color:rgba(24,31,38,.055)!important;
+  background:rgba(255,255,255,.58)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:2px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table .ko-account-row-head{
+  border:0!important;
+  border-radius:9px!important;
+  overflow:hidden!important;
+  margin:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+  border:.75px solid rgba(24,31,38,.07)!important;
+  border-top:.75px solid rgba(24,31,38,.07)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  margin:0!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row[style]{
+  border:.75px solid rgba(47,143,91,.42)!important;
+  border-top:.75px solid rgba(47,143,91,.42)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row[style]{
+  border:.75px solid rgba(198,147,24,.42)!important;
+  border-top:.75px solid rgba(198,147,24,.42)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell{
+  border-right:.5px solid rgba(24,31,38,.042)!important;
+  border-bottom:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell:last-child,
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell:last-child{
+  border-right:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row .ko-account-cell{
+  border-right-color:rgba(47,143,91,.12)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row .ko-account-cell{
+  border-right-color:rgba(198,147,24,.13)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency{
+  border-color:rgba(47,143,91,.38)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez{
+  border-color:rgba(198,147,24,.38)!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap{
+    padding:4px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+    gap:2px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row{
+    border-width:.75px!important;
+    border-radius:11px!important;
+    box-shadow:none!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row{
+    border:.75px solid rgba(47,143,91,.42)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row{
+    border:.75px solid rgba(198,147,24,.42)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell{
+    border-right:0!important;
+    border-bottom:.5px solid rgba(24,31,38,.04)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-net-cell{
+    border-bottom:0!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-status-cell{
+    border-bottom:.5px solid rgba(24,31,38,.04)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row .ko-account-cell{
+    border-bottom-color:rgba(47,143,91,.10)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row .ko-account-cell{
+    border-bottom-color:rgba(198,147,24,.11)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_INNER_CARD_THIN_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_INNER_CARD_THIN_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_INNER_CARD_THIN;
+})();
+
+(function(){
+    const ACCOUNT_SINGLE_BORDER_CARDS_ID = 'ko-account-single-border-cards-final-v1';
+    const ACCOUNT_SINGLE_BORDER_CARDS = `
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+  background:rgba(255,255,255,.84)!important;
+  border:.7px solid rgba(24,31,38,.055)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez[style]{
+  border:.7px solid rgba(24,31,38,.055)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap[style]{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:3px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table .ko-account-row-head{
+  border:0!important;
+  border-radius:9px!important;
+  background:rgba(255,255,255,.88)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row[style]{
+  background:rgba(255,255,255,.96)!important;
+  border:.8px solid rgba(24,31,38,.065)!important;
+  border-top:.8px solid rgba(24,31,38,.065)!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row[style]{
+  background:rgba(255,255,255,.96)!important;
+  border:.8px solid rgba(47,143,91,.54)!important;
+  border-top:.8px solid rgba(47,143,91,.54)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row[style]{
+  background:rgba(255,255,255,.96)!important;
+  border:.8px solid rgba(198,147,24,.56)!important;
+  border-top:.8px solid rgba(198,147,24,.56)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row[style]{
+  background:rgba(255,255,255,.96)!important;
+  border:.7px solid rgba(24,31,38,.06)!important;
+  border-top:.7px solid rgba(24,31,38,.06)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell[style]{
+  background:transparent!important;
+  border-right:0!important;
+  border-left:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row:active,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row:focus-visible{
+  background:rgba(255,255,255,.98)!important;
+  outline:.8px solid rgba(63,128,109,.32)!important;
+  outline-offset:-2px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-olmez-agency[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-agency-olmez[style],
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group.ko-hesap-neutral[style]{
+  background:rgba(255,255,255,.84)!important;
+  border:.7px solid rgba(24,31,38,.055)!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-group::before{
+  content:none!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+    gap:3px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row,
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row[style]{
+    background:rgba(255,255,255,.96)!important;
+    border:.8px solid rgba(24,31,38,.065)!important;
+    border-radius:11px!important;
+    box-shadow:none!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row,
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row[style]{
+    border:.8px solid rgba(47,143,91,.54)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row,
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row[style]{
+    border:.8px solid rgba(198,147,24,.56)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row,
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row[style]{
+    border:.7px solid rgba(24,31,38,.06)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_SINGLE_BORDER_CARDS_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_SINGLE_BORDER_CARDS_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_SINGLE_BORDER_CARDS;
+})();
+
+(function(){
+    const ACCOUNT_CELL_LINES_ID = 'ko-account-cell-lines-final-v1';
+    const ACCOUNT_CELL_LINES = `
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell[style]{
+  border-right:.45px solid rgba(24,31,38,.07)!important;
+  border-bottom:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell:last-child,
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell:last-child{
+  border-right:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row .ko-account-cell{
+  border-right-color:rgba(47,143,91,.16)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row .ko-account-cell{
+  border-right-color:rgba(198,147,24,.17)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row .ko-account-cell{
+  border-right-color:rgba(24,31,38,.065)!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-cell[style]{
+    border-right:.45px solid rgba(24,31,38,.055)!important;
+    border-bottom:.45px solid rgba(24,31,38,.055)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-route-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-net-cell{
+    border-right:0!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row .ko-account-net-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row > .ko-account-money-cell:nth-child(5),
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-row > .ko-account-money-cell:nth-child(6){
+    border-bottom:0!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-transfer-row .ko-account-cell{
+    border-right-color:rgba(47,143,91,.14)!important;
+    border-bottom-color:rgba(47,143,91,.14)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-transfer-row .ko-account-cell{
+    border-right-color:rgba(198,147,24,.15)!important;
+    border-bottom-color:rgba(198,147,24,.15)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-transfer-row .ko-account-cell{
+    border-right-color:rgba(24,31,38,.055)!important;
+    border-bottom-color:rgba(24,31,38,.055)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_CELL_LINES_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_CELL_LINES_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_CELL_LINES;
+})();
+
+(function(){
+    const ACCOUNT_HARD_BORDER_ID = 'ko-account-hard-border-lock-final-v1';
+    const ACCOUNT_HARD_BORDER = `
+html body .ko-account-sheet-section,
+html body .ko-account-sheet-section[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+  background:rgba(255,255,255,.82)!important;
+  border:.6px solid rgba(24,31,38,.045)!important;
+  box-shadow:none!important;
+}
+
+html body .ko-account-sheet-section .ko-account-table-wrap,
+html body .ko-account-sheet-section .ko-account-table-wrap[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section .ko-account-table-wrap[style]{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+html body .ko-account-transfer-table,
+html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row,
+html body .ko-account-row.ko-account-transfer-row[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row[style]{
+  background:rgba(255,255,255,.98)!important;
+  border:.9px solid rgba(24,31,38,.07)!important;
+  border-top:.9px solid rgba(24,31,38,.07)!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+  outline:none!important;
+  overflow:hidden!important;
+  margin:0!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-green,
+html body .ko-account-row.ko-account-transfer-row.ko-border-green[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green[style]{
+  border-color:rgba(47,143,91,.62)!important;
+  border-top-color:rgba(47,143,91,.62)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow,
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow[style]{
+  border-color:rgba(198,147,24,.62)!important;
+  border-top-color:rgba(198,147,24,.62)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-neutral,
+html body .ko-account-row.ko-account-transfer-row.ko-border-neutral[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral[style]{
+  border-color:rgba(24,31,38,.065)!important;
+  border-top-color:rgba(24,31,38,.065)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row > .ko-account-cell,
+html body .ko-account-row.ko-account-transfer-row > .ko-account-cell[style],
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell[style]{
+  background:transparent!important;
+  border-left:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  border-right:.55px solid rgba(24,31,38,.075)!important;
+  box-shadow:none!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row > .ko-account-cell:last-child,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell:last-child{
+  border-right:0!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell{
+  border-right-color:rgba(47,143,91,.18)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell{
+  border-right-color:rgba(198,147,24,.19)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row.ko-border-neutral > .ko-account-cell,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral > .ko-account-cell{
+  border-right-color:rgba(24,31,38,.07)!important;
+}
+
+html body .ko-account-row.ko-account-transfer-row:active,
+html body .ko-account-row.ko-account-transfer-row:focus-visible,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row:active,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row:focus-visible{
+  background:rgba(255,255,255,1)!important;
+  outline:.8px solid rgba(63,128,109,.28)!important;
+  outline-offset:-2px!important;
+}
+
+@media (max-width:560px){
+  html body .ko-account-transfer-table,
+  html body .app-shell main.main-cont.view-hesap .ko-account-transfer-table{
+    gap:4px!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-cell,
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-cell[style],
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell[style]{
+    border-right:.55px solid rgba(24,31,38,.06)!important;
+    border-bottom:.55px solid rgba(24,31,38,.06)!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-route-cell,
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-net-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-route-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-net-cell{
+    border-right:0!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-net-cell,
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-money-cell:nth-child(5),
+  html body .ko-account-row.ko-account-transfer-row > .ko-account-money-cell:nth-child(6),
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-net-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-money-cell:nth-child(5),
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-money-cell:nth-child(6){
+    border-bottom:0!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell{
+    border-right-color:rgba(47,143,91,.16)!important;
+    border-bottom-color:rgba(47,143,91,.16)!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell{
+    border-right-color:rgba(198,147,24,.17)!important;
+    border-bottom-color:rgba(198,147,24,.17)!important;
+  }
+
+  html body .ko-account-row.ko-account-transfer-row.ko-border-neutral > .ko-account-cell,
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral > .ko-account-cell{
+    border-right-color:rgba(24,31,38,.06)!important;
+    border-bottom-color:rgba(24,31,38,.06)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_HARD_BORDER_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_HARD_BORDER_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_HARD_BORDER;
+})();
+
+(function(){
+    const ACCOUNT_VISIBLE_OUTER_BORDER_ID = 'ko-account-visible-outer-border-final-v1';
+    const ACCOUNT_VISIBLE_OUTER_BORDER = `
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green[style],
+html body .ko-account-row.ko-account-transfer-row.ko-border-green,
+html body .ko-account-row.ko-account-transfer-row.ko-border-green[style]{
+  border:1.35px solid #2f8f5b!important;
+  border-top:1.35px solid #2f8f5b!important;
+  background:#fff!important;
+  box-shadow:inset 0 0 0 .35px rgba(47,143,91,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow[style],
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow,
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow[style]{
+  border:1.35px solid #c69318!important;
+  border-top:1.35px solid #c69318!important;
+  background:#fff!important;
+  box-shadow:inset 0 0 0 .35px rgba(198,147,24,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral,
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-neutral[style],
+html body .ko-account-row.ko-account-transfer-row.ko-border-neutral,
+html body .ko-account-row.ko-account-transfer-row.ko-border-neutral[style]{
+  border:1px solid rgba(24,31,38,.11)!important;
+  border-top:1px solid rgba(24,31,38,.11)!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell,
+html body .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell{
+  border-right:.65px solid rgba(47,143,91,.22)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell,
+html body .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell{
+  border-right:.65px solid rgba(198,147,24,.24)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row > .ko-account-cell:last-child,
+html body .ko-account-row.ko-account-transfer-row > .ko-account-cell:last-child{
+  border-right:0!important;
+}
+
+@media (max-width:560px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green,
+  html body .ko-account-row.ko-account-transfer-row.ko-border-green{
+    border:1.35px solid #2f8f5b!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow,
+  html body .ko-account-row.ko-account-transfer-row.ko-border-yellow{
+    border:1.35px solid #c69318!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell,
+  html body .ko-account-row.ko-account-transfer-row.ko-border-green > .ko-account-cell{
+    border-right:.65px solid rgba(47,143,91,.20)!important;
+    border-bottom:.65px solid rgba(47,143,91,.20)!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell,
+  html body .ko-account-row.ko-account-transfer-row.ko-border-yellow > .ko-account-cell{
+    border-right:.65px solid rgba(198,147,24,.22)!important;
+    border-bottom:.65px solid rgba(198,147,24,.22)!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_VISIBLE_OUTER_BORDER_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_VISIBLE_OUTER_BORDER_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_VISIBLE_OUTER_BORDER;
 })();
 
 </script>
