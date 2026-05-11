@@ -7245,6 +7245,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
     const [detayT, setDetayT] = useState(null);
+    const [openHesapSections, setOpenHesapSections] = useState({});
   const [odeloOpen, setOdeloOpen] = useState(false);
     const togSettle = (id, firm, forceState) => sT(p => p.map(x => { if (x.id !== id)
         return x; const sf = { ...(x.settledFirms || {}) }; sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm]; return { ...x, settledFirms: sf }; }));
@@ -8006,11 +8007,14 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 
     const renderHesapBolum = (baslik, liste, renk) => {
         const title = String(baslik || '');
+        const sectionKey = firmSlug(sel || 'firma') + '::' + firmSlug(title || 'bolum');
+        const isOpen = !!openHesapSections[sectionKey];
         const parts = title.split(/\s*-\s*/).filter(Boolean);
         const firstIsOlmez = parts.length > 1 && nm(parts[0]).includes('olmeztur');
         const secondIsOlmez = parts.length > 1 && nm(parts[1]).includes('olmeztur');
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
+        const totalNet = Math.round((liste || []).reduce((s, t) => s + moneyValue(t.netOl), 0));
         const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + moneyValue(t.netOl), 0));
         const openCount = (liste || []).filter(t => !t.firmSettled).length;
         const tone = isOlmezToAgency
@@ -8032,13 +8036,14 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             className: "ko-account-sheet-section " + (isOlmezToAgency ? 'is-olmez-agency' : isAgencyToOlmez ? 'is-agency-olmez' : 'is-neutral'),
             style: { '--ko-sheet-border': tone.bd, '--ko-sheet-accent': tone.accent }
         },
-            React.createElement("div", { className: "ko-account-section-head" },
+            React.createElement("button", { className: "ko-account-section-head", type: "button", "data-open": isOpen ? "1" : "0", title: title, onClick: () => setOpenHesapSections(p => ({ ...p, [sectionKey]: !isOpen })), style: { width: '100%', cursor: 'pointer', background: 'transparent', border: 'none', textAlign: 'left', font: 'inherit' } },
                 React.createElement("div", { className: "ko-account-section-title" }, renderAccountTitle(baslik)),
                 React.createElement("div", { className: "ko-account-section-stats" },
-                    React.createElement("span", null, liste.length + ' kayıt'),
-                    React.createElement("span", null, openCount + ' açık'),
-                    openNet !== 0 && React.createElement("b", { className: openNet >= 0 ? 'is-pos' : 'is-neg' }, hesapMoney(openNet)))),
-            liste.length
+                    React.createElement("span", { className: "ko-account-stat-count" }, liste.length + ' kayıt'),
+                    React.createElement("span", { className: "ko-account-stat-open" }, openCount + ' açık'),
+                    React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
+                    React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 900, color: tone.accent } }, isOpen ? '▲' : '▼'))),
+            isOpen && (liste.length
                 ? React.createElement("div", { className: "ko-account-table-wrap" },
                     React.createElement("div", { className: "ko-account-table ko-account-transfer-table" },
                         React.createElement("div", { className: "ko-account-row ko-account-row-head" },
@@ -8051,7 +8056,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("div", { className: "ko-account-cell" }, "Net"),
                             React.createElement("div", { className: "ko-account-cell" }, "Durum")),
                         liste.map((t, i) => renderHesapSheetRow(t, i, borderTone))))
-                : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok'));
+                : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok')));
     };
 
 
@@ -8148,16 +8153,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 700, letterSpacing: .3 } }, l))))),
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                        isBalenturAccount
-                            ? React.createElement(React.Fragment, null,
-                                renderHesapBolum("\u00D6lmeztur - " + sel, benimVerdiklerim, R),
-                                renderHesapBolum(sel + " - \u00D6lmeztur", onunVerdikleri, NAV),
-                                renderHesapBolum('Odelo', odeloKayitlar, G),
-                                altKayitlar.length > 0 && renderHesapBolum('Alt acenta işleri', altKayitlar, O))
-                            : React.createElement(React.Fragment, null,
-                                renderHesapBolum('\u00D6lmeztur - ' + sel, benimVerdiklerim, R),
-                                renderHesapBolum(sel + ' - \u00D6lmeztur', onunVerdikleri, NAV),
-                                altKayitlar.length > 0 && renderHesapBolum('Alt acenta işleri', altKayitlar, O))
+                        React.createElement(React.Fragment, null,
+                            renderHesapBolum("\u00D6lmeztur - " + sel, benimVerdiklerim, R),
+                            renderHesapBolum(sel + " - \u00D6lmeztur", onunVerdikleri, NAV),
+                            renderHesapBolum('Alt acenta işleri', altKayitlar, O),
+                            (isBalenturAccount || odeloKayitlar.length > 0) && renderHesapBolum('Odelo', odeloKayitlar, G))
                     ),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
                         React.createElement("button", { onClick: () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCE4 \u015Eirkete\nKopyala"),
@@ -17005,14 +17005,42 @@ function App() {
                     React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: SB } }, 'Seçili günde transfer yok')));
         /* ── Yıllara Göre Gruplar (2026 > 2025 > ... > aylar > günler) ── */
         const archiveNet = summaryNetKar(visibleListRows);
+        const archiveThisMonthRows = byCollectionFilter(listRows.filter(t => t.date && String(t.date).startsWith(todayMonthKey)), activeCollectFilter);
+        const archiveThisMonthProfit = Math.round(archiveThisMonthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
+        const archiveThisMonthOpen = !!expandedT.__archiveThisMonth;
+        const filterControls = React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 12, padding: '10px 12px', border: '1px solid #DED8D0', display: 'flex', flexDirection: 'column', gap: 8 } },
+            React.createElement("button", { onClick: () => setOpenListFilters(v => !v), style: { width: '100%', background: '#F6F3EF', border: '1px solid #DED8D0', borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' } },
+                React.createElement("span", { style: { fontSize: 10, fontWeight: 760, color: '#6E665E', letterSpacing: .35, textTransform: 'uppercase' } }, '🎚️ Filtreler'),
+                React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: '#6E665E' } }, openListFilters ? '▲' : '▼')),
+            openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
+                [['all', 'Tümü', T.length], ['tam', '✅ Tam', st.tam], ['bos', '🔄 Boş', st.bos], ['iptal', '❌ İptal', st.ipt]].map(([v, l, cnt]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, status: v })), style: { background: flt.status === v ? '#6E665E' : '#F6F3EF', color: flt.status === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.status === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 } },
+                    React.createElement("span", null, l),
+                    React.createElement("span", { style: { background: flt.status === v ? 'rgba(255,255,255,.22)' : '#DED8D0', color: flt.status === v ? '#fff' : '#6E665E', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 800, minWidth: 20, textAlign: 'center' } }, cnt))))),
+            openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
+                React.createElement("button", { onClick: () => setFlt(p => ({ ...p, plateView: p.plateView === 'plate16' ? 'all' : 'plate16' })), style: { background: flt.plateView === 'plate16' ? '#1D1C1A' : '#F6F3EF', color: flt.plateView === 'plate16' ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.plateView === 'plate16' ? '#1D1C1A' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, '🚐 ' + PLAKA + ' NET'),
+                flt.plateView !== 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, collect: v })), style: { background: flt.collect === v ? '#6E665E' : '#F6F3EF', color: flt.collect === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.collect === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l))),
+                flt.plateView === 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, plateCollect: v })), style: { background: flt.plateCollect === v ? '#6E665E' : '#F6F3EF', color: flt.plateCollect === v ? '#fff' : '#1D1C1A', border: '1px solid ' + (flt.plateCollect === v ? '#6E665E' : '#DED8D0'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l)))));
+        const thisMonthArchivePanel = React.createElement("div", { style: { background: '#FFFFFF', border: '1px solid ' + BOR, borderRadius: 12, overflow: 'hidden' } },
+            React.createElement("button", { onClick: () => setExpandedT(p => ({ ...p, __archiveThisMonth: !archiveThisMonthOpen })), style: { width: '100%', background: '#F6F3EF', border: 'none', padding: '9px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: 8 } },
+                React.createElement("div", { style: { textAlign: 'left' } },
+                    React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: TX } }, "Bu Ay"),
+                    React.createElement("div", { style: { fontSize: 9, color: SB, marginTop: 2 } }, archiveThisMonthRows.length + ' transfer')),
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: archiveThisMonthProfit >= 0 ? G : R } }, (archiveThisMonthProfit >= 0 ? '+' : '') + archiveThisMonthProfit.toLocaleString('tr-TR') + '₺'),
+                    React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: SB } }, archiveThisMonthOpen ? '▲' : '▼'))),
+            archiveThisMonthOpen && (archiveThisMonthRows.length
+                ? React.createElement("div", { style: { padding: 4 } }, renderSectionDays(archiveThisMonthRows))
+                : React.createElement("div", { style: { padding: 12, fontSize: 12, fontWeight: 700, color: SB, textAlign: 'center' } }, "Bu ay transfer yok")));
         const yearSection = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             React.createElement("button", { onClick: () => setOpenArchiveList(v => !v), style: { width: '100%', background: '#FFFFFF', border: '1px solid ' + BOR, borderRadius: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, cursor: 'pointer', boxShadow: '0 1px 5px rgba(0,0,0,.04)' } },
                 React.createElement("div", { style: { minWidth: 0, textAlign: 'left' } },
-                    React.createElement("div", { style: { fontSize: 11, fontWeight: 760, color: SB, textTransform: 'uppercase', letterSpacing: .25 } }, 'Yıllara Göre Tüm Transferler'),
+                    React.createElement("div", { style: { fontSize: 11, fontWeight: 760, color: SB, textTransform: 'uppercase', letterSpacing: .25 } }, 'Aylara ve Yıllara Göre Tüm Transferler'),
                     React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 3, fontWeight: 520 } }, visibleListRows.length + ' transfer · ' + yearGroupKeys.length + ' yıl')),
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 } },
                     React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: archiveNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, (archiveNet >= 0 ? '+' : '') + archiveNet.toLocaleString('tr-TR') + '₺'),
                     React.createElement("span", { style: { fontSize: 12, color: SB, fontWeight: 700 } }, openArchiveList ? '▲' : '▼'))),
+            openArchiveList && filterControls,
+            openArchiveList && thisMonthArchivePanel,
             openArchiveList && yearGroupKeys.map(yearKey => {
                 const yearMonths = yearGroups[yearKey] || {};
                 const monthKeysInYear = Object.keys(yearMonths).sort((a, b) => a < b ? 1 : -1);
@@ -18541,7 +18569,7 @@ function App() {
                                 React.createElement("span", { style: { fontSize: 10, color: '#6E665E', textTransform: 'capitalize' } }, m.label + ' (' + m.count + ')'),
                                 React.createElement("span", { style: { fontSize: 11, fontWeight: 800, color: m.net >= 0 ? G : R } }, (m.net >= 0 ? '+' : '') + m.net.toLocaleString('tr-TR') + '₺')))))),
                     /* Filtreler — iç kart görünümlü kutu */
-                    React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 12, padding: '10px 12px', border: '1px solid #DED8D0', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
+                    false && React.createElement("div", { style: { background: '#FFFFFF', borderRadius: 12, padding: '10px 12px', border: '1px solid #DED8D0', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 } },
                     /* Filtreler başlığı */
                     React.createElement("button", { onClick: () => setOpenListFilters(v => !v), style: { width: '100%', background: '#F6F3EF', border: '1px solid #DED8D0', borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' } },
                         React.createElement("span", { style: { fontSize: 10, fontWeight: 760, color: '#6E665E', letterSpacing: .35, textTransform: 'uppercase' } }, '🎚️ Filtreler'),
@@ -25683,6 +25711,215 @@ html body .app-shell .ko-payment-to-me-toggle.is-on[style]{
         document.head.appendChild(style);
     }
     style.textContent = PAYMENT_TO_ME_STYLE;
+})();
+
+(function(){
+    const ACCOUNT_ACCORDION_POLISH_ID = 'ko-account-accordion-iphone16-polish-v1';
+    const ACCOUNT_ACCORDION_POLISH = `
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+  padding:8px!important;
+  border-radius:14px!important;
+  gap:7px!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-head,
+html body .app-shell main.main-cont.view-hesap .ko-account-section-head[style]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:8px 9px!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(248,250,247,.78))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+  overflow:hidden!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-section-head{
+  border-left:3px solid #2f8f5b!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-section-head{
+  border-left:3px solid #c69318!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-section-head{
+  border-left:3px solid rgba(110,102,94,.34)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-route{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip,
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip[style]{
+  display:block!important;
+  min-width:0!important;
+  max-width:128px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:12px!important;
+  line-height:1.12!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-olmez{
+  color:#2f765f!important;
+  -webkit-text-fill-color:#2f765f!important;
+  font-weight:650!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-section-title .ko-account-chip:not(.ko-account-olmez){
+  color:#9a6a1f!important;
+  -webkit-text-fill-color:#9a6a1f!important;
+  font-weight:620!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-arrow{
+  flex:0 0 auto!important;
+  font-size:11px!important;
+  opacity:.72!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
+  display:grid!important;
+  grid-template-columns:auto 24px!important;
+  grid-template-areas:
+    "total chev"
+    "count open"!important;
+  align-items:center!important;
+  justify-items:end!important;
+  gap:4px 5px!important;
+  flex:0 0 auto!important;
+  min-width:118px!important;
+  max-width:152px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-stats :is(span,b){
+  margin:0!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-stat-total{
+  grid-area:total!important;
+  min-width:84px!important;
+  max-width:110px!important;
+  justify-content:center!important;
+  padding:4px 8px!important;
+  font-size:12px!important;
+  font-weight:760!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-chevron{
+  grid-area:chev!important;
+  width:24px!important;
+  height:24px!important;
+  min-width:24px!important;
+  padding:0!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.86)!important;
+  border:1px solid rgba(120,110,96,.16)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-stat-count{
+  grid-area:count!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
+  grid-area:open!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-stat-count,
+html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
+  min-height:18px!important;
+  padding:2px 6px!important;
+  font-size:8.8px!important;
+  font-weight:560!important;
+}
+
+@media (max-width:430px){
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
+  html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
+    padding:7px!important;
+    border-radius:13px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-head,
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-head[style]{
+    grid-template-columns:minmax(0,1fr) minmax(104px,112px)!important;
+    gap:6px!important;
+    padding:7px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-route{
+    gap:3px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip,
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip[style]{
+    max-width:78px!important;
+    font-size:11px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-arrow{
+    font-size:9px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
+    grid-template-columns:minmax(0,1fr) 22px!important;
+    min-width:104px!important;
+    max-width:112px!important;
+    gap:3px 4px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-stat-total{
+    min-width:0!important;
+    max-width:82px!important;
+    padding:4px 6px!important;
+    font-size:10.8px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-section-chevron{
+    width:22px!important;
+    height:22px!important;
+    min-width:22px!important;
+    font-size:10px!important;
+  }
+
+  html body .app-shell main.main-cont.view-hesap .ko-account-stat-count,
+  html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
+    min-height:16px!important;
+    padding:2px 4px!important;
+    font-size:7.8px!important;
+  }
+}
+`;
+    let style = document.getElementById(ACCOUNT_ACCORDION_POLISH_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = ACCOUNT_ACCORDION_POLISH_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = ACCOUNT_ACCORDION_POLISH;
 })();
 
 </script>
