@@ -6457,22 +6457,29 @@ const transferIdentity = t => {
         return 'id:' + String(t.id);
     return 'row:' + [t.date, t.time, t.givenBy, t.assignedTo, t.pickup, t.dropoff, ((t.passengers || [])[0] || {}).name || ''].map(v => String(v || '').trim()).join('|');
 };
+const transferStamp = t => {
+    try {
+        if (!t) return 0;
+        const raw = t.updatedAt || t.clientUpdatedAt || t.createdAt || '';
+        const n = raw ? Date.parse(String(raw)) : 0;
+        return isNaN(n) ? 0 : n;
+    } catch (e) { return 0; }
+};
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
     const deleted = new Set((deletedIds || []).map(x => String(x)));
     const map = new Map();
-    (fallback || []).forEach(x => {
+    const put = (x, rank) => {
         const fixed = repairKnownPlate(x);
         if (fixed && fixed.id && deleted.has(String(fixed.id)))
             return;
-        map.set(transferIdentity(fixed), fixed);
-    });
-    (preferred || []).forEach(x => {
-        const fixed = repairKnownPlate(x);
-        if (fixed && fixed.id && deleted.has(String(fixed.id)))
-            return;
-        map.set(transferIdentity(fixed), fixed);
-    });
-    return Array.from(map.values());
+        const key = transferIdentity(fixed);
+        const cur = map.get(key);
+        if (!cur || transferStamp(fixed) > transferStamp(cur.item) || (transferStamp(fixed) === transferStamp(cur.item) && rank >= cur.rank))
+            map.set(key, { item: fixed, rank });
+    };
+    (fallback || []).forEach(x => put(x, 0));
+    (preferred || []).forEach(x => put(x, 1));
+    return Array.from(map.values()).map(x => x.item);
 };
 const mergeRecordLists = (preferred, fallback) => {
     const map = new Map();
@@ -6484,27 +6491,32 @@ const mergeRecordLists = (preferred, fallback) => {
     });
     return Array.from(map.values());
 };
-const mergeSnapshots = (preferred, fallback, deletedIds) => ({
-    ...(fallback || {}),
-    ...(preferred || {}),
-    t: mergeTransferLists((preferred || {}).t || [], (fallback || {}).t || [], deletedIds),
-    a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])]),
-    dr: uniq([...(fallback && fallback.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d)), ...(preferred && preferred.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d))]).map(x => {
-        try {
-            return JSON.parse(x);
-        }
-        catch (e) {
-            return x;
-        }
-    }),
-    ap: { ...((fallback && fallback.ap) || {}), ...((preferred && preferred.ap) || {}) },
-    ak: mergeRecordLists((preferred && preferred.ak) || [], (fallback && fallback.ak) || []),
-    db: mergeRecordLists((preferred && preferred.db) || [], (fallback && fallback.db) || []),
-    tk: mergeRecordLists((preferred && preferred.tk) || [], (fallback && fallback.tk) || []),
-    tl: mergeRecordLists((preferred && preferred.tl) || [], (fallback && fallback.tl) || []),
-    r: (preferred && preferred.r) || (fallback && fallback.r),
-    ru: (preferred && preferred.ru) || (fallback && fallback.ru),
-});
+const snapshotDeletedIds = (...items) => uniq(items.flatMap(x => Array.isArray(x) ? x : (x && Array.isArray(x.del) ? x.del : []))).map(String);
+const mergeSnapshots = (preferred, fallback, deletedIds) => {
+    const allDeleted = snapshotDeletedIds(deletedIds || [], preferred || {}, fallback || {});
+    return {
+        ...(fallback || {}),
+        ...(preferred || {}),
+        del: allDeleted,
+        t: mergeTransferLists((preferred || {}).t || [], (fallback || {}).t || [], allDeleted),
+        a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])]),
+        dr: uniq([...(fallback && fallback.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d)), ...(preferred && preferred.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d))]).map(x => {
+            try {
+                return JSON.parse(x);
+            }
+            catch (e) {
+                return x;
+            }
+        }),
+        ap: { ...((fallback && fallback.ap) || {}), ...((preferred && preferred.ap) || {}) },
+        ak: mergeRecordLists((preferred && preferred.ak) || [], (fallback && fallback.ak) || []),
+        db: mergeRecordLists((preferred && preferred.db) || [], (fallback && fallback.db) || []),
+        tk: mergeRecordLists((preferred && preferred.tk) || [], (fallback && fallback.tk) || []),
+        tl: mergeRecordLists((preferred && preferred.tl) || [], (fallback && fallback.tl) || []),
+        r: (preferred && preferred.r) || (fallback && fallback.r),
+        ru: (preferred && preferred.ru) || (fallback && fallback.ru),
+    };
+};
 const snapshotStamp = s => {
     try {
         if (!s) return 0;
@@ -6535,7 +6547,7 @@ const normalizeTransfer = t => {
     return {
         ...fixed,
         id: fixed.id || ('tr_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)),
-        updatedAt: fixed.updatedAt || fixed.date || new Date().toISOString(),
+        updatedAt: fixed.updatedAt || fixed.createdAt || new Date().toISOString(),
         plate: inferPlate(fixed),
         settled: companyCollected,
         companyCollected,
@@ -8015,8 +8027,6 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
         const totalNet = Math.round((liste || []).reduce((s, t) => s + moneyValue(t.netOl), 0));
-        const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + moneyValue(t.netOl), 0));
-        const openCount = (liste || []).filter(t => !t.firmSettled).length;
         const tone = isOlmezToAgency
             ? {
                 bd: '#2F8F5B',
@@ -8039,10 +8049,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             React.createElement("button", { className: "ko-account-section-head", type: "button", "data-open": isOpen ? "1" : "0", title: title, onClick: () => setOpenHesapSections(p => ({ ...p, [sectionKey]: !isOpen })), style: { width: '100%', cursor: 'pointer', background: 'transparent', border: 'none', textAlign: 'left', font: 'inherit' } },
                 React.createElement("div", { className: "ko-account-section-title" }, renderAccountTitle(baslik)),
                 React.createElement("div", { className: "ko-account-section-stats" },
-                    React.createElement("span", { className: "ko-account-stat-count" }, liste.length + ' kayıt'),
-                    React.createElement("span", { className: "ko-account-stat-open" }, openCount + ' açık'),
                     React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
-                    React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 900, color: tone.accent } }, isOpen ? '▲' : '▼'))),
+                    React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 520, color: tone.accent } }, isOpen ? '▲' : '▼'))),
             isOpen && (liste.length
                 ? React.createElement("div", { className: "ko-account-table-wrap" },
                     React.createElement("div", { className: "ko-account-table ko-account-transfer-table" },
@@ -15782,6 +15790,8 @@ function App() {
         throw new Error('Kur alınamadı');
     }).catch(() => { tip('Kur alınamadı'); return false; });
     const hydrateSnapshot = (d, closeModal) => {
+        if (d && Array.isArray(d.del))
+            writeDeletedTransferIds(d.del);
         setT((d.t || []).map(normalizeTransfer));
         const ag = d.a || [OL];
         if (!ag.includes(OL))
@@ -15864,6 +15874,7 @@ function App() {
                             mergedPayload.clientUpdatedAt = new Date(mergedTs || Date.now()).toISOString();
                             cloudLoadedRef.current = true;
                             cloudWritingRef.current = true;
+                            writeDeletedTransferIds(mergedPayload.del || []);
                             hydrateSnapshot(mergedPayload, false);
                             const sameText = JSON.stringify({
                                 t: (payload && payload.t) || [],
@@ -15924,13 +15935,14 @@ function App() {
         });
     }, [storageReady, T.length]);
     useEffect(() => { if (!storageReady) return; try {
-        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 26, date: new Date().toISOString() };
+        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
         if(cloudEnabled() && authUser && !cloudWritingRef.current){
             // KRİTİK KORUMA: Cloud snapshot listener henüz veriyi yüklemediyse,
-            // boş state ile cloud'u SİLEMEYİZ. Bu, login sonrası veri kaybına neden olur.
-            if (!cloudLoadedRef.current && (!T || T.length === 0)) {
-                console.warn('[CLOUD] Yazma engellendi - henüz cloud verisi yüklenmedi, boş state cloud\'u silerdi');
+            // cihazdaki eski local state ile cloud'u ezmeyiz. iOS ana ekran/Dock ayrı
+            // local alan açabildiği için ilk bulut okuması tamamlanmadan yazmak risklidir.
+            if (!cloudLoadedRef.current) {
+                console.warn('[CLOUD] Yazma engellendi - ilk bulut verisi bekleniyor');
                 return;
             }
             if(saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -16024,7 +16036,7 @@ function App() {
         const companyCollected = !!(form.companyCollected || form.settled || (prev && isCompanyCollected(prev)));
         
         if (editId) {
-            const base = { ...form, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+            const base = { ...form, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, updatedAt: new Date().toISOString() };
             const t = normalizeTransfer(base);
             setT(p => p.map(x => x.id === editId ? t : x));
             setEditId(null);
@@ -16148,7 +16160,8 @@ function App() {
         const companyCollected = isCompanyCollected(t);
         const customerCollected = isCustomerCollected(t);
         const newId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-        const newT = normalizeTransfer({ ...t, id: newId, createdAt: new Date().toISOString(), settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
+        const nowIso = new Date().toISOString();
+        const newT = normalizeTransfer({ ...t, id: newId, createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
         setT(p => p.some(x => x.id === newT.id) ? p : [...p, newT]);
         tip('Kopyalandı');
     };
@@ -16156,14 +16169,14 @@ function App() {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isCompanyCollected(cur);
-        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState }) : x));
+        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString() }) : x));
         tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
     };
     const toggleVehiclePaid = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isVehiclePaid(cur);
-        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState }) : x));
+        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: new Date().toISOString() }) : x));
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
@@ -16536,7 +16549,7 @@ function App() {
             ym
         };
     };
-    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, v: 26, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
         const payload = JSON.stringify(snapshotPayload(), null, 2);
         const ok = await copyText(payload);
@@ -18548,7 +18561,7 @@ function App() {
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'),
                     T.length === 0 && React.createElement("button", { onClick: () => setTab('new'), style: { marginTop: 12, background: NAV, color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 13, fontWeight: 700, cursor: 'pointer' } }, "+ Yeni Transfer"))) : renderTransferList(),
                 /* ── Alt kart: Özet/Detay + Filtreler — transfer listesinin altında ── */
-                React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
+                false && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
                     /* Özet — tek satır, kompakt */
                     React.createElement("div", { onClick: () => setShowSt(v => !v), style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F6F3EF', borderRadius: 10, padding: '8px 12px', border: '1px solid #DED8D0', cursor: 'pointer' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -25720,14 +25733,14 @@ html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section,
 html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section[style]{
   padding:8px!important;
   border-radius:14px!important;
-  gap:7px!important;
+  gap:6px!important;
   overflow:hidden!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-section-head,
 html body .app-shell main.main-cont.view-hesap .ko-account-section-head[style]{
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-columns:minmax(0,1fr) minmax(98px,auto)!important;
   align-items:center!important;
   gap:8px!important;
   padding:8px 9px!important;
@@ -25736,18 +25749,25 @@ html body .app-shell main.main-cont.view-hesap .ko-account-section-head[style]{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
   overflow:hidden!important;
   -webkit-tap-highlight-color:transparent!important;
+  font-weight:480!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-section-head *{
+  letter-spacing:0!important;
+  text-shadow:none!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-olmez-agency .ko-account-section-head{
-  border-left:3px solid #2f8f5b!important;
+  border-left:2px solid #2f8f5b!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-section-head{
-  border-left:3px solid #c69318!important;
+  border-left:2px solid #c69318!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-neutral .ko-account-section-head{
-  border-left:3px solid rgba(110,102,94,.34)!important;
+  border-left:2px solid rgba(110,102,94,.30)!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-section-title{
@@ -25770,10 +25790,15 @@ html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-acc
   display:block!important;
   min-width:0!important;
   max-width:128px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
   white-space:nowrap!important;
   font-size:12px!important;
+  font-weight:480!important;
   line-height:1.12!important;
   letter-spacing:0!important;
 }
@@ -25781,33 +25806,32 @@ html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-acc
 html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-olmez{
   color:#2f765f!important;
   -webkit-text-fill-color:#2f765f!important;
-  font-weight:650!important;
+  font-weight:540!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-sheet-section.is-agency-olmez .ko-account-section-title .ko-account-chip:not(.ko-account-olmez){
   color:#9a6a1f!important;
   -webkit-text-fill-color:#9a6a1f!important;
-  font-weight:620!important;
+  font-weight:500!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-arrow{
   flex:0 0 auto!important;
   font-size:11px!important;
   opacity:.72!important;
+  font-weight:430!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
   display:grid!important;
-  grid-template-columns:auto 24px!important;
-  grid-template-areas:
-    "total chev"
-    "count open"!important;
+  grid-template-columns:minmax(82px,auto) 22px!important;
+  grid-template-areas:"total chev"!important;
   align-items:center!important;
   justify-items:end!important;
-  gap:4px 5px!important;
+  gap:5px!important;
   flex:0 0 auto!important;
-  min-width:118px!important;
-  max-width:152px!important;
+  min-width:112px!important;
+  max-width:150px!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-section-stats :is(span,b){
@@ -25819,12 +25843,15 @@ html body .app-shell main.main-cont.view-hesap .ko-account-section-stats :is(spa
 
 html body .app-shell main.main-cont.view-hesap .ko-account-stat-total{
   grid-area:total!important;
-  min-width:84px!important;
-  max-width:110px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  min-width:86px!important;
+  max-width:118px!important;
   justify-content:center!important;
   padding:4px 8px!important;
-  font-size:12px!important;
-  font-weight:760!important;
+  font-size:11.6px!important;
+  font-weight:560!important;
+  line-height:1.05!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
 }
@@ -25836,24 +25863,37 @@ html body .app-shell main.main-cont.view-hesap .ko-account-section-chevron{
   min-width:24px!important;
   padding:0!important;
   border-radius:999px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
   background:rgba(255,255,255,.86)!important;
   border:1px solid rgba(120,110,96,.16)!important;
-}
-
-html body .app-shell main.main-cont.view-hesap .ko-account-stat-count{
-  grid-area:count!important;
-}
-
-html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
-  grid-area:open!important;
+  font-weight:520!important;
 }
 
 html body .app-shell main.main-cont.view-hesap .ko-account-stat-count,
 html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
-  min-height:18px!important;
-  padding:2px 6px!important;
-  font-size:8.8px!important;
-  font-weight:560!important;
+  display:none!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-table .ko-account-cell{
+  font-size:11px!important;
+  font-weight:430!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-table .ko-account-cell b{
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-row-head .ko-account-cell{
+  font-size:9.7px!important;
+  font-weight:540!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-status-cell small,
+html body .app-shell main.main-cont.view-hesap .ko-account-settle-btn{
+  font-weight:500!important;
 }
 
 @media (max-width:430px){
@@ -25865,7 +25905,7 @@ html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
 
   html body .app-shell main.main-cont.view-hesap .ko-account-section-head,
   html body .app-shell main.main-cont.view-hesap .ko-account-section-head[style]{
-    grid-template-columns:minmax(0,1fr) minmax(104px,112px)!important;
+    grid-template-columns:minmax(0,1fr) minmax(94px,104px)!important;
     gap:6px!important;
     padding:7px!important;
   }
@@ -25876,7 +25916,7 @@ html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
 
   html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip,
   html body .app-shell main.main-cont.view-hesap .ko-account-section-title .ko-account-chip[style]{
-    max-width:78px!important;
+    max-width:76px!important;
     font-size:11px!important;
   }
 
@@ -25886,16 +25926,16 @@ html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
 
   html body .app-shell main.main-cont.view-hesap .ko-account-section-stats{
     grid-template-columns:minmax(0,1fr) 22px!important;
-    min-width:104px!important;
-    max-width:112px!important;
-    gap:3px 4px!important;
+    min-width:94px!important;
+    max-width:104px!important;
+    gap:4px!important;
   }
 
   html body .app-shell main.main-cont.view-hesap .ko-account-stat-total{
     min-width:0!important;
-    max-width:82px!important;
+    max-width:76px!important;
     padding:4px 6px!important;
-    font-size:10.8px!important;
+    font-size:10.4px!important;
   }
 
   html body .app-shell main.main-cont.view-hesap .ko-account-section-chevron{
@@ -25905,11 +25945,8 @@ html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
     font-size:10px!important;
   }
 
-  html body .app-shell main.main-cont.view-hesap .ko-account-stat-count,
-  html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
-    min-height:16px!important;
-    padding:2px 4px!important;
-    font-size:7.8px!important;
+  html body .app-shell main.main-cont.view-hesap .ko-account-table .ko-account-cell{
+    font-size:10.4px!important;
   }
 }
 `;
@@ -25920,6 +25957,120 @@ html body .app-shell main.main-cont.view-hesap .ko-account-stat-open{
         document.head.appendChild(style);
     }
     style.textContent = ACCOUNT_ACCORDION_POLISH;
+})();
+
+(function(){
+    const SAFE_SYNC_TABBAR_ID = 'ko-safe-sync-tabbar-layout-v1';
+    const SAFE_SYNC_TABBAR = `
+html body .app-shell .tabbar,
+html body .app-shell nav.tabbar{
+  left:0!important;
+  right:0!important;
+  bottom:max(12px,calc(var(--sa-b,0px) - 10px))!important;
+  padding:0 12px!important;
+  background:transparent!important;
+  border-top:0!important;
+  box-shadow:none!important;
+  transform:none!important;
+  pointer-events:none!important;
+}
+
+html body .app-shell .tabbar-inner,
+html body .app-shell .tabbar .tabbar-inner,
+html.ko-ios-standalone body .app-shell .tabbar-inner,
+html.ko-ios-standalone body .app-shell .tabbar .tabbar-inner{
+  pointer-events:auto!important;
+  height:72px!important;
+  min-height:72px!important;
+  max-width:398px!important;
+  padding:6px!important;
+  border-radius:32px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.78)),
+    rgba(255,255,255,.74)!important;
+  border:1.7px solid #2f6d58!important;
+  outline:1px solid rgba(47,109,88,.20)!important;
+  outline-offset:-4px!important;
+  background-clip:padding-box!important;
+  box-shadow:
+    0 0 0 1px rgba(47,109,88,.18),
+    0 18px 42px rgba(24,31,38,.12),
+    0 2px 7px rgba(24,31,38,.06),
+    inset 0 1px 0 rgba(255,255,255,.98)!important;
+  backdrop-filter:saturate(1.55) blur(22px)!important;
+  -webkit-backdrop-filter:saturate(1.55) blur(22px)!important;
+}
+
+html body .app-shell .tab.is-active,
+html body .app-shell .tab.is-active[style]{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.98),rgba(241,248,245,.82))!important;
+  border:1.25px solid rgba(63,128,109,.58)!important;
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
+  box-shadow:0 8px 20px rgba(63,128,109,.10),inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+
+html body .app-shell .tab.is-active .tab-icon,
+html body .app-shell .tab.is-active .tab-label{
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
+}
+
+html body .app-shell .tab-fab{
+  border:1.25px solid rgba(63,128,109,.38)!important;
+}
+
+html body .app-shell main.main-cont{
+  padding-bottom:calc(146px + max(0px,calc(var(--sa-b,0px) - 10px)))!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-home,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-home{
+  min-height:calc(100dvh - var(--sa-t,0px) - 106px)!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-profit-title-row,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-title-row{
+  margin-top:auto!important;
+  margin-bottom:9px!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-profit-row,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
+  margin-bottom:78px!important;
+}
+
+@media (max-width:430px){
+  html body .app-shell .tabbar,
+  html body .app-shell nav.tabbar{
+    bottom:max(10px,calc(var(--sa-b,0px) - 12px))!important;
+    padding:0 10px!important;
+  }
+
+  html body .app-shell .tabbar-inner,
+  html body .app-shell .tabbar .tabbar-inner,
+  html.ko-ios-standalone body .app-shell .tabbar-inner,
+  html.ko-ios-standalone body .app-shell .tabbar .tabbar-inner{
+    height:70px!important;
+    min-height:70px!important;
+    max-width:392px!important;
+    border-radius:31px!important;
+  }
+
+  html body .app-shell main.main-cont.view-home .lg-profit-row,
+  html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
+    margin-bottom:76px!important;
+  }
+}
+`;
+    let style = document.getElementById(SAFE_SYNC_TABBAR_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = SAFE_SYNC_TABBAR_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = SAFE_SYNC_TABBAR;
 })();
 
 </script>
