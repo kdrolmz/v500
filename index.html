@@ -6388,7 +6388,7 @@ function balenturOdeloCalc(t) {
         return { netOl: odeloGross - d, yon: 'odeloBalentur', odeloGross, balenturCost: d };
     }
     if (odeloToOlmez || (gBal && t.assignedTo === OL) || t.assignedTo === OL) {
-        return { netOl: odeloGross - d, yon: 'odeloOlmez', odeloGross, balenturCost: d };
+        return { netOl: odeloGross, yon: 'odeloOlmez', odeloGross, balenturCost: 0 };
     }
     return null;
 }
@@ -7467,7 +7467,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             csv += 'No,Tarih,Saat,Alış,Bırakış,İş Tipi,Odelo Bedeli (TL),İşi Yapan Ücreti (TL),Net (TL),Hesap\n';
             odeloGrup.forEach((t, i) => {
                 const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
-                const odeloCost = Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0);
+                const odeloCost = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
                 const row = [
                     i + 1,
                     esc(t.date || ''),
@@ -7544,7 +7544,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             rows.push([up(title), '', '', '', '', '', '', '', '', '']);
             list.forEach(t => {
                 const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
-                const odeloCar = Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0);
+                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
                 const musteri = type === 'odelo' ? odeloGross : (transferHasCustomerPayment(t) ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
                 const araba = type === 'odelo' ? odeloCar : Math.round(parseFloat(t.driverPayment) || 0);
                 const kalan = Number.isFinite(parseFloat(t.netOl)) ? parseFloat(t.netOl) : (musteri - araba);
@@ -7734,7 +7734,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             ['Kaptan', detayT.driverName || '—'],
             ['Plaka', detayT.plate || '—'],
             detayT.kaynak === 'odelo' ? ['Odelo Bedeli', fr(detayT.odelloGross || detayT.odeloGross || detayT.customerTRY || detayT.paymentAmount || detayT.driverPayment || 0) + '₺'] : ['Müşteri', odeme],
-            detayT.kaynak === 'odelo' && detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
+            detayT.kaynak === 'odelo' ? (detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Hesabı', '16 LMZ 55 hesabında']) : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
             detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + ((parseFloat(detayT.altAcentaUcreti) || 0) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
             hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
@@ -7900,7 +7900,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return parseFloat(t.customerTRY || t.paymentAmount || t.totalTRY || 0) || 0;
     };
     const hesapDriverAmount = t => {
-        if (t.kaynak === 'odelo') return parseFloat(t.balenturCost || t.driverPayment || 0) || 0;
+        if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? (parseFloat(t.balenturCost || t.driverPayment || 0) || 0) : 0;
         return parseFloat(t.driverPayment || 0) || 0;
     };
     const renderHesapSheetRow = (t, idx, borderTone) => {
