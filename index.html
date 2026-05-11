@@ -6351,8 +6351,34 @@ const LEGACY_STORAGE_KEYS = ['tp9'];
 const DELETED_TRANSFER_IDS_KEY = 'tp10_deleted_ids';
 const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]'); } catch (e) { return []; } };
 const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
-const fr = n => Math.abs(Math.round(n)).toLocaleString('tr-TR');
-const fn = n => (n >= 0 ? '+' : '') + Math.round(n).toLocaleString('tr-TR');
+const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
+const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
+function moneyValue(v) {
+    if (typeof v === 'number')
+        return Number.isFinite(v) ? v : 0;
+    let s = String(v ?? '').trim();
+    if (!s)
+        return 0;
+    s = s.replace(/\s+/g, '').replace(/[^\d,.\-]/g, '');
+    if (!s || s === '-' || s === ',' || s === '.')
+        return 0;
+    const lastComma = s.lastIndexOf(',');
+    const lastDot = s.lastIndexOf('.');
+    if (lastComma > -1 && lastDot > -1) {
+        if (lastComma > lastDot)
+            s = s.replace(/\./g, '').replace(',', '.');
+        else
+            s = s.replace(/,/g, '');
+    }
+    else if (lastComma > -1) {
+        s = /^-?\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g, '') : s.replace(',', '.');
+    }
+    else if (lastDot > -1 && /^-?\d{1,3}(\.\d{3})+$/.test(s)) {
+        s = s.replace(/\./g, '');
+    }
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+}
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const openFlightTracker = code => {
@@ -6377,9 +6403,9 @@ function balenturOdeloCalc(t) {
     const odeloToOlmez = gOdelo && t.assignedTo === OL;
     if (!balenturInvolved && !odeloToOlmez)
         return null;
-    const c = parseFloat(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount) || 0;
-    const d = parseFloat(t.driverPayment) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const odeloGross = c;
     if (altBal && alt > 0) {
         return { netOl: odeloGross - alt, yon: 'odeloBalentur', odeloGross, balenturCost: alt };
@@ -6500,7 +6526,7 @@ const needsCustomerCollection = t => !!((t && t.paymentCollect !== 'no') || (t &
 const isCustomerCollected = t => !!(t && t.customerCollected);
 const isCompanyCollected = t => !!(t && (t.companyCollected || t.settled));
 const getCollectionState = t => isCompanyCollected(t) ? 'collected' : 'uncollected';
-const needsVehiclePayment = t => (parseFloat(t && t.driverPayment) || 0) > 0;
+const needsVehiclePayment = t => moneyValue(t && t.driverPayment) > 0;
 const isVehiclePaid = t => !!(t && t.vehiclePaid);
 const getVehiclePaymentState = t => needsVehiclePayment(t) ? (isVehiclePaid(t) ? 'paid' : 'unpaid') : 'none';
 const normalizeTransfer = t => {
@@ -6598,7 +6624,7 @@ async function downloadWorkbook(wb, filename) {
 function tourCommissionTotal(t) {
     if (!t || t.transferType !== 'tour')
         return 0;
-    const explicit = parseFloat(t.tourCommission) || 0;
+    const explicit = moneyValue(t.tourCommission);
     return explicit > 0 ? explicit : 0;
 }
 function tourCommissionShare(t) {
@@ -6611,8 +6637,28 @@ function transferPaymentComesToOlmeztur(t) {
 function transferHasCustomerPayment(t) {
     return !!(t && (t.paymentToMe || t.paymentCollect === 'yes'));
 }
+function transferCustomerTRYValue(t) {
+    if (!t)
+        return 0;
+    const stored = moneyValue(t.customerTRY);
+    const raw = moneyValue(t.paymentAmount);
+    const currency = String(t.paymentCurrency || 'TRY').toUpperCase();
+    if (currency === 'TRY' && raw > 0 && (stored <= 0 || stored < raw / 20))
+        return raw;
+    if (currency !== 'TRY' && raw > 0) {
+        const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+        const rate = currency === 'USD' ? (moneyValue(liveRates.USD) || 44.35)
+            : currency === 'EUR' ? (moneyValue(liveRates.EUR) || 51.50)
+                : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
+                    : 0;
+        const converted = rate > 0 ? raw * rate : 0;
+        if (converted > 0 && (stored <= 0 || stored < converted / 20))
+            return converted;
+    }
+    return stored || raw;
+}
 function olmezKar(t) {
-    const c = parseFloat(t.customerTRY) || 0, d = parseFloat(t.driverPayment) || 0, alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
@@ -6643,9 +6689,9 @@ function olmezKar(t) {
    Mantık: müşteri ücreti - araç ücreti (alt acenta varsa - alt acenta ücreti) */
 function olmezPotentialKar(t) {
     if (!t) return 0;
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
-    const d = parseFloat(t.driverPayment) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = transferCustomerTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
@@ -6665,11 +6711,11 @@ function olmezPotentialKar(t) {
     return c - d + comTotal;
 }
 function calcAltAcentaPaylasim(t) {
-    if (!t || !t.altAcenta || !(parseFloat(t.altAcentaUcreti) > 0))
+    if (!t || !t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
         return null;
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
-    const d = parseFloat(t.driverPayment) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = transferCustomerTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     if (!alan || !yes || t.paymentToMe)
@@ -6691,9 +6737,9 @@ function calcAltAcentaPaylasim(t) {
     };
 }
 function calcBal(t) {
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
-    const d = parseFloat(t.driverPayment) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = transferCustomerTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
     const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
@@ -6741,11 +6787,11 @@ function calcBal(t) {
     return { firm, netOl: -d + (t.altAcenta ? 0 : com) };
 }
 function calcAltBal(t) {
-    if (!t.altAcenta || !(parseFloat(t.altAcentaUcreti) > 0))
+    if (!t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
         return null;
-    const c = parseFloat(t.customerTRY || t.paymentAmount) || 0;
-    const d = parseFloat(t.driverPayment) || 0;
-    const alt = parseFloat(t.altAcentaUcreti) || 0;
+    const c = transferCustomerTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
     const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
     const altKomisyonKesinti = tourCommissionShare(t);
@@ -6782,7 +6828,7 @@ function matchPlate16SeferForTransfer(t, requirePlate) {
         const yolcuRaw = ((((t && t.passengers && t.passengers[0] && t.passengers[0].name) || '') + ' ' + ((t && t.passengerName) || '')).trim());
         const yolcu = nm(yolcuRaw);
         const date = String((t && t.date) || '');
-        const amount = Math.round(parseFloat((t && (t.customerTRY || t.paymentAmount || t.driverPayment)) || 0) || 0);
+        const amount = Math.round(transferCustomerTRYValue(t) || moneyValue(t && t.driverPayment));
         const sameDay = rows.filter(k => k && k.type === 'sefer' && String(k.date || '') === date);
 
         let match = sameDay.find(k => {
@@ -6799,7 +6845,7 @@ function matchPlate16SeferForTransfer(t, requirePlate) {
         }
 
         if (!match && amount > 0) {
-            match = sameDay.find(k => Math.abs((parseFloat(k.musteri || k.arac) || 0) - amount) <= 50) || null;
+            match = sameDay.find(k => Math.abs(moneyValue(k.musteri || k.arac) - amount) <= 50) || null;
         }
 
         if (!match && yolcu) {
@@ -6833,8 +6879,8 @@ function getPlate16SeferNetById(seferId) {
     const sefer = rows.find(k => k && k.type === 'sefer' && k.id === seferId);
     if (!sefer)
         return 0;
-    const gelir = parseFloat(sefer.arac || sefer.musteri) || 0;
-    const gider = rows.filter(k => k && k.type === 'gider' && k.seferId === sefer.id).reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0);
+    const gelir = moneyValue(sefer.arac || sefer.musteri);
+    const gider = rows.filter(k => k && k.type === 'gider' && k.seferId === sefer.id).reduce((s, k) => s + moneyValue(k.tutar), 0);
     return Math.round(gelir - gider);
 }
 function getPlate16RemainingAmount(t) {
@@ -6921,22 +6967,22 @@ function AracTab({ tip, aracK, setAracK }) {
     const msf = aracK.filter(k => k.type === 'sefer' && k.date && k.date.startsWith(ay));
     const sGider = id => aracK.filter(k => k.type === 'gider' && k.seferId === id);
     const ayGider = aracK.filter(k => k.type === 'gider' && k.date && k.date.startsWith(ay));
-    const topG = Math.round(msf.reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-    const topGid = Math.round(ayGider.reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+    const topG = Math.round(msf.reduce((s, k) => s + moneyValue(k.arac), 0));
+    const topGid = Math.round(ayGider.reduce((s, k) => s + moneyValue(k.tutar), 0));
     const topNet = topG - topGid;
     const yil = ay.slice(0, 4);
     const yilKayitlari = aracK.filter(k => k.date && k.date.startsWith(yil));
     const yilSeferleri = yilKayitlari.filter(k => k.type === 'sefer');
     const yilGiderleri = yilKayitlari.filter(k => k.type === 'gider');
-    const yilGelir = Math.round(yilSeferleri.reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-    const yilGider = Math.round(yilGiderleri.reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+    const yilGelir = Math.round(yilSeferleri.reduce((s, k) => s + moneyValue(k.arac), 0));
+    const yilGider = Math.round(yilGiderleri.reduce((s, k) => s + moneyValue(k.tutar), 0));
     const yilNet = yilGelir - yilGider;
     const yilAylari = Array.from({ length: 12 }, (_, i) => {
         const key = yil + '-' + String(i + 1).padStart(2, '0');
         const seferler = aracK.filter(k => k.type === 'sefer' && k.date && k.date.startsWith(key));
         const giderler = aracK.filter(k => k.type === 'gider' && k.date && k.date.startsWith(key));
-        const gelir = Math.round(seferler.reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-        const gider = Math.round(giderler.reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+        const gelir = Math.round(seferler.reduce((s, k) => s + moneyValue(k.arac), 0));
+        const gider = Math.round(giderler.reduce((s, k) => s + moneyValue(k.tutar), 0));
         return {
             key,
             ad: new Date(key + '-01').toLocaleDateString('tr-TR', { month: 'long' }),
@@ -7088,8 +7134,8 @@ function AracTab({ tip, aracK, setAracK }) {
                                 React.createElement("span", { style: { fontSize: 14, color: mAcik ? 'rgba(255,255,255,.7)' : SB } }, mAcik ? '▲' : '▼')))),
                     mAcik && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 6 } },
                         Object.entries(ayGunler).map(([tarih, seferler]) => {
-                            const gunNet = Math.round(seferler.reduce((acc, s) => { const gd = sGider(s.id); const gt = gd.reduce((x, k) => x + (parseFloat(k.tutar) || 0), 0); return acc + (parseFloat(s.arac) || 0) - gt; }, 0));
-                            const gunGid = Math.round(seferler.reduce((acc, s) => acc + sGider(s.id).reduce((x, k) => x + (parseFloat(k.tutar) || 0), 0), 0));
+                            const gunNet = Math.round(seferler.reduce((acc, s) => { const gd = sGider(s.id); const gt = gd.reduce((x, k) => x + moneyValue(k.tutar), 0); return acc + moneyValue(s.arac) - gt; }, 0));
+                            const gunGid = Math.round(seferler.reduce((acc, s) => acc + sGider(s.id).reduce((x, k) => x + moneyValue(k.tutar), 0), 0));
                             const gunAcik = expanded['g_' + tarih];
                             const tarihL = new Date(tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
                             return (React.createElement("div", { key: tarih, style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -7108,8 +7154,8 @@ function AracTab({ tip, aracK, setAracK }) {
                                             React.createElement("span", { style: { color: gunAcik ? 'rgba(255,255,255,.6)' : SB, fontSize: 13 } }, gunAcik ? '▲' : '▼')))),
                                 gunAcik && seferler.map(sefer => {
                                     const gd = sGider(sefer.id);
-                                    const gTop = Math.round(gd.reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
-                                    const sNet = (parseFloat(sefer.arac) || 0) - gTop;
+                                    const gTop = Math.round(gd.reduce((s, k) => s + moneyValue(k.tutar), 0));
+                                    const sNet = moneyValue(sefer.arac) - gTop;
                                     const isOpen = expanded[sefer.id];
                                     const isAddG = addGiderId === sefer.id;
                                     return (React.createElement("div", { key: sefer.id, style: { marginLeft: 12, background: '#fff', borderRadius: 11, border: '1px solid ' + BOR, overflow: 'hidden' } },
@@ -7186,7 +7232,7 @@ function AracTab({ tip, aracK, setAracK }) {
             })),
         msf.length > 0 && (React.createElement("button", { onClick: () => {
                 const sorted = [...msf].sort((a, b) => a.date < b.date ? -1 : 1);
-                const rows = sorted.map((s, i) => { const gd2 = sGider(s.id); const gt = Math.round(gd2.reduce((x, k) => x + (parseFloat(k.tutar) || 0), 0)); const sn = (parseFloat(s.arac) || 0) - gt; return (i + 1) + '. ' + new Date(s.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) + ' ' + (s.yolcu || 'Sefer') + (s.isVeren ? ' (' + s.isVeren + ')' : '') + ' | +' + fr(s.arac) + '₺ -' + fr(gt) + '₺ Net:' + fn(sn) + '₺'; }).join('\n');
+                const rows = sorted.map((s, i) => { const gd2 = sGider(s.id); const gt = Math.round(gd2.reduce((x, k) => x + moneyValue(k.tutar), 0)); const sn = moneyValue(s.arac) - gt; return (i + 1) + '. ' + new Date(s.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) + ' ' + (s.yolcu || 'Sefer') + (s.isVeren ? ' (' + s.isVeren + ')' : '') + ' | +' + fr(s.arac) + '₺ -' + fr(gt) + '₺ Net:' + fn(sn) + '₺'; }).join('\n');
                 copyText('ÖLMEZTUR TURİZM\n' + PLAKA + ' — ' + ay + '\n' + '─'.repeat(28) + '\nGelir:+' + fr(topG) + '₺  Gider:-' + fr(topGid) + '₺  Net:' + fn(topNet) + '₺\n' + '─'.repeat(28) + '\n\n' + rows);
                 tip('Rapor kopyalandı!');
             }, style: { width: '100%', background: NAV, color: '#fff', border: 'none', borderRadius: 13, padding: '12px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' } },
@@ -7390,13 +7436,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                transferHasCustomerPayment(t) ? (parseFloat(t.paymentAmount) || 0) : 0,
+                transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
                 esc(t.paymentCurrency || 'TRY'),
-                parseFloat(t.driverPayment) || 0,
+                moneyValue(t.driverPayment),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
-                Math.round(t.netOl || 0),
+                Math.round(moneyValue(t.netOl)),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
@@ -7423,13 +7469,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                transferHasCustomerPayment(t) ? (parseFloat(t.paymentAmount) || 0) : 0,
+                transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
                 esc(t.paymentCurrency || 'TRY'),
-                parseFloat(t.driverPayment) || 0,
+                moneyValue(t.driverPayment),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
-                Math.round(t.netOl || 0),
+                Math.round(moneyValue(t.netOl)),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
@@ -7452,7 +7498,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     esc(t.time || ''),
                     esc(t.pickup || ''),
                     esc(t.dropoff || ''),
-                    Math.round(t.netOl || 0),
+                    Math.round(moneyValue(t.netOl)),
                     esc(t.firmSettled ? 'Kapandı' : 'Açık')
                 ];
                 csv += row.join(',') + '\n';
@@ -7466,8 +7512,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             csv += '\n';
             csv += 'No,Tarih,Saat,Alış,Bırakış,İş Tipi,Odelo Bedeli (TL),İşi Yapan Ücreti (TL),Net (TL),Hesap\n';
             odeloGrup.forEach((t, i) => {
-                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
-                const odeloCost = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
+                const odeloGross = Math.round(moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t));
+                const odeloCost = t.yon === 'odeloBalentur' ? Math.round(moneyValue(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0)) : 0;
                 const row = [
                     i + 1,
                     esc(t.date || ''),
@@ -7477,7 +7523,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     esc(t.yon === 'odeloBalentur' ? 'Balentur yaptı' : 'Ölmeztur yaptı'),
                     odeloGross,
                     odeloCost,
-                    Math.round(t.netOl || 0),
+                    Math.round(moneyValue(t.netOl)),
                     esc(t.firmSettled ? 'Kapandı' : 'Açık')
                 ];
                 csv += row.join(',') + '\n';
@@ -7517,7 +7563,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const clean = v => String(v || '').replace(/\s+/g, ' ').trim();
         const up = v => clean(v).toLocaleUpperCase('tr-TR');
         const money = n => {
-            const v = Math.round(parseFloat(n) || 0);
+            const v = Math.round(moneyValue(n));
             return (v < 0 ? '-' : '') + '₺' + fr(v);
         };
         const dateTxt = d => d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
@@ -7543,11 +7589,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             sectionRows.push(rows.length);
             rows.push([up(title), '', '', '', '', '', '', '', '', '']);
             list.forEach(t => {
-                const odeloGross = Math.round(t.odelloGross || t.odeloGross || t.customerTRY || t.paymentAmount || 0);
-                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0) : 0;
-                const musteri = type === 'odelo' ? odeloGross : (transferHasCustomerPayment(t) ? Math.round(parseFloat(t.customerTRY || t.paymentAmount) || 0) : 0);
-                const araba = type === 'odelo' ? odeloCar : Math.round(parseFloat(t.driverPayment) || 0);
-                const kalan = Number.isFinite(parseFloat(t.netOl)) ? parseFloat(t.netOl) : (musteri - araba);
+                const odeloGross = Math.round(moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t));
+                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(moneyValue(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0)) : 0;
+                const musteri = type === 'odelo' ? odeloGross : (transferHasCustomerPayment(t) ? Math.round(transferCustomerTRYValue(t)) : 0);
+                const araba = type === 'odelo' ? odeloCar : Math.round(moneyValue(t.driverPayment));
+                const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
+                const kalan = hasNet ? moneyValue(t.netOl) : (musteri - araba);
                 rows.push([
                     dateTxt(t.date),
                     t.time || '',
@@ -7735,7 +7782,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             ['Plaka', detayT.plate || '—'],
             detayT.kaynak === 'odelo' ? ['Odelo Bedeli', fr(detayT.odelloGross || detayT.odeloGross || detayT.customerTRY || detayT.paymentAmount || detayT.driverPayment || 0) + '₺'] : ['Müşteri', odeme],
             detayT.kaynak === 'odelo' ? (detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Hesabı', '16 LMZ 55 hesabında']) : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
-            detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + ((parseFloat(detayT.altAcentaUcreti) || 0) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
+            detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + (moneyValue(detayT.altAcentaUcreti) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
             hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
             ['Net', (pos ? '+' : '−') + fr(detayT.netOl) + '₺'],
@@ -7887,24 +7934,24 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return (p && (p.name || p.ad || p.fullName)) || t.passengerName || t.customerName || t.clientName || '—';
     };
     const hesapMoney = v => {
-        const n = Math.round(parseFloat(v) || 0);
+        const n = Math.round(moneyValue(v));
         if (n === 0) return '0₺';
         return (n > 0 ? '+' : '−') + fr(Math.abs(n)) + '₺';
     };
     const hesapPlainMoney = v => {
-        const n = Math.round(parseFloat(v) || 0);
+        const n = Math.round(moneyValue(v));
         return n ? fr(n) + '₺' : '—';
     };
     const hesapCustomerAmount = t => {
-        if (t.kaynak === 'odelo') return parseFloat(t.odeloGross || t.customerTRY || 0) || 0;
-        return parseFloat(t.customerTRY || t.paymentAmount || t.totalTRY || 0) || 0;
+        if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
+        return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
     };
     const hesapDriverAmount = t => {
-        if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? (parseFloat(t.balenturCost || t.driverPayment || 0) || 0) : 0;
-        return parseFloat(t.driverPayment || 0) || 0;
+        if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
+        return moneyValue(t.driverPayment || 0);
     };
     const renderHesapSheetRow = (t, idx, borderTone) => {
-        const netVal = Math.round(parseFloat(t.netOl) || 0);
+        const netVal = Math.round(moneyValue(t.netOl));
         const pos = netVal >= 0;
         const settleKey = t.settleFirmKey || (t.kaynak === 'alt' ? sel + '_alt' : sel);
         const routeText = [t.pickup, t.dropoff].filter(Boolean).join(' → ') || '—';
@@ -7964,7 +8011,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const secondIsOlmez = parts.length > 1 && nm(parts[1]).includes('olmeztur');
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
-        const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + (parseFloat(t.netOl) || 0), 0));
+        const openNet = Math.round((liste || []).filter(t => !t.firmSettled).reduce((s, t) => s + moneyValue(t.netOl), 0));
         const openCount = (liste || []).filter(t => !t.firmSettled).length;
         const tone = isOlmezToAgency
             ? {
@@ -8026,8 +8073,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const hData = hesapData(sel);
                 const { ts, al, ver, net } = hData;
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
-                const mAl = Math.round(mts.filter(t => !t.firmSettled && t.netOl > 0).reduce((s, t) => s + t.netOl, 0));
-                const mVer = Math.round(mts.filter(t => !t.firmSettled && t.netOl < 0).reduce((s, t) => s + Math.abs(t.netOl), 0));
+                const mAl = Math.round(mts.filter(t => !t.firmSettled && moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
+                const mVer = Math.round(mts.filter(t => !t.firmSettled && moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
                 const sirali = ts.slice().sort(sortHesapTs);
                 const normalSirali = sirali.filter(t => t.kaynak !== 'odelo');
                 const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi');
@@ -8127,7 +8174,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const firmRows = filtered.map(firm => {
                     const { ts, al, ver, net } = hesapData(firm);
                     if (ts.length === 0) return null;
-                    const netVal = Math.round(parseFloat(net) || 0);
+                    const netVal = Math.round(moneyValue(net));
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
@@ -8183,29 +8230,29 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
     };
     const saveDebt = () => {
         const name = (newDebt.name || '').trim();
-        const total = parseFloat(newDebt.total) || 0;
-        const paid = parseFloat(newDebt.paid) || 0;
+        const total = moneyValue(newDebt.total);
+        const paid = moneyValue(newDebt.paid);
         if (!name || !(total > 0)) return;
         setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, note: (newDebt.note || '').trim() }, ...p]);
         setNewDebt({ type: newDebt.type, name: '', total: '', paid: '', note: '' });
         tip(newDebt.type === 'borc' ? 'Borç eklendi' : 'Alacak eklendi');
     };
     const addToDebt = (id, kind) => {
-        const amt = parseFloat(prompt(kind, '0') || '0') || 0;
+        const amt = moneyValue(prompt(kind, '0') || '0');
         if (!(amt > 0)) return;
         const note = (prompt('Açıklama', '') || '').trim();
         setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, total: d.total + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
         tip(kind + ' eklendi');
     };
     const addPayment = (id, kind) => {
-        const amt = parseFloat(prompt(kind, '0') || '0') || 0;
+        const amt = moneyValue(prompt(kind, '0') || '0');
         if (!(amt > 0)) return;
         const note = (prompt('Açıklama', '') || '').trim();
         setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, paid: d.paid + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
         tip(kind + ' eklendi');
     };
     const renderDebt = d => {
-        const kalan = Math.max(0, (parseFloat(d.total) || 0) - (parseFloat(d.paid) || 0));
+        const kalan = Math.max(0, moneyValue(d.total) - moneyValue(d.paid));
         const isBorc = d.type === 'borc';
         const accent = isBorc ? R : G;
         const signedDebt = n => (isBorc ? '−' : '+') + fr(n || 0) + '₺';
@@ -8492,9 +8539,9 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
     };
 
     const ledgerMovements = l => Array.isArray(l.movements) ? l.movements : [];
-    const ledgerIncrease = l => ledgerMovements(l).filter(m => m.kind === 'increase').reduce((s,m) => s + (parseFloat(m.amount)||0), 0);
-    const ledgerPaid = l => (parseFloat(l.paidAmount)||0) + ledgerMovements(l).filter(m => m.kind === 'payment').reduce((s,m) => s + (parseFloat(m.amount)||0), 0);
-    const ledgerTotal = l => (parseFloat(l.amount)||0) + ledgerIncrease(l);
+    const ledgerIncrease = l => ledgerMovements(l).filter(m => m.kind === 'increase').reduce((s,m) => s + moneyValue(m.amount), 0);
+    const ledgerPaid = l => moneyValue(l.paidAmount) + ledgerMovements(l).filter(m => m.kind === 'payment').reduce((s,m) => s + moneyValue(m.amount), 0);
+    const ledgerTotal = l => moneyValue(l.amount) + ledgerIncrease(l);
     const ledgerRemaining = l => Math.max(0, ledgerTotal(l) - ledgerPaid(l));
     const ledgerIsSettled = l => !!l.settled || ledgerRemaining(l) <= 0;
     const toggleLedgerSettled = (id) => {
@@ -8514,7 +8561,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         setLedgerForm({
             ltype: l.ltype || 'in',
             person: l.person || '',
-            amount: String(parseFloat(l.amount)||0),
+            amount: String(moneyValue(l.amount)),
             note: l.note || '',
             due: l.due || ''
         });
@@ -8524,13 +8571,13 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         setLedgerAction({ id: l.id, kind, amount: '', note: '', date: todayKey });
     };
     const saveLedgerAction = () => {
-        if (!ledgerAction || !parseFloat(ledgerAction.amount)) { tip('Tutar girin'); return; }
+        if (!ledgerAction || !moneyValue(ledgerAction.amount)) { tip('Tutar girin'); return; }
         setLedger(prev => prev.map(l => {
             if (l.id !== ledgerAction.id) return l;
             const move = {
                 id: Date.now().toString(),
                 kind: ledgerAction.kind,
-                amount: parseFloat(ledgerAction.amount) || 0,
+                amount: moneyValue(ledgerAction.amount),
                 note: ledgerAction.note || '',
                 date: ledgerAction.date || todayKey
             };
@@ -8597,19 +8644,19 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
 
     const saveLedger = () => {
         if (!ledgerForm.person.trim()) { tip('Kişi/Kurum girin'); return; }
-        if (!parseFloat(ledgerForm.amount)) { tip('Tutar girin'); return; }
+        if (!moneyValue(ledgerForm.amount)) { tip('Tutar girin'); return; }
         const newL = {
             id: editLedgerId || Date.now(),
             ltype: ledgerForm.ltype,
             person: ledgerForm.person.trim(),
-            amount: parseFloat(ledgerForm.amount) || 0,
+            amount: moneyValue(ledgerForm.amount),
             note: ledgerForm.note,
             due: ledgerForm.due,
             settled: false,
             created: new Date().toISOString()
         };
         if (editLedgerId) {
-            setLedger(prev => prev.map(l => l.id === editLedgerId ? { ...l, ...newL, movements: ledgerMovements(l), paidAmount: parseFloat(l.paidAmount)||0, created: l.created || newL.created, settled: ledgerRemaining({ ...l, ...newL }) <= 0 } : l));
+            setLedger(prev => prev.map(l => l.id === editLedgerId ? { ...l, ...newL, movements: ledgerMovements(l), paidAmount: moneyValue(l.paidAmount), created: l.created || newL.created, settled: ledgerRemaining({ ...l, ...newL }) <= 0 } : l));
             setEditLedgerId(null);
             tip('Güncellendi');
         } else {
@@ -15661,6 +15708,7 @@ function App() {
     const [tab, setTab] = useState('home');
     const [openKarPanel, setOpenKarPanel] = useState(false);
     const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50, KWD: 144.40 });
+    try { window.__KO_RATES = rates; } catch (e) {}
     const [form, setForm] = useState(BF);
     const [agencies, setAgencies] = useState([OL]);
     const [drivers, setDrivers] = useState([]);
@@ -15940,7 +15988,7 @@ function App() {
             }catch(e){}
         })();
     }, [rememberMe, authUser]);
-    const toTRY = (a, c) => { const n = parseFloat(a) || 0; if (c === 'USD')
+    const toTRY = (a, c) => { const n = moneyValue(a); if (c === 'USD')
         return n * rates.USD; if (c === 'EUR')
         return n * rates.EUR; if (c === 'KWD')
         return n * (rates.KWD || (rates.USD * 3.27)); return n; };
@@ -16348,7 +16396,7 @@ function App() {
                     field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet({ transferType: e.target.value }) }, TIPLER.map(tp => [tp.id, tp.n]))),
                     field('Alt Acenta', input({ value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
                     field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
-                        input({ type: 'number', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
+                        input({ type: 'text', inputMode: 'decimal', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
                         select({ value: q.paymentCurrency || 'TRY', onChange: e => quickSet({ paymentCurrency: e.target.value }) }, [['TRY', 'TRY'], ['USD', 'USD'], ['EUR', 'EUR'], ['KWD', 'KWD']])
                     ), true),
                     field('Hesap bana geldi', React.createElement("button", {
@@ -16373,10 +16421,10 @@ function App() {
                             boxShadow: q.paymentToMe ? '0 6px 16px rgba(63,128,109,.10),inset 0 1px 0 rgba(255,255,255,.92)' : 'inset 0 1px 0 rgba(255,255,255,.92)'
                         }
                     }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
-                    field('Araç Ödemesi', input({ type: 'number', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
-                    field('Alt Acenta Ücreti', input({ type: 'number', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
+                    field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
+                    field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
                     q.transferType === 'tour' && field('Tur Hakedişi', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
-                        input({ type: 'number', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
+                        input({ type: 'text', inputMode: 'decimal', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
                         input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
                     ), true),
                     field('Not', React.createElement("textarea", { className: "inp", value: q.notes || '', onChange: e => quickSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
@@ -16391,8 +16439,8 @@ function App() {
     };
     const plate16MonthBreakdown = monthKey => {
         const akm = aracK.filter(k => k.date && String(k.date).slice(0, 7) === monthKey);
-        const gelir = Math.round(akm.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-        const gider = Math.round(akm.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+        const gelir = Math.round(akm.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
+        const gider = Math.round(akm.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
         return { gelir, gider, net: gelir - gider, count: akm.filter(k => k.type === 'sefer').length };
     };
     const externalMonthBreakdown = monthKey => {
@@ -16634,11 +16682,11 @@ function App() {
         const tk = netKar([t]);
         const collectionState = getCollectionState(t);
         const displayPlate = inferPlate(t);
-        const vehiclePayNum = parseFloat(t.driverPayment) || 0;
+        const vehiclePayNum = moneyValue(t.driverPayment);
         const vehiclePayTxt = vehiclePayNum > 0 ? (vehiclePayNum.toLocaleString('tr-TR') + '₺') : '—';
-        const custAmtNum = parseFloat(t.customerTRY || t.paymentAmount) || 0;
+        const custAmtNum = transferCustomerTRYValue(t);
         const payCurrency = t.paymentCurrency || 'TRY';
-        const custAmtRawTxt = t.paymentAmount ? (Number(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—';
+        const custAmtRawTxt = t.paymentAmount ? (moneyValue(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—';
         const payCollectTxt = t.paymentToMe ? (t.paymentAmount ? custAmtRawTxt : 'Hesap bana geldi') : (t.paymentCollect === 'no' ? 'Ödeme yok' : (t.paymentAmount ? custAmtRawTxt : '—'));
         const isOpen = !!expandedT[t.id];
         const gvn = t.givenBy || '—';
@@ -17303,8 +17351,8 @@ function App() {
                     return vehicle ? base + ' (' + vehicle + ')' : base;
                 };
                 const homeAmountTRY = t => {
-                    const stored = parseFloat(t.customerTRY);
-                    if (!isNaN(stored) && stored !== 0)
+                    const stored = transferCustomerTRYValue(t);
+                    if (stored !== 0)
                         return stored;
                     return toTRY(t.paymentAmount, t.paymentCurrency || 'TRY');
                 };
@@ -17327,8 +17375,8 @@ function App() {
                 const detailValueClass = n => 'lg-profit-detail-value ' + (n >= 0 ? 'is-pos' : 'is-neg');
                 const plateBreakdownForMonth = monthKey => {
                     const rows = aracK.filter(k => k.date && String(k.date).startsWith(monthKey));
-                    const gelir = Math.round(rows.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-                    const gider = Math.round(rows.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+                    const gelir = Math.round(rows.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
+                    const gider = Math.round(rows.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
                     return { gelir, gider, net: gelir - gider };
                 };
                 const profitMonthBreakdown = monthKey => {
@@ -17744,8 +17792,8 @@ function App() {
                         // aracK state'i App seviyesinde, doğrudan kullanıyoruz
                         const plate16KarYear = (() => {
                             const yk = aracK.filter(k => k.date && k.date.startsWith(String(yyyy)));
-                            const gelir = Math.round(yk.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-                            const gider = Math.round(yk.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+                            const gelir = Math.round(yk.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
+                            const gider = Math.round(yk.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
                             return gelir - gider;
                         })();
                         
@@ -17766,8 +17814,8 @@ function App() {
                             const ayOlmez = potentialSummaryNet(ayTr);
                             // 16 LMZ 55 ay net (gerçek gelir-gider)
                             const ayK = aracK.filter(k => k.date && k.date.startsWith(ayKey));
-                            const ayGelir = Math.round(ayK.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0));
-                            const ayGider = Math.round(ayK.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+                            const ayGelir = Math.round(ayK.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
+                            const ayGider = Math.round(ayK.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
                             const ayPlate = ayGelir - ayGider;
                             // Toplam transfer sayısı (gösterim için)
                             const ayPlateCnt = ayK.filter(k => k.type === 'sefer').length;
@@ -17783,8 +17831,8 @@ function App() {
                         // Bu ay net = Ölmeztur dış + 16 LMZ 55
                         const buAyOlmez = potentialSummaryNet(buAyTr);
                         const buAyK = aracK.filter(k => k.date && k.date.startsWith(buAyKey));
-                        const buAyPlate = Math.round(buAyK.filter(k => k.type === 'sefer').reduce((s, k) => s + (parseFloat(k.arac) || 0), 0)) -
-                                         Math.round(buAyK.filter(k => k.type === 'gider').reduce((s, k) => s + (parseFloat(k.tutar) || 0), 0));
+                        const buAyPlate = Math.round(buAyK.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0)) -
+                                         Math.round(buAyK.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
                         const buAyNet = buAyOlmez + buAyPlate;
 
                         const fmtTL = n => (n >= 0 ? '+' : '') + n.toLocaleString('tr-TR') + '₺';
@@ -18201,7 +18249,7 @@ function App() {
                                 agencies.map((a, i) => React.createElement("option", { key: i, value: a }, a)))),
                         form.altAcenta && (React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "Alt Acenta \u00DCcreti (\u20BA)"),
-                            React.createElement("input", { type: "number", value: form.altAcentaUcreti || '', onChange: e => sf({ altAcentaUcreti: e.target.value }), placeholder: "0", className: "inp" }))))),
+                            React.createElement("input", { type: "text", inputMode: "decimal", value: form.altAcentaUcreti || '', onChange: e => sf({ altAcentaUcreti: e.target.value }), placeholder: "0", className: "inp" }))))),
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement(LocIn, { field: "pickup", lbl: "\uD83D\uDCCD Al\u0131\u015F Noktas\u0131", value: form.pickup, sugg: sugg.pickup, show: showSg.pickup, onChange: chL, onSel: selL, onFocus: () => { if (form.pickup.length > 1)
                             setShowSg(p => ({ ...p, pickup: true })); }, onBlur: () => setTimeout(() => setShowSg(p => ({ ...p, pickup: false })), 180) }),
@@ -18304,7 +18352,7 @@ function App() {
                         ),                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 7 } },
                             React.createElement("div", { style: { flex: 1 } },
                                 React.createElement("span", { className: "lbl" }, "Tutar"),
-                                React.createElement("input", { type: "number", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
+                                React.createElement("input", { type: "text", inputMode: "decimal", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
                             React.createElement("div", { style: { width: 75 } },
                                 React.createElement("span", { className: "lbl" }, "D\u00F6viz"),
                                 React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 700, cursor: 'pointer', fontSize: 14, width: '100%' } },
@@ -18333,7 +18381,7 @@ function App() {
                         React.createElement("div", { style: { display: 'flex', gap: 6 } },
                             React.createElement("div", { style: { flex: 1 } },
                                 React.createElement("span", { className: "lbl" }, "Odelo Tutarı"),
-                                React.createElement("input", { type: "number", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
+                                React.createElement("input", { type: "text", inputMode: "decimal", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
                             React.createElement("div", { style: { width: 75 } },
                                 React.createElement("span", { className: "lbl" }, "D\u00F6viz"),
                                 React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 700, cursor: 'pointer', fontSize: 14, width: '100%' } },
@@ -18343,7 +18391,7 @@ function App() {
                                     React.createElement("option", { value: "KWD" }, "KD KWD"))))),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti (₺)' : 'Firmaya Araç Ücreti (₺)'),
-                        React.createElement("input", { type: "number", value: form.driverPayment, onChange: e => sf({ driverPayment: e.target.value }), placeholder: "0", className: "inp" })),
+                        React.createElement("input", { type: "text", inputMode: "decimal", value: form.driverPayment, onChange: e => sf({ driverPayment: e.target.value }), placeholder: "0", className: "inp" })),
                     (form.driverPayment || form.paymentAmount) && (React.createElement("div", { style: { marginTop: 10 } },
                         formBalenturOdelo && React.createElement("div", {
                             style: {
