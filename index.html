@@ -6650,6 +6650,8 @@ async function downloadWorkbook(wb, filename) {
 function tourCommissionTotal(t) {
     if (!t)
         return 0;
+    if ((t.transferType || '') !== 'tour')
+        return 0;
     const explicit = moneyValue(t.tourCommission);
     return explicit > 0 ? explicit : 0;
 }
@@ -7114,7 +7116,7 @@ function AracTab({ tip, aracK, setAracK }) {
     [...msf].sort((a, b) => a.date < b.date ? -1 : 1).forEach(s => { if (!gunler[s.date])
         gunler[s.date] = []; gunler[s.date].push(s); });
     return (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-        React.createElement("div", { className: "card" },
+	                React.createElement("div", { className: "card" },
             React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
                 React.createElement("img", { src: LOGO_URI, style: { width: 44, height: 44, borderRadius: 12, objectFit: 'contain', border: '1px solid rgba(168,164,154,.45)', flexShrink: 0, background: '#173f35' }, alt: PLAKA + ' logo' }),
                 React.createElement("div", { style: { flex: 1 } },
@@ -8393,7 +8395,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         count > 0 && React.createElement("span", { style: { background: 'rgba(255,255,255,.82)', color: accent, border: '1px solid rgba(120,110,96,.16)', borderRadius: 999, padding: '2px 7px', fontSize: 10, fontWeight: 480 } }, count)
     );
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 } },
-        React.createElement("div", { className: "card" },
+	                React.createElement("div", { className: "card" },
             React.createElement("button", { onClick: () => setOpenAg(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 800, color: TX, textAlign: 'left', cursor: 'pointer' } }, '🏢 Acenta / Kaptan ' + (openAg ? '−' : '+')),
             openAg && React.createElement("div", { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
                 React.createElement("div", null,
@@ -16329,7 +16331,6 @@ function App() {
         if (t.paymentToMe) msg += '\n\n💳 Tahsilat: Hesap/ödeme bana geldi';
         else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
         else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
-        if (t.childSeat) msg += '\n🪑 Çocuk Koltuğu: ' + t.childSeatCount + ' adet';
         if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
         return msg.trim();
     };
@@ -16547,7 +16548,7 @@ function App() {
                             : { paymentCollect: 'yes' })
                     }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
                     field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Tam'], ['bos', 'Boş'], ['iptal', 'İptal']])),
-                    field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet({ transferType: e.target.value }) }, TIPLER.map(tp => [tp.id, tp.n]))),
+	                    field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet(e.target.value === 'tour' ? { transferType: e.target.value } : { transferType: e.target.value, tourCommission: '', tourCommissionShop: '' }) }, TIPLER.map(tp => [tp.id, tp.n]))),
                     field('Alt Acenta', input({ list: quickAgencyListId, value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
                     field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
                         input({ type: 'text', inputMode: 'decimal', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
@@ -16577,10 +16578,10 @@ function App() {
                     }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
                     field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
                     field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
-                    field('Hakediş', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
-                        input({ type: 'text', inputMode: 'decimal', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
-                        input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
-                    ), true),
+	                    (q.transferType || '') === 'tour' && field('Hakediş', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
+	                        input({ type: 'text', inputMode: 'decimal', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
+	                        input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
+	                    ), true),
                     field('Not', React.createElement("textarea", { className: "inp", value: q.notes || '', onChange: e => quickSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
                 React.createElement("button", { type: "button", onClick: saveQuickAgencies, className: "ko-quick-save-names", style: { marginTop: 10, width: '100%', border: '1px solid rgba(63,128,109,.24)', background: 'rgba(231,242,238,.55)', color: G, borderRadius: 13, padding: '10px 12px', fontSize: 11.5, fontWeight: 560, cursor: 'pointer' } }, "+ İş veren / işi alan / alt acenta isimlerini rehbere ekle"),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
@@ -18331,13 +18332,13 @@ function App() {
                 );
             })(),
 
-            tab === 'new' && (React.createElement("div", { className: "ko-new-form", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+	            tab === 'new' && (React.createElement("div", { className: "ko-new-form", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(63,128,109,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 620, color: G } }, "Transfer düzenleniyor"),
                         React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup || 'Alış') + ' → ' + (form.dropoff || 'Bırakış'))),
                     React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(63,128,109,.22)', background: '#fff', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 560, cursor: 'pointer' } }, "Yeni kayıt")),
-                React.createElement("div", { className: "card" },
+                React.createElement("div", { className: "card ko-schedule-card" },
                     /* SOL: Tarih (üstünde TIP açılır pill) + SAĞ: Saat (üstünde MOD açılır pill) */
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
@@ -18366,7 +18367,7 @@ function App() {
                                                 key: tp.id,
                                                 type: "button",
                                                 className: "lg-choice" + (a ? " is-active ko-selected-gold" : ""),
-                                                onClick: () => { sf({ transferType: tp.id }); setExpandedT(p => ({ ...p, __newType: false })); },
+                                                onClick: () => { sf(tp.id === 'tour' ? { transferType: tp.id } : { transferType: tp.id, tourCommission: '', tourCommissionShop: '' }); setExpandedT(p => ({ ...p, __newType: false })); },
                                                 style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a ? tp.bg : 'transparent', color: a ? tp.c : TX, border: a ? '1px solid ' + tp.b : '1px solid transparent', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: a ? 800 : 600, textAlign: 'left' }
                                             },
                                                 React.createElement("span", { style: { fontSize: 16, width: 22, textAlign: 'center' } }, tp.ico),
@@ -18497,13 +18498,7 @@ function App() {
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.map(r => (React.createElement("button", { key: r.id, className: "lg-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? '#fff' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 600, textAlign: 'center' } },
                             r.ico,
                             React.createElement("br", null),
-                            r.n))))),
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 11px', background: form.useMaps ? '#F6F3EF' : INP, borderRadius: 10, border: '1px solid ' + (form.useMaps ? BOR : BOR) } },
-                        React.createElement("div", null,
-                            React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: TX } }, "\uD83D\uDDFA\uFE0F Google Maps Linki"),
-                            React.createElement("div", { style: { fontSize: 10, color: SB } }, "Kaptan mesaj\u0131na konum linki ekle")),
-                        React.createElement("button", { className: "lg-choice" + (form.useMaps ? " is-active ko-selected-gold" : ""), onClick: () => sf({ useMaps: !form.useMaps }), style: { width: 44, height: 26, borderRadius: 13, background: form.useMaps ? NAV : BOR, border: 'none', position: 'relative', cursor: 'pointer', flexShrink: 0 } },
-                            React.createElement("div", { style: { position: 'absolute', width: 20, height: 20, background: '#fff', borderRadius: 10, top: 3, left: form.useMaps ? 21 : 3, transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' } })))),
+                            r.n)))))),
                 React.createElement("div", { className: "card" },
                     React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "\uD83D\uDE90 Ara\u00E7 Tipi"),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 5, marginBottom: 12 } }, VEHS.map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? '#fff' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
@@ -18558,25 +18553,25 @@ function App() {
                                 transition: 'all .15s ease'
                             }
                         }, "🚐 ", PLAKA)))),
-                React.createElement("div", { className: "card" },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-                        React.createElement("span", { style: { fontWeight: 700, fontSize: 13, color: TX } }, "\uD83D\uDC65 Yolcular"),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, marginLeft: 'auto' } },
-                            React.createElement("button", { onClick: () => uPC(form.passengerCount - 1), style: { width: 30, height: 30, borderRadius: 15, background: INP, border: 'none', fontSize: 18, fontWeight: 700, cursor: 'pointer', color: NAV } }, "\u2212"),
-                            React.createElement("span", { style: { fontSize: 20, fontWeight: 800, color: NAV, minWidth: 26, textAlign: 'center' } }, form.passengerCount),
-                            React.createElement("button", { onClick: () => uPC(form.passengerCount + 1), style: { width: 30, height: 30, borderRadius: 15, background: NAV, border: 'none', fontSize: 18, fontWeight: 700, cursor: 'pointer', color: '#fff' } }, "+"))),
-                    React.createElement("div", { style: { maxHeight: 240, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 } }, form.passengers.map((p, i) => (React.createElement("div", { key: i, style: { background: INP, borderRadius: 10, padding: '9px 11px', border: '1px solid ' + BOR } },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: SB, marginBottom: 5 } },
-                            "YOLCU ",
+                React.createElement("div", { className: "card ko-passenger-card" },
+                    React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                        React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 620, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
+                        React.createElement("div", { className: "ko-passenger-stepper", style: { display: 'flex', alignItems: 'center', gap: 7, marginLeft: 'auto' } },
+                            React.createElement("button", { type: "button", onClick: () => uPC(form.passengerCount - 1), className: "ko-passenger-count-btn", style: { width: 30, height: 30, borderRadius: 15, background: INP, border: 'none', fontSize: 18, fontWeight: 620, cursor: 'pointer', color: NAV } }, "\u2212"),
+                            React.createElement("span", { className: "ko-passenger-count", style: { fontSize: 18, fontWeight: 620, color: NAV, minWidth: 26, textAlign: 'center' } }, form.passengerCount),
+                            React.createElement("button", { type: "button", onClick: () => uPC(form.passengerCount + 1), className: "ko-passenger-count-btn", style: { width: 30, height: 30, borderRadius: 15, background: NAV, border: 'none', fontSize: 18, fontWeight: 620, cursor: 'pointer', color: '#fff' } }, "+"))),
+                    React.createElement("div", { className: "ko-passenger-list", style: { display: 'flex', flexDirection: 'column', gap: 8 } }, form.passengers.map((p, i) => (React.createElement("div", { key: i, className: "ko-passenger-item", style: { background: INP, borderRadius: 10, padding: '9px 11px', border: '1px solid ' + BOR } },
+                        React.createElement("div", { className: "ko-passenger-index", style: { fontSize: 9.5, fontWeight: 540, color: SB, marginBottom: 6 } },
+                            "Yolcu ",
                             i + 1),
-                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 5 } },
-                            React.createElement("input", { type: "text", value: p.name, onChange: e => uPax(i, 'name', e.target.value), placeholder: "Ad Soyad", className: "inp", style: { flex: 1, width: 'auto' } }),
-                            React.createElement("input", { type: "tel", value: p.phone, onChange: e => uPax(i, 'phone', e.target.value), placeholder: "Tel", className: "inp", style: { width: 105, flex: 'none' } })),
-                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 5 } },
-                            React.createElement("input", { type: "text", value: p.tc || '', onChange: e => uPax(i, 'tc', e.target.value), placeholder: "TC Kimlik No", className: "inp", style: { flex: 1, width: 'auto' } }),
-                            React.createElement("input", { type: "text", value: p.pasaport || '', onChange: e => uPax(i, 'pasaport', e.target.value), placeholder: "Pasaport No", className: "inp", style: { flex: 1, width: 'auto' } })),
-                        React.createElement("select", { value: p.uyruk || 'TR', onChange: e => uPax(i, 'uyruk', e.target.value), className: "inp" }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n)))))))),
-                React.createElement("div", { className: "card" },
+                        React.createElement("div", { className: "ko-passenger-fields" },
+                            React.createElement("input", { type: "text", value: p.name, onChange: e => uPax(i, 'name', e.target.value), placeholder: "Ad Soyad", className: "inp ko-passenger-inp", autoComplete: "name" }),
+                            React.createElement("input", { type: "tel", value: p.phone, onChange: e => uPax(i, 'phone', e.target.value), placeholder: "Telefon", className: "inp ko-passenger-inp", autoComplete: "tel", inputMode: "tel" }),
+                            React.createElement("div", { className: "ko-passenger-id-combo" },
+                                React.createElement("input", { type: "text", value: p.tc || '', onChange: e => uPax(i, 'tc', e.target.value), placeholder: "TC No", className: "inp ko-passenger-inp", inputMode: "numeric" }),
+                                React.createElement("input", { type: "text", value: p.pasaport || '', onChange: e => uPax(i, 'pasaport', e.target.value.toUpperCase()), placeholder: "Pasaport No", className: "inp ko-passenger-inp", autoCapitalize: "characters" })),
+                            React.createElement("select", { value: p.uyruk || 'TR', onChange: e => uPax(i, 'uyruk', e.target.value), className: "inp ko-passenger-inp ko-passenger-country" }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))))))))),
+	                React.createElement("div", { className: "card ko-payment-card" },
                     React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf(v === 'no' ? { paymentCollect: v, paymentToMe: false, customerCollected: false } : { paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? '#fff' : SB, fontWeight: 700, cursor: 'pointer', fontSize: '13px' } }, l)))),
                   form.paymentCollect === 'yes' && (React.createElement("div", null,
                        React.createElement("div", { style: { marginBottom: '10px' } },
@@ -18702,19 +18697,15 @@ function App() {
                             React.createElement("div", { style: { fontSize: 24, fontWeight: 900, color: fNet > 0 ? G : fNet === 0 ? SB : R, letterSpacing: 0 } },
                                 fNet >= 0 ? '+' : '−',
                                 previewTL(fNet),
-                                " \u20BA"))))),
-                React.createElement("div", { className: "card" },
-                    React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "Sefer Durumu"),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } }, [['tam', '✅ Tam', G, '#F2EFEA'], ['bos', '🔄 Boş', O, '#FFF5E5'], ['iptal', '❌ İptal', R, '#FFF0EF']].map(([id, lbl, ac, bg]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.status === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ status: id }), style: { background: form.status === id ? ac : bg, color: form.status === id ? '#fff' : ac, border: '1.5px solid ' + (form.status === id ? ac : BOR), borderRadius: 9, padding: '10px 3px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, lbl)))),
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '8px 11px', background: INP, borderRadius: 9, border: '1px solid ' + BOR } },
-                        React.createElement("span", { style: { fontSize: 12, fontWeight: 600, color: TX } }, "\uD83E\uDE91 \u00C7ocuk Koltu\u011Fu"),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                            form.childSeat && React.createElement("input", { type: "number", min: 1, max: 4, value: form.childSeatCount || 1, onChange: e => sf({ childSeatCount: parseInt(e.target.value) || 1 }), className: "inp", style: { width: 48, padding: '4px 6px', textAlign: 'center' } }),
-                            React.createElement("button", { className: "lg-choice" + (form.childSeat ? " is-active ko-selected-gold" : ""), onClick: () => sf({ childSeat: !form.childSeat, childSeatCount: form.childSeat ? 0 : 1 }), style: { background: form.childSeat ? G : INP, color: form.childSeat ? '#fff' : SB, border: '1px solid ' + (form.childSeat ? G : BOR), borderRadius: 8, padding: '5px 12px', fontWeight: 700, cursor: 'pointer', fontSize: '12px' } }, form.childSeat ? 'Var ✓' : 'Yok'))),
-                    /* Hakediş — sonradan öğrenildiğinde de eklenebilir */
-                    React.createElement("div", {
-                        style: {
-                            marginBottom: 8, padding: '11px 13px',
+	                                " \u20BA"))))),
+	                React.createElement("div", { className: "card ko-status-card" },
+	                    React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "Sefer Durumu"),
+	                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } }, [['tam', '✅ Tam', G, '#F2EFEA'], ['bos', '🔄 Boş', O, '#FFF5E5'], ['iptal', '❌ İptal', R, '#FFF0EF']].map(([id, lbl, ac, bg]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.status === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ status: id }), style: { background: form.status === id ? ac : bg, color: form.status === id ? '#fff' : ac, border: '1.5px solid ' + (form.status === id ? ac : BOR), borderRadius: 9, padding: '10px 3px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, lbl)))),
+	                    /* Hakediş — sonradan öğrenildiğinde de eklenebilir */
+	                    form.transferType === 'tour' && React.createElement("div", {
+	                        className: "ko-tour-commission-box",
+	                        style: {
+	                            marginBottom: 8, padding: '11px 13px',
                             background: 'linear-gradient(135deg, #FFF5E5, #FFE7B8)',
                             borderRadius: 12, border: '1.5px solid ' + GOLD,
                             boxShadow: '0 3px 10px rgba(255,159,10,.16), inset 0 1px 0 rgba(255,255,255,.5)'
@@ -24074,11 +24065,14 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
         }, 1200);
     };
 
+    let paintQueued = false;
     const schedulePaint = () => {
-        paintAllChoices();
-        requestAnimationFrame(paintAllChoices);
-        setTimeout(paintAllChoices, 80);
-        setTimeout(paintAllChoices, 240);
+        if (paintQueued) return;
+        paintQueued = true;
+        requestAnimationFrame(() => {
+            paintQueued = false;
+            paintAllChoices();
+        });
     };
 
     document.addEventListener('pointerdown', e => {
@@ -24108,12 +24102,11 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
         markCard(e.target);
         schedulePaint();
     }, true);
-    document.addEventListener('input', schedulePaint, true);
     document.addEventListener('change', schedulePaint, true);
     document.addEventListener('DOMContentLoaded', schedulePaint, { once:true });
     const obsTarget = document.getElementById('root') || document.body;
     if (obsTarget && window.MutationObserver) {
-        new MutationObserver(schedulePaint).observe(obsTarget, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-selected','aria-pressed','aria-expanded'] });
+        new MutationObserver(schedulePaint).observe(obsTarget, { childList:true, subtree:true });
     }
     schedulePaint();
 })();
@@ -26562,6 +26555,266 @@ html body .app-shell main.main-cont .ko-smart-phone{
   font-size:11.5px!important;
   font-weight:400!important;
   font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form,
+html body .app-shell main.main-cont .ko-new-form *{
+  transition-duration:.06s!important;
+  animation-duration:.01s!important;
+  scroll-behavior:auto!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .card{
+  padding:11px!important;
+  box-shadow:0 8px 20px rgba(20,28,34,.045),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .lbl{
+  font-size:9.8px!important;
+  font-weight:470!important;
+  color:rgba(23,35,30,.66)!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .inp,
+html body .app-shell main.main-cont .ko-new-form textarea,
+html body .app-shell main.main-cont .ko-new-form select{
+  min-height:40px!important;
+  height:auto!important;
+  padding:9px 10px!important;
+  font-size:12.35px!important;
+  font-weight:410!important;
+  line-height:1.2!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .ko-smart-menu{
+  max-height:220px!important;
+  box-shadow:0 10px 24px rgba(20,28,34,.10),inset 0 1px 0 rgba(255,255,255,.96)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .ko-smart-name{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.25!important;
+  font-size:12.7px!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-card{
+  overflow:visible!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-head{
+  margin-bottom:8px!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-title{
+  font-size:12px!important;
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-count,
+html body .app-shell main.main-cont .ko-passenger-count-btn{
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-list{
+  max-height:none!important;
+  overflow:visible!important;
+  gap:8px!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-item{
+  border-radius:13px!important;
+  padding:9px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(250,252,250,.78))!important;
+  border:1px solid rgba(31,61,49,.11)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-index{
+  font-size:9.5px!important;
+  font-weight:480!important;
+  letter-spacing:.12px!important;
+  text-transform:none!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-fields{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-id-combo{
+  grid-column:1 / -1!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-country{
+  grid-column:1 / -1!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-inp{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  height:40px!important;
+  padding:8px 10px!important;
+  font-size:12.4px!important;
+  font-weight:410!important;
+  line-height:1.15!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:normal!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-inp::placeholder{
+  font-size:12.2px!important;
+  font-weight:390!important;
+  color:rgba(23,35,30,.48)!important;
+  opacity:1!important;
+}
+
+html body .app-shell main.main-cont .ko-schedule-card{
+  padding:10px!important;
+}
+
+html body .app-shell main.main-cont .ko-schedule-card .lg-choice{
+  min-width:0!important;
+  padding:6px 7px!important;
+  font-size:10.6px!important;
+  font-weight:560!important;
+  line-height:1.12!important;
+}
+
+html body .app-shell main.main-cont .ko-schedule-card .lg-choice span{
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.12!important;
+}
+
+html body .app-shell main.main-cont .ko-schedule-card .inp{
+  min-height:38px!important;
+  height:38px!important;
+  padding:8px 10px!important;
+  font-size:12.2px!important;
+  font-weight:410!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card,
+html body .app-shell main.main-cont .ko-status-card{
+  padding:10px!important;
+  border-radius:16px!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card .lbl,
+html body .app-shell main.main-cont .ko-status-card .lbl{
+  font-size:10.4px!important;
+  font-weight:500!important;
+  letter-spacing:.08px!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card .inp,
+html body .app-shell main.main-cont .ko-status-card .inp{
+  min-height:38px!important;
+  height:38px!important;
+  padding:8px 10px!important;
+  font-size:12.1px!important;
+  font-weight:410!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card .lg-choice,
+html body .app-shell main.main-cont .ko-status-card .lg-choice{
+  min-height:34px!important;
+  padding:7px 6px!important;
+  border-radius:11px!important;
+  font-size:11.1px!important;
+  font-weight:540!important;
+  line-height:1.12!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card .lg-choice span,
+html body .app-shell main.main-cont .ko-status-card .lg-choice span{
+  min-width:0!important;
+  white-space:normal!important;
+  line-height:1.12!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card select,
+html body .app-shell main.main-cont .ko-status-card select{
+  min-height:38px!important;
+  height:38px!important;
+  padding:8px 7px!important;
+  font-size:11.6px!important;
+  font-weight:520!important;
+}
+
+html body .app-shell main.main-cont .ko-payment-card textarea,
+html body .app-shell main.main-cont .ko-status-card textarea{
+  min-height:62px!important;
+  height:auto!important;
+  font-size:12.1px!important;
+  font-weight:410!important;
+}
+
+html body .app-shell main.main-cont .ko-tour-commission-box{
+  padding:9px 10px!important;
+  border-radius:13px!important;
+  margin-bottom:8px!important;
+}
+
+html body .app-shell main.main-cont .ko-tour-commission-box .inp{
+  min-height:36px!important;
+  height:36px!important;
+  font-size:12px!important;
+  font-weight:440!important;
+  padding:7px 9px!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-id-combo{
+  gap:0!important;
+  border:1px solid rgba(31,61,49,.14)!important;
+  border-radius:13px!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(248,251,249,.82))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-id-combo .ko-passenger-inp{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .ko-passenger-id-combo .ko-passenger-inp:first-child{
+  border-right:1px solid rgba(31,61,49,.12)!important;
+}
+
+@media (max-width:520px){
+  html body .app-shell main.main-cont .ko-new-form{
+    gap:9px!important;
+  }
+  html body .app-shell main.main-cont .ko-passenger-fields{
+    grid-template-columns:1fr!important;
+  }
+  html body .app-shell main.main-cont .ko-passenger-id-combo{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html body .app-shell main.main-cont .ko-passenger-inp{
+    font-size:12.1px!important;
+    padding-left:9px!important;
+    padding-right:9px!important;
+  }
 }
 
 html body .ko-transfer-edit-modal .ko-quick-edit-actions{
