@@ -6389,6 +6389,10 @@ const openFlightTracker = code => {
     return true;
 };
 const firmSlug = v => nm(v).replace(/\s+/g, '');
+const isOlmezturParty = v => {
+    const slug = firmSlug(v);
+    return slug === firmSlug(OL) || slug === 'olmeztur' || slug === 'olmezturizm' || slug.includes('olmez');
+};
 const isBalenturFirm = v => ['balentur', 'balontur', 'balontour'].includes(firmSlug(v));
 const isOdeloFirm = v => firmSlug(v) === 'odelo';
 const hasOdeloMark = t => !!(t && (isOdeloFirm(t.givenBy) || isOdeloFirm(t.assignedTo) || isOdeloFirm(t.altAcenta) || nm(t.notes).includes('odelo')));
@@ -6421,6 +6425,16 @@ function balenturOdeloCalc(t) {
 const isBalenturOdeloTransfer = t => !!balenturOdeloCalc(t);
 const np = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const uniq = arr => Array.from(new Set((arr || []).filter(Boolean)));
+const uniqNames = arr => {
+    const seen = new Set();
+    return (arr || []).map(v => String(v || '').trim()).filter(Boolean).filter(v => {
+        const key = nm(v).replace(/\s+/g, ' ').trim();
+        if (!key || seen.has(key))
+            return false;
+        seen.add(key);
+        return true;
+    });
+};
 const shortLoc = name => {
     if (!name) return '—';
     const n = String(name);
@@ -6634,7 +6648,7 @@ async function downloadWorkbook(wb, filename) {
     return false;
 }
 function tourCommissionTotal(t) {
-    if (!t || t.transferType !== 'tour')
+    if (!t)
         return 0;
     const explicit = moneyValue(t.tourCommission);
     return explicit > 0 ? explicit : 0;
@@ -6818,6 +6832,22 @@ function calcAltBal(t) {
         return { firm: t.altAcenta, netOl: d + altKomisyonKesinti };
     return { firm: t.altAcenta, netOl: -alt };
 }
+function formPreviewAmounts(t) {
+    if (!t)
+        return { firmBal: null, altBal: null, odeloBal: null, olmezNet: 0, agencyToOlmez: false };
+    const noCustomerPayment = !!(t && String(t.paymentCollect || '') === 'no' && !t.paymentToMe);
+    const givenOl = isOlmezturParty(t && t.givenBy);
+    const assignedOl = isOlmezturParty(t && t.assignedTo);
+    const agencyToOlmez = assignedOl && !!(t && t.givenBy) && !givenOl;
+    const calcT = { ...t, givenBy: givenOl ? OL : t.givenBy, assignedTo: assignedOl ? OL : t.assignedTo };
+    const firmBal = noCustomerPayment ? null : calcBal(calcT);
+    const altBal = noCustomerPayment ? null : calcAltBal(calcT);
+    const odeloBal = balenturOdeloCalc(calcT);
+    let olmezNet = noCustomerPayment ? 0 : olmezKar(calcT);
+    if (agencyToOlmez && noCustomerPayment)
+        olmezNet = 0;
+    return { firmBal, altBal, odeloBal, olmezNet, agencyToOlmez };
+}
 function tokenOverlapScore(a, b) {
     try {
         const aa = String(a || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean);
@@ -6939,6 +6969,46 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
             show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #F2EFEA', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
                 React.createElement("span", { style: { fontSize: 14 } }, s.i),
                 React.createElement("span", null, s.n)))))))));
+}
+function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) {
+    const [open, setOpen] = useState(false);
+    const raw = String(value || '');
+    const q = nm(raw).replace(/\s+/g, ' ').trim();
+    const list = (rows || []).map(r => typeof r === 'string' ? { name: r, phone: '' } : { name: String((r && r.name) || '').trim(), phone: String((r && r.phone) || '').trim() }).filter(r => r.name);
+    const ranked = q.length < 2 ? [] : list.map(r => {
+        const key = nm(r.name).replace(/\s+/g, ' ').trim();
+        const ph = nm(r.phone).replace(/\s+/g, '');
+        const words = key.split(' ').filter(Boolean);
+        let score = 99;
+        if (key.startsWith(q))
+            score = 0;
+        else if (words.some(w => w.startsWith(q)))
+            score = 1;
+        else if (key.includes(q))
+            score = 2;
+        else if (ph.includes(q))
+            score = 3;
+        return { ...r, score };
+    }).filter(r => r.score < 99).sort((a, b) => a.score - b.score || a.name.localeCompare(b.name, 'tr')).slice(0, 8);
+    const pick = r => {
+        if (!r || !r.name)
+            return;
+        if (onSelect)
+            onSelect(r);
+        else if (onChange)
+            onChange(r.name);
+        setOpen(false);
+    };
+    return React.createElement("div", { className: "ko-smart-pick" },
+        React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); }, onFocus: () => setOpen(true), onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "2 harf yazın...", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
+        open && (raw || '').trim().length > 0 && q.length < 2 && React.createElement("div", { className: "ko-smart-menu ko-smart-hint" }, "Sonuçlar için en az 2 harf yazın"),
+        open && q.length >= 2 && React.createElement("div", { className: "ko-smart-menu" },
+            ranked.length > 0 ? ranked.map(r => React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-option", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); } },
+                React.createElement("span", { className: "ko-smart-name" }, r.name),
+                r.phone && React.createElement("span", { className: "ko-smart-phone" }, r.phone)
+            )) : React.createElement("div", { className: "ko-smart-empty" }, emptyText || "Eşleşme yok; yazdığınız isimle devam edebilirsiniz.")
+        )
+    );
 }
 function AracTab({ tip, aracK, setAracK }) {
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
@@ -7370,7 +7440,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const toplamHd = Math.round(tourHd.reduce((s, t) => s + tourCommissionTotal(t), 0));
         const hdSatir = toplamHd > 0 ? '\nToplam Tur Komisyonu: ' + fr(toplamHd) + '₺ | Bölüşen Pay: ' + fr(toplamHd / 2) + '₺ / ' + fr(toplamHd / 2) + '₺ (' + tourHd.length + ' tur)' : '';
         const poz = net >= 0 ? 'Tarafınızdan ' + fr(Math.abs(net)) + '₺ alacağımız var.' : 'Tarafınıza ' + fr(Math.abs(net)) + '₺ borcumuz var.';
-        return 'ÖLMEZTUR TURİZM\n' + firm + ' — ' + new Date().toLocaleDateString('tr-TR') + '\n' + '─'.repeat(28) + '\n' + ts.length + ' Transfer | Alacak:' + fr(al) + '₺ Verecek:' + fr(ver) + '₺\nNet: ' + (net >= 0 ? '+' : '') + fr(net) + '₺' + hdSatir + '\n' + '─'.repeat(28) + '\n\n' + rows + '\n\n' + poz;
+        return 'ÖLMEZTUR TURİZM\n' + firm + ' — ' + new Date().toLocaleDateString('tr-TR') + '\n' + '─'.repeat(28) + '\n' + ts.length + ' Transfer | Alacak:' + fr(al) + '₺ Borç:' + fr(ver) + '₺\nNet: ' + (net >= 0 ? '+' : '') + fr(net) + '₺' + hdSatir + '\n' + '─'.repeat(28) + '\n\n' + rows + '\n\n' + poz;
     };
     const csvExport = firm => {
         // iPhone Numbers uyumlu CSV - UTF-8 BOM ile Türkçe karakter desteği
@@ -7420,7 +7490,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         csv += '═══ GENEL ÖZET ═══\n';
         csv += 'Toplam Transfer,' + ts.length + '\n';
         csv += 'Toplam Alacak (TL),' + Math.round(al) + '\n';
-        csv += 'Toplam Verecek (TL),' + Math.round(ver) + '\n';
+        csv += 'Toplam Borç (TL),' + Math.round(ver) + '\n';
         csv += 'NET BAKİYE (TL),' + Math.round(net) + '\n';
         if (toplamHakedis > 0) {
             csv += 'Toplam Tur Komisyonu (TL),' + toplamHakedis + ' (' + tourHd.length + ' tur)\n';
@@ -7435,7 +7505,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         csv += '═══ ' + esc(firm.toUpperCase()) + "'IN VERDİĞİ İŞLER (ALACAK) ═══\n";
         csv += 'Transfer Sayısı,' + oVerdi.length + ' (' + gO.acik + ' açık · ' + gO.kapanan + ' kapandı)\n';
         csv += 'Toplam Alacak (TL),' + Math.round(gO.al) + '\n';
-        csv += 'Toplam Verecek (TL),' + Math.round(gO.ver) + '\n';
+        csv += 'Toplam Borç (TL),' + Math.round(gO.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gO.net) + '\n';
         csv += '\n';
         csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
@@ -7465,10 +7535,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         csv += '\n';
 
         // ═══ GRUP 2: ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══
-        csv += "═══ ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══\n";
+        csv += "═══ ÖLMEZTUR'UN VERDİĞİ İŞLER (BORÇ) ═══\n";
         csv += 'Transfer Sayısı,' + benVerdim.length + ' (' + gB.acik + ' açık · ' + gB.kapanan + ' kapandı)\n';
         csv += 'Toplam Alacak (TL),' + Math.round(gB.al) + '\n';
-        csv += 'Toplam Verecek (TL),' + Math.round(gB.ver) + '\n';
+        csv += 'Toplam Borç (TL),' + Math.round(gB.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gB.net) + '\n';
         csv += '\n';
         csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
@@ -7546,7 +7616,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 
         // ═══ KAPANIŞ — HESAPLAMA ÖZETİ ═══
         csv += '═══ HESAPLAMA ÖZETİ ═══\n';
-        csv += 'Grup,Alacak (TL),Verecek (TL),Net (TL)\n';
+        csv += 'Grup,Alacak (TL),Borç (TL),Net (TL)\n';
         csv += esc(firm) + "'ın verdiği işler," + Math.round(gO.al) + ',' + Math.round(gO.ver) + ',' + Math.round(gO.net) + '\n';
         csv += "Ölmeztur'un verdiği işler," + Math.round(gB.al) + ',' + Math.round(gB.ver) + ',' + Math.round(gB.net) + '\n';
         if (altGrup.length > 0) {
@@ -7829,7 +7899,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     }
                 },
                     React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: pos ? G : R, textTransform: 'uppercase', letterSpacing: .8 } }, (pos ? '▲ ' : '▼ ') + (pos ? 'Ölmeztur Alacaklı' : 'Ölmeztur Verecekli')),
+                        React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: pos ? G : R, textTransform: 'uppercase', letterSpacing: .8 } }, (pos ? '▲ ' : '▼ ') + (pos ? 'Ölmeztur Alacaklı' : 'Ölmeztur Borçlu')),
                         React.createElement("div", { style: { fontSize: 19, fontWeight: 900, color: pos ? G : R, marginTop: 2, letterSpacing: 0 } }, (pos ? '+' : '−') + fr(detayT.netOl) + '₺')),
                     React.createElement("div", { style: { textAlign: 'right' } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 700 } }, "Kâr"),
@@ -8119,7 +8189,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         }
                     },
                         React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: net >= 0 ? G : R, marginBottom: 4, letterSpacing: 1, opacity: .85 } },
-                            (net >= 0 ? '▲ ' : '▼ ') + (net >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR VERECEKLİ')),
+                            (net >= 0 ? '▲ ' : '▼ ') + (net >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
                         React.createElement("div", { style: { fontSize: 26, fontWeight: 900, color: net >= 0 ? G : R, letterSpacing: 0, lineHeight: 1.1, textShadow: net >= 0 ? '0 1px 0 rgba(255,255,255,.5)' : '0 1px 0 rgba(255,255,255,.5)' } },
                             (net >= 0 ? '+' : '−') + fr(Math.abs(net)) + " ₺")),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
@@ -8147,7 +8217,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                                 boxShadow: '0 2px 8px rgba(47,143,91,.08)'
                             }
                         },
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ VERECEK"),
+                            React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ BORÇ"),
                             React.createElement("div", { style: { fontSize: 16, fontWeight: 900, color: R } }, "−" + fr(ver) + " ₺"))),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: TX } }, "Ayl\u0131k"),
@@ -8155,7 +8225,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
                         [mts.length, 'Transfer', NAV, '#F7FAF8'],
                         ['+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5'],
-                        ['−' + fr(mVer) + '₺', 'Verecek', R, '#FFF8F7']
+                        ['−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7']
                     ].map(([v, l, col, bg]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(47,143,91,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(47,143,91,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 900, color: col } }, v),
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 700, letterSpacing: .3 } }, l))))),
@@ -8173,7 +8243,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("button", { onClick: () => {
                                 const { ts: ts2, al: al2, ver: ver2, net: net2 } = hData;
                                 const rows2 = ts2.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => { const kar2 = transferNetAmount({ ...t }); return (i + 1) + '. ' + t.date + ' ' + t.time + ' | ' + (t.pickup || '\u2014') + ' \u2192 ' + (t.dropoff || '\u2014') + '\n   Ara\u00E7:' + fr(t.driverPayment) + '\u20BA K\u00E2r:' + (kar2 >= 0 ? '+' : '') + fr(kar2) + '\u20BA ' + (t.firmSettled ? '[KAPALI]' : '[A\u00C7IK]'); }).join('\n\n');
-                                copyText('KEND\u0130 HESABIM \u2014 ' + sel + '\nAlacak:' + fr(al2) + '\u20BA Verecek:' + fr(ver2) + '\u20BA Net:' + (net2 >= 0 ? '+' : '') + fr(net2) + '\u20BA\n' + '\u2500'.repeat(24) + '\n\n' + rows2);
+                                copyText('KEND\u0130 HESABIM \u2014 ' + sel + '\nAlacak:' + fr(al2) + '\u20BA Borç:' + fr(ver2) + '\u20BA Net:' + (net2 >= 0 ? '+' : '') + fr(net2) + '\u20BA\n' + '\u2500'.repeat(24) + '\n\n' + rows2);
                                 tip('Kopyaland\u0131!');
                             }, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCB Kendi\nHesab\u0131m")),
                     renderHesapDetayModal());
@@ -8186,30 +8256,18 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
-                        className: "ko-account-firm-row ko-account-firm-line",
+                        className: "ko-account-firm-card",
                         onClick: () => setSel(firm)
                     },
-                        React.createElement("div", { className: "ko-account-firm-cell ko-account-firm-name" },
+                        React.createElement("div", { className: "ko-account-firm-card-title" },
                             React.createElement("b", null, firm),
-                            React.createElement("small", null, "Firma hesabı")),
-                        React.createElement("div", { className: "ko-account-firm-cell" }, ts.length),
-                        React.createElement("div", { className: "ko-account-firm-cell is-pos" }, al > 0 ? '+' + fr(al) + '₺' : '—'),
-                        React.createElement("div", { className: "ko-account-firm-cell is-neg" }, ver > 0 ? '−' + fr(ver) + '₺' : '—'),
-                        React.createElement("div", { className: "ko-account-firm-cell " + (netVal >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(netVal)),
-                        React.createElement("div", { className: "ko-account-firm-cell ko-account-firm-go" }, "›"));
+                            React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
+                                (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
                 }).filter(Boolean);
-                return React.createElement("div", { className: "ko-account-table-wrap ko-account-firm-wrap" },
-                    React.createElement("div", { className: "ko-account-table ko-account-firm-table" },
-                        React.createElement("div", { className: "ko-account-firm-row ko-account-firm-head" },
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "Acenta"),
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "Kayıt"),
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "Alacak"),
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "Verecek"),
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "Net"),
-                            React.createElement("div", { className: "ko-account-firm-cell" }, "")),
-                        firmRows.length
-                            ? firmRows
-                            : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok")));
+                return React.createElement("div", { className: "ko-account-firm-cards" },
+                    firmRows.length
+                        ? firmRows
+                        : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok"));
             })()
         )));
 }
@@ -15774,6 +15832,16 @@ function App() {
     }, [aracK]);
     const tip = m => { setToast(m); setTimeout(() => setToast(''), 2300); };
     const sf = p => setForm(f => ({ ...f, ...p }));
+    const openNewTransferForm = () => {
+        setQuickEditT(null);
+        setEditId(null);
+        setForm(BF);
+        setAgIn(false);
+        setDrIn(false);
+        setNewAg('');
+        setNewDr({ name: '', phone: '' });
+        setTab('new');
+    };
     const refreshRates = () => fetch('https://open.er-api.com/v6/latest/TRY').then(r => r.json()).then(d => {
         if (d && d.rates && d.rates.USD && d.rates.EUR && d.rates.KWD) {
             const next = {
@@ -16032,6 +16100,12 @@ function App() {
             return;
         }
         const cTRY = toTRY(form.paymentAmount, form.paymentCurrency);
+        [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
+            if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
+                addAgencyContact(n, '');
+        });
+        if ((form.driverName || '').trim() && !drivers.some(d => nm(d.name) === nm(form.driverName)))
+            addDriverContact(form.driverName, form.driverPhone || '');
         const prev = editId ? T.find(x => x.id === editId) : null;
         const companyCollected = !!(form.companyCollected || form.settled || (prev && isCompanyCollected(prev)));
         
@@ -16114,6 +16188,42 @@ function App() {
             passengerCount: Math.max(1, parseInt(n.passengerCount, 10) || passengers.length || 1)
         });
     };
+    const openFullEditT = t => {
+        if (!t || !t.id) return;
+        const src = T.find(x => x.id === t.id) || t;
+        const n = normalizeTransfer(src);
+        const passengers = ensureQuickPassengers(n);
+        setQuickEditT(null);
+        setAgIn(false);
+        setDrIn(false);
+        setNewAg('');
+        setNewDr({ name: '', phone: '' });
+        setForm({
+            ...BF,
+            ...n,
+            id: n.id,
+            date: n.date || BF.date,
+            time: n.time || BF.time,
+            extraStops: Array.isArray(n.extraStops) ? n.extraStops : [],
+            passengers,
+            passengerCount: Math.max(1, parseInt(n.passengerCount, 10) || passengers.length || 1),
+            paymentCurrency: n.paymentCurrency || 'TRY',
+            paymentCollect: n.paymentCollect || 'yes',
+            paymentMethod: n.paymentMethod || 'cash',
+            paymentStatus: n.paymentStatus || 'pending',
+            status: n.status || 'tam',
+            transferType: n.transferType || 'arrival',
+            tripMode: n.tripMode || 'single',
+            plate: (n.plate || '').toUpperCase(),
+            customerCollected: !!n.customerCollected,
+            companyCollected: !!(n.companyCollected || n.settled),
+            settled: !!(n.companyCollected || n.settled),
+            vehiclePaid: !!n.vehiclePaid
+        });
+        setEditId(n.id);
+        setTab('new');
+        tip('Düzenleme formu açıldı');
+    };
     const quickSet = patch => setQuickEditT(q => q ? ({ ...q, ...patch }) : q);
     const quickPassengerSet = (field, value) => setQuickEditT(q => {
         if (!q) return q;
@@ -16155,7 +16265,7 @@ function App() {
         setQuickEditT(null);
         tip('Silindi');
     };
-    const editT = t => openQuickEditT(t);
+    const editT = t => openFullEditT(t);
     const copyT = t => {
         const companyCollected = isCompanyCollected(t);
         const customerCollected = isCustomerCollected(t);
@@ -16349,7 +16459,25 @@ function App() {
         const passengers = ensureQuickPassengers(q);
         const pax = passengers[0] || {};
         const cTRY = toTRY(q.paymentAmount, q.paymentCurrency);
-        const previewNet = Math.round(olmezKar({ ...q, customerTRY: cTRY }));
+        const previewNet = Math.round(formPreviewAmounts({ ...q, customerTRY: cTRY, totalTRY: cTRY }).olmezNet);
+        const quickAgencyListId = "ko-quick-agency-list";
+        const quickDriverListId = "ko-quick-driver-list";
+        const quickAgencyOptions = uniqNames([OL, ...agencies, ...(T || []).flatMap(t => [t.givenBy, t.assignedTo, t.altAcenta])]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+        const quickDriverOptions = uniqNames([...(drivers || []).map(d => d && d.name), ...(T || []).map(t => t.driverName)]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+        const findQuickDriver = name => (drivers || []).find(d => nm(d.name) === nm(name));
+        const saveQuickAgencies = () => {
+            [q.givenBy, q.assignedTo, q.altAcenta].filter(Boolean).forEach(n => {
+                if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
+                    addAgencyContact(n, '');
+            });
+            tip('Acenta isimleri kaydedildi');
+        };
+        const saveQuickDriver = () => {
+            const name = (q.driverName || '').trim();
+            if (!name) return;
+            addDriverContact(name, q.driverPhone || '');
+            tip('Kaptan kaydedildi');
+        };
         const field = (label, child, full) => React.createElement("label", { style: { display: 'flex', flexDirection: 'column', gap: 5, gridColumn: full ? '1 / -1' : undefined, minWidth: 0 } },
             React.createElement("span", { style: { fontSize: 9.5, color: SB, fontWeight: 750, letterSpacing: .45, textTransform: 'uppercase' } }, label),
             child);
@@ -16378,8 +16506,10 @@ function App() {
                 textAlign: 'center'
             }
         }, label);
-        return React.createElement("div", { className: "mo", onClick: () => setQuickEditT(null) },
-            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24, maxHeight: '86vh', overflowY: 'auto' } },
+        return React.createElement("div", { className: "mo ko-transfer-edit-modal", onClick: () => setQuickEditT(null) },
+            React.createElement("div", { className: "ms ko-transfer-edit-sheet", onClick: e => e.stopPropagation(), style: { paddingBottom: 96, maxHeight: 'calc(100dvh - 16px)', overflowY: 'auto' } },
+                React.createElement("datalist", { id: quickAgencyListId }, quickAgencyOptions.map(a => React.createElement("option", { key: a, value: a }))),
+                React.createElement("datalist", { id: quickDriverListId }, quickDriverOptions.map(d => React.createElement("option", { key: d, value: d }))),
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 12 } },
                     React.createElement("div", { style: { minWidth: 0 } },
@@ -16394,20 +16524,31 @@ function App() {
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 9 } },
                     field('Tarih', input({ type: 'date', value: q.date || '', onChange: e => quickSet({ date: e.target.value }) })),
                     field('Saat', input({ type: 'time', value: q.time || '', onChange: e => quickSet({ time: e.target.value }) })),
-                    field('İş Veren', input({ value: q.givenBy || '', onChange: e => quickSet({ givenBy: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
-                    field('İşi Alan', input({ value: q.assignedTo || '', onChange: e => quickSet({ assignedTo: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('İş Veren', input({ list: quickAgencyListId, value: q.givenBy || '', onChange: e => quickSet({ givenBy: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('İşi Alan', input({ list: quickAgencyListId, value: q.assignedTo || '', onChange: e => quickSet({ assignedTo: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
                     field('Alış', input({ value: q.pickup || '', onChange: e => quickSet({ pickup: e.target.value }), placeholder: 'Alış noktası' }), true),
                     field('Bırakış', input({ value: q.dropoff || '', onChange: e => quickSet({ dropoff: e.target.value }), placeholder: 'Bırakış noktası' }), true),
                     field('Yolcu', input({ value: pax.name || '', onChange: e => quickPassengerSet('name', e.target.value), placeholder: 'Yolcu adı' })),
                     field('Kişi', input({ type: 'number', min: 1, value: q.passengerCount || 1, onChange: e => quickSet({ passengerCount: Math.max(1, parseInt(e.target.value, 10) || 1) }) })),
-                    field('Kaptan', input({ value: q.driverName || '', onChange: e => quickSet({ driverName: e.target.value }), placeholder: 'Kaptan adı' })),
+                    field('Kaptan', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 42px', gap: 6 } },
+                        input({ list: quickDriverListId, value: q.driverName || '', onChange: e => {
+                                const dr = findQuickDriver(e.target.value);
+                                quickSet({ driverName: e.target.value, driverPhone: dr ? (dr.phone || '') : q.driverPhone });
+                            }, placeholder: 'Kaptan adı' }),
+                        React.createElement("button", { type: "button", onClick: saveQuickDriver, title: "Kaptanı kaydet", style: { border: '1px solid rgba(63,128,109,.34)', borderRadius: 12, background: 'rgba(231,242,238,.78)', color: G, fontSize: 18, fontWeight: 650, cursor: 'pointer' } }, "+")
+                    )),
                     field('Kaptan Tel', input({ value: q.driverPhone || '', onChange: e => quickSet({ driverPhone: e.target.value }), placeholder: 'Telefon' })),
                     field('Plaka', input({ value: q.plate || '', onChange: e => quickSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
                     field('Uçuş', input({ value: q.flightCode || '', onChange: e => quickSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK...' })),
-                    field('Müşteri Öder mi?', select({ value: q.paymentCollect || 'yes', onChange: e => quickSet({ paymentCollect: e.target.value }) }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
+                    field('Müşteri Öder mi?', select({
+                        value: q.paymentCollect || 'yes',
+                        onChange: e => quickSet(e.target.value === 'no'
+                            ? { paymentCollect: 'no', paymentToMe: false, customerCollected: false }
+                            : { paymentCollect: 'yes' })
+                    }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
                     field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Tam'], ['bos', 'Boş'], ['iptal', 'İptal']])),
                     field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet({ transferType: e.target.value }) }, TIPLER.map(tp => [tp.id, tp.n]))),
-                    field('Alt Acenta', input({ value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
+                    field('Alt Acenta', input({ list: quickAgencyListId, value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
                     field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
                         input({ type: 'text', inputMode: 'decimal', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
                         select({ value: q.paymentCurrency || 'TRY', onChange: e => quickSet({ paymentCurrency: e.target.value }) }, [['TRY', 'TRY'], ['USD', 'USD'], ['EUR', 'EUR'], ['KWD', 'KWD']])
@@ -16436,16 +16577,17 @@ function App() {
                     }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
                     field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
                     field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
-                    q.transferType === 'tour' && field('Tur Hakedişi', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
+                    field('Hakediş', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
                         input({ type: 'text', inputMode: 'decimal', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
                         input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
                     ), true),
                     field('Not', React.createElement("textarea", { className: "inp", value: q.notes || '', onChange: e => quickSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
+                React.createElement("button", { type: "button", onClick: saveQuickAgencies, className: "ko-quick-save-names", style: { marginTop: 10, width: '100%', border: '1px solid rgba(63,128,109,.24)', background: 'rgba(231,242,238,.55)', color: G, borderRadius: 13, padding: '10px 12px', fontSize: 11.5, fontWeight: 560, cursor: 'pointer' } }, "+ İş veren / işi alan / alt acenta isimlerini rehbere ekle"),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
                     toggle('Müşteri alındı', !!q.customerCollected, { customerCollected: !q.customerCollected }),
                     toggle('Şirket alındı', !!(q.companyCollected || q.settled), { companyCollected: !(q.companyCollected || q.settled), settled: !(q.companyCollected || q.settled) }),
                     toggle('Araç ödendi', !!q.vehiclePaid, { vehiclePaid: !q.vehiclePaid })),
-                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '86px 1fr 1.4fr', gap: 8, marginTop: 14 } },
+                React.createElement("div", { className: "ko-quick-edit-actions", style: { display: 'grid', gridTemplateColumns: '86px 1fr 1.4fr', gap: 8, marginTop: 14 } },
                     React.createElement("button", { onClick: deleteQuickEditT, style: { background: '#FFF0EF', color: R, border: '1px solid #E8BCB7', borderRadius: 12, padding: '12px 8px', fontWeight: 750, fontSize: 12, cursor: 'pointer' } }, "Sil"),
                     React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, color: TX, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 8px', fontWeight: 750, fontSize: 12, cursor: 'pointer' } }, "Vazgeç"),
                     React.createElement("button", { onClick: saveQuickEditT, style: { background: 'linear-gradient(135deg,' + G + ',#315B42)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 8px', fontWeight: 850, fontSize: 13, cursor: 'pointer', boxShadow: '0 8px 18px rgba(84,132,103,.22)' } }, "Kaydet"))));
@@ -17097,21 +17239,67 @@ function App() {
     };
     const st = stats();
     const cTRY2 = toTRY(form.paymentAmount, form.paymentCurrency);
-    const olAlan2 = form.assignedTo === OL && form.givenBy && form.givenBy !== OL;
+    const olAlan2 = isOlmezturParty(form.assignedTo) && form.givenBy && !isOlmezturParty(form.givenBy);
     const formPreviewT = { ...form, customerTRY: cTRY2, totalTRY: cTRY2 };
-    const previewAgencyToOlmez = olAlan2;
-    const fNetRaw = olmezKar(formPreviewT);
-    const firmPreviewBalRaw = calcBal(formPreviewT);
-    const fNet = previewAgencyToOlmez ? 0 : fNetRaw;
-    const firmPreviewBal = previewAgencyToOlmez && firmPreviewBalRaw ? { ...firmPreviewBalRaw, netOl: 0 } : firmPreviewBalRaw;
-    const altPreviewBal = calcAltBal(formPreviewT);
+    const formPreview = formPreviewAmounts(formPreviewT);
+    const fNet = formPreview.olmezNet;
+    const firmPreviewBal = formPreview.firmBal;
+    const altPreviewBal = formPreview.altBal;
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
     const altPreviewNet = altPreviewBal ? altPreviewBal.netOl : 0;
-    const formBalenturOdelo = balenturOdeloCalc(formPreviewT);
+    const formBalenturOdelo = formPreview.odeloBal;
     const previewTL = n => fr(moneyValue(n));
     const formTourCommissionTotal = tourCommissionTotal(formPreviewT);
     const formTourCommissionShare = tourCommissionShare(formPreviewT);
     const formTourCommissionRightSide = form.altAcenta ? (form.altAcenta || 'Alt acenta') : (form.assignedTo || 'İş alan');
+    const formAgencyRows = (() => {
+        const map = new Map();
+        const put = (name, phone) => {
+            const n = String(name || '').trim();
+            if (!n) return;
+            const key = nm(n).replace(/\s+/g, ' ').trim();
+            if (!key) return;
+            const cur = map.get(key);
+            if (!cur || (!cur.phone && phone))
+                map.set(key, { name: n, phone: String(phone || '').trim() });
+        };
+        put(OL, '');
+        (agencies || []).forEach(a => put(a, agencyPhones && agencyPhones[a]));
+        (T || []).forEach(t => {
+            put(t && t.givenBy, agencyPhones && agencyPhones[t && t.givenBy]);
+            put(t && t.assignedTo, agencyPhones && agencyPhones[t && t.assignedTo]);
+            put(t && t.altAcenta, agencyPhones && agencyPhones[t && t.altAcenta]);
+        });
+        return Array.from(map.values()).sort((a, b) => {
+            const ao = isOlmezturParty(a.name), bo = isOlmezturParty(b.name);
+            if (ao && !bo) return -1;
+            if (!ao && bo) return 1;
+            return a.name.localeCompare(b.name, 'tr');
+        });
+    })();
+    const formAgencyOptions = formAgencyRows.map(x => x.name);
+    const formDriverRows = (() => {
+        const map = new Map();
+        const put = (name, phone) => {
+            const n = String(name || '').trim();
+            if (!n) return;
+            const key = nm(n).replace(/\s+/g, ' ').trim();
+            if (!key) return;
+            const cur = map.get(key);
+            if (!cur || (!cur.phone && phone))
+                map.set(key, { name: n, phone: String(phone || '').trim() });
+        };
+        (drivers || []).forEach(d => put(d && d.name, d && d.phone));
+        (T || []).forEach(t => put(t && t.driverName, t && t.driverPhone));
+        return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    })();
+    const saveFormAgencies = () => {
+        [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
+            if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
+                addAgencyContact(n, '');
+        });
+        tip('Acenta isimleri kaydedildi');
+    };
     if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !authReady) {
         return (React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: '#F1EEE9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
             React.createElement("div", { className: 'card', style: { width: '100%', maxWidth: 420, textAlign: 'center' } },
@@ -17817,7 +18005,7 @@ function App() {
                             ? React.createElement("div", { style: { textAlign: 'center', padding: '20px 10px', color: 'var(--ink-3)' } },
                                 React.createElement("div", { style: { fontSize: 34, marginBottom: 8 } }, "✨"),
                                 React.createElement("div", { style: { fontWeight: 700, color: 'var(--ink)' } }, "Bugün transfer yok"),
-                                React.createElement("button", { onClick: () => setTab('new'), style: { marginTop: 12, background: 'var(--brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 22px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, "+ Yeni Transfer"))
+                                React.createElement("button", { onClick: openNewTransferForm, style: { marginTop: 12, background: 'var(--brand)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 22px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, "+ Yeni Transfer"))
                             : React.createElement("div", null,
                                 todayT.slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))).map(renderTransferItem))
                     ),
@@ -18143,7 +18331,12 @@ function App() {
                 );
             })(),
 
-            tab === 'new' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            tab === 'new' && (React.createElement("div", { className: "ko-new-form", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(63,128,109,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
+                    React.createElement("div", { style: { minWidth: 0 } },
+                        React.createElement("div", { style: { fontSize: 12.5, fontWeight: 620, color: G } }, "Transfer düzenleniyor"),
+                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup || 'Alış') + ' → ' + (form.dropoff || 'Bırakış'))),
+                    React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(63,128,109,.22)', background: '#fff', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 560, cursor: 'pointer' } }, "Yeni kayıt")),
                 React.createElement("div", { className: "card" },
                     /* SOL: Tarih (üstünde TIP açılır pill) + SAĞ: Saat (üstünde MOD açılır pill) */
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
@@ -18271,30 +18464,25 @@ function App() {
                         React.createElement("span", { className: "lbl" }, "\u2708\uFE0F U\u00E7u\u015F Kodu"),
                         React.createElement("input", { type: "text", value: form.flightCode, onChange: e => sf({ flightCode: e.target.value.toUpperCase() }), placeholder: "TK 123", className: "inp" }))),
                 React.createElement("div", { className: "card" },
-                    React.createElement("div", { style: { display: 'flex', gap: 7, alignItems: 'flex-end', marginBottom: 8 } },
+                    React.createElement("div", { className: "ko-party-row", style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 44px', gap: 7, alignItems: 'flex-end', marginBottom: 8 } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Veren"),
-                            React.createElement("select", { value: form.givenBy, onChange: e => sf({ givenBy: e.target.value }), className: "inp" },
-                                React.createElement("option", { value: "" }, "Se\u00E7in..."),
-                                agencies.map((a, i) => React.createElement("option", { key: i, value: a }, a)))),
+                            React.createElement(SmartPick, { value: form.givenBy || '', rows: formAgencyRows, onChange: v => sf({ givenBy: v }), onSelect: a => sf({ givenBy: a.name }), placeholder: "Örn: öl, tr, bal..." })),
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Yapan"),
-                            React.createElement("select", { value: form.assignedTo, onChange: e => sf({ assignedTo: e.target.value }), className: "inp" },
-                                React.createElement("option", { value: "" }, "Se\u00E7in..."),
-                                agencies.map((a, i) => React.createElement("option", { key: i, value: a }, a)))),
-                        React.createElement("button", { onClick: () => setAgIn(p => !p), style: { background: agIn ? R : NAV, border: 'none', color: '#fff', borderRadius: 10, padding: '9px 12px', fontWeight: 800, fontSize: 16, flexShrink: 0, alignSelf: 'flex-end', cursor: 'pointer' } }, agIn ? '✕' : '+')),
+                            React.createElement(SmartPick, { value: form.assignedTo || '', rows: formAgencyRows, onChange: v => sf({ assignedTo: v }), onSelect: a => sf({ assignedTo: a.name }), placeholder: "Örn: öl, tr, bal..." })),
+                        React.createElement("button", { onClick: () => setAgIn(p => !p), className: "ko-party-add-btn", style: { background: agIn ? R : NAV, border: 'none', color: '#fff', borderRadius: 10, minHeight: 43, padding: '0 12px', fontWeight: 800, fontSize: 16, flexShrink: 0, alignSelf: 'flex-end', cursor: 'pointer' } }, agIn ? '✕' : '+')),
                     agIn && (React.createElement("div", { style: { display: 'flex', gap: 7, marginBottom: 8 } },
                         React.createElement("input", { type: "text", value: newAg, onChange: e => setNewAg(e.target.value), placeholder: "Yeni acenta...", className: "inp", style: { flex: 1, width: 'auto' } }),
                         React.createElement("button", { onClick: () => { addAg(newAg); setNewAg(''); setAgIn(false); }, style: { background: G, border: 'none', color: '#fff', borderRadius: 10, padding: '0 14px', fontWeight: 800, fontSize: 16, cursor: 'pointer' } }, "\u2713"))),
-                    React.createElement("div", { style: { display: 'flex', gap: 7, alignItems: 'flex-end' } },
+                    React.createElement("div", { className: "ko-party-alt-row", style: { display: 'grid', gridTemplateColumns: form.altAcenta ? 'minmax(0,1fr) minmax(0,1fr)' : '1fr', gap: 7, alignItems: 'flex-end' } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "Alt Acenta"),
-                            React.createElement("select", { value: form.altAcenta || '', onChange: e => sf({ altAcenta: e.target.value }), className: "inp" },
-                                React.createElement("option", { value: "" }, "\u2014 Yok \u2014"),
-                                agencies.map((a, i) => React.createElement("option", { key: i, value: a }, a)))),
+                            React.createElement(SmartPick, { value: form.altAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ altAcenta: v }), onSelect: a => sf({ altAcenta: a.name }), placeholder: "Varsa 2 harf yazın..." })),
                         form.altAcenta && (React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "Alt Acenta \u00DCcreti (\u20BA)"),
-                            React.createElement("input", { type: "text", inputMode: "decimal", value: form.altAcentaUcreti || '', onChange: e => sf({ altAcentaUcreti: e.target.value }), placeholder: "0", className: "inp" }))))),
+                            React.createElement("input", { type: "text", inputMode: "decimal", value: form.altAcentaUcreti || '', onChange: e => sf({ altAcentaUcreti: e.target.value }), placeholder: "0", className: "inp" })))),
+                    React.createElement("button", { type: "button", onClick: saveFormAgencies, style: { marginTop: 8, width: '100%', border: '1px solid rgba(63,128,109,.22)', background: 'rgba(231,242,238,.52)', color: G, borderRadius: 11, padding: '9px 10px', fontSize: 11, fontWeight: 560, cursor: 'pointer' } }, "+ Acenta isimlerini rehbere ekle")),
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement(LocIn, { field: "pickup", lbl: "\uD83D\uDCCD Al\u0131\u015F Noktas\u0131", value: form.pickup, sugg: sugg.pickup, show: showSg.pickup, onChange: chL, onSel: selL, onFocus: () => { if (form.pickup.length > 1)
                             setShowSg(p => ({ ...p, pickup: true })); }, onBlur: () => setTimeout(() => setShowSg(p => ({ ...p, pickup: false })), 180) }),
@@ -18323,13 +18511,20 @@ function App() {
                         React.createElement("div", { style: { fontSize: '9px', fontWeight: 700 } }, v.n),
                         React.createElement("div", { style: { fontSize: '8px', opacity: .6 } }, v.cap))))),
                     React.createElement("span", { className: "lbl" }, "👨🏻‍✈️ Kaptan"),
-                    !drIn ? (React.createElement("div", { style: { display: 'flex', gap: 7 } },
-                        React.createElement("select", { value: form.driverName, onChange: e => { const dr = drivers.find(d => d.name === e.target.value); sf({ driverName: e.target.value, driverPhone: dr?.phone || '' }); }, className: "inp", style: { flex: 1, width: 'auto' } },
-                            React.createElement("option", { value: "" }, "Kaptan se\u00E7in..."),
-                            drivers.map((d, i) => React.createElement("option", { key: i, value: d.name },
-                                d.name,
-                                d.phone ? ' — ' + d.phone : ''))),
-                        React.createElement("button", { onClick: () => setDrIn(true), style: { background: NAV, border: 'none', color: '#fff', borderRadius: 10, padding: '0 13px', fontWeight: 800, fontSize: 18, cursor: 'pointer' } }, "+"))) : (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                    !drIn ? (React.createElement("div", { className: "ko-driver-row", style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 46px', gap: 7 } },
+                        React.createElement(SmartPick, { value: form.driverName || '', rows: formDriverRows, onChange: v => {
+                                const dr = formDriverRows.find(d => nm(d.name) === nm(v));
+                                sf({ driverName: v, driverPhone: dr ? (dr.phone || '') : form.driverPhone });
+                            }, onSelect: d => sf({ driverName: d.name, driverPhone: d.phone || '' }), placeholder: "Kaptan adı / telefon..." }),
+                        React.createElement("button", { onClick: () => {
+                                const dn = (form.driverName || '').trim();
+                                const exists = formDriverRows.some(d => nm(d.name) === nm(dn));
+                                if (dn && !exists) {
+                                    addDriverContact(dn, form.driverPhone || '');
+                                    tip('Kaptan kaydedildi');
+                                }
+                                else setDrIn(true);
+                            }, style: { background: NAV, border: 'none', color: '#fff', borderRadius: 10, padding: '0 13px', fontWeight: 800, fontSize: 18, cursor: 'pointer' } }, "+"))) : (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                         React.createElement("div", { style: { display: 'flex', gap: 7 } },
                             React.createElement("input", { type: "text", value: newDr.name, onChange: e => setNewDr(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan ad\u0131", className: "inp", style: { flex: 1, width: 'auto' } }),
                             React.createElement("input", { type: "tel", value: newDr.phone, onChange: e => setNewDr(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 115, flex: 'none' } })),
@@ -18516,8 +18711,8 @@ function App() {
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                             form.childSeat && React.createElement("input", { type: "number", min: 1, max: 4, value: form.childSeatCount || 1, onChange: e => sf({ childSeatCount: parseInt(e.target.value) || 1 }), className: "inp", style: { width: 48, padding: '4px 6px', textAlign: 'center' } }),
                             React.createElement("button", { className: "lg-choice" + (form.childSeat ? " is-active ko-selected-gold" : ""), onClick: () => sf({ childSeat: !form.childSeat, childSeatCount: form.childSeat ? 0 : 1 }), style: { background: form.childSeat ? G : INP, color: form.childSeat ? '#fff' : SB, border: '1px solid ' + (form.childSeat ? G : BOR), borderRadius: 8, padding: '5px 12px', fontWeight: 700, cursor: 'pointer', fontSize: '12px' } }, form.childSeat ? 'Var ✓' : 'Yok'))),
-                    /* Hakediş — sadece transferType === 'tour' iken görünür */
-                    form.transferType === 'tour' && React.createElement("div", {
+                    /* Hakediş — sonradan öğrenildiğinde de eklenebilir */
+                    React.createElement("div", {
                         style: {
                             marginBottom: 8, padding: '11px 13px',
                             background: 'linear-gradient(135deg, #FFF5E5, #FFE7B8)',
@@ -18527,7 +18722,7 @@ function App() {
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                             React.createElement("span", { style: { fontSize: 14 } }, "🪙"),
-                            React.createElement("span", { style: { fontSize: 12, fontWeight: 900, color: '#C46D00', letterSpacing: .5 } }, "TUR KOMİSYONU"),
+                            React.createElement("span", { style: { fontSize: 12, fontWeight: 900, color: '#C46D00', letterSpacing: .5 } }, "HAKEDİŞ"),
                             React.createElement("span", { style: { fontSize: 9, color: '#C46D00', marginLeft: 'auto', fontWeight: 700, fontStyle: 'italic' } }, "Toplamı 2'ye böl")),
                         React.createElement("input", {
                             type: "number", inputMode: "decimal",
@@ -18562,7 +18757,7 @@ function App() {
                 visibleListRows.length === 0 ? (React.createElement("div", { style: { textAlign: 'center', paddingTop: 40 } },
                     React.createElement("div", { style: { fontSize: 46, marginBottom: 8 } }, "✈️"),
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'),
-                    T.length === 0 && React.createElement("button", { onClick: () => setTab('new'), style: { marginTop: 12, background: NAV, color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 13, fontWeight: 700, cursor: 'pointer' } }, "+ Yeni Transfer"))) : renderTransferList(),
+                    T.length === 0 && React.createElement("button", { onClick: openNewTransferForm, style: { marginTop: 12, background: NAV, color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 13, fontWeight: 700, cursor: 'pointer' } }, "+ Yeni Transfer"))) : renderTransferList(),
                 /* ── Alt kart: Özet/Detay + Filtreler — transfer listesinin altında ── */
                 false && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
                     /* Özet — tek satır, kompakt */
@@ -18606,7 +18801,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openQuickEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
             tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
@@ -18643,7 +18838,7 @@ function App() {
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
-                React.createElement("button", { className: "tab-fab", onClick: () => setTab('new'), "aria-label": "Yeni Transfer" },
+                React.createElement("button", { className: "tab-fab", onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
                     React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, "₺"),
@@ -21979,7 +22174,7 @@ html body .app-shell main.main-cont .ko-money-token{
     observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleLock, true);
     document.addEventListener('input', scheduleLock, true);
-    window.setInterval(lockMoneyColors, 500);
+    window.setInterval(lockMoneyColors, 3500);
 })();
 
 (function(){
@@ -22177,7 +22372,7 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
     observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleLock, true);
     document.addEventListener('input', scheduleLock, true);
-    window.setInterval(lockCurrencyAndPayment, 650);
+    window.setInterval(lockCurrencyAndPayment, 3000);
 })();
 
 (function(){
@@ -23604,7 +23799,7 @@ html body .app-shell main.main-cont [style*="box-shadow"][style*="rgba(30, 122, 
     if (obsTarget && window.MutationObserver) {
         new MutationObserver(schedule).observe(obsTarget, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
     }
-    setInterval(clearGreenBar, 300);
+    setInterval(clearGreenBar, 2500);
 })();
 
 (function(){
@@ -23756,7 +23951,7 @@ html body .app-shell main.main-cont.view-arac .ko-money-currency{
     if (obsTarget && window.MutationObserver) {
         new MutationObserver(scheduleLightNumbers).observe(obsTarget, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class'] });
     }
-    setInterval(setLightNumbers, 250);
+    setInterval(setLightNumbers, 3500);
 })();
 
 (function(){
@@ -26041,7 +26236,7 @@ html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-title
 
 html body .app-shell main.main-cont.view-home .lg-profit-row,
 html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
-  margin-bottom:78px!important;
+  margin-bottom:54px!important;
 }
 
 @media (max-width:430px){
@@ -26063,7 +26258,7 @@ html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
 
   html body .app-shell main.main-cont.view-home .lg-profit-row,
   html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
-    margin-bottom:76px!important;
+    margin-bottom:56px!important;
   }
 }
 `;
@@ -26074,6 +26269,340 @@ html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
         document.head.appendChild(style);
     }
     style.textContent = SAFE_SYNC_TABBAR;
+})();
+
+(function(){
+    const STABLE_PREMIUM_FIX_ID = 'ko-stable-preview-edit-account-v1';
+    const STABLE_PREMIUM_FIX = `
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-cards{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+}
+
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-card{
+  width:100%!important;
+  min-height:64px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:14px 15px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(31,61,49,.14)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.74))!important;
+  box-shadow:0 10px 28px rgba(28,36,42,.07),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  color:#17231e!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-card:active,
+html body .app-shell main.main-cont.view-hesap button.ko-account-firm-card:focus-visible{
+  border-color:rgba(63,128,109,.58)!important;
+  box-shadow:0 0 0 2px rgba(63,128,109,.13),0 12px 30px rgba(28,36,42,.08),inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title b{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:13.8px!important;
+  line-height:1.2!important;
+  font-weight:540!important;
+  letter-spacing:0!important;
+  color:#17231e!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title span{
+  flex:0 0 auto!important;
+  min-width:104px!important;
+  max-width:116px!important;
+  text-align:center!important;
+  font-size:12.2px!important;
+  line-height:1!important;
+  font-weight:560!important;
+  letter-spacing:0!important;
+  padding:8px 8px!important;
+  border-radius:999px!important;
+  font-variant-numeric:tabular-nums!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title span.is-pos{
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+  background:rgba(231,242,238,.72)!important;
+  border:1px solid rgba(63,128,109,.22)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title span.is-neg{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+  background:rgba(255,241,239,.78)!important;
+  border:1px solid rgba(178,96,92,.22)!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame div,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-stat div{
+  font-weight:560!important;
+  letter-spacing:0!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .app-shell main.main-cont.view-hesap .ko-hesap-green-frame div:first-child,
+html body .app-shell main.main-cont.view-hesap .ko-hesap-month-stat div:last-child{
+  font-weight:520!important;
+}
+
+html body .ko-transfer-edit-modal{
+  align-items:flex-end!important;
+}
+
+html body .ko-transfer-edit-modal .ko-transfer-edit-sheet{
+  width:min(100%,520px)!important;
+  border-radius:24px 24px 0 0!important;
+  border:1px solid rgba(31,61,49,.13)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(250,251,249,.94))!important;
+  box-shadow:0 -18px 48px rgba(20,28,34,.18),inset 0 1px 0 rgba(255,255,255,.98)!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+}
+
+html body .ko-transfer-edit-modal .ko-transfer-edit-sheet .inp{
+  border-radius:13px!important;
+  border:1px solid rgba(31,61,49,.14)!important;
+  background:rgba(255,255,255,.86)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95)!important;
+  font-weight:430!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form{
+  gap:11px!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .card{
+  border-radius:18px!important;
+  border:1px solid rgba(31,61,49,.12)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(249,251,249,.84))!important;
+  box-shadow:0 14px 34px rgba(20,28,34,.08),inset 0 1px 0 rgba(255,255,255,.96)!important;
+  padding:12px!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .lbl{
+  color:rgba(23,35,30,.70)!important;
+  font-size:10.3px!important;
+  font-weight:520!important;
+  letter-spacing:.12px!important;
+  line-height:1.25!important;
+  text-transform:none!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .inp,
+html body .app-shell main.main-cont .ko-new-form textarea{
+  min-height:43px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(31,61,49,.13)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(250,252,250,.90))!important;
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
+  font-size:13px!important;
+  font-weight:430!important;
+  letter-spacing:0!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+
+html body .app-shell main.main-cont select.ko-party-select,
+html body .app-shell main.main-cont select.ko-driver-select{
+  width:100%!important;
+  max-width:100%!important;
+  min-height:43px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(31,61,49,.14)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(250,252,250,.88))!important;
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
+  font-size:12.4px!important;
+  font-weight:430!important;
+  letter-spacing:0!important;
+  line-height:1.25!important;
+  font-variant-numeric:tabular-nums!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+
+html body .app-shell main.main-cont .ko-party-row,
+html body .app-shell main.main-cont .ko-party-alt-row,
+html body .app-shell main.main-cont .ko-driver-row{
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont .ko-party-row > div,
+html body .app-shell main.main-cont .ko-party-alt-row > div,
+html body .app-shell main.main-cont .ko-driver-row > *{
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont .ko-party-add-btn{
+  box-shadow:0 8px 18px rgba(31,61,49,.16),inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+@media (max-width:520px){
+  html body .app-shell main.main-cont .ko-party-row,
+  html body .app-shell main.main-cont .ko-party-alt-row{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  html body .app-shell main.main-cont .ko-party-add-btn{
+    width:100%!important;
+    min-height:38px!important;
+    font-size:13px!important;
+  }
+}
+
+html body .app-shell main.main-cont select.ko-party-select option,
+html body .app-shell main.main-cont select.ko-driver-select option{
+  font-size:13px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-pick{
+  position:relative!important;
+  min-width:0!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-input{
+  width:100%!important;
+  max-width:100%!important;
+  padding-right:12px!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-menu{
+  position:absolute!important;
+  top:calc(100% + 5px)!important;
+  left:0!important;
+  right:0!important;
+  z-index:180!important;
+  max-height:238px!important;
+  overflow-y:auto!important;
+  border-radius:15px!important;
+  border:1px solid rgba(31,61,49,.14)!important;
+  background:rgba(255,255,255,.98)!important;
+  box-shadow:0 16px 38px rgba(20,28,34,.16),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  -webkit-overflow-scrolling:touch!important;
+  backdrop-filter:blur(18px) saturate(1.12)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.12)!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-hint,
+html body .app-shell main.main-cont .ko-smart-empty{
+  padding:10px 12px!important;
+  color:rgba(23,35,30,.56)!important;
+  font-size:11.3px!important;
+  font-weight:430!important;
+  line-height:1.35!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-option{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(31,61,49,.08)!important;
+  background:transparent!important;
+  color:#17231e!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-option:last-child{
+  border-bottom:0!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-option:active,
+html body .app-shell main.main-cont .ko-smart-option:hover{
+  background:rgba(231,242,238,.66)!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-name{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:13.2px!important;
+  font-weight:480!important;
+  letter-spacing:0!important;
+  color:#17231e!important;
+  -webkit-text-fill-color:#17231e!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-phone{
+  flex-shrink:0!important;
+  color:rgba(23,35,30,.54)!important;
+  -webkit-text-fill-color:rgba(23,35,30,.54)!important;
+  font-size:11.5px!important;
+  font-weight:400!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+html body .ko-transfer-edit-modal .ko-quick-edit-actions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:8!important;
+  margin-left:-2px!important;
+  margin-right:-2px!important;
+  padding:10px 0 2px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.96) 26%,rgba(255,255,255,.98))!important;
+  backdrop-filter:blur(16px) saturate(1.25)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.25)!important;
+}
+
+@media (max-width:430px){
+  html body .app-shell main.main-cont.view-hesap button.ko-account-firm-card{
+    min-height:60px!important;
+    padding:12px 13px!important;
+    border-radius:17px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title{
+    gap:8px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title b{
+    font-size:13px!important;
+  }
+  html body .app-shell main.main-cont.view-hesap .ko-account-firm-card-title span{
+    min-width:98px!important;
+    max-width:108px!important;
+    font-size:11.6px!important;
+    padding:7px 6px!important;
+  }
+}
+`;
+    let style = document.getElementById(STABLE_PREMIUM_FIX_ID);
+    if (!style) {
+        style = document.createElement('style');
+        style.id = STABLE_PREMIUM_FIX_ID;
+        document.head.appendChild(style);
+    }
+    style.textContent = STABLE_PREMIUM_FIX;
 })();
 
 </script>
