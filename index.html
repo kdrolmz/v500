@@ -6187,8 +6187,23 @@ var LOGO_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB9AAAAfQCAIAAAAVWl
     var fav=document.createElement('link');fav.rel='icon';fav.href=APP_ICON_URI;document.head.appendChild(fav);
   }catch(e){}
 })();
+  
+  </script>
+
+<script>
+window.OLMEZTUR_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyACS3feekO-KVvDQCxzOp1dchYkjjLAzDE",
+  authDomain: "odeme-transfer.firebaseapp.com",
+  projectId: "odeme-transfer",
+  storageBucket: "odeme-transfer.firebasestorage.app",
+  messagingSenderId: "49109592000",
+  appId: "1:49109592000:web:6120cd1cbb33e43c220a25"
+};
+
+window.OLMEZTUR_CLOUD_DOC_ID = "main";
 
 </script>
+  
 <script>
 const { useState, useEffect, useRef } = React;
 const FIREBASE_CONFIG = window.OLMEZTUR_FIREBASE_CONFIG || null;
@@ -6197,15 +6212,8 @@ const ALLOWED_UID = window.OLMEZTUR_ALLOWED_UID || '';
 const REMEMBER_ME_KEY = 'olmeztur_remember_me';
 const REMEMBER_EMAIL_KEY = 'olmeztur_remember_email';
 let cloudDb = null;
-let cloudDocRef = null;            // Legacy tek-doc (sadece migrasyon ve meta için)
+let cloudDocRef = null;
 let cloudAuth = null;
-// Per-record subcollection ref'leri — her kayıt ayrı Firestore doc'u olur
-let cloudColTransfers = null;
-let cloudColAracK = null;
-let cloudColDebts = null;
-let cloudColTodos = null;
-let cloudColTkLedger = null;
-let cloudMetaRef = null;           // Skaler/meta: agencies, drivers, agencyPhones, rates
 function initCloud(){
   try{
     if(!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) return false;
@@ -6214,38 +6222,13 @@ function initCloud(){
     cloudAuth = firebase.auth(app);
     const remember = (function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } })();
     try{ cloudAuth.setPersistence(remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION); }catch(e){}
-    // Çevrimdışı dayanıklılığı aç — internet kesilse bile değişiklikler bekletilir, sonra otomatik gönderilir
-    try{ firebase.firestore().settings({ ignoreUndefinedProperties: true, merge: true }); }catch(e){}
     cloudDb = firebase.firestore(app);
-    try{ cloudDb.enablePersistence({ synchronizeTabs: true }).catch(function(){}); }catch(e){}
     cloudDocRef = cloudDb.collection('olmeztur').doc(CLOUD_DOC_ID);
-    const root = cloudDocRef;
-    cloudColTransfers = root.collection('transfers');
-    cloudColAracK     = root.collection('aracK');
-    cloudColDebts     = root.collection('debts');
-    cloudColTodos     = root.collection('todos');
-    cloudColTkLedger  = root.collection('tkLedger');
-    cloudMetaRef      = root.collection('meta').doc('app');
     return true;
   }catch(e){ console.error('Firebase init error', e); return false; }
 }
 function cloudEnabled(){ return !!cloudDocRef; }
 function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
-// Kayıttan kayda Firestore yazımı. Veriyi olduğu gibi yazar + updatedAt damgalar.
-function cloudWriteRecord(col, id, data){
-  try{
-    if(!col || !id) return Promise.resolve();
-    const payload = Object.assign({}, data || {}, { id: String(id), updatedAt: new Date().toISOString() });
-    return col.doc(String(id)).set(payload, { merge: true });
-  }catch(e){ return Promise.reject(e); }
-}
-// Soft-delete: tombstone yaz; karşı cihazda da görünür ve geri gelmez
-function cloudSoftDelete(col, id){
-  try{
-    if(!col || !id) return Promise.resolve();
-    return col.doc(String(id)).set({ id: String(id), _deleted: true, _deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, { merge: true });
-  }catch(e){ return Promise.reject(e); }
-}
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
@@ -6381,38 +6364,8 @@ const BF = {
 const STORAGE_KEY = 'tp10';
 const LEGACY_STORAGE_KEYS = ['tp9'];
 const DELETED_TRANSFER_IDS_KEY = 'tp10_deleted_ids';
-// ---- TOMBSTONE / SİLME LİSTESİ ----
-// Geriye uyumlu: eski format ["id1","id2"] (string dizisi) destekli;
-// yeni format [{id, t}] (id + silinme zamanı). Senkronizasyon için her zaman normalize ediyoruz.
-const normalizeDeletedList = raw => {
-    if (!Array.isArray(raw)) return [];
-    const seen = new Map();
-    raw.forEach(entry => {
-        if (entry == null) return;
-        let id, ts;
-        if (typeof entry === 'string' || typeof entry === 'number') {
-            id = String(entry); ts = 0;
-        } else if (typeof entry === 'object') {
-            id = entry.id != null ? String(entry.id) : null;
-            ts = Number(entry.t) || (entry.deletedAt ? Date.parse(entry.deletedAt) : 0) || 0;
-        }
-        if (!id) return;
-        const prev = seen.get(id);
-        if (!prev || ts > prev) seen.set(id, ts);
-    });
-    return Array.from(seen.entries()).map(([id, t]) => ({ id, t }));
-};
-const readDeletedTransferIds = () => {
-    try { return normalizeDeletedList(JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]')); }
-    catch (e) { return []; }
-};
-// İçeriye string ID dizisi de, {id,t} dizisi de gelebilir; yazarken normalize edilir.
-const writeDeletedTransferIds = ids => {
-    try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(normalizeDeletedList(ids))); }
-    catch (e) { }
-};
-// Sadece ID stringlerini döndüren yardımcı (mevcut filter'ler için geriye uyumluluk)
-const deletedIdSet = list => new Set(normalizeDeletedList(list).map(x => String(x.id)));
+const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]'); } catch (e) { return []; } };
+const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
 const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
 function moneyValue(v) {
@@ -6527,77 +6480,33 @@ const transferStamp = t => {
         return isNaN(n) ? 0 : n;
     } catch (e) { return 0; }
 };
-// ---- KAYIT BAZLI MERGE — LAST-WRITE-WINS (LWW) ----
-// preferred & fallback: birleştirilecek iki transfer listesi
-// deletedList: [{id,t}] tombstone'lar — t (silinme zamanı) öğenin updatedAt'ından büyükse öğe gerçekten silinir.
-const mergeTransferLists = (preferred, fallback, deletedList) => {
-    const tombstones = new Map(normalizeDeletedList(deletedList).map(d => [String(d.id), d.t || 0]));
+const mergeTransferLists = (preferred, fallback, deletedIds) => {
+    const deleted = new Set((deletedIds || []).map(x => String(x)));
     const map = new Map();
     const put = (x, rank) => {
         const fixed = repairKnownPlate(x);
-        if (!fixed) return;
-        const id = String(fixed.id || '');
-        const stamp = transferStamp(fixed);
-        // Tombstone öğenin son güncellenmesinden YENİ ise sil; eski tombstone, yeni güncellemeyi BLOKLAMAZ.
-        if (id && tombstones.has(id) && tombstones.get(id) >= stamp) return;
+        if (fixed && fixed.id && deleted.has(String(fixed.id)))
+            return;
         const key = transferIdentity(fixed);
         const cur = map.get(key);
-        if (!cur || stamp > transferStamp(cur.item) || (stamp === transferStamp(cur.item) && rank >= cur.rank))
+        if (!cur || transferStamp(fixed) > transferStamp(cur.item) || (transferStamp(fixed) === transferStamp(cur.item) && rank >= cur.rank))
             map.set(key, { item: fixed, rank });
     };
     (fallback || []).forEach(x => put(x, 0));
     (preferred || []).forEach(x => put(x, 1));
     return Array.from(map.values()).map(x => x.item);
 };
-// Kayıt id'sine göre LWW birleştirme — updatedAt varsa onunla, yoksa preferred kazanır.
-const recordStamp = r => {
-    try {
-        if (!r || typeof r !== 'object') return 0;
-        const raw = r.updatedAt || r.date || r.createdAt || '';
-        const n = Date.parse(String(raw || ''));
-        return isNaN(n) ? 0 : n;
-    } catch (e) { return 0; }
-};
-// Firestore docChanges()'ı al, mevcut diziye uygula. Tombstone (_deleted:true) → çıkar.
-// LWW: gelen kayıt mevcuttan yeniyse override, değilse koru. Removed (fiziksel silme) → çıkar.
-const applyDocChanges = (prev, changes) => {
-    const map = new Map((prev || []).map(x => [String(x.id || ''), x]));
-    (changes || []).forEach(ch => {
-        const d = (ch.doc && ch.doc.data && ch.doc.data()) || {};
-        const id = String(d.id || (ch.doc && ch.doc.id) || '');
-        if (!id) return;
-        if (ch.type === 'removed' || d._deleted) { map.delete(id); return; }
-        const cur = map.get(id);
-        const curTs = cur ? recordStamp(cur) : 0;
-        const newTs = recordStamp(d);
-        if (!cur || newTs >= curTs) map.set(id, d);
+const mergeRecordLists = (preferred, fallback) => {
+    const map = new Map();
+    [...(fallback || []), ...(preferred || [])].forEach(x => {
+        if (!x)
+            return;
+        const key = x.id ? 'id:' + String(x.id) : 'row:' + JSON.stringify(x);
+        map.set(key, x);
     });
     return Array.from(map.values());
 };
-const mergeRecordLists = (preferred, fallback) => {
-    const map = new Map();
-    const put = (x, rank) => {
-        if (!x) return;
-        const key = x.id ? 'id:' + String(x.id) : 'row:' + JSON.stringify(x);
-        const cur = map.get(key);
-        const stamp = recordStamp(x);
-        if (!cur || stamp > cur.stamp || (stamp === cur.stamp && rank >= cur.rank))
-            map.set(key, { item: x, stamp, rank });
-    };
-    (fallback || []).forEach(x => put(x, 0));
-    (preferred || []).forEach(x => put(x, 1));
-    return Array.from(map.values()).map(x => x.item);
-};
-// Tüm tombstone kaynaklarını topla (yerel del + preferred.del + fallback.del) — en yeni zamanla.
-const snapshotDeletedIds = (...items) => {
-    const all = [];
-    items.forEach(x => {
-        if (!x) return;
-        if (Array.isArray(x)) { all.push(...x); return; }
-        if (x && Array.isArray(x.del)) all.push(...x.del);
-    });
-    return normalizeDeletedList(all);
-};
+const snapshotDeletedIds = (...items) => uniq(items.flatMap(x => Array.isArray(x) ? x : (x && Array.isArray(x.del) ? x.del : []))).map(String);
 const mergeSnapshots = (preferred, fallback, deletedIds) => {
     const allDeleted = snapshotDeletedIds(deletedIds || [], preferred || {}, fallback || {});
     return {
@@ -15942,217 +15851,71 @@ function App() {
         setStorageReady(true);
         refreshRates();
         let unsubAuth = null;
-        // === PER-RECORD CLOUD LISTENERS ===
-        // Her subcollection ayrı izlenir. Bir kayıttaki değişiklik sadece o kaydı günceller.
-        // Tombstone (_deleted:true) gelirse UI'dan ayıklanır. Echo (kendi yazımız) hasPendingWrites ile atlanır.
-        const subs = [];
-        const setupSubscriptions = () => {
-            // Transferler — silinmişler dahil (UI'da filtrelenir)
-            subs.push(cloudColTransfers.onSnapshot({ includeMetadataChanges: false }, function(qs){
-                try{
-                    if (qs.metadata && qs.metadata.hasPendingWrites) return;
-                    setT(prev => {
-                        const map = new Map((prev || []).map(x => [String(x.id), x]));
-                        qs.docChanges().forEach(ch => {
-                            const d = ch.doc.data() || {};
-                            const id = String(d.id || ch.doc.id);
-                            if (ch.type === 'removed') {
-                                // Fiziksel doc silme oldu (eski versiyon uyumluluğu) — kaldır
-                                map.delete(id);
-                                return;
-                            }
-                            if (d._deleted) {
-                                // Tombstone — UI'dan çıkar
-                                map.delete(id);
-                                return;
-                            }
-                            // LWW: gelen doc'un updatedAt'ı daha yeni ise kabul et
-                            const cur = map.get(id);
-                            const curTs = cur ? recordStamp(cur) : 0;
-                            const newTs = recordStamp(d);
-                            if (!cur || newTs >= curTs) {
-                                map.set(id, normalizeTransfer(d));
-                            }
-                        });
-                        return Array.from(map.values());
-                    });
-                    cloudLoadedRef.current = true;
-                }catch(err){ console.error('[CLOUD] transfers listener err', err); }
-            }, function(err){ console.error('[CLOUD] transfers err', err); }));
-            // aracK
-            subs.push(cloudColAracK.onSnapshot({ includeMetadataChanges: false }, function(qs){
-                try{
-                    if (qs.metadata && qs.metadata.hasPendingWrites) return;
-                    setAracK(prev => applyDocChanges(prev || [], qs.docChanges()));
-                }catch(err){ console.error('[CLOUD] aracK listener err', err); }
-            }, function(err){ console.error('[CLOUD] aracK err', err); }));
-            // debts
-            subs.push(cloudColDebts.onSnapshot({ includeMetadataChanges: false }, function(qs){
-                try{
-                    if (qs.metadata && qs.metadata.hasPendingWrites) return;
-                    setDebts(prev => applyDocChanges(prev || [], qs.docChanges()));
-                }catch(err){ console.error('[CLOUD] debts listener err', err); }
-            }, function(err){ console.error('[CLOUD] debts err', err); }));
-            // todos
-            subs.push(cloudColTodos.onSnapshot({ includeMetadataChanges: false }, function(qs){
-                try{
-                    if (qs.metadata && qs.metadata.hasPendingWrites) return;
-                    setTodos(prev => applyDocChanges(prev || [], qs.docChanges()));
-                }catch(err){ console.error('[CLOUD] todos listener err', err); }
-            }, function(err){ console.error('[CLOUD] todos err', err); }));
-            // tkLedger
-            subs.push(cloudColTkLedger.onSnapshot({ includeMetadataChanges: false }, function(qs){
-                try{
-                    if (qs.metadata && qs.metadata.hasPendingWrites) return;
-                    setTkLedger(prev => applyDocChanges(prev || [], qs.docChanges()));
-                }catch(err){ console.error('[CLOUD] tkLedger listener err', err); }
-            }, function(err){ console.error('[CLOUD] tkLedger err', err); }));
-            // Meta doc: agencies, drivers, agencyPhones, rates
-            subs.push(cloudMetaRef.onSnapshot({ includeMetadataChanges: false }, function(snap){
-                try{
-                    if (snap.metadata && snap.metadata.hasPendingWrites) return;
-                    if (!snap.exists) return;
-                    const m = snap.data() || {};
-                    if (Array.isArray(m.a)) {
-                        const ag = [...m.a];
-                        if (!ag.includes(OL)) ag.unshift(OL);
-                        setAgencies(ag);
-                    }
-                    if (Array.isArray(m.dr)) setDrivers(m.dr);
-                    if (m.ap && typeof m.ap === 'object') setAgencyPhones(m.ap);
-                    if (m.r && typeof m.r === 'object') setRates(prev => ({ ...prev, ...m.r }));
-                    if (m.ru) setLastRateUpdate(m.ru);
-                    if (Array.isArray(m.del)) writeDeletedTransferIds(m.del);
-                }catch(err){ console.error('[CLOUD] meta listener err', err); }
-            }, function(err){ console.error('[CLOUD] meta err', err); }));
-            cloudLoadedRef.current = true;
-        };
-        // Tek-doc (eski) → per-record (yeni) migrasyonu — bir kez yapılır
-        const migrateLegacyIfNeeded = async () => {
-            try{
-                const flag = localStorage.getItem('tp10_migrated_v1');
-                if (flag === '1') return;
-                // Sadece eski tek-doc verisi varsa migrate et
-                const legacy = await cloudDocRef.get();
-                if (!legacy.exists) { localStorage.setItem('tp10_migrated_v1','1'); return; }
-                const data = legacy.data() || {};
-                const payload = data.payload || data;
-                if (!payload || !Array.isArray(payload.t)) { localStorage.setItem('tp10_migrated_v1','1'); return; }
-                console.log('[MIGRATE] Eski veri tespit edildi, per-record formata aktarılıyor...');
-                const batch = cloudDb.batch();
-                let count = 0;
-                const writeBatchIfFull = async () => {
-                    if (count >= 400) { await batch.commit(); count = 0; }
-                };
-                // Tombstone'lar
-                const deletedList = normalizeDeletedList(payload.del || []);
-                const deletedIds = new Set(deletedList.map(d => String(d.id)));
-                // Transferler
-                (payload.t || []).forEach(t => {
-                    if (!t || !t.id) return;
-                    const doc = cloudColTransfers.doc(String(t.id));
-                    batch.set(doc, Object.assign({}, t, { id: String(t.id), updatedAt: t.updatedAt || new Date().toISOString() }), { merge: true });
-                    count++;
-                });
-                // Tombstone'lar için ayrı kayıt
-                deletedList.forEach(d => {
-                    if (!d || !d.id) return;
-                    const doc = cloudColTransfers.doc(String(d.id));
-                    batch.set(doc, { id: String(d.id), _deleted: true, _deletedAt: new Date(d.t || Date.now()).toISOString(), updatedAt: new Date(d.t || Date.now()).toISOString() }, { merge: true });
-                    count++;
-                });
-                // aracK, debts, todos, tkLedger
-                const movArr = (arr, col) => {
-                    (arr || []).forEach(r => {
-                        if (!r) return;
-                        const id = r.id ? String(r.id) : ('mig_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
-                        const doc = col.doc(id);
-                        batch.set(doc, Object.assign({}, r, { id, updatedAt: r.updatedAt || new Date().toISOString() }), { merge: true });
-                        count++;
-                    });
-                };
-                movArr(payload.ak, cloudColAracK);
-                movArr(payload.db, cloudColDebts);
-                movArr(payload.tk, cloudColTodos);
-                movArr(payload.tl, cloudColTkLedger);
-                // Meta
-                batch.set(cloudMetaRef, {
-                    a: Array.isArray(payload.a) ? payload.a : [],
-                    dr: Array.isArray(payload.dr) ? payload.dr : [],
-                    ap: (payload.ap && typeof payload.ap === 'object') ? payload.ap : {},
-                    r: (payload.r && typeof payload.r === 'object') ? payload.r : {},
-                    ru: payload.ru || null,
-                    del: deletedList,
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
-                await batch.commit();
-                localStorage.setItem('tp10_migrated_v1','1');
-                console.log('[MIGRATE] Tamamlandı.');
-            }catch(e){ console.error('[MIGRATE] Hata:', e); }
-        };
-        // Bu cihaz hiç bulut görmemişse local'i ilk push olarak buluta yansıt
-        const bootstrapLocalToCloud = async () => {
-            try{
-                const flag = localStorage.getItem('tp10_bootstrapped_v1');
-                if (flag === '1') return;
-                let local = null;
-                try { local = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
-                if (!local || !Array.isArray(local.t) || !local.t.length) {
-                    localStorage.setItem('tp10_bootstrapped_v1','1');
-                    return;
-                }
-                // Bulutta hâlâ transfer yoksa local'i push et — yoksa listener zaten birleştirecek
-                const probe = await cloudColTransfers.limit(1).get();
-                if (!probe.empty) { localStorage.setItem('tp10_bootstrapped_v1','1'); return; }
-                console.log('[BOOTSTRAP] Cihazdaki yerel veri buluta yükleniyor...');
-                const batch = cloudDb.batch();
-                let count = 0;
-                (local.t || []).forEach(t => {
-                    if (!t || !t.id) return;
-                    batch.set(cloudColTransfers.doc(String(t.id)), Object.assign({}, t, { id: String(t.id), updatedAt: t.updatedAt || new Date().toISOString() }), { merge: true });
-                    count++;
-                });
-                const pushArr = (arr, col) => (arr || []).forEach(r => {
-                    if (!r) return;
-                    const id = r.id ? String(r.id) : ('bs_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
-                    batch.set(col.doc(id), Object.assign({}, r, { id, updatedAt: r.updatedAt || new Date().toISOString() }), { merge: true });
-                });
-                pushArr(local.ak, cloudColAracK);
-                pushArr(local.db, cloudColDebts);
-                pushArr(local.tk, cloudColTodos);
-                pushArr(local.tl, cloudColTkLedger);
-                batch.set(cloudMetaRef, {
-                    a: Array.isArray(local.a) ? local.a : [],
-                    dr: Array.isArray(local.dr) ? local.dr : [],
-                    ap: (local.ap && typeof local.ap === 'object') ? local.ap : {},
-                    r: (local.r && typeof local.r === 'object') ? local.r : {},
-                    ru: local.ru || null,
-                    del: normalizeDeletedList(readDeletedTransferIds()),
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
-                await batch.commit();
-                localStorage.setItem('tp10_bootstrapped_v1','1');
-                console.log('[BOOTSTRAP] Tamamlandı:', count, 'transfer.');
-            }catch(e){ console.error('[BOOTSTRAP] Hata:', e); }
-        };
         if(initCloud() && cloudAuth){
-            unsubAuth = cloudAuth.onAuthStateChanged(async function(user){
-                // Önceki abonelikleri kapat
-                while (subs.length) { try { subs.pop()(); } catch(e){} }
-                if (cloudUnsubRef.current) { cloudUnsubRef.current(); cloudUnsubRef.current = null; }
+            unsubAuth = cloudAuth.onAuthStateChanged(function(user){
+                if (cloudUnsubRef.current) {
+                    cloudUnsubRef.current();
+                    cloudUnsubRef.current = null;
+                }
                 setAuthUser(user || null);
                 setAuthReady(true);
                 setAuthError('');
                 if(user){
-                    cloudLoadedRef.current = false;
-                    cloudWritingRef.current = false;
-                    try { await migrateLegacyIfNeeded(); } catch(e){ console.error(e); }
-                    try { await bootstrapLocalToCloud(); } catch(e){ console.error(e); }
-                    setupSubscriptions();
-                    // Toplu unsub fonksiyonu
-                    cloudUnsubRef.current = function(){
-                        while (subs.length) { try { subs.pop()(); } catch(e){} }
-                    };
+                    cloudUnsubRef.current = cloudDocRef.onSnapshot(function(snap){
+                        try{
+                            let localPayload = null;
+                            try { localPayload = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
+                            const deletedIds = readDeletedTransferIds();
+                            if(!snap.exists){
+                                cloudLoadedRef.current = true;
+                                if(localPayload && Array.isArray(localPayload.t) && localPayload.t.length){
+                                    const bootstrapPayload = mergeSnapshots(localPayload, EMBEDDED_BACKUP || {}, deletedIds);
+                                    cloudWritingRef.current = true;
+                                    cloudDocRef.set({ payload: bootstrapPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: bootstrapPayload.date || new Date().toISOString() }, { merge: true })
+                                      .catch(function(err){ console.error('Cloud bootstrap save error', err); })
+                                      .finally(function(){ setTimeout(function(){ cloudWritingRef.current = false; }, 300); });
+                                }
+                                return;
+                            }
+                            const data = snap.data() || {};
+                            const payload = data.payload || data;
+                            if(!payload || !Array.isArray(payload.t)) { cloudLoadedRef.current = true; return; }
+                            const mergedPayload = mergeSnapshots(payload, localPayload || {}, deletedIds);
+                            const localTs = snapshotStamp(localPayload);
+                            const cloudTs = snapshotStamp(payload) || snapshotStamp(data);
+                            const mergedTs = Math.max(localTs, cloudTs, snapshotStamp(mergedPayload));
+                            mergedPayload.v = 26;
+                            mergedPayload.date = mergedPayload.date || new Date(mergedTs || Date.now()).toISOString();
+                            mergedPayload.clientUpdatedAt = new Date(mergedTs || Date.now()).toISOString();
+                            cloudLoadedRef.current = true;
+                            cloudWritingRef.current = true;
+                            writeDeletedTransferIds(mergedPayload.del || []);
+                            hydrateSnapshot(mergedPayload, false);
+                            const sameText = JSON.stringify({
+                                t: (payload && payload.t) || [],
+                                ak: (payload && payload.ak) || [],
+                                db: (payload && payload.db) || [],
+                                tk: (payload && payload.tk) || [],
+                                tl: (payload && payload.tl) || [],
+                                a: (payload && payload.a) || [],
+                                dr: (payload && payload.dr) || [],
+                                ap: (payload && payload.ap) || {}
+                            }) === JSON.stringify({
+                                t: (mergedPayload && mergedPayload.t) || [],
+                                ak: (mergedPayload && mergedPayload.ak) || [],
+                                db: (mergedPayload && mergedPayload.db) || [],
+                                tk: (mergedPayload && mergedPayload.tk) || [],
+                                tl: (mergedPayload && mergedPayload.tl) || [],
+                                a: (mergedPayload && mergedPayload.a) || [],
+                                dr: (mergedPayload && mergedPayload.dr) || [],
+                                ap: (mergedPayload && mergedPayload.ap) || {}
+                            });
+                            if(!sameText || localTs > cloudTs){
+                                cloudDocRef.set({ payload: mergedPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: mergedPayload.clientUpdatedAt }, { merge: true }).catch(function(err){ console.error('Cloud merged save error', err); });
+                            }
+                            setTimeout(function(){ cloudWritingRef.current = false; }, 500);
+                        }catch(err){ console.error('Cloud snapshot error', err); }
+                    }, function(err){ console.error('Cloud listen error', err); setAuthError('Bulut veriye bağlanılamadı.'); });
                 }
             });
         } else {
@@ -16161,7 +15924,6 @@ function App() {
         return function(){
             if(unsubAuth) unsubAuth();
             if(cloudUnsubRef.current) cloudUnsubRef.current();
-            while (subs.length) { try { subs.pop()(); } catch(e){} }
             if(saveTimerRef.current) clearTimeout(saveTimerRef.current);
         };
     }, []);
@@ -16170,7 +15932,7 @@ function App() {
             return;
         setAgencies(p => uniq([...(p || []), 'Balentur', 'Odelo']));
         setT(prev => {
-            const deleted = deletedIdSet(readDeletedTransferIds());
+            const deleted = new Set(readDeletedTransferIds().map(x => String(x)));
             const next = [...(prev || [])];
             const toAdd = [];
             PDF_BALEN_OLMEZ_IMPORT.forEach(raw => {
@@ -16187,95 +15949,32 @@ function App() {
             return [...next, ...toAdd];
         });
     }, [storageReady, T.length]);
-    // === LOCAL CACHE (offline kalsa bile veriler dursun) ===
     useEffect(() => { if (!storageReady) return; try {
-        const nowIso = new Date().toISOString();
-        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: nowIso, clientUpdatedAt: nowIso };
+        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
-    }
-    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, todos, tkLedger]);
-    // === PER-RECORD CLOUD SYNC ===
-    // Her liste için "önceki referans" tutarız; T değişince diff alıp sadece değişen kayıtları buluta yazarız.
-    const prevTRef = useRef(null);
-    const prevAracKRef = useRef(null);
-    const prevDebtsRef = useRef(null);
-    const prevTodosRef = useRef(null);
-    const prevTkLedgerRef = useRef(null);
-    const diffWriteRecords = (col, prevList, currList, prevRef) => {
-        if (!col || !cloudEnabled() || !authUser || !cloudLoadedRef.current) {
-            prevRef.current = currList;
-            return;
+        if(cloudEnabled() && authUser && !cloudWritingRef.current){
+            // KRİTİK KORUMA: Cloud snapshot listener henüz veriyi yüklemediyse,
+            // cihazdaki eski local state ile cloud'u ezmeyiz. iOS ana ekran/Dock ayrı
+            // local alan açabildiği için ilk bulut okuması tamamlanmadan yazmak risklidir.
+            if (!cloudLoadedRef.current) {
+                console.warn('[CLOUD] Yazma engellendi - ilk bulut verisi bekleniyor');
+                return;
+            }
+            if(saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(function(){
+                console.log('[CLOUD] yazılıyor:', snapshot.t.length, 'transfer');
+                cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: snapshot.date }, { merge: true })
+                  .then(function(){ console.log('[CLOUD] OK', snapshot.t.length); })
+                  .catch(function(err){
+                    console.error('[CLOUD] HATA', err);
+                    try{ tip('☁ Hata: ' + (err.message || err.code || 'Bilinmeyen')); }catch(e){}
+                  });
+            }, 500);
+        } else if (!authUser) {
+            console.warn('[CLOUD] Yazılmadı - oturum yok. Veriler sadece bu cihazda.');
         }
-        const prev = new Map((prevList || []).map(x => [String(x.id || ''), x]));
-        const curr = new Map((currList || []).map(x => [String(x.id || ''), x]));
-        const writes = [];
-        // Eklenen veya değişenler
-        curr.forEach((item, id) => {
-            if (!id) return;
-            const before = prev.get(id);
-            if (!before) {
-                writes.push(cloudWriteRecord(col, id, item));
-            } else {
-                // updatedAt veya içerik değiştiyse yaz
-                const sameStamp = recordStamp(before) === recordStamp(item);
-                const sameContent = JSON.stringify(before) === JSON.stringify(item);
-                if (!sameStamp || !sameContent) {
-                    writes.push(cloudWriteRecord(col, id, item));
-                }
-            }
-        });
-        // UI'dan çıkarılanlar (silinmişler) — soft delete olarak işaretle
-        prev.forEach((item, id) => {
-            if (!id) return;
-            if (!curr.has(id)) {
-                writes.push(cloudSoftDelete(col, id));
-            }
-        });
-        Promise.all(writes).catch(err => console.error('[CLOUD] diff write err', err));
-        prevRef.current = currList;
-    };
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser) return;
-        if (prevTRef.current === null) { prevTRef.current = T; return; }
-        diffWriteRecords(cloudColTransfers, prevTRef.current, T, prevTRef);
-    }, [T, storageReady, authUser]);
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser) return;
-        if (prevAracKRef.current === null) { prevAracKRef.current = aracK; return; }
-        diffWriteRecords(cloudColAracK, prevAracKRef.current, aracK, prevAracKRef);
-    }, [aracK, storageReady, authUser]);
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser) return;
-        if (prevDebtsRef.current === null) { prevDebtsRef.current = debts; return; }
-        diffWriteRecords(cloudColDebts, prevDebtsRef.current, debts, prevDebtsRef);
-    }, [debts, storageReady, authUser]);
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser) return;
-        if (prevTodosRef.current === null) { prevTodosRef.current = todos; return; }
-        diffWriteRecords(cloudColTodos, prevTodosRef.current, todos, prevTodosRef);
-    }, [todos, storageReady, authUser]);
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser) return;
-        if (prevTkLedgerRef.current === null) { prevTkLedgerRef.current = tkLedger; return; }
-        diffWriteRecords(cloudColTkLedger, prevTkLedgerRef.current, tkLedger, prevTkLedgerRef);
-    }, [tkLedger, storageReady, authUser]);
-    // META (agencies, drivers, agencyPhones, rates) — debounce ile tek doc'a yazılır
-    const metaSaveTimer = useRef(null);
-    useEffect(() => {
-        if (!storageReady || !cloudLoadedRef.current || !authUser || !cloudMetaRef) return;
-        if (metaSaveTimer.current) clearTimeout(metaSaveTimer.current);
-        metaSaveTimer.current = setTimeout(() => {
-            const meta = {
-                a: Array.isArray(agencies) ? agencies : [],
-                dr: Array.isArray(drivers) ? drivers : [],
-                ap: agencyPhones && typeof agencyPhones === 'object' ? agencyPhones : {},
-                r: rates && typeof rates === 'object' ? rates : {},
-                ru: lastRateUpdate || null,
-                updatedAt: new Date().toISOString()
-            };
-            cloudMetaRef.set(meta, { merge: true }).catch(err => console.error('[CLOUD] meta write err', err));
-        }, 600);
-    }, [agencies, drivers, agencyPhones, rates, lastRateUpdate, storageReady, authUser]);
+    }
+    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, todos, tkLedger, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
     useEffect(() => { try { if(rememberMe) localStorage.setItem(REMEMBER_EMAIL_KEY, loginEmail || ''); else localStorage.removeItem(REMEMBER_EMAIL_KEY); } catch (e) {} }, [rememberMe, loginEmail]);
     const loginWithEmail = async () => {
@@ -16466,7 +16165,7 @@ function App() {
         if (!quickEditT || !quickEditT.id) return;
         if (!window.confirm('Bu transfer silinsin mi?')) return;
         const deletedIds = readDeletedTransferIds();
-        writeDeletedTransferIds([...(deletedIds || []), { id: String(quickEditT.id), t: Date.now() }]);
+        writeDeletedTransferIds([...(deletedIds || []), String(quickEditT.id)]);
         setT(p => p.filter(x => x.id !== quickEditT.id));
         setQuickEditT(null);
         tip('Silindi');
@@ -16497,7 +16196,7 @@ function App() {
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
         const deletedIds = readDeletedTransferIds();
-        writeDeletedTransferIds([...(deletedIds || []), { id: String(id), t: Date.now() }]);
+        writeDeletedTransferIds([...(deletedIds || []), String(id)]);
         setT(p => p.filter(x => x.id !== id));
         tip('Silindi');
     } };
@@ -17415,8 +17114,11 @@ function App() {
     const cTRY2 = toTRY(form.paymentAmount, form.paymentCurrency);
     const olAlan2 = form.assignedTo === OL && form.givenBy && form.givenBy !== OL;
     const formPreviewT = { ...form, customerTRY: cTRY2, totalTRY: cTRY2 };
-    const fNet = olmezKar(formPreviewT);
-    const firmPreviewBal = calcBal(formPreviewT);
+    const previewAgencyToOlmez = olAlan2;
+    const fNetRaw = olmezKar(formPreviewT);
+    const firmPreviewBalRaw = calcBal(formPreviewT);
+    const fNet = previewAgencyToOlmez ? 0 : fNetRaw;
+    const firmPreviewBal = previewAgencyToOlmez && firmPreviewBalRaw ? { ...firmPreviewBalRaw, netOl: 0 } : firmPreviewBalRaw;
     const altPreviewBal = calcAltBal(formPreviewT);
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
     const altPreviewNet = altPreviewBal ? altPreviewBal.netOl : 0;
@@ -18695,7 +18397,7 @@ function App() {
                             React.createElement("input", { type: "text", value: p.pasaport || '', onChange: e => uPax(i, 'pasaport', e.target.value), placeholder: "Pasaport No", className: "inp", style: { flex: 1, width: 'auto' } })),
                         React.createElement("select", { value: p.uyruk || 'TR', onChange: e => uPax(i, 'uyruk', e.target.value), className: "inp" }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n)))))))),
                 React.createElement("div", { className: "card" },
-                    React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf({ paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? '#fff' : SB, fontWeight: 700, cursor: 'pointer', fontSize: '13px' } }, l)))),
+                    React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf(v === 'no' ? { paymentCollect: v, paymentToMe: false, customerCollected: false } : { paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? '#fff' : SB, fontWeight: 700, cursor: 'pointer', fontSize: '13px' } }, l)))),
                   form.paymentCollect === 'yes' && (React.createElement("div", null,
                        React.createElement("div", { style: { marginBottom: '10px' } },
                             React.createElement("button", { 
