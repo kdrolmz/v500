@@ -6976,8 +6976,9 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
     const [open, setOpen] = useState(false);
     const raw = String(value || '');
     const q = nm(raw).replace(/\s+/g, ' ').trim();
-    const list = (rows || []).map(r => typeof r === 'string' ? { name: r, phone: '' } : { name: String((r && r.name) || '').trim(), phone: String((r && r.phone) || '').trim() }).filter(r => r.name);
-    const ranked = q.length < 2 ? [] : list.map(r => {
+    const list = (rows || []).slice(0, 240).map(r => typeof r === 'string' ? { name: r, phone: '' } : { name: String((r && r.name) || '').trim(), phone: String((r && r.phone) || '').trim() }).filter(r => r.name);
+    const selectRows = list.slice(0, 160);
+    const ranked = (!open || q.length < 2) ? [] : list.map(r => {
         const key = nm(r.name).replace(/\s+/g, ' ').trim();
         const ph = nm(r.phone).replace(/\s+/g, '');
         const words = key.split(' ').filter(Boolean);
@@ -7002,7 +7003,11 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
         setOpen(false);
     };
     return React.createElement("div", { className: "ko-smart-pick" },
-        React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); }, onFocus: () => setOpen(true), onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "2 harf yazın...", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
+        React.createElement("div", { className: "ko-smart-control" },
+            React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); }, onFocus: () => setOpen(true), onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "2 harf yazın...", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
+            React.createElement("select", { className: "inp ko-smart-native-select", value: "", onFocus: () => setOpen(false), onChange: e => { const ix = parseInt(e.target.value, 10); if (!isNaN(ix) && selectRows[ix]) pick(selectRows[ix]); } },
+                React.createElement("option", { value: "" }, "Seç"),
+                selectRows.map((r, i) => React.createElement("option", { key: nm(r.name) + '|' + r.phone + '|' + i, value: i }, r.name + (r.phone ? ' · ' + r.phone : ''))))),
         open && (raw || '').trim().length > 0 && q.length < 2 && React.createElement("div", { className: "ko-smart-menu ko-smart-hint" }, "Sonuçlar için en az 2 harf yazın"),
         open && q.length >= 2 && React.createElement("div", { className: "ko-smart-menu" },
             ranked.length > 0 ? ranked.map(r => React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-option", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); } },
@@ -16267,7 +16272,7 @@ function App() {
         setQuickEditT(null);
         tip('Silindi');
     };
-    const editT = t => openFullEditT(t);
+	    const editT = t => openQuickEditT(t);
     const copyT = t => {
         const companyCollected = isCompanyCollected(t);
         const customerCollected = isCustomerCollected(t);
@@ -16788,7 +16793,7 @@ function App() {
         catch (e) { tip('Panodan okunamadı'); }
     };
 
-    const listRows = filteredT();
+    const listRows = tab === 'list' ? filteredT() : [];
     const listIsPlate16 = flt.plateView === 'plate16';
     const activeCollectFilter = listIsPlate16 ? flt.plateCollect : flt.collect;
     const byCollectionFilter = (rows, mode) => {
@@ -16798,7 +16803,7 @@ function App() {
             return rows.filter(x => getCollectionState(x) === 'uncollected');
         return rows;
     };
-    const visibleListRows = byCollectionFilter(listRows, activeCollectFilter);
+    const visibleListRows = tab === 'list' ? byCollectionFilter(listRows, activeCollectFilter) : [];
     const calcMiniStats = rows => {
         const now = new Date();
         const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
@@ -16810,14 +16815,14 @@ function App() {
             mP: monthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0)
         };
     };
-    const listMiniStats = calcMiniStats(visibleListRows);
-    const monthGroups = listRows.reduce((acc, t) => {
+    const listMiniStats = tab === 'list' ? calcMiniStats(visibleListRows) : { mC: 0, tam: 0, bos: 0, mP: 0 };
+    const monthGroups = tab === 'list' ? listRows.reduce((acc, t) => {
         const monthKey = t.date ? String(t.date).slice(0, 7) : 'Tarihsiz';
         const dayKey = t.date || 'Tarihsiz';
         if (!acc[monthKey]) acc[monthKey] = {};
         (acc[monthKey][dayKey] || (acc[monthKey][dayKey] = [])).push(t);
         return acc;
-    }, {});
+    }, {}) : {};
     const monthGroupKeys = Object.keys(monthGroups).sort((a, b) => a < b ? 1 : -1);
     const yearGroups = Object.keys(monthGroups).reduce((acc, mk) => {
         const yr = mk === 'Tarihsiz' ? 'Tarihsiz' : mk.split('-')[0];
@@ -17238,7 +17243,8 @@ function App() {
             }));
         return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, dateRangeSection, yearSection);
     };
-    const st = stats();
+	    const emptyStats = { tot: T.length, tam: 0, bos: 0, ipt: 0, mP: 0, mPpotential: 0, lP: 0, yP: 0, yPpotential: 0, mC: 0, yr: new Date().getFullYear(), mPaid: 0, mUnpaid: 0, monthExternalNet: 0, monthExternalPotential: 0, monthPlate16Net: 0, yearExternalNet: 0, yearExternalPotential: 0, yearPlate16Net: 0, ym: [] };
+	    const st = (tab === 'home' || tab === 'list') ? stats() : emptyStats;
     const cTRY2 = toTRY(form.paymentAmount, form.paymentCurrency);
     const olAlan2 = isOlmezturParty(form.assignedTo) && form.givenBy && !isOlmezturParty(form.givenBy);
     const formPreviewT = { ...form, customerTRY: cTRY2, totalTRY: cTRY2 };
@@ -17253,7 +17259,7 @@ function App() {
     const formTourCommissionTotal = tourCommissionTotal(formPreviewT);
     const formTourCommissionShare = tourCommissionShare(formPreviewT);
     const formTourCommissionRightSide = form.altAcenta ? (form.altAcenta || 'Alt acenta') : (form.assignedTo || 'İş alan');
-    const formAgencyRows = (() => {
+	    const formAgencyRows = React.useMemo(() => {
         const map = new Map();
         const put = (name, phone) => {
             const n = String(name || '').trim();
@@ -17277,9 +17283,8 @@ function App() {
             if (!ao && bo) return 1;
             return a.name.localeCompare(b.name, 'tr');
         });
-    })();
-    const formAgencyOptions = formAgencyRows.map(x => x.name);
-    const formDriverRows = (() => {
+	    }, [T, agencies, agencyPhones]);
+	    const formDriverRows = React.useMemo(() => {
         const map = new Map();
         const put = (name, phone) => {
             const n = String(name || '').trim();
@@ -17293,7 +17298,7 @@ function App() {
         (drivers || []).forEach(d => put(d && d.name, d && d.phone));
         (T || []).forEach(t => put(t && t.driverName, t && t.driverPhone));
         return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
-    })();
+	    }, [T, drivers]);
     const saveFormAgencies = () => {
         [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
             if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
@@ -17590,7 +17595,7 @@ function App() {
                         return stored;
                     return toTRY(t.paymentAmount, t.paymentCurrency || 'TRY');
                 };
-                const homeStats = stats();
+	                const homeStats = st;
                 const activeRows = T.filter(x => x.status !== 'iptal' && !transferLooksDone(x, now));
                 const monthNetHome = Math.round(homeStats.mPpotential || homeStats.mP || 0);
                 const yearNetHome = Math.round(homeStats.yPpotential || homeStats.yP || 0);
@@ -18359,7 +18364,7 @@ function App() {
                                         React.createElement("span", { style: { fontSize: 9, opacity: .7, transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'none' } }, '\u25BC')
                                     ),
                                     isOpen && React.createElement("div", {
-                                        style: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08)', display: 'flex', flexDirection: 'column', gap: 3 }
+	                                        style: { position: 'relative', marginTop: 4, left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06)', display: 'flex', flexDirection: 'column', gap: 3 }
                                     },
                                         TIPLER.map(tp => {
                                             const a = form.transferType === tp.id;
@@ -18404,7 +18409,7 @@ function App() {
                                         React.createElement("span", { style: { fontSize: 9, opacity: .7, transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'none' } }, '\u25BC')
                                     ),
                                     isOpen && React.createElement("div", {
-                                        style: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08)', display: 'flex', flexDirection: 'column', gap: 3 }
+	                                        style: { position: 'relative', marginTop: 4, left: 0, right: 0, background: '#fff', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06)', display: 'flex', flexDirection: 'column', gap: 3 }
                                     },
                                         MODES.map(m => {
                                             const a = curMode === m.id;
@@ -18792,7 +18797,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openQuickEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
             tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
@@ -26479,10 +26484,30 @@ html body .app-shell main.main-cont .ko-smart-pick{
   min-width:0!important;
 }
 
+html body .app-shell main.main-cont .ko-smart-control{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 64px!important;
+  gap:6px!important;
+  align-items:stretch!important;
+}
+
 html body .app-shell main.main-cont .ko-smart-input{
   width:100%!important;
   max-width:100%!important;
   padding-right:12px!important;
+}
+
+html body .app-shell main.main-cont .ko-smart-native-select{
+  width:64px!important;
+  min-width:64px!important;
+  max-width:64px!important;
+  padding:0 7px!important;
+  font-size:11px!important;
+  font-weight:520!important;
+  color:#1f3d31!important;
+  -webkit-text-fill-color:#1f3d31!important;
+  border:1px solid rgba(63,128,109,.24)!important;
+  background:linear-gradient(145deg,rgba(231,242,238,.78),rgba(255,255,255,.92))!important;
 }
 
 html body .app-shell main.main-cont .ko-smart-menu{
@@ -26567,6 +26592,8 @@ html body .app-shell main.main-cont .ko-new-form *{
 html body .app-shell main.main-cont .ko-new-form .card{
   padding:11px!important;
   box-shadow:0 8px 20px rgba(20,28,34,.045),inset 0 1px 0 rgba(255,255,255,.96)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
 }
 
 html body .app-shell main.main-cont .ko-new-form .lbl{
@@ -26584,6 +26611,24 @@ html body .app-shell main.main-cont .ko-new-form select{
   font-size:12.35px!important;
   font-weight:410!important;
   line-height:1.2!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .lg-choice{
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.15!important;
+}
+
+html body .app-shell main.main-cont .ko-new-form .lg-choice span,
+html body .app-shell main.main-cont .ko-new-form .lg-choice div{
+  min-width:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.15!important;
 }
 
 html body .app-shell main.main-cont .ko-new-form .ko-smart-menu{
@@ -26827,6 +26872,28 @@ html body .ko-transfer-edit-modal .ko-quick-edit-actions{
   background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.96) 26%,rgba(255,255,255,.98))!important;
   backdrop-filter:blur(16px) saturate(1.25)!important;
   -webkit-backdrop-filter:blur(16px) saturate(1.25)!important;
+}
+
+html body .ko-transfer-edit-modal,
+html body .ko-transfer-edit-modal *{
+  animation-duration:.01s!important;
+  transition-duration:.04s!important;
+  scroll-behavior:auto!important;
+}
+
+html body .ko-transfer-edit-modal .ko-transfer-edit-sheet{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:0 12px 28px rgba(20,28,34,.12)!important;
+}
+
+html body .ko-transfer-edit-modal .inp,
+html body .ko-transfer-edit-modal select,
+html body .ko-transfer-edit-modal textarea{
+  font-size:12.2px!important;
+  font-weight:410!important;
+  min-height:38px!important;
+  padding:8px 10px!important;
 }
 
 @media (max-width:430px){
