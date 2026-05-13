@@ -6339,7 +6339,7 @@ const BF = {
     transferType: 'arrival', givenBy: OL, assignedTo: '', altAcenta: '', altAcentaUcreti: '',
     pickup: '', dropoff: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '',
     driverName: '', driverPhone: '',
-    passengerCount: 1, passengers: [{ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }],
+    passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
     childSeat: false, childSeatCount: 0,
     tourCommission: '', tourCommissionShop: '',
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
@@ -6351,6 +6351,16 @@ const LEGACY_STORAGE_KEYS = ['tp9'];
 const DELETED_TRANSFER_IDS_KEY = 'tp10_deleted_ids';
 const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]'); } catch (e) { return []; } };
 const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
+const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' });
+const passengerIdDisplay = p => String((p && (p.idNo || p.tc || p.pasaport)) || '');
+const splitPassengerId = v => {
+    const raw = String(v || '').trim().toUpperCase();
+    const digits = raw.replace(/\D/g, '');
+    if (!raw) return { idNo: '', tc: '', pasaport: '' };
+    return digits.length === 11 && digits === raw.replace(/\s/g, '')
+        ? { idNo: raw, tc: digits, pasaport: '' }
+        : { idNo: raw, tc: '', pasaport: raw };
+};
 const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
 function moneyValue(v) {
@@ -6471,6 +6481,50 @@ const transferIdentity = t => {
         return 'id:' + String(t.id);
     return 'row:' + [t.date, t.time, t.givenBy, t.assignedTo, t.pickup, t.dropoff, ((t.passengers || [])[0] || {}).name || ''].map(v => String(v || '').trim()).join('|');
 };
+const transferDuplicateKey = t => {
+    if (!t) return '';
+    const p = ((t.passengers || [])[0] || {});
+    const clean = v => nm(String(v || '')).replace(/\s+/g, ' ').trim();
+    return [
+        t.date, t.time, t.transferType, t.givenBy, t.assignedTo, t.altAcenta,
+        t.pickup, t.dropoff, p.name, passengerIdDisplay(p),
+        moneyValue(t.paymentAmount || t.customerTRY || t.totalTRY), t.paymentCurrency || 'TRY',
+        moneyValue(t.driverPayment), moneyValue(t.altAcentaUcreti)
+    ].map(clean).join('|');
+};
+const isPdfBalenTransfer = t => {
+    if (!t) return false;
+    const sourceText = [t.importSource, t.source, t.pdfSource].map(v => String(v || '')).join(' ');
+    const noteText = String(t.notes || '');
+    return /pdf/i.test(sourceText) || /pdf\s*aktar/i.test(noteText);
+};
+const balenturSoftDuplicateKey = t => {
+    if (!t) return '';
+    const p = ((t.passengers || [])[0] || {});
+    const clean = v => nm(String(v || '')).replace(/\s+/g, ' ').trim();
+    const passenger = clean(p.name || t.passengerName || t.yolcu);
+    const amount = Math.round(moneyValue(t.paymentAmount || t.customerTRY || t.totalTRY));
+    const hasBalenturSide = isBalenturFirm(t.givenBy) || isBalenturFirm(t.assignedTo) || isBalenturFirm(t.altAcenta);
+    const hasOdeloSide = hasOdeloMark(t);
+    if (!t.date || !passenger || !amount || (!hasBalenturSide && !hasOdeloSide))
+        return '';
+    let direction = 'balentur';
+    if (isOdeloFirm(t.givenBy) || isOdeloFirm(t.assignedTo) || isOdeloFirm(t.altAcenta))
+        direction = 'odelo';
+    else if (isBalenturFirm(t.givenBy))
+        direction = 'balentur-olmez';
+    else if (isBalenturFirm(t.assignedTo) || isBalenturFirm(t.altAcenta))
+        direction = 'olmez-balentur';
+    return [t.date, direction, passenger, amount, t.paymentCurrency || 'TRY'].map(clean).join('|');
+};
+const transferMergeIdentity = t => {
+    if (t && t.copyOf && t.id) return 'copy:' + String(t.id);
+    const balenturDup = balenturSoftDuplicateKey(t);
+    if (balenturDup && isPdfBalenTransfer(t))
+        return 'balentur-pdf:' + balenturDup;
+    const dup = transferDuplicateKey(t);
+    return dup.replace(/\|/g, '') ? 'dup:' + dup : transferIdentity(t);
+};
 const transferStamp = t => {
     try {
         if (!t) return 0;
@@ -6479,6 +6533,32 @@ const transferStamp = t => {
         return isNaN(n) ? 0 : n;
     } catch (e) { return 0; }
 };
+const transferCompleteness = t => {
+    if (!t) return 0;
+    const p = ((t.passengers || [])[0] || {});
+    return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
+        .reduce((s, v) => s + (String(v || '').trim() ? 1 : 0), 0);
+};
+const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
+    if (!a) return b;
+    if (!b) return a;
+    const as = transferStamp(a), bs = transferStamp(b);
+    if (bs !== as) return bs > as ? b : a;
+    const ac = transferCompleteness(a), bc = transferCompleteness(b);
+    if (bc !== ac) return bc > ac ? b : a;
+    if (bRank !== aRank) return bRank >= aRank ? b : a;
+    return b;
+};
+const dedupeTransfers = arr => {
+    const map = new Map();
+    (arr || []).map(normalizeTransfer).forEach((x, idx) => {
+        if (!x) return;
+        const key = transferMergeIdentity(x);
+        const cur = map.get(key);
+        map.set(key, cur ? { item: preferTransferRecord(cur.item, x, cur.rank, idx), rank: Math.max(cur.rank, idx) } : { item: x, rank: idx });
+    });
+    return Array.from(map.values()).map(x => x.item);
+};
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
     const deleted = new Set((deletedIds || []).map(x => String(x)));
     const map = new Map();
@@ -6486,10 +6566,12 @@ const mergeTransferLists = (preferred, fallback, deletedIds) => {
         const fixed = repairKnownPlate(x);
         if (fixed && fixed.id && deleted.has(String(fixed.id)))
             return;
-        const key = transferIdentity(fixed);
+        const key = transferMergeIdentity(fixed);
         const cur = map.get(key);
-        if (!cur || transferStamp(fixed) > transferStamp(cur.item) || (transferStamp(fixed) === transferStamp(cur.item) && rank >= cur.rank))
+        if (!cur)
             map.set(key, { item: fixed, rank });
+        else
+            map.set(key, { item: preferTransferRecord(cur.item, fixed, cur.rank, rank), rank: Math.max(cur.rank, rank) });
     };
     (fallback || []).forEach(x => put(x, 0));
     (preferred || []).forEach(x => put(x, 1));
@@ -6558,11 +6640,18 @@ const getVehiclePaymentState = t => needsVehiclePayment(t) ? (isVehiclePaid(t) ?
 const normalizeTransfer = t => {
     const fixed = repairKnownPlate(t || {});
     const companyCollected = !!(fixed && (fixed.companyCollected || fixed.settled));
+    const rawPassengers = Array.isArray(fixed.passengers) && fixed.passengers.length ? fixed.passengers : [emptyPassenger()];
+    const passengers = rawPassengers.map(p => {
+        const base = { ...emptyPassenger(), ...(p || {}), idNo: passengerIdDisplay(p) };
+        return (!base.tc && !base.pasaport && base.idNo) ? { ...base, ...splitPassengerId(base.idNo) } : base;
+    });
     return {
         ...fixed,
         id: fixed.id || ('tr_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)),
         updatedAt: fixed.updatedAt || fixed.createdAt || new Date().toISOString(),
         plate: inferPlate(fixed),
+        passengers,
+        passengerCount: Math.max(1, parseInt(fixed.passengerCount, 10) || passengers.length || 1),
         settled: companyCollected,
         companyCollected,
         customerCollected: !!fixed.customerCollected,
@@ -15834,12 +15923,14 @@ function App() {
     const cloudLoadedRef = useRef(false);
     const cloudUnsubRef = useRef(null);
     const saveTimerRef = useRef(null);
+    const quickDraftRef = useRef(null);
     useEffect(() => {
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
     }, [aracK]);
     const tip = m => { setToast(m); setTimeout(() => setToast(''), 2300); };
     const sf = p => setForm(f => ({ ...f, ...p }));
     const openNewTransferForm = () => {
+        quickDraftRef.current = null;
         setQuickEditT(null);
         setEditId(null);
         setForm(BF);
@@ -15867,7 +15958,7 @@ function App() {
     const hydrateSnapshot = (d, closeModal) => {
         if (d && Array.isArray(d.del))
             writeDeletedTransferIds(d.del);
-        setT((d.t || []).map(normalizeTransfer));
+        setT(dedupeTransfers((d.t || []).map(normalizeTransfer)));
         const ag = d.a || [OL];
         if (!ag.includes(OL))
             ag.unshift(OL);
@@ -15988,12 +16079,19 @@ function App() {
         };
     }, []);
     useEffect(() => {
+        if (!storageReady) return;
+        setT(prev => {
+            const next = dedupeTransfers(prev || []);
+            return next.length === (prev || []).length ? prev : next;
+        });
+    }, [storageReady, T.length]);
+    useEffect(() => {
         if (!storageReady || !Array.isArray(PDF_BALEN_OLMEZ_IMPORT) || !PDF_BALEN_OLMEZ_IMPORT.length)
             return;
         setAgencies(p => uniq([...(p || []), 'Balentur', 'Odelo']));
         setT(prev => {
             const deleted = new Set(readDeletedTransferIds().map(x => String(x)));
-            const next = [...(prev || [])];
+            const next = dedupeTransfers(prev || []);
             const toAdd = [];
             PDF_BALEN_OLMEZ_IMPORT.forEach(raw => {
                 if (!raw || deleted.has(String(raw.id || '')))
@@ -16006,11 +16104,12 @@ function App() {
             if (!toAdd.length)
                 return prev;
             try { console.log('[PDF IMPORT] Balen-Ölmez aktarıldı:', toAdd.length); } catch (e) {}
-            return [...next, ...toAdd];
+            return dedupeTransfers([...next, ...toAdd]);
         });
     }, [storageReady, T.length]);
     useEffect(() => { if (!storageReady) return; try {
-        const snapshot = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() };
+        const cleanTransfers = dedupeTransfers(T);
+        const snapshot = { t: cleanTransfers, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
         if(cloudEnabled() && authUser && !cloudWritingRef.current){
             // KRİTİK KORUMA: Cloud snapshot listener henüz veriyi yüklemediyse,
@@ -16084,9 +16183,10 @@ function App() {
     const chL = (f, v) => { sf({ [f]: v }); setSugg(p => ({ ...p, [f]: gS(v) })); setShowSg(p => ({ ...p, [f]: true })); };
     const selL = (f, n) => { sf({ [f]: n }); setShowSg(p => ({ ...p, [f]: false })); };
     const uPC = n => { const v = Math.max(1, Math.min(25, n)); const p = [...form.passengers]; while (p.length < v)
-        p.push({ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }); while (p.length > v)
+        p.push(emptyPassenger()); while (p.length > v)
         p.pop(); sf({ passengerCount: v, passengers: p }); };
     const uPax = (i, f, v) => { const p = [...form.passengers]; p[i] = { ...p[i], [f]: v }; sf({ passengers: p }); };
+    const uPaxId = (i, v) => { const p = [...form.passengers]; p[i] = { ...(p[i] || emptyPassenger()), ...splitPassengerId(v) }; sf({ passengers: p }); };
     const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
         setAgencies(p => [...p, n.trim()]); };
     const addAgencyContact = (name, phone) => {
@@ -16119,7 +16219,7 @@ function App() {
         if (editId) {
             const base = { ...form, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, updatedAt: new Date().toISOString() };
             const t = normalizeTransfer(base);
-            setT(p => p.map(x => x.id === editId ? t : x));
+            setT(p => dedupeTransfers(p.map(x => x.id === editId ? t : x)));
             setEditId(null);
             tip('Güncellendi');
         } else {
@@ -16169,7 +16269,7 @@ function App() {
                 loopCount++;
             }
             
-            setT(p => [...p, ...transfersToAdd]);
+            setT(p => dedupeTransfers([...p, ...transfersToAdd]));
             tip(transfersToAdd.length + ' Transfer Eklendi');
         }
         
@@ -16179,21 +16279,23 @@ function App() {
     const ensureQuickPassengers = t => {
         const raw = (t && Array.isArray(t.passengers) && t.passengers.length)
             ? t.passengers
-            : [{ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR' }];
-        return raw.map(p => ({ name: '', phone: '', tc: '', pasaport: '', uyruk: 'TR', ...(p || {}) }));
+            : [emptyPassenger()];
+        return raw.map(p => ({ ...emptyPassenger(), ...(p || {}), idNo: passengerIdDisplay(p) }));
     };
     const openQuickEditT = t => {
         if (!t || !t.id) return;
         const src = T.find(x => x.id === t.id) || t;
         const n = normalizeTransfer(src);
         const passengers = ensureQuickPassengers(n);
-        setQuickEditT({
+        const draft = {
             ...BF,
             ...n,
             extraStops: Array.isArray(n.extraStops) ? n.extraStops : [],
             passengers,
             passengerCount: Math.max(1, parseInt(n.passengerCount, 10) || passengers.length || 1)
-        });
+        };
+        quickDraftRef.current = draft;
+        setQuickEditT(draft);
     };
     const openFullEditT = t => {
         if (!t || !t.id) return;
@@ -16231,44 +16333,67 @@ function App() {
         setTab('new');
         tip('Düzenleme formu açıldı');
     };
-    const quickSet = patch => setQuickEditT(q => q ? ({ ...q, ...patch }) : q);
+    const syncQuickDraft = patch => {
+        quickDraftRef.current = { ...(quickDraftRef.current || quickEditT || {}), ...patch };
+        return quickDraftRef.current;
+    };
+    const quickSet = patch => setQuickEditT(q => q ? ({ ...q, ...syncQuickDraft(patch) }) : q);
+    const quickInputSet = patch => { syncQuickDraft(patch); };
     const quickPassengerSet = (field, value) => setQuickEditT(q => {
         if (!q) return q;
         const passengers = ensureQuickPassengers(q);
         passengers[0] = { ...(passengers[0] || {}), [field]: value };
-        return { ...q, passengers, passengerCount: Math.max(1, parseInt(q.passengerCount, 10) || passengers.length || 1) };
+        return { ...q, ...syncQuickDraft({ passengers, passengerCount: Math.max(1, parseInt(q.passengerCount, 10) || passengers.length || 1) }) };
     });
+    const quickPassengerInputSet = (field, value) => {
+        const base = quickDraftRef.current || quickEditT;
+        if (!base) return;
+        const passengers = ensureQuickPassengers(base);
+        passengers[0] = { ...(passengers[0] || {}), [field]: value };
+        syncQuickDraft({ passengers, passengerCount: Math.max(1, parseInt(base.passengerCount, 10) || passengers.length || 1) });
+    };
+    const quickPassengerIdInputSet = value => {
+        const base = quickDraftRef.current || quickEditT;
+        if (!base) return;
+        const passengers = ensureQuickPassengers(base);
+        passengers[0] = { ...(passengers[0] || {}), ...splitPassengerId(value) };
+        syncQuickDraft({ passengers, passengerCount: Math.max(1, parseInt(base.passengerCount, 10) || passengers.length || 1) });
+    };
     const saveQuickEditT = () => {
-        if (!quickEditT || !quickEditT.id) return;
-        const prev = T.find(x => x.id === quickEditT.id) || {};
-        const cTRY = toTRY(quickEditT.paymentAmount, quickEditT.paymentCurrency);
-        const companyCollected = !!(quickEditT.companyCollected || quickEditT.settled);
-        const passengers = ensureQuickPassengers(quickEditT);
+        const draft = quickDraftRef.current || quickEditT;
+        if (!draft || !draft.id) return;
+        const prev = T.find(x => x.id === draft.id) || {};
+        const cTRY = toTRY(draft.paymentAmount, draft.paymentCurrency);
+        const companyCollected = !!(draft.companyCollected || draft.settled);
+        const passengers = ensureQuickPassengers(draft);
         const base = {
             ...prev,
-            ...quickEditT,
+            ...draft,
             passengers,
-            passengerCount: Math.max(1, parseInt(quickEditT.passengerCount, 10) || passengers.length || 1),
-            plate: (quickEditT.plate || '').toUpperCase(),
+            passengerCount: Math.max(1, parseInt(draft.passengerCount, 10) || passengers.length || 1),
+            plate: (draft.plate || '').toUpperCase(),
             customerTRY: cTRY,
-            profit: olmezKar({ ...quickEditT, customerTRY: cTRY }),
+            profit: olmezKar({ ...draft, customerTRY: cTRY }),
             settled: companyCollected,
             companyCollected,
-            customerCollected: !!quickEditT.customerCollected,
-            vehiclePaid: !!quickEditT.vehiclePaid,
+            customerCollected: !!draft.customerCollected,
+            vehiclePaid: !!draft.vehiclePaid,
             updatedAt: new Date().toISOString()
         };
         const next = normalizeTransfer(base);
-        setT(p => p.map(x => x.id === next.id ? next : x));
+        setT(p => dedupeTransfers(p.map(x => x.id === next.id ? next : x)));
+        quickDraftRef.current = null;
         setQuickEditT(null);
         tip('Transfer güncellendi');
     };
     const deleteQuickEditT = () => {
-        if (!quickEditT || !quickEditT.id) return;
+        const draft = quickDraftRef.current || quickEditT;
+        if (!draft || !draft.id) return;
         if (!window.confirm('Bu transfer silinsin mi?')) return;
         const deletedIds = readDeletedTransferIds();
-        writeDeletedTransferIds([...(deletedIds || []), String(quickEditT.id)]);
-        setT(p => p.filter(x => x.id !== quickEditT.id));
+        writeDeletedTransferIds([...(deletedIds || []), String(draft.id)]);
+        setT(p => p.filter(x => x.id !== draft.id));
+        quickDraftRef.current = null;
         setQuickEditT(null);
         tip('Silindi');
     };
@@ -16278,22 +16403,22 @@ function App() {
         const customerCollected = isCustomerCollected(t);
         const newId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         const nowIso = new Date().toISOString();
-        const newT = normalizeTransfer({ ...t, id: newId, createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
-        setT(p => p.some(x => x.id === newT.id) ? p : [...p, newT]);
+        const newT = normalizeTransfer({ ...t, id: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
+        setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
         tip('Kopyalandı');
     };
     const toggleSettled = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isCompanyCollected(cur);
-        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString() }) : x));
+        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString() }) : x)));
         tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
     };
     const toggleVehiclePaid = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isVehiclePaid(cur);
-        setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: new Date().toISOString() }) : x));
+        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: new Date().toISOString() }) : x)));
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
@@ -16472,16 +16597,18 @@ function App() {
         const quickDriverOptions = uniqNames([...(drivers || []).map(d => d && d.name), ...(T || []).map(t => t.driverName)]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
         const findQuickDriver = name => (drivers || []).find(d => nm(d.name) === nm(name));
         const saveQuickAgencies = () => {
-            [q.givenBy, q.assignedTo, q.altAcenta].filter(Boolean).forEach(n => {
+            const draft = quickDraftRef.current || q;
+            [draft.givenBy, draft.assignedTo, draft.altAcenta].filter(Boolean).forEach(n => {
                 if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
                     addAgencyContact(n, '');
             });
             tip('Acenta isimleri kaydedildi');
         };
         const saveQuickDriver = () => {
-            const name = (q.driverName || '').trim();
+            const draft = quickDraftRef.current || q;
+            const name = (draft.driverName || '').trim();
             if (!name) return;
-            addDriverContact(name, q.driverPhone || '');
+            addDriverContact(name, draft.driverPhone || '');
             tip('Kaptan kaydedildi');
         };
         const field = (label, child, full) => React.createElement("label", { style: { display: 'flex', flexDirection: 'column', gap: 5, gridColumn: full ? '1 / -1' : undefined, minWidth: 0 } },
@@ -16528,24 +16655,26 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 700, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (q.pickup || 'Alış') + ' → ' + (q.dropoff || 'Bırakış'))),
                     React.createElement("div", { style: { fontSize: 18, fontWeight: 850, color: previewNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } }, (previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺')),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 9 } },
-                    field('Tarih', input({ type: 'date', value: q.date || '', onChange: e => quickSet({ date: e.target.value }) })),
-                    field('Saat', input({ type: 'time', value: q.time || '', onChange: e => quickSet({ time: e.target.value }) })),
-                    field('İş Veren', input({ list: quickAgencyListId, value: q.givenBy || '', onChange: e => quickSet({ givenBy: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
-                    field('İşi Alan', input({ list: quickAgencyListId, value: q.assignedTo || '', onChange: e => quickSet({ assignedTo: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
-                    field('Alış', input({ value: q.pickup || '', onChange: e => quickSet({ pickup: e.target.value }), placeholder: 'Alış noktası' }), true),
-                    field('Bırakış', input({ value: q.dropoff || '', onChange: e => quickSet({ dropoff: e.target.value }), placeholder: 'Bırakış noktası' }), true),
-                    field('Yolcu', input({ value: pax.name || '', onChange: e => quickPassengerSet('name', e.target.value), placeholder: 'Yolcu adı' })),
-                    field('Kişi', input({ type: 'number', min: 1, value: q.passengerCount || 1, onChange: e => quickSet({ passengerCount: Math.max(1, parseInt(e.target.value, 10) || 1) }) })),
+                    field('Tarih', input({ type: 'date', defaultValue: q.date || '', onBlur: e => quickInputSet({ date: e.target.value }) })),
+                    field('Saat', input({ type: 'time', defaultValue: q.time || '', onBlur: e => quickInputSet({ time: e.target.value }) })),
+                    field('İş Veren', input({ list: quickAgencyListId, defaultValue: q.givenBy || '', onBlur: e => quickInputSet({ givenBy: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('İşi Alan', input({ list: quickAgencyListId, defaultValue: q.assignedTo || '', onBlur: e => quickInputSet({ assignedTo: e.target.value }), placeholder: 'Acenta / Ölmeztur' })),
+                    field('Alış', input({ defaultValue: q.pickup || '', onBlur: e => quickInputSet({ pickup: e.target.value }), placeholder: 'Alış noktası' }), true),
+                    field('Bırakış', input({ defaultValue: q.dropoff || '', onBlur: e => quickInputSet({ dropoff: e.target.value }), placeholder: 'Bırakış noktası' }), true),
+                    field('Yolcu', input({ defaultValue: pax.name || '', onBlur: e => quickPassengerInputSet('name', e.target.value), placeholder: 'Yolcu adı' })),
+                    field('Yolcu Tel', input({ defaultValue: pax.phone || '', onBlur: e => quickPassengerInputSet('phone', e.target.value), placeholder: 'Telefon', inputMode: 'tel', autoComplete: 'tel' })),
+                    field('TC / Pasaport', input({ defaultValue: passengerIdDisplay(pax), onBlur: e => quickPassengerIdInputSet(e.target.value), placeholder: 'TC veya Pasaport No' })),
+                    field('Kişi', input({ type: 'number', min: 1, defaultValue: q.passengerCount || 1, onBlur: e => quickInputSet({ passengerCount: Math.max(1, parseInt(e.target.value, 10) || 1) }) })),
                     field('Kaptan', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 42px', gap: 6 } },
-                        input({ list: quickDriverListId, value: q.driverName || '', onChange: e => {
+                        input({ list: quickDriverListId, defaultValue: q.driverName || '', onBlur: e => {
                                 const dr = findQuickDriver(e.target.value);
                                 quickSet({ driverName: e.target.value, driverPhone: dr ? (dr.phone || '') : q.driverPhone });
                             }, placeholder: 'Kaptan adı' }),
                         React.createElement("button", { type: "button", onClick: saveQuickDriver, title: "Kaptanı kaydet", style: { border: '1px solid rgba(63,128,109,.34)', borderRadius: 12, background: 'rgba(231,242,238,.78)', color: G, fontSize: 18, fontWeight: 650, cursor: 'pointer' } }, "+")
                     )),
-                    field('Kaptan Tel', input({ value: q.driverPhone || '', onChange: e => quickSet({ driverPhone: e.target.value }), placeholder: 'Telefon' })),
-                    field('Plaka', input({ value: q.plate || '', onChange: e => quickSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
-                    field('Uçuş', input({ value: q.flightCode || '', onChange: e => quickSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK...' })),
+                    field('Kaptan Tel', input({ key: 'driverPhone_' + (q.driverPhone || ''), defaultValue: q.driverPhone || '', onBlur: e => quickInputSet({ driverPhone: e.target.value }), placeholder: 'Telefon', inputMode: 'tel', autoComplete: 'tel' })),
+                    field('Plaka', input({ defaultValue: q.plate || '', onBlur: e => quickInputSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
+                    field('Uçuş', input({ defaultValue: q.flightCode || '', onBlur: e => quickInputSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK...' })),
                     field('Müşteri Öder mi?', select({
                         value: q.paymentCollect || 'yes',
                         onChange: e => quickSet(e.target.value === 'no'
@@ -16554,9 +16683,9 @@ function App() {
                     }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
                     field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Tam'], ['bos', 'Boş'], ['iptal', 'İptal']])),
 	                    field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet(e.target.value === 'tour' ? { transferType: e.target.value } : { transferType: e.target.value, tourCommission: '', tourCommissionShop: '' }) }, TIPLER.map(tp => [tp.id, tp.n]))),
-                    field('Alt Acenta', input({ list: quickAgencyListId, value: q.altAcenta || '', onChange: e => quickSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
+                    field('Alt Acenta', input({ list: quickAgencyListId, defaultValue: q.altAcenta || '', onBlur: e => quickInputSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
                     field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
-                        input({ type: 'text', inputMode: 'decimal', value: q.paymentAmount || '', onChange: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
+                        input({ type: 'text', inputMode: 'decimal', defaultValue: q.paymentAmount || '', onBlur: e => quickSet({ paymentAmount: e.target.value }), placeholder: '0' }),
                         select({ value: q.paymentCurrency || 'TRY', onChange: e => quickSet({ paymentCurrency: e.target.value }) }, [['TRY', 'TRY'], ['USD', 'USD'], ['EUR', 'EUR'], ['KWD', 'KWD']])
                     ), true),
                     field('Hesap bana geldi', React.createElement("button", {
@@ -16581,13 +16710,13 @@ function App() {
                             boxShadow: q.paymentToMe ? '0 6px 16px rgba(63,128,109,.10),inset 0 1px 0 rgba(255,255,255,.92)' : 'inset 0 1px 0 rgba(255,255,255,.92)'
                         }
                     }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
-                    field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', value: q.driverPayment || '', onChange: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
-                    field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', value: q.altAcentaUcreti || '', onChange: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
+                    field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', defaultValue: q.driverPayment || '', onBlur: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
+                    field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', defaultValue: q.altAcentaUcreti || '', onBlur: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
 	                    (q.transferType || '') === 'tour' && field('Hakediş', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
-	                        input({ type: 'text', inputMode: 'decimal', value: q.tourCommission || '', onChange: e => quickSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
-	                        input({ value: q.tourCommissionShop || '', onChange: e => quickSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
-	                    ), true),
-                    field('Not', React.createElement("textarea", { className: "inp", value: q.notes || '', onChange: e => quickSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
+		                        input({ type: 'text', inputMode: 'decimal', defaultValue: q.tourCommission || '', onBlur: e => quickInputSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
+		                        input({ defaultValue: q.tourCommissionShop || '', onBlur: e => quickInputSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
+		                    ), true),
+                    field('Not', React.createElement("textarea", { className: "inp", defaultValue: q.notes || '', onBlur: e => quickInputSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
                 React.createElement("button", { type: "button", onClick: saveQuickAgencies, className: "ko-quick-save-names", style: { marginTop: 10, width: '100%', border: '1px solid rgba(63,128,109,.24)', background: 'rgba(231,242,238,.55)', color: G, borderRadius: 13, padding: '10px 12px', fontSize: 11.5, fontWeight: 560, cursor: 'pointer' } }, "+ İş veren / işi alan / alt acenta isimlerini rehbere ekle"),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
                     toggle('Müşteri alındı', !!q.customerCollected, { customerCollected: !q.customerCollected }),
@@ -16697,7 +16826,7 @@ function App() {
             ym
         };
     };
-    const snapshotPayload = () => ({ t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
         const payload = JSON.stringify(snapshotPayload(), null, 2);
         const ok = await copyText(payload);
@@ -16719,9 +16848,12 @@ function App() {
             tl: snap.tl || [],
             db: snap.db || [],
             updatedAt: new Date().toISOString(),
+            transferCount: (snap.t || []).length,
             v: snap.v || 26
         };
         const payload = JSON.stringify(widgetPayload, null, 2);
+        try { localStorage.setItem('ko_widget_payload', payload); } catch (e) {}
+        setRstTxt(payload);
         const ok = await copyText(payload);
         if (ok) {
             tip('Veri panoya kopyalandı');
@@ -16729,7 +16861,9 @@ function App() {
             await new Promise(r => setTimeout(r, 200));
             // GitHub edit URL'ini aç
             const editUrl = 'https://github.com/kdrolmz/v500/edit/main/data.json';
-            window.open(editUrl, '_blank');
+            const opened = window.open(editUrl, '_blank');
+            if (!opened)
+                window.location.href = editUrl;
             setTimeout(() => {
                 tip('GitHub açıldı — panodakini yapıştır ve commit et');
             }, 800);
@@ -18571,10 +18705,9 @@ function App() {
                             i + 1),
                         React.createElement("div", { className: "ko-passenger-fields" },
                             React.createElement("input", { type: "text", value: p.name, onChange: e => uPax(i, 'name', e.target.value), placeholder: "Ad Soyad", className: "inp ko-passenger-inp", autoComplete: "name" }),
-                            React.createElement("input", { type: "tel", value: p.phone, onChange: e => uPax(i, 'phone', e.target.value), placeholder: "Telefon", className: "inp ko-passenger-inp", autoComplete: "tel", inputMode: "tel" }),
+                            React.createElement("input", { type: "tel", defaultValue: p.phone, onBlur: e => uPax(i, 'phone', e.target.value), placeholder: "Telefon", className: "inp ko-passenger-inp", autoComplete: "tel", inputMode: "tel" }),
                             React.createElement("div", { className: "ko-passenger-id-combo" },
-                                React.createElement("input", { type: "text", value: p.tc || '', onChange: e => uPax(i, 'tc', e.target.value), placeholder: "TC No", className: "inp ko-passenger-inp", inputMode: "numeric" }),
-                                React.createElement("input", { type: "text", value: p.pasaport || '', onChange: e => uPax(i, 'pasaport', e.target.value.toUpperCase()), placeholder: "Pasaport No", className: "inp ko-passenger-inp", autoCapitalize: "characters" })),
+                                React.createElement("input", { type: "text", defaultValue: passengerIdDisplay(p), onBlur: e => uPaxId(i, e.target.value), placeholder: "TC / Pasaport No", className: "inp ko-passenger-inp", inputMode: "text", autoCapitalize: "characters" })),
                             React.createElement("select", { value: p.uyruk || 'TR', onChange: e => uPax(i, 'uyruk', e.target.value), className: "inp ko-passenger-inp ko-passenger-country" }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))))))))),
 	                React.createElement("div", { className: "card ko-payment-card" },
                     React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf(v === 'no' ? { paymentCollect: v, paymentToMe: false, customerCollected: false } : { paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? '#fff' : SB, fontWeight: 700, cursor: 'pointer', fontSize: '13px' } }, l)))),
@@ -18901,9 +19034,9 @@ function App() {
                         T.length,
                         " transfer\u2019\u0131 Panoya Kopyala"),
                     React.createElement("button", { onClick: doGithubBackup, style: { width: '100%', background: 'linear-gradient(135deg,#1F1D1A 0%,#4F4A43 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '13.5px', cursor: 'pointer', marginBottom: 8, letterSpacing: 0.2, boxShadow: '0 2px 6px rgba(79,74,67,.25)' } },
-                        "\u2601\uFE0F Widget'a Aktar (GitHub)"),
+                        "\u2601\uFE0F Scriptable Widget Verisini Aktar"),
                     React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#FAF8F5', borderRadius: 8, border: '1px dashed #DED8D0', lineHeight: 1.4 } },
-                        "GitHub'da \u201Cdata.json\u201D dosyas\u0131 a\u00E7\u0131lacak. \u00DCsttekini Cmd+A se\u00E7, sil, panodakini yap\u0131\u015Ft\u0131r ve \u201CCommit changes\u201D dedi\u011Finde widget yenilenir."),
+                        "Ana ekrandaki uygulama kendi verisini g\u00FCnceller; Scriptable widget ise GitHub'daki \u201Cdata.json\u201D dosyas\u0131n\u0131 okur. Bu buton temiz veriyi panoya al\u0131r ve GitHub'\u0131 a\u00E7ar: dosyadakini sil, panodakini yap\u0131\u015Ft\u0131r, \u201CCommit changes\u201D de. Widget sonra yenilenir."),
                     React.createElement("textarea", { readOnly: true, value: rstTxt, placeholder: "Yedek burada da g\u00F6r\u00FCn\u00FCr...", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #D8D0C6', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
                 React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
                     React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: NAV, marginBottom: 6 } }, "\uD83D\uDCE5 Geri Y\u00FCkle"),
@@ -21698,13 +21831,19 @@ html body .app-shell .lg-home :is(.lg-period-row,.lg-profit-row) :is(.lg-period-
         homeTouches.delete(e.pointerId);
     }, { capture: true, passive: true });
 
+    window.__KO_LITE_PREMIUM_MODE = true;
+    const koSkipLiveStyleScan = () => window.__KO_LITE_PREMIUM_MODE || !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
     installMoneyTapStyle();
     markMoney();
     const mo = new MutationObserver(() => {
+        if (koSkipLiveStyleScan()) return;
         window.clearTimeout(window.__koMoneyMarkTimer);
         window.__koMoneyMarkTimer = window.setTimeout(markMoney, 60);
     });
-    mo.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        mo.observe(document.documentElement, { childList:true, subtree:true });
+    }
 })();
 
 (function(){
@@ -21879,22 +22018,30 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
         }
     }
 
+    const koIsTypingSurface = node => !!(node && node.closest && node.closest('main.main-cont.view-new,.ko-transfer-edit-modal,input,textarea,select'));
+    const koSkipLiveScan = () => !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
     let scheduled = false;
-    function scheduleScan(){
+    function scheduleScan(e){
+        if ((e && koIsTypingSurface(e.target)) || koSkipLiveScan()) return;
         if (scheduled) return;
         scheduled = true;
         window.setTimeout(() => {
             scheduled = false;
+            if (koSkipLiveScan()) return;
             scanMoney();
         }, 80);
     }
 
     installGlobalMoneyStyle();
     scanMoney();
-    const observer = new MutationObserver(scheduleScan);
-    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleScan, true);
-    document.addEventListener('input', scheduleScan, true);
+    document.addEventListener('change', scheduleScan, true);
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        const observer = new MutationObserver(() => scheduleScan());
+        observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
+        document.addEventListener('input', scheduleScan, true);
+    }
 })();
 
 (function(){
@@ -22012,21 +22159,28 @@ html body .app-shell main.main-cont .ko-money-pos .ko-money-token.ko-money-neg *
         forceExistingTokens(root);
     }
 
+    const koSkipStrictMoney = () => !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
     let pending = false;
     function scheduleStrictMoney(){
+        if (koSkipStrictMoney()) return;
         if (pending) return;
         pending = true;
         window.setTimeout(() => {
             pending = false;
+            if (koSkipStrictMoney()) return;
             scanStrictMoney();
         }, 40);
     }
 
     installStrictMoneyStyle();
     scanStrictMoney();
-    const observer = new MutationObserver(scheduleStrictMoney);
-    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleStrictMoney, true);
+    document.addEventListener('change', scheduleStrictMoney, true);
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        const observer = new MutationObserver(scheduleStrictMoney);
+        observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
+    }
 })();
 
 (function(){
@@ -22154,23 +22308,31 @@ html body .app-shell main.main-cont .ko-money-token{
         retagExistingTokens(root);
     }
 
+    const koIsTypingSurface = node => !!(node && node.closest && node.closest('main.main-cont.view-new,.ko-transfer-edit-modal,input,textarea,select'));
+    const koSkipLiveLock = () => !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
     let scheduled = false;
-    function scheduleLock(){
+    function scheduleLock(e){
+        if ((e && koIsTypingSurface(e.target)) || koSkipLiveLock()) return;
         if (scheduled) return;
         scheduled = true;
         window.setTimeout(() => {
             scheduled = false;
+            if (koSkipLiveLock()) return;
             lockMoneyColors();
         }, 25);
     }
 
     installLockStyle();
     lockMoneyColors();
-    const observer = new MutationObserver(scheduleLock);
-    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleLock, true);
-    document.addEventListener('input', scheduleLock, true);
-    window.setInterval(lockMoneyColors, 3500);
+    document.addEventListener('change', scheduleLock, true);
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        const observer = new MutationObserver(() => scheduleLock());
+        observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
+        document.addEventListener('input', scheduleLock, true);
+        window.setInterval(() => { if (!koSkipLiveLock()) lockMoneyColors(); }, 3500);
+    }
 })();
 
 (function(){
@@ -22352,23 +22514,31 @@ html body .app-shell main.main-cont :is(button,.lg-choice,.lg-datebox,.lg-arac-d
         recolorAmounts(root);
     }
 
+    const koIsTypingSurface = node => !!(node && node.closest && node.closest('main.main-cont.view-new,.ko-transfer-edit-modal,input,textarea,select'));
+    const koSkipLiveLock = () => !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
     let scheduled = false;
-    function scheduleLock(){
+    function scheduleLock(e){
+        if ((e && koIsTypingSurface(e.target)) || koSkipLiveLock()) return;
         if (scheduled) return;
         scheduled = true;
         window.setTimeout(() => {
             scheduled = false;
+            if (koSkipLiveLock()) return;
             lockCurrencyAndPayment();
         }, 35);
     }
 
     installCurrencyLockStyle();
     lockCurrencyAndPayment();
-    const observer = new MutationObserver(scheduleLock);
-    observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true, characterData:true });
     document.addEventListener('click', scheduleLock, true);
-    document.addEventListener('input', scheduleLock, true);
-    window.setInterval(lockCurrencyAndPayment, 3000);
+    document.addEventListener('change', scheduleLock, true);
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        const observer = new MutationObserver(() => scheduleLock());
+        observer.observe(document.getElementById('root') || document.body, { childList:true, subtree:true });
+        document.addEventListener('input', scheduleLock, true);
+        window.setInterval(() => { if (!koSkipLiveLock()) lockCurrencyAndPayment(); }, 3000);
+    }
 })();
 
 (function(){
@@ -23792,10 +23962,10 @@ html body .app-shell main.main-cont [style*="box-shadow"][style*="rgba(30, 122, 
         if (e.target && e.target.closest && e.target.closest('.tabbar')) schedule();
     }, true);
     const obsTarget = document.querySelector('.app-shell') || document.body;
-    if (obsTarget && window.MutationObserver) {
+    if (!window.__KO_LITE_PREMIUM_MODE && obsTarget && window.MutationObserver) {
         new MutationObserver(schedule).observe(obsTarget, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
     }
-    setInterval(clearGreenBar, 2500);
+    if (!window.__KO_LITE_PREMIUM_MODE) setInterval(clearGreenBar, 2500);
 })();
 
 (function(){
@@ -23935,19 +24105,25 @@ html body .app-shell main.main-cont.view-arac .ko-money-currency{
             }
         });
     };
-    const scheduleLightNumbers = () => {
+    const koIsTypingSurface = node => !!(node && node.closest && node.closest('main.main-cont.view-new,.ko-transfer-edit-modal,input,textarea,select'));
+    const koSkipLightNumbers = () => !!document.querySelector('main.main-cont.view-new,.ko-transfer-edit-modal');
+
+    const scheduleLightNumbers = e => {
+        if ((e && koIsTypingSurface(e.target)) || koSkipLightNumbers()) return;
         setLightNumbers();
         requestAnimationFrame(setLightNumbers);
         setTimeout(setLightNumbers, 80);
     };
     scheduleLightNumbers();
     document.addEventListener('click', scheduleLightNumbers, true);
-    document.addEventListener('input', scheduleLightNumbers, true);
-    const obsTarget = document.getElementById('root') || document.body;
-    if (obsTarget && window.MutationObserver) {
-        new MutationObserver(scheduleLightNumbers).observe(obsTarget, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class'] });
+    if (!window.__KO_LITE_PREMIUM_MODE) {
+        document.addEventListener('input', scheduleLightNumbers, true);
+        const obsTarget = document.getElementById('root') || document.body;
+        if (obsTarget && window.MutationObserver) {
+            new MutationObserver(() => scheduleLightNumbers()).observe(obsTarget, { childList:true, subtree:true });
+        }
+        setInterval(() => { if (!koSkipLightNumbers()) setLightNumbers(); }, 3500);
     }
-    setInterval(setLightNumbers, 3500);
 })();
 
 (function(){
@@ -24048,7 +24224,14 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
         btn.style.setProperty('-webkit-text-fill-color', active ? '#17231e' : '#1f2a25', 'important');
     };
 
+    const hasNewTransferView = () => !!document.querySelector('main.main-cont.view-new');
+    const isTypingInNewTransfer = () => {
+        const el = document.activeElement;
+        return !!(el && el.closest && el.closest('main.main-cont.view-new input,main.main-cont.view-new textarea'));
+    };
+
     const paintAllChoices = () => {
+        if (!hasNewTransferView()) return;
         document.querySelectorAll('main.main-cont.view-new button.lg-choice').forEach(paintChoice);
     };
 
@@ -24072,12 +24255,13 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
 
     let paintQueued = false;
     const schedulePaint = () => {
+        if (!hasNewTransferView() || isTypingInNewTransfer()) return;
         if (paintQueued) return;
         paintQueued = true;
-        requestAnimationFrame(() => {
+        window.setTimeout(() => {
             paintQueued = false;
             paintAllChoices();
-        });
+        }, 90);
     };
 
     document.addEventListener('pointerdown', e => {
@@ -24110,7 +24294,7 @@ html body .app-shell main.main-cont.view-new .card[style]:focus-within{
     document.addEventListener('change', schedulePaint, true);
     document.addEventListener('DOMContentLoaded', schedulePaint, { once:true });
     const obsTarget = document.getElementById('root') || document.body;
-    if (obsTarget && window.MutationObserver) {
+    if (!window.__KO_LITE_PREMIUM_MODE && obsTarget && window.MutationObserver) {
         new MutationObserver(schedulePaint).observe(obsTarget, { childList:true, subtree:true });
     }
     schedulePaint();
@@ -26695,7 +26879,7 @@ html body .app-shell main.main-cont .ko-passenger-fields{
 html body .app-shell main.main-cont .ko-passenger-id-combo{
   grid-column:1 / -1!important;
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:1fr!important;
   gap:7px!important;
   min-width:0!important;
 }
@@ -26842,7 +27026,7 @@ html body .app-shell main.main-cont .ko-passenger-id-combo .ko-passenger-inp{
 }
 
 html body .app-shell main.main-cont .ko-passenger-id-combo .ko-passenger-inp:first-child{
-  border-right:1px solid rgba(31,61,49,.12)!important;
+  border-right:0!important;
 }
 
 @media (max-width:520px){
@@ -26853,7 +27037,7 @@ html body .app-shell main.main-cont .ko-passenger-id-combo .ko-passenger-inp:fir
     grid-template-columns:1fr!important;
   }
   html body .app-shell main.main-cont .ko-passenger-id-combo{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-columns:1fr!important;
   }
   html body .app-shell main.main-cont .ko-passenger-inp{
     font-size:12.1px!important;
@@ -26894,6 +27078,128 @@ html body .ko-transfer-edit-modal textarea{
   font-weight:410!important;
   min-height:38px!important;
   padding:8px 10px!important;
+}
+
+/* iPhone hiz modu: yazarken/paste yaparken agir cam efektleri ve animasyonlar kapali. */
+html body .app-shell main.main-cont.view-new *,
+html body .ko-transfer-edit-modal *{
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important;
+}
+
+html body .app-shell main.main-cont.view-new .card,
+html body .app-shell main.main-cont.view-new section[style*="background"],
+html body .app-shell main.main-cont.view-new div[style*="background"],
+html body .ko-transfer-edit-modal .ko-transfer-edit-sheet,
+html body .ko-transfer-edit-modal .card,
+html body .ko-transfer-edit-modal section[style*="background"],
+html body .ko-transfer-edit-modal div[style*="background"]{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  box-shadow:0 6px 16px rgba(20,28,34,.045),inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+html body .app-shell main.main-cont.view-new input,
+html body .app-shell main.main-cont.view-new select,
+html body .app-shell main.main-cont.view-new textarea,
+html body .ko-transfer-edit-modal input,
+html body .ko-transfer-edit-modal select,
+html body .ko-transfer-edit-modal textarea{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.94)!important;
+}
+
+/* Duz premium mod: hesaplama/yedek ayni, ekran boyama hafif. */
+html body,
+html body .app-shell,
+html body .app-shell main.main-cont{
+  background:#fbfcfb!important;
+  background-image:none!important;
+}
+
+html body *,
+html body *::before,
+html body *::after{
+  animation:none!important;
+  transition:none!important;
+  text-shadow:none!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html body .app-shell main.main-cont .card,
+html body .app-shell main.main-cont .tcard,
+html body .app-shell main.main-cont .tr-row,
+html body .app-shell main.main-cont .date-hdr,
+html body .app-shell main.main-cont .lg-period-card,
+html body .app-shell main.main-cont .lg-profit-card,
+html body .app-shell main.main-cont .tk-cell,
+html body .app-shell main.main-cont section[style*="background"],
+html body .app-shell main.main-cont div[style*="background"]{
+  background:#ffffff!important;
+  border-color:rgba(32,61,50,.14)!important;
+  box-shadow:0 1px 4px rgba(24,31,38,.045)!important;
+}
+
+html body .app-shell main.main-cont input,
+html body .app-shell main.main-cont select,
+html body .app-shell main.main-cont textarea,
+html body .app-shell main.main-cont .inp{
+  background:#ffffff!important;
+  border-color:rgba(32,61,50,.14)!important;
+  box-shadow:none!important;
+  color:#18211d!important;
+  -webkit-text-fill-color:#18211d!important;
+}
+
+html body .app-shell main.main-cont button,
+html body .app-shell main.main-cont button[style]{
+  box-shadow:none!important;
+}
+
+html body .app-shell main.main-cont button:is(.is-active,.active,.selected,.is-selected,.ko-selected-gold,.ko-click-confirmed),
+html body .app-shell main.main-cont button[aria-pressed="true"],
+html body .app-shell main.main-cont button[aria-selected="true"]{
+  border-color:#2f6d58!important;
+  box-shadow:0 0 0 1px rgba(47,109,88,.10)!important;
+}
+
+html body .app-shell .tabbar,
+html body .app-shell .tabbar [style*="background"]{
+  background:#ffffff!important;
+  border-color:rgba(47,109,88,.18)!important;
+  box-shadow:0 1px 8px rgba(24,31,38,.06)!important;
+}
+
+html body .app-shell .tabbar .tab.is-active,
+html body .app-shell .tabbar .tab.is-active .tab-icon,
+html body .app-shell .tabbar .tab-fab{
+  border-color:#2f6d58!important;
+  box-shadow:none!important;
+}
+
+html body .ko-money-token.ko-money-pos,
+html body .ko-money-currency[data-ko-sign="plus"],
+html body .ko-money-pos{
+  color:#3f806d!important;
+  -webkit-text-fill-color:#3f806d!important;
+}
+
+html body .ko-money-token.ko-money-neg,
+html body .ko-money-currency[data-ko-sign="minus"],
+html body .ko-money-neg,
+html body .ko-payment-none{
+  color:#b2605c!important;
+  -webkit-text-fill-color:#b2605c!important;
+}
+
+html body .app-shell main.main-cont :is(h1,h2,h3,b,strong,[style*="font-weight: 900"],[style*="font-weight: 800"]){
+  font-weight:650!important;
 }
 
 @media (max-width:430px){
