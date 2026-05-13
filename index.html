@@ -27202,7 +27202,57 @@ html body .app-shell main.main-cont :is(h1,h2,h3,b,strong,[style*="font-weight: 
   font-weight:650!important;
 }
 
+/* Ana sayfa: Net Kar bloklarini alt bara yakin, ama temas etmeyecek sekilde sabitle. */
+html body .app-shell main.main-cont.view-home,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home{
+  padding-bottom:calc(98px + max(0px,calc(var(--sa-b,0px) - 10px)))!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-home,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-home{
+  min-height:calc(100dvh - var(--sa-t,0px) - 72px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-profit-title-row,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-title-row{
+  margin-top:auto!important;
+  margin-bottom:7px!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-profit-row,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
+  margin-bottom:24px!important;
+}
+
+html body .app-shell main.main-cont.view-home .lg-profit-detail,
+html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-detail{
+  display:none!important;
+}
+
 @media (max-width:430px){
+  html body .app-shell main.main-cont.view-home,
+  html.ko-ios-standalone body .app-shell main.main-cont.view-home{
+    padding-bottom:calc(94px + max(0px,calc(var(--sa-b,0px) - 10px)))!important;
+  }
+
+  html body .app-shell main.main-cont.view-home .lg-home,
+  html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-home{
+    min-height:calc(100dvh - var(--sa-t,0px) - 64px)!important;
+  }
+
+  html body .app-shell main.main-cont.view-home .lg-profit-row,
+  html.ko-ios-standalone body .app-shell main.main-cont.view-home .lg-profit-row{
+    margin-bottom:22px!important;
+    gap:10px!important;
+  }
+
+  html body .app-shell main.main-cont.view-home .lg-profit-card{
+    min-height:78px!important;
+    padding:10px 11px!important;
+  }
+
   html body .app-shell main.main-cont.view-hesap button.ko-account-firm-card{
     min-height:60px!important;
     padding:12px 13px!important;
