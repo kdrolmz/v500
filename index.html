@@ -209,8 +209,9 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tcard-time{font-size:11.5px !important;font-weight:430 !important;color:var(--muted) !important;grid-area:time !important;min-width:0 !important}
 .tcard-route{font-size:11.4px !important;font-weight:410 !important;color:#5F6C82 !important;line-height:1.25 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
 .tcard-pill,.tcard-paystatus{display:inline-flex !important;align-items:center !important;justify-content:center !important;border:1px solid var(--line-2) !important;border-radius:999px !important;background:#fff !important;color:var(--muted) !important;line-height:1.1 !important;font-size:9.6px !important;font-weight:500 !important;padding:3px 6px !important;border-color:#CFD8E3 !important}
-.tcard-pill-status-tam{border-color:rgba(31,58,95,.36) !important;color:var(--green-2) !important}
-.tcard-pill-status-iptal,.tcard-paystatus.is-none{border-color:rgba(178,96,92,.32) !important;color:var(--red) !important}
+.tcard-pill-status-tam{background:#EEF2F7 !important;border-color:rgba(31,58,95,.30) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
+.tcard-pill-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
+.tcard-pill-status-iptal,.tcard-paystatus.is-none{background:#fff5f4 !important;border-color:rgba(178,96,92,.32) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .tcard-expanded>div{border:1px solid var(--line) !important;border-radius:12px !important;background:#fff !important;border-color:#CFD8E3 !important}
 .tcard-expanded button{border:1px solid var(--line-2) !important;border-radius:999px !important;background:#fff !important;color:var(--ink) !important;font-size:11px !important;font-weight:540 !important;padding:7px 10px !important}
 .lg-month-title-wrap{min-width:0 !important}
@@ -230,8 +231,12 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tcard-flow{grid-area:flow !important;display:grid !important;grid-template-columns:1fr !important;gap:4px !important;padding-top:7px !important;margin-top:1px !important;border-top:1px solid #E6EDF4 !important;min-width:0 !important}
 .tcard-pills{display:flex !important;flex-wrap:wrap !important;gap:4px !important;align-items:center !important;min-width:0 !important}
 .tcard-pill-flight{color:#53647C !important;background:#F6F8FB !important}
-.tcard-paystatus.is-pending{background:#fff5f4 !important;border-color:rgba(178,96,92,.24) !important;color:#a85b57 !important}
-.tcard-paystatus.is-paid{background:#f2f7f4 !important;border-color:rgba(31,58,95,.24) !important;color:#4f7868 !important}
+.tcard-paystatus.is-pending{background:#fff5f4 !important;border-color:rgba(178,96,92,.28) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
+.tcard-paystatus.is-paid{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:var(--green-2) !important;-webkit-text-fill-color:var(--green-2) !important}
+.lg-chip-ok{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:var(--green-2) !important;-webkit-text-fill-color:var(--green-2) !important}
+.lg-chip-status-tam{background:#EEF2F7 !important;border-color:rgba(31,58,95,.28) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
+.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
+.lg-chip-wait,.lg-chip-status-iptal{background:#fff5f4 !important;border-color:rgba(178,96,92,.30) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{background:#fff5f4 !important;border-color:rgba(178,96,92,.26) !important;color:#a85b57 !important}
 .ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{background:#f2f7f4 !important;border-color:rgba(31,58,95,.26) !important;color:#4f7868 !important}
 .ko-hesap-settle-text{font-weight:520 !important}
@@ -5548,6 +5553,7 @@ function App() {
                     const gvn = t.givenBy || '—';
                     const asg = t.assignedTo || '—';
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
+                    const homeStatusClass = t.status === 'tam' ? 'lg-chip-status-tam' : t.status === 'iptal' ? 'lg-chip-status-iptal' : 'lg-chip-status-bos';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
                     const routeText = (t.pickup || '—') + ' → ' + (t.dropoff || '—');
@@ -5573,8 +5579,8 @@ function App() {
                             React.createElement("span", null, gvn + ' → ' + asg)
                         ),
                         React.createElement("div", { className: "lg-chip-row" },
-                            React.createElement("span", { className: "lg-chip lg-chip-soft" }, sl),
-                            React.createElement("span", { className: "lg-chip " + (collectionState === 'collected' ? 'lg-chip-ok' : 'lg-chip-soft') }, collectionState === 'collected' ? 'Tahsil edildi' : 'Tahsil bekliyor'),
+                            React.createElement("span", { className: "lg-chip " + homeStatusClass }, sl),
+                            React.createElement("span", { className: "lg-chip " + (collectionState === 'collected' ? 'lg-chip-ok' : 'lg-chip-wait') }, collectionState === 'collected' ? 'Tahsil edildi' : 'Tahsil bekliyor'),
                             React.createElement("span", { className: "lg-chevron" }, "›")
                         )
                     );
