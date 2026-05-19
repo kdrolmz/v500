@@ -599,6 +599,14 @@ const transferDuplicateKey = t => {
         moneyValue(t.driverPayment), moneyValue(t.altAcentaUcreti)
     ].map(clean).join('|');
 };
+const transferEditIdentity = t => {
+    if (!t) return '';
+    const p = ((t.passengers || [])[0] || {});
+    const clean = v => nm(String(v || '')).replace(/\s+/g, ' ').trim();
+    const passenger = clean(passengerIdDisplay(p) || p.name || t.passengerName || t.yolcu);
+    if (!clean(t.date) || !clean(t.time) || !passenger) return '';
+    return [t.date, t.time, t.transferType, t.givenBy, t.assignedTo, t.altAcenta, passenger].map(clean).join('|');
+};
 const isPdfBalenTransfer = t => {
     if (!t) return false;
     const sourceText = [t.importSource, t.source, t.pdfSource].map(v => String(v || '')).join(' ');
@@ -626,9 +634,13 @@ const balenturSoftDuplicateKey = t => {
 };
 const transferMergeIdentity = t => {
     if (t && t.copyOf && t.id) return 'copy:' + String(t.id);
+    if (t && t.editRootId) return 'edit-root:' + String(t.editRootId);
     const balenturDup = balenturSoftDuplicateKey(t);
     if (balenturDup && isPdfBalenTransfer(t))
         return 'balentur-pdf:' + balenturDup;
+    const editDup = transferEditIdentity(t);
+    if (editDup)
+        return 'edit:' + editDup;
     const dup = transferDuplicateKey(t);
     return dup.replace(/\|/g, '') ? 'dup:' + dup : transferIdentity(t);
 };
@@ -657,14 +669,45 @@ const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
     return b;
 };
 const dedupeTransfers = arr => {
-    const map = new Map();
+    const byId = new Map();
+    const loose = [];
     (arr || []).map(normalizeTransfer).forEach((x, idx) => {
         if (!x) return;
-        const key = transferMergeIdentity(x);
+        const sid = x.id ? String(x.id) : '';
+        if (!sid) {
+            loose.push({ item: x, rank: idx });
+            return;
+        }
+        const cur = byId.get(sid);
+        byId.set(sid, cur ? { item: preferTransferRecord(cur.item, x, cur.rank, idx), rank: Math.max(cur.rank, idx) } : { item: x, rank: idx });
+    });
+    const map = new Map();
+    [...byId.values(), ...loose].forEach(({ item: x, rank }, idx) => {
+        if (!x) return;
+        const key = transferMergeIdentity(x) || ('row:' + idx);
         const cur = map.get(key);
-        map.set(key, cur ? { item: preferTransferRecord(cur.item, x, cur.rank, idx), rank: Math.max(cur.rank, idx) } : { item: x, rank: idx });
+        map.set(key, cur ? { item: preferTransferRecord(cur.item, x, cur.rank, rank), rank: Math.max(cur.rank, rank) } : { item: x, rank });
     });
     return Array.from(map.values()).map(x => x.item);
+};
+const removeEditedTransferClones = (arr, editId, previous) => {
+    const sid = String(editId || '');
+    const prev = previous ? normalizeTransfer(previous) : null;
+    const prevMergeKey = prev ? transferMergeIdentity(prev) : '';
+    const prevDuplicateKey = prev ? transferDuplicateKey(prev) : '';
+    const prevEditKey = prev ? transferEditIdentity(prev) : '';
+    const prevRootKey = prev && prev.editRootId ? String(prev.editRootId) : '';
+    return (arr || []).filter(x => {
+        if (!x) return false;
+        if (sid && String(x.id || '') === sid) return false;
+        if (!prev) return true;
+        const nx = normalizeTransfer(x);
+        if (prevRootKey && String(nx.editRootId || '') === prevRootKey) return false;
+        if (prevMergeKey && transferMergeIdentity(nx) === prevMergeKey) return false;
+        if (prevDuplicateKey && transferDuplicateKey(nx) === prevDuplicateKey) return false;
+        if (prevEditKey && transferEditIdentity(nx) === prevEditKey) return false;
+        return true;
+    });
 };
 const persistTransfersImmediately = transfers => {
     try {
@@ -689,21 +732,16 @@ const persistTransfersImmediately = transfers => {
 };
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
     const deleted = new Set((deletedIds || []).map(x => String(x)));
-    const map = new Map();
-    const put = (x, rank) => {
+    const list = [];
+    const put = x => {
         const fixed = repairKnownPlate(x);
         if (fixed && fixed.id && deleted.has(String(fixed.id)))
             return;
-        const key = transferMergeIdentity(fixed);
-        const cur = map.get(key);
-        if (!cur)
-            map.set(key, { item: fixed, rank });
-        else
-            map.set(key, { item: preferTransferRecord(cur.item, fixed, cur.rank, rank), rank: Math.max(cur.rank, rank) });
+        list.push(fixed);
     };
-    (fallback || []).forEach(x => put(x, 0));
-    (preferred || []).forEach(x => put(x, 1));
-    return Array.from(map.values()).map(x => x.item);
+    (fallback || []).forEach(put);
+    (preferred || []).forEach(put);
+    return dedupeTransfers(list);
 };
 const mergeRecordLists = (preferred, fallback) => {
     const map = new Map();
@@ -3803,10 +3841,10 @@ function App() {
         
         if (editId) {
             const nowIso = new Date().toISOString();
-            const base = { ...prev, ...form, id: editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
             const t = normalizeTransfer(base);
             setT(p => {
-                const next = dedupeTransfers([...(p || []).filter(x => String(x.id) !== String(editId)), t]);
+                const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
                 persistTransfersImmediately(next);
                 return next;
             });
@@ -3823,12 +3861,12 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
                 if (form.isReturn) {
                     const retId = Date.now().toString() + 'R_' + Math.random().toString(36).slice(2, 8);
-                    const retBase = { ...outBase, id: retId, time: form.returnTime || form.time, pickup: form.dropoff, dropoff: form.pickup, transferType: form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType) };
+                    const retBase = { ...outBase, id: retId, editRootId: retId, time: form.returnTime || form.time, pickup: form.dropoff, dropoff: form.pickup, transferType: form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType) };
                     transfersToAdd.push(normalizeTransfer(retBase));
                 }
                 
@@ -3843,6 +3881,7 @@ function App() {
                     const retBase = { 
                         ...outBase, 
                         id: retId, 
+                        editRootId: retId,
                         date: form.returnDate,
                         time: form.returnTime || form.time, 
                         pickup: form.dropoff,    // Otomatik ters güzergah
@@ -3966,6 +4005,7 @@ function App() {
         const base = {
             ...prev,
             ...draft,
+            editRootId: (prev && prev.editRootId) || draft.editRootId || draft.id,
             passengers,
             passengerCount: Math.max(1, parseInt(draft.passengerCount, 10) || passengers.length || 1),
             plate: (draft.plate || '').toUpperCase(),
@@ -3979,7 +4019,7 @@ function App() {
         };
         const next = normalizeTransfer(base);
         setT(p => {
-            const list = dedupeTransfers([...(p || []).filter(x => String(x.id) !== String(next.id)), next]);
+            const list = dedupeTransfers([...removeEditedTransferClones(p || [], next.id, prev), next]);
             persistTransfersImmediately(list);
             return list;
         });
@@ -4024,7 +4064,7 @@ function App() {
         const customerCollected = isCustomerCollected(t);
         const newId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         const nowIso = new Date().toISOString();
-        const newT = normalizeTransfer({ ...t, id: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
+        const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
         setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
         tip('Kopyalandı');
     };
