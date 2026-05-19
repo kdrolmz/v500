@@ -206,7 +206,8 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .lg-month-title-wrap{min-width:0 !important}
 .lg-month-day{min-height:43px !important;aspect-ratio:1 !important;border:1px solid var(--line) !important;background:#fff !important;border-radius:10px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;padding:3px !important;color:var(--ink) !important;box-shadow:none !important}
 .lg-month-day.is-other{opacity:.34 !important}
-.lg-month-day.has-work{border-color:rgba(139,115,91,.38) !important;background:#fffaf6 !important}
+.lg-month-day.has-work{border-color:rgba(139,115,91,.56) !important;background:#efe4d7 !important}
+.lg-month-day.has-work .lg-month-day-count{color:#6e5f4f !important;font-weight:560 !important}
 .lg-month-day.is-today{border-color:rgba(63,128,109,.50) !important}
 .lg-month-day.is-selected,.lg-month-day.ko-selected-gold{border-color:var(--accent) !important;background:var(--accent-soft) !important;box-shadow:0 0 0 1px rgba(139,115,91,.10) !important;color:var(--ink) !important}
 .lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.view-arac .lg-arac-month-toggle.is-active *,.view-arac .lg-arac-date-toggle.is-active *,.view-arac .lg-arac-year-toggle.is-active *,.view-arac .lg-arac-day-toggle.is-active *{color:var(--ink) !important;-webkit-text-fill-color:var(--ink) !important}
@@ -654,6 +655,27 @@ const dedupeTransfers = arr => {
         map.set(key, cur ? { item: preferTransferRecord(cur.item, x, cur.rank, idx), rank: Math.max(cur.rank, idx) } : { item: x, rank: idx });
     });
     return Array.from(map.values()).map(x => x.item);
+};
+const persistTransfersImmediately = transfers => {
+    try {
+        const now = new Date().toISOString();
+        let snap = {};
+        try {
+            snap = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
+        } catch (e) {
+            snap = {};
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            ...snap,
+            t: transfers || [],
+            del: readDeletedTransferIds(),
+            v: 26,
+            date: now,
+            clientUpdatedAt: now
+        }));
+    } catch (e) {
+        console.error('[LS] anlık transfer yazma hatası', e);
+    }
 };
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
     const deleted = new Set((deletedIds || []).map(x => String(x)));
@@ -1519,8 +1541,18 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const [detayT, setDetayT] = useState(null);
     const [openHesapSections, setOpenHesapSections] = useState({});
   const [odeloOpen, setOdeloOpen] = useState(false);
-    const togSettle = (id, firm, forceState) => sT(p => p.map(x => { if (x.id !== id)
-        return x; const sf = { ...(x.settledFirms || {}) }; sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm]; return { ...x, settledFirms: sf }; }));
+    const togSettle = (id, firm, forceState) => sT(p => {
+        const now = new Date().toISOString();
+        const next = (p || []).map(x => {
+            if (x.id !== id || !firm)
+                return x;
+            const sf = { ...(x.settledFirms || {}) };
+            sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm];
+            return { ...x, settledFirms: sf, updatedAt: now, clientUpdatedAt: now };
+        });
+        persistTransfersImmediately(next);
+        return next;
+    });
     const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
     const firmalar = [...new Set([...T.map(t => t.givenBy), ...T.map(t => t.assignedTo), ...T.filter(t => t.altAcenta).map(t => t.altAcenta), ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
     const firmSearch = ara.trim();
@@ -2441,7 +2473,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             : (function() {
                 const firmRows = filtered.map(firm => {
                     const { ts, al, ver, net } = hesapData(firm);
-                    if (ts.length === 0) return null;
+                    const openTs = ts.filter(t => !t.firmSettled);
+                    if (openTs.length === 0) return null;
                     const netVal = Math.round(moneyValue(net));
                     return React.createElement("button", {
                         key: firm,
