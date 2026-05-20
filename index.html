@@ -223,6 +223,51 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .lg-month-day.is-selected,.lg-month-day.ko-selected-gold{border-color:var(--accent) !important;background:var(--accent-soft) !important;box-shadow:0 0 0 1px rgba(31,58,95,.10) !important;color:var(--ink) !important}
 .lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.view-arac .lg-arac-month-toggle.is-active *,.view-arac .lg-arac-date-toggle.is-active *,.view-arac .lg-arac-year-toggle.is-active *,.view-arac .lg-arac-day-toggle.is-active *{color:var(--ink) !important;-webkit-text-fill-color:var(--ink) !important}
 .view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active{background:#fff !important;border-color:var(--accent) !important;color:var(--ink) !important;box-shadow:0 0 0 1px rgba(31,58,95,.10) !important}
+.ko-real-cal-card,.lg-month-cal-card{border-radius:18px !important;border-color:rgba(31,58,95,.18) !important;background:#fff !important;box-shadow:0 8px 24px rgba(20,33,61,.07) !important;overflow:hidden !important}
+.ko-real-cal-card .lg-month-cal-head,.lg-month-cal-head{padding:4px 2px 12px !important;border-bottom:1px solid rgba(207,216,227,.72) !important;margin-bottom:9px !important}
+.ko-real-cal-card .lg-month-title-main,.lg-month-title-main{font-size:17px !important;font-weight:610 !important;line-height:1.12 !important;text-transform:capitalize !important}
+.ko-real-cal-card .lg-month-title-sub,.lg-month-title-sub{font-size:10.8px !important;font-weight:430 !important;color:#5F6C82 !important;margin-top:3px !important}
+.lg-month-grid,.ko-arac-month-grid{gap:6px !important}
+.lg-month-day,.ko-arac-day{aspect-ratio:auto !important;min-height:72px !important;border-radius:13px !important;align-items:stretch !important;justify-content:space-between !important;padding:7px !important;background:#fff !important;border:1px solid rgba(207,216,227,.92) !important;box-shadow:0 1px 5px rgba(20,33,61,.045) !important;text-align:left !important;contain:layout paint style !important}
+.lg-month-day.is-other,.ko-arac-day.is-other{opacity:.42 !important;background:#F6F8FB !important}
+.lg-month-day.has-work,.ko-arac-day.has-work{background:linear-gradient(180deg,#fff 0%,#F6F8FB 100%) !important;border-color:rgba(31,58,95,.32) !important}
+.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected{background:#EEF2F7 !important;border-color:#1F3A5F !important;box-shadow:inset 0 0 0 1px rgba(31,58,95,.20),0 5px 14px rgba(31,58,95,.10) !important}
+.lg-month-day-num,.ko-arac-day-num{font-size:13px !important;font-weight:560 !important;color:#14213D !important;line-height:1 !important}
+.lg-month-day-count,.ko-arac-day-count{font-size:9px !important;font-weight:470 !important;color:#5F6C82 !important;line-height:1.15 !important;text-align:left !important}
+.lg-month-day-net,.ko-arac-day-net{font-size:9.5px !important;font-weight:560 !important;font-variant-numeric:tabular-nums !important;line-height:1.05 !important;color:#1F7A4D !important;white-space:nowrap !important}
+.lg-month-day-net.is-neg,.ko-arac-day-net.is-neg{color:#B24E4A !important;-webkit-text-fill-color:#B24E4A !important}
+.ko-arac-day-meta{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.ko-arac-job-card{border:1px solid rgba(207,216,227,.92);border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(20,33,61,.055)}
+.ko-arac-job-head{width:100%;border:0;background:#fff;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;align-items:center}
+.ko-arac-job-title{font-size:13.5px;font-weight:560;color:#14213D;line-height:1.2;overflow-wrap:anywhere}
+.ko-arac-job-sub{font-size:10.8px;font-weight:410;color:#5F6C82;line-height:1.35;margin-top:3px;overflow-wrap:anywhere}
+.ko-arac-job-money{text-align:right;display:flex;flex-direction:column;gap:4px;min-width:92px}
+.ko-arac-money-line{display:flex;justify-content:flex-end;gap:5px;align-items:baseline;font-variant-numeric:tabular-nums}
+.ko-arac-money-line span{font-size:9.2px;font-weight:430;color:#5F6C82}
+.ko-arac-money-line b{font-size:12.5px;font-weight:560;color:#14213D}
+.ko-arac-money-line.is-net b{color:#1F7A4D}
+.ko-arac-money-line.is-net.is-neg b{color:#B24E4A}
+.ko-arac-job-detail{border-top:1px solid #E6EDF4;background:#F6F8FB;padding:11px}
+.ko-arac-soft-btn{border:1px solid #CFD8E3 !important;border-radius:11px !important;background:#fff !important;color:#14213D !important;padding:9px 8px !important;font-size:11px !important;font-weight:520 !important}
+.view-arac .ko-real-cal-card{padding:9px !important}
+.ko-arac-day,.lg-month-day{min-width:0 !important;overflow:hidden !important}
+.ko-arac-day *,.lg-month-day *{min-width:0 !important}
+.ko-arac-day.is-selected,.lg-month-day.is-selected,.lg-month-day.ko-selected-gold{background:#EEF2F7 !important;color:#14213D !important;-webkit-text-fill-color:#14213D !important}
+.ko-arac-day.is-selected *,.lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *{color:#14213D !important;-webkit-text-fill-color:#14213D !important}
+.ko-arac-day.is-selected .ko-arac-day-count,.lg-month-day.is-selected .lg-month-day-count,.lg-month-day.ko-selected-gold .lg-month-day-count{background:rgba(31,58,95,.08) !important;color:#1F3A5F !important;-webkit-text-fill-color:#1F3A5F !important}
+.ko-arac-day-num,.lg-month-day-num{font-weight:520 !important}
+.ko-arac-day-count,.lg-month-day-count{font-size:8.8px !important;font-weight:430 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-arac-day-net,.lg-month-day-net{font-size:9px !important;font-weight:520 !important;max-width:100% !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-arac-day-panel{padding:11px !important;border-radius:17px !important}
+.ko-arac-day-panel-head{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:start !important;gap:8px !important;margin-bottom:10px !important}
+.ko-arac-day-netbox{max-width:108px !important;text-align:right !important;justify-self:end !important}
+.ko-arac-day-netbox-label{font-size:8.5px !important;font-weight:430 !important;color:#5F6C82 !important;text-transform:uppercase !important;white-space:nowrap !important}
+.ko-arac-day-netbox-value{font-size:16px !important;font-weight:560 !important;line-height:1.08 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-arac-year-toggle-btn,.ko-arac-report-btn{font-size:12px !important;font-weight:520 !important;border-radius:13px !important;box-shadow:0 1px 5px rgba(20,33,61,.04) !important}
+.ko-arac-report-btn{background:#fff !important;color:#1F3A5F !important;border:1px solid #CFD8E3 !important}
+.lg-month-selected-line{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
+.lg-month-selected-title{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.lg-month-selected-count{white-space:nowrap !important;font-weight:520 !important}
 .lg-home .lg-upcoming-card{border-radius:15px !important;padding:10px 11px !important}
 .lg-flight{border:1px solid #CFD8E3 !important;border-radius:999px !important;background:#fff !important;font-size:10px !important;font-weight:500 !important;padding:3px 7px !important;line-height:1.1 !important;white-space:nowrap !important;color:#53647C !important}
 .tcard-body{display:grid !important;grid-template-columns:46px minmax(0,1fr) auto !important;grid-template-areas:"time pills amount" "flow flow flow" !important;align-items:start !important;gap:6px 8px !important;min-width:0 !important}
@@ -285,6 +330,22 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .lg-upcoming-card,.lg-mini-upcoming{content-visibility:auto;contain-intrinsic-size:auto 64px;contain:layout paint style}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
+@media(max-width:700px){.lg-month-day,.ko-arac-day{min-height:62px !important;border-radius:12px !important;padding:6px !important}.lg-month-day-num,.ko-arac-day-num{font-size:12.5px !important}.lg-month-day-count,.ko-arac-day-count{font-size:8.5px !important}.lg-month-day-net,.ko-arac-day-net{font-size:9px !important}.ko-arac-job-head{grid-template-columns:minmax(0,1fr) 86px !important;padding:11px !important}.ko-arac-job-money{min-width:86px}.ko-arac-money-line b{font-size:11.8px}.ko-real-cal-card,.lg-month-cal-card{border-radius:16px !important}}
+.ko-arac-day-meta{width:100% !important;gap:2px !important;align-items:flex-start !important}
+.lg-month-day-count,.ko-arac-day-count{display:block !important;width:100% !important;max-width:none !important;min-height:0 !important;padding:0 !important;border:0 !important;border-radius:0 !important;background:transparent !important;color:#1F3A5F !important;-webkit-text-fill-color:#1F3A5F !important;font-size:8.15px !important;font-weight:455 !important;line-height:1.16 !important;letter-spacing:0 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:normal !important;word-break:normal !important}
+.lg-month-day:not(.has-work) .lg-month-day-count,.ko-arac-day:not(.has-work) .ko-arac-day-count{background:transparent !important;border-color:transparent !important;color:#8B97A8 !important;-webkit-text-fill-color:#8B97A8 !important}
+.lg-month-day.has-work .lg-month-day-count,.ko-arac-day.has-work .ko-arac-day-count{background:transparent !important;border-color:transparent !important;color:#1F3A5F !important;-webkit-text-fill-color:#1F3A5F !important;font-weight:455 !important}
+.lg-month-day-net,.ko-arac-day-net{display:block !important;width:100% !important;max-width:none !important;padding:0 !important;color:#2F765F !important;-webkit-text-fill-color:#2F765F !important;font-size:7.75px !important;font-weight:455 !important;line-height:1.12 !important;letter-spacing:0 !important;font-variant-numeric:tabular-nums !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
+.lg-month-day-net.is-neg,.ko-arac-day-net.is-neg{color:#B24E4A !important;-webkit-text-fill-color:#B24E4A !important}
+.lg-month-day.is-selected .lg-month-day-count,.lg-month-day.ko-selected-gold .lg-month-day-count,.ko-arac-day.is-selected .ko-arac-day-count{background:#fff !important;border-color:rgba(31,58,95,.20) !important;color:#14213D !important;-webkit-text-fill-color:#14213D !important}
+.lg-month-day.is-selected .lg-month-day-net:not(.is-neg),.lg-month-day.ko-selected-gold .lg-month-day-net:not(.is-neg),.ko-arac-day.is-selected .ko-arac-day-net:not(.is-neg){color:#2F765F !important;-webkit-text-fill-color:#2F765F !important}
+@media(max-width:700px){.ko-arac-day-meta{gap:2px !important}.lg-month-day-count,.ko-arac-day-count{font-size:7.8px !important;line-height:1.18 !important;font-weight:455 !important}.lg-month-day-net,.ko-arac-day-net{font-size:7.25px !important;line-height:1.12 !important;font-weight:455 !important}.lg-month-day,.ko-arac-day{padding:6px 4px !important}}
+.lg-month-day-count,.ko-arac-day-count,.lg-month-day-net,.ko-arac-day-net,.lg-month-selected-title,.tcard-passenger,.tcard-route,.lg-route,.tcard-agency,.ko-account-firm-card-title b,.lg-arac-head-title,.ko-account-route-cell small,.ko-account-flow,.ko-arac-day-netbox-value{ text-overflow:clip !important; }
+.tcard-passenger,.tcard-route,.lg-route,.tcard-agency,.ko-account-firm-card-title b,.lg-arac-head-title,.lg-month-selected-title,.ko-account-route-cell small,.ko-account-flow{white-space:normal !important;overflow:visible !important;overflow-wrap:anywhere !important}
+.lg-month-day .ko-arac-day-meta{display:block !important}
+.lg-month-day .lg-month-day-count,.lg-month-day .lg-month-day-net{display:inline !important;width:auto !important;max-width:none !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
+.lg-month-day .lg-month-day-net::before{content:" "}
+*{text-overflow:clip !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight,.lg-inline-rate,.tab-icon,.tab-fab{text-rendering:optimizeSpeed;font-feature-settings:"liga" 0}
 .tcard *,.lg-upcoming-card *,.ko-account-row *{text-rendering:optimizeSpeed}
 img,svg{content-visibility:auto}
@@ -1227,7 +1288,7 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
     return (React.createElement("div", null,
         React.createElement("span", { className: "lbl" }, lbl),
         React.createElement("div", { style: { position: 'relative' } },
-            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir, havaliman\u0131, otel, il\u00E7e..." }),
+            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir, havaliman\u0131, otel, il\u00E7e" }),
             show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #EEF2F7', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
                 React.createElement("span", { style: { fontSize: 14 } }, s.i),
                 React.createElement("span", null, s.n)))))))));
@@ -1586,6 +1647,360 @@ function AracTab({ tip, aracK, setAracK }) {
             "\uD83D\uDCCB Ayl\u0131k Rapor Kopyala (",
             ay,
             ")"))));
+}
+function AracCalendarTab({ tip, aracK, setAracK }) {
+    const pad = n => String(n).padStart(2, '0');
+    const dateKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const todayKey = dateKey(new Date());
+    const blankTrip = day => ({ date: day || todayKey, isVeren: '', sofor: '', yolcu: '', guzergah: '', musteri: '', arac: '', not: '' });
+    const [monthKey, setMonthKey] = useState(todayKey.slice(0, 7));
+    const [selectedDay, setSelectedDay] = useState(todayKey);
+    const [showYear, setShowYear] = useState(false);
+    const [showTripForm, setShowTripForm] = useState(false);
+    const [editTripId, setEditTripId] = useState(null);
+    const [tripForm, setTripForm] = useState(() => blankTrip(todayKey));
+    const [expenseOpen, setExpenseOpen] = useState(false);
+    const [expenseForm, setExpenseForm] = useState({ target: 'day', kat: 'fuel', tutar: '', not: '' });
+    const [openTrip, setOpenTrip] = useState({});
+    const [kayitliSoforler, setKayitliSoforler] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('ol_sof') || '[]'); }
+        catch (e) { return []; }
+    });
+    const [kayitliFirmalar, setKayitliFirmalar] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('ol_fir') || '[]'); }
+        catch (e) { return []; }
+    });
+    const rows = React.useMemo(() => Array.isArray(aracK) ? aracK : [], [aracK]);
+    const trips = React.useMemo(() => rows.filter(k => k.type === 'sefer' && k.date), [rows]);
+    const expenses = React.useMemo(() => rows.filter(k => k.type === 'gider' && k.date), [rows]);
+    const monthDate = React.useMemo(() => {
+        const [y, m] = monthKey.split('-').map(Number);
+        return new Date(y || new Date().getFullYear(), (m || 1) - 1, 1);
+    }, [monthKey]);
+    const monthTrips = React.useMemo(() => trips.filter(k => String(k.date || '').startsWith(monthKey)), [trips, monthKey]);
+    const monthExpenses = React.useMemo(() => expenses.filter(k => String(k.date || '').startsWith(monthKey)), [expenses, monthKey]);
+    const monthIncome = React.useMemo(() => Math.round(monthTrips.reduce((s, k) => s + moneyValue(k.arac), 0)), [monthTrips]);
+    const monthExpense = React.useMemo(() => Math.round(monthExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0)), [monthExpenses]);
+    const monthNet = monthIncome - monthExpense;
+    const yearKey = monthKey.slice(0, 4);
+    const yearSummary = React.useMemo(() => {
+        const yearTrips = trips.filter(k => String(k.date || '').startsWith(yearKey));
+        const yearExpenses = expenses.filter(k => String(k.date || '').startsWith(yearKey));
+        const gelir = Math.round(yearTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
+        const gider = Math.round(yearExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0));
+        const months = Array.from({ length: 12 }, (_, i) => {
+            const key = yearKey + '-' + pad(i + 1);
+            const mt = yearTrips.filter(k => String(k.date || '').startsWith(key));
+            const mg = yearExpenses.filter(k => String(k.date || '').startsWith(key));
+            const g = Math.round(mt.reduce((s, k) => s + moneyValue(k.arac), 0));
+            const c = Math.round(mg.reduce((s, k) => s + moneyValue(k.tutar), 0));
+            return {
+                key,
+                label: new Date(Number(yearKey), i, 1).toLocaleDateString('tr-TR', { month: 'long' }),
+                count: mt.length,
+                giderCount: mg.length,
+                gelir: g,
+                gider: c,
+                net: g - c
+            };
+        });
+        return { gelir, gider, net: gelir - gider, count: yearTrips.length, months };
+    }, [trips, expenses, yearKey]);
+    const byDay = React.useMemo(() => {
+        const map = {};
+        rows.forEach(k => {
+            if (!k.date)
+                return;
+            if (!map[k.date])
+                map[k.date] = [];
+            map[k.date].push(k);
+        });
+        return map;
+    }, [rows]);
+    const calendarDays = React.useMemo(() => {
+        const [y, m] = monthKey.split('-').map(Number);
+        const first = new Date(y || new Date().getFullYear(), (m || 1) - 1, 1);
+        const offset = (first.getDay() + 6) % 7;
+        const start = new Date(first);
+        start.setDate(first.getDate() - offset);
+        return Array.from({ length: 42 }, (_, i) => {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            const key = dateKey(d);
+            const dayRows = byDay[key] || [];
+            const gunTrips = dayRows.filter(k => k.type === 'sefer');
+            const gunExpenses = dayRows.filter(k => k.type === 'gider');
+            const gelir = Math.round(gunTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
+            const gider = Math.round(gunExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0));
+            return { key, no: d.getDate(), inMonth: key.startsWith(monthKey), count: gunTrips.length, gider: gunExpenses.length, net: gelir - gider };
+        });
+    }, [monthKey, byDay]);
+    const dayRows = byDay[selectedDay] || [];
+    const dayTrips = dayRows.filter(k => k.type === 'sefer').sort((a, b) => String(a.id || '').localeCompare(String(b.id || '')));
+    const dayExpenses = dayRows.filter(k => k.type === 'gider');
+    const dayTripIds = new Set(dayTrips.map(k => k.id));
+    const dayLooseExpenses = dayExpenses.filter(k => !dayTripIds.has(k.seferId));
+    const dayIncome = Math.round(dayTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
+    const dayExpense = Math.round(dayExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0));
+    const dayNet = dayIncome - dayExpense;
+    const statTile = (label, value, col, bg, br) => React.createElement("div", { style: { background: bg, border: '1px solid ' + br, borderRadius: 12, padding: '10px 6px', textAlign: 'center', minWidth: 0, boxShadow: '0 2px 10px rgba(31,58,95,.055)' } },
+        React.createElement("div", { style: { fontSize: 8.5, fontWeight: 520, color: SB, textTransform: 'uppercase', marginBottom: 3 } }, label),
+        React.createElement("div", { style: { fontSize: 14.5, fontWeight: 610, color: col, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' } }, value));
+    const tripExpenses = id => expenses.filter(k => k.seferId === id);
+    const saveLocalList = (key, list) => {
+        try { localStorage.setItem(key, JSON.stringify(list)); }
+        catch (e) { }
+    };
+    const rememberSofor = n => {
+        const v = String(n || '').trim();
+        if (!v)
+            return;
+        const next = [...new Set([v, ...kayitliSoforler])].slice(0, 30);
+        setKayitliSoforler(next);
+        saveLocalList('ol_sof', next);
+    };
+    const rememberFirm = n => {
+        const v = String(n || '').trim();
+        if (!v)
+            return;
+        const next = [...new Set([v, ...kayitliFirmalar])].slice(0, 30);
+        setKayitliFirmalar(next);
+        saveLocalList('ol_fir', next);
+    };
+    const firstDayForMonth = key => {
+        const firstTrip = trips.slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).find(k => String(k.date || '').startsWith(key));
+        return firstTrip ? firstTrip.date : key + '-01';
+    };
+    const selectMonth = key => {
+        setMonthKey(key);
+        setSelectedDay(firstDayForMonth(key));
+        setShowTripForm(false);
+        setExpenseOpen(false);
+    };
+    const shiftMonth = delta => {
+        const d = new Date(monthDate);
+        d.setMonth(d.getMonth() + delta);
+        selectMonth(d.getFullYear() + '-' + pad(d.getMonth() + 1));
+    };
+    const openNewTrip = day => {
+        const key = day || selectedDay || todayKey;
+        setSelectedDay(key);
+        setTripForm(blankTrip(key));
+        setEditTripId(null);
+        setShowTripForm(true);
+        setExpenseOpen(false);
+    };
+    const editTrip = k => {
+        const key = k.date || selectedDay || todayKey;
+        setSelectedDay(key);
+        setMonthKey(key.slice(0, 7));
+        setTripForm({ date: key, isVeren: k.isVeren || '', sofor: k.sofor || '', yolcu: k.yolcu || '', guzergah: k.guzergah || '', musteri: k.musteri || '', arac: k.arac || '', not: k.not || '' });
+        setEditTripId(k.id);
+        setShowTripForm(true);
+        setExpenseOpen(false);
+    };
+    const saveTrip = () => {
+        if (!tripForm.arac) {
+            tip('Araç net tutarı girin');
+            return;
+        }
+        const key = tripForm.date || selectedDay || todayKey;
+        const id = editTripId || (Date.now().toString() + '-' + Math.random().toString(36).slice(2, 7));
+        const record = { id, type: 'sefer', date: key, isVeren: tripForm.isVeren, sofor: tripForm.sofor, yolcu: tripForm.yolcu, guzergah: tripForm.guzergah, musteri: tripForm.musteri, arac: tripForm.arac, not: tripForm.not };
+        setAracK(p => {
+            const base = Array.isArray(p) ? p : [];
+            if (editTripId) {
+                const old = base.find(x => x.id === editTripId) || {};
+                return base.map(x => x.id === editTripId ? { ...old, ...record } : x);
+            }
+            return [...base, record];
+        });
+        if (tripForm.sofor)
+            rememberSofor(tripForm.sofor);
+        if (tripForm.isVeren)
+            rememberFirm(tripForm.isVeren);
+        setSelectedDay(key);
+        setMonthKey(key.slice(0, 7));
+        setOpenTrip(p => ({ ...p, [id]: true }));
+        setShowTripForm(false);
+        setEditTripId(null);
+        setTripForm(blankTrip(key));
+        tip(editTripId ? 'Araç işi güncellendi' : 'Araç işi eklendi');
+    };
+    const deleteTrip = id => {
+        if (!window.confirm('Bu araç işi silinsin mi?'))
+            return;
+        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id && k.seferId !== id));
+        tip('Silindi');
+    };
+    const openExpenseForm = target => {
+        setExpenseForm({ target: target || 'day', kat: 'fuel', tutar: '', not: '' });
+        setExpenseOpen(true);
+        setShowTripForm(false);
+    };
+    const saveExpense = () => {
+        if (!expenseForm.tutar) {
+            tip('Gider tutarı girin');
+            return;
+        }
+        const targetTrip = trips.find(k => k.id === expenseForm.target);
+        if (!targetTrip) {
+            tip('Gider için iş kartı seçin');
+            return;
+        }
+        const record = { id: Date.now().toString() + '-' + Math.random().toString(36).slice(2, 7), type: 'gider', seferId: targetTrip.id, date: targetTrip.date || selectedDay, kat: expenseForm.kat, tutar: expenseForm.tutar, not: expenseForm.not };
+        setAracK(p => [...(Array.isArray(p) ? p : []), record]);
+        setExpenseForm({ target: targetTrip.id, kat: 'fuel', tutar: '', not: '' });
+        setExpenseOpen(false);
+        tip('Gider eklendi');
+    };
+    const deleteExpense = id => {
+        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id));
+        tip('Gider silindi');
+    };
+    const expenseLine = k => {
+        const cat = GIDER_KAT.find(c => c.id === k.kat);
+        return React.createElement("div", { key: k.id, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 0', borderBottom: '1px solid ' + BOR } },
+            React.createElement("div", { style: { minWidth: 0 } },
+                React.createElement("div", { style: { fontSize: 12, fontWeight: 520, color: TX } }, (cat ? cat.n : 'Gider') + (k.not ? ' - ' + k.not : '')),
+                React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 1 } }, k.seferId && String(k.seferId).startsWith('day:') ? 'Gün gideri' : 'İşe bağlı gider')),
+            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 } },
+                React.createElement("b", { style: { fontSize: 13, color: R, fontVariantNumeric: 'tabular-nums' } }, '-' + fr(k.tutar) + '₺'),
+                React.createElement("button", { type: "button", onClick: () => deleteExpense(k.id), style: { width: 28, height: 28, borderRadius: 9, border: '1px solid #FFC4C0', background: '#FFF0EF', color: R, fontWeight: 520, cursor: 'pointer' } }, "×")));
+    };
+    const weekdayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    const selectedLabel = new Date(selectedDay).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        React.createElement("datalist", { id: "arac-firma-list" }, kayitliFirmalar.map((f, i) => React.createElement("option", { key: f + i, value: f }))),
+        React.createElement("datalist", { id: "arac-sofor-list" }, kayitliSoforler.map((s, i) => React.createElement("option", { key: s + i, value: s }))),
+        React.createElement("div", { className: "card lg-arac-head-card", style: { border: '1px solid rgba(31,58,95,.18)', background: 'linear-gradient(135deg,#FFFFFF 0%,#F6F8FB 100%)', boxShadow: '0 8px 24px rgba(31,58,95,.10)' } },
+            React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 12 } },
+                React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("div", { style: { fontSize: 18, fontWeight: 610, color: NAV, textTransform: 'capitalize', lineHeight: 1.15 } }, monthDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })),
+                    React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3 } }, PLAKA + ' aylık araç takvimi')),
+                React.createElement("div", { style: { textAlign: 'right', flexShrink: 0 } },
+                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 520, textTransform: 'uppercase' } }, "Net kalan kar"),
+                    React.createElement("div", { style: { fontSize: 21, fontWeight: 610, color: monthNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 } }, fn(monthNet) + '₺'))),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 11 } },
+                statTile('Gelir', '+' + fr(monthIncome) + '₺', G, '#EEF2F7', '#CFD8E3'),
+                statTile('Gider', '-' + fr(monthExpense) + '₺', R, '#FFF0EF', '#FFC4C0'),
+                statTile('İş', monthTrips.length, NAV, '#F6F8FB', '#CFD8E3')),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '40px 1fr 40px 88px', gap: 7, alignItems: 'center' } },
+                React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 560, cursor: 'pointer' } }, "‹"),
+                React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 520, color: NAV } }),
+                React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 560, cursor: 'pointer' } }, "›"),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: 'none', background: NAV, color: '#fff', fontWeight: 560, cursor: 'pointer' } }, "Bugün"))),
+        React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(31,58,95,.16)' } },
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 520, color: SB } }, w))),
+            React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
+                const active = d.key === selectedDay;
+                const isToday = d.key === todayKey;
+                const hasWork = d.count > 0 || d.gider > 0;
+                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (d.inMonth ? "" : " is-other") + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); if (!d.key.startsWith(monthKey)) setMonthKey(d.key.slice(0, 7)); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 74, borderRadius: 12, border: '1.4px solid ' + (active ? NAV : hasWork ? '#CFD8E3' : BOR), background: active ? 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')' : d.inMonth ? '#fff' : '#F6F8FB', color: active ? '#fff' : d.inMonth ? TX : '#9AA6B7', padding: 6, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'space-between', boxShadow: active ? '0 5px 16px rgba(31,58,95,.22)' : hasWork ? '0 2px 8px rgba(31,58,95,.09)' : 'none', opacity: d.inMonth ? 1 : .55 } },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
+                        React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 520 } }, d.no),
+                        isToday && React.createElement("span", { style: { width: 7, height: 7, borderRadius: 99, background: active ? '#fff' : G, flexShrink: 0 } })),
+                    React.createElement("div", { className: "ko-arac-day-meta", style: { display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start' } },
+                        React.createElement("span", { className: "ko-arac-day-count", style: { width: '100%', borderRadius: 99, padding: '3px 2px', fontSize: 9, fontWeight: 430, background: active ? 'rgba(31,58,95,.08)' : hasWork ? '#EEF2F7' : '#F6F8FB', color: hasWork ? NAV : SB, lineHeight: 1.1 } }, d.count + ' iş'),
+                        hasWork && React.createElement("span", { className: "ko-arac-day-net" + (d.net < 0 ? " is-neg" : ""), style: { fontSize: 9, fontWeight: 520, color: d.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(d.net) + '₺')));
+            }))),
+        React.createElement("div", { className: "card ko-arac-day-panel", style: { border: '1px solid rgba(31,58,95,.16)', background: '#fff' } },
+            React.createElement("div", { className: "ko-arac-day-panel-head", style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 } },
+                React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("div", { style: { fontSize: 15, fontWeight: 610, color: TX, textTransform: 'capitalize' } }, selectedLabel),
+                    React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 2 } }, dayTrips.length + ' iş · ' + dayExpenses.length + ' gider')),
+                React.createElement("div", { className: "ko-arac-day-netbox", style: { textAlign: 'right', flexShrink: 0 } },
+                    React.createElement("div", { className: "ko-arac-day-netbox-label", style: { fontSize: 9, color: SB, fontWeight: 520, textTransform: 'uppercase' } }, "Gün net"),
+                    React.createElement("div", { className: "ko-arac-day-netbox-value", style: { fontSize: 18, fontWeight: 610, color: dayNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(dayNet) + '₺'))),
+            showTripForm && React.createElement("div", { style: { background: '#F6F8FB', border: '1px solid ' + BOR, borderRadius: 13, padding: 10, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                    React.createElement("b", { style: { fontSize: 13, color: NAV, fontWeight: 560 } }, editTripId ? 'İşi düzenle' : 'Yeni araç işi'),
+                    React.createElement("button", { type: "button", onClick: () => { setShowTripForm(false); setEditTripId(null); }, style: { width: 30, height: 30, borderRadius: 10, border: '1px solid ' + BOR, background: '#fff', color: SB, cursor: 'pointer', fontWeight: 560 } }, "×")),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                    React.createElement("input", { type: "date", value: tripForm.date, onChange: e => setTripForm(p => ({ ...p, date: e.target.value })), className: "inp" }),
+                    React.createElement("input", { value: tripForm.yolcu, onChange: e => setTripForm(p => ({ ...p, yolcu: e.target.value })), placeholder: "Yolcu / iş adı", className: "inp" })),
+                React.createElement("input", { value: tripForm.guzergah, onChange: e => setTripForm(p => ({ ...p, guzergah: e.target.value })), placeholder: "Güzergah", className: "inp" }),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                    React.createElement("input", { list: "arac-firma-list", value: tripForm.isVeren, onChange: e => setTripForm(p => ({ ...p, isVeren: e.target.value })), placeholder: "İş veren", className: "inp" }),
+                    React.createElement("input", { list: "arac-sofor-list", value: tripForm.sofor, onChange: e => setTripForm(p => ({ ...p, sofor: e.target.value })), placeholder: "Kaptan", className: "inp" })),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: tripForm.musteri, onChange: e => setTripForm(p => ({ ...p, musteri: e.target.value })), placeholder: "Müşteri ücreti", className: "inp" }),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: tripForm.arac, onChange: e => setTripForm(p => ({ ...p, arac: e.target.value })), placeholder: "Araç net", className: "inp" })),
+                React.createElement("input", { value: tripForm.not, onChange: e => setTripForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
+                React.createElement("button", { type: "button", onClick: saveTrip, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, editTripId ? 'Değişiklikleri kaydet' : 'İşi kaydet')),
+            dayTrips.length === 0 && dayLooseExpenses.length === 0 ? React.createElement("div", { style: { background: '#F6F8FB', border: '1px dashed ' + BOR, borderRadius: 12, padding: 18, textAlign: 'center', color: SB, fontSize: 12, fontWeight: 430 } }, "Bu güne kayıt yok.")
+                : React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    dayTrips.map(s => {
+                        const gd = tripExpenses(s.id);
+                        const gTop = Math.round(gd.reduce((x, k) => x + moneyValue(k.tutar), 0));
+                        const sNet = Math.round(moneyValue(s.arac) - gTop);
+                        const isOpen = !!openTrip[s.id];
+                        return React.createElement("div", { key: s.id, className: "ko-arac-job-card" },
+                            React.createElement("button", { type: "button", className: "ko-arac-job-head", onClick: () => setOpenTrip(p => ({ ...p, [s.id]: !p[s.id] })) },
+                                React.createElement("div", { style: { minWidth: 0 } },
+                                    s.isVeren && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#EEF2F7', color: NAV, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6 } }, s.isVeren),
+                                    React.createElement("div", { className: "ko-arac-job-title" }, s.yolcu || 'Araç işi'),
+                                    React.createElement("div", { className: "ko-arac-job-sub" }, [s.guzergah, s.sofor ? 'Kaptan: ' + s.sofor : ''].filter(Boolean).join(' · ') || 'Detaya gir')),
+                                React.createElement("div", { className: "ko-arac-job-money" },
+                                    React.createElement("div", { className: "ko-arac-money-line" },
+                                        React.createElement("span", null, "Bedel"),
+                                        React.createElement("b", null, '+' + fr(s.arac) + '₺')),
+                                    React.createElement("div", { className: "ko-arac-money-line is-net" + (sNet < 0 ? " is-neg" : "") },
+                                        React.createElement("span", null, "Net"),
+                                        React.createElement("b", null, fn(sNet) + '₺')),
+                                    React.createElement("div", { style: { fontSize: 9.5, color: SB, fontWeight: 410 } }, isOpen ? 'Detayı kapat' : 'Detaya gir'))),
+                            isOpen && React.createElement("div", { className: "ko-arac-job-detail" },
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 10 } },
+                                    statTile('Araç net', '+' + fr(s.arac) + '₺', G, '#fff', '#CFD8E3'),
+                                    statTile('Gider', '-' + fr(gTop) + '₺', R, '#fff', '#FFC4C0'),
+                                    statTile('Kalan', fn(sNet) + '₺', sNet >= 0 ? G : R, '#fff', '#CFD8E3')),
+                                gd.length > 0 && React.createElement("div", { style: { marginBottom: 10 } }, gd.map(expenseLine)),
+                                expenseOpen && expenseForm.target === s.id && React.createElement("div", { style: { background: '#FFF8F7', border: '1px solid #FFC4C0', borderRadius: 13, padding: 10, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+                                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                                        React.createElement("div", { style: { fontSize: 12.5, color: R, fontWeight: 560 } }, "Bu işe gider ekle"),
+                                        React.createElement("button", { type: "button", onClick: () => setExpenseOpen(false), style: { width: 28, height: 28, borderRadius: 10, border: '1px solid #FFC4C0', background: '#fff', color: R, cursor: 'pointer', fontWeight: 560 } }, "×")),
+                                    React.createElement("input", { type: "number", inputMode: "decimal", value: expenseForm.tutar, onChange: e => setExpenseForm(p => ({ ...p, tutar: e.target.value })), placeholder: "Tutar", className: "inp" }),
+                                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } }, GIDER_KAT.map(cat => React.createElement("button", { key: cat.id, type: "button", onClick: () => setExpenseForm(p => ({ ...p, kat: cat.id })), style: { minHeight: 36, borderRadius: 10, border: '1px solid ' + (expenseForm.kat === cat.id ? R : BOR), background: expenseForm.kat === cat.id ? R : '#fff', color: expenseForm.kat === cat.id ? '#fff' : TX, fontSize: 10, fontWeight: 520, cursor: 'pointer' } }, cat.n))),
+                                    React.createElement("input", { value: expenseForm.not, onChange: e => setExpenseForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
+                                    React.createElement("button", { type: "button", onClick: saveExpense, style: { background: R, color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, "Gideri kaydet")),
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
+                                    React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => openExpenseForm(s.id), style: { color: R } }, expenseOpen && expenseForm.target === s.id ? "Gider formu açık" : "Gider ekle"),
+                                    React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
+                                    React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
+                    }),
+                    dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 520, color: R, padding: '9px 0 2px' } }, "Gün giderleri"),
+                        dayLooseExpenses.map(expenseLine)))),
+        React.createElement("button", { type: "button", className: "ko-arac-year-toggle-btn", onClick: () => setShowYear(v => !v), style: { width: '100%', border: '1px solid ' + BOR, background: showYear ? NAV : '#fff', color: showYear ? '#fff' : NAV, borderRadius: 13, padding: 12, fontWeight: 520, cursor: 'pointer' } }, showYear ? 'Yıllık görünümü kapat' : yearKey + ' yıllık görünüm'),
+        showYear && React.createElement("div", { className: "card", style: { border: '1px solid rgba(31,58,95,.16)' } },
+            React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 10 } },
+                React.createElement("div", null,
+                    React.createElement("div", { style: { fontSize: 16, fontWeight: 610, color: NAV } }, yearKey + ' Yıllık'),
+                    React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 2 } }, yearSummary.count + ' iş kaydı')),
+                React.createElement("div", { style: { textAlign: 'right' } },
+                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 430, textTransform: 'uppercase' } }, "Yıllık net"),
+                    React.createElement("div", { style: { fontSize: 20, fontWeight: 610, color: yearSummary.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(yearSummary.net) + '₺'))),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } },
+                statTile('Gelir', '+' + fr(yearSummary.gelir) + '₺', G, '#EEF2F7', '#CFD8E3'),
+                statTile('Gider', '-' + fr(yearSummary.gider) + '₺', R, '#FFF0EF', '#FFC4C0'),
+                statTile('Net', fn(yearSummary.net) + '₺', yearSummary.net >= 0 ? G : R, '#F6F8FB', '#CFD8E3')),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 } }, yearSummary.months.map(m => React.createElement("button", { key: m.key, type: "button", onClick: () => selectMonth(m.key), style: { border: '1px solid ' + (m.key === monthKey ? NAV : BOR), borderRadius: 12, padding: 10, background: m.key === monthKey ? '#EEF2F7' : '#fff', textAlign: 'left', cursor: 'pointer', minHeight: 86 } },
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } },
+                    React.createElement("b", { style: { fontSize: 13, color: TX, textTransform: 'capitalize' } }, m.label),
+                    React.createElement("b", { style: { fontSize: 13, color: m.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(m.net) + '₺')),
+                React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 8 } }, m.count + ' iş · ' + m.giderCount + ' gider'),
+                React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 3 } }, '+' + fr(m.gelir) + '₺ / -' + fr(m.gider) + '₺'))))),
+        monthTrips.length > 0 && React.createElement("button", { type: "button", onClick: () => {
+                const sorted = monthTrips.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+                const lines = sorted.map((s, i) => {
+                    const gd = tripExpenses(s.id);
+                    const gTop = Math.round(gd.reduce((x, k) => x + moneyValue(k.tutar), 0));
+                    const sNet = Math.round(moneyValue(s.arac) - gTop);
+                    return (i + 1) + '. ' + s.date + ' | ' + (s.yolcu || 'Araç işi') + (s.guzergah ? ' | ' + s.guzergah : '') + ' | Net: ' + fn(sNet) + '₺';
+                }).join('\n');
+                copyText('ÖLMEZTUR TURİZM\n' + PLAKA + ' - ' + monthKey + '\nGelir: +' + fr(monthIncome) + '₺  Gider: -' + fr(monthExpense) + '₺  Net: ' + fn(monthNet) + '₺\n' + '─'.repeat(28) + '\n' + lines);
+                tip('Aylık araç raporu kopyalandı');
+            }, className: "ko-arac-report-btn", style: { width: '100%', background: '#fff', color: NAV, border: '1px solid ' + BOR, borderRadius: 13, padding: 12, fontWeight: 520, cursor: 'pointer' } }, "Aylık raporu kopyala"));
 }
 function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer }) {
     const [sel, setSel] = useState(null);
@@ -2419,7 +2834,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         React.createElement("input", {
             value: ara,
             onChange: e => setFirmSearch(e.target.value),
-            placeholder: "\uD83D\uDD0D Firma ara...",
+            placeholder: "\uD83D\uDD0D Firma ara",
             className: "inp",
             style: { fontSize: '13px', marginBottom: 10 }
         }),
@@ -2431,8 +2846,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const hData = hesapData(sel);
                 const { ts, al, ver, net } = hData;
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
-                const mAl = Math.round(mts.filter(t => !t.firmSettled && moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
-                const mVer = Math.round(mts.filter(t => !t.firmSettled && moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
+                const mAl = Math.round(mts.filter(t => moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
+                const mVer = Math.round(mts.filter(t => moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
                 const sirali = ts.slice().sort(sortHesapTs);
                 const normalSirali = sirali.filter(t => t.kaynak !== 'odelo');
                 const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi');
@@ -3337,7 +3752,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
                     React.createElement("label", { className: "tk-form-lbl" }, "Not"),
-                    React.createElement("textarea", { className: "inp", value: formData.notes, onChange: e => setFormData(p => ({...p, notes: e.target.value})), placeholder: "Detay...", rows: 3, style: { resize: 'vertical', minHeight: 64 } })
+                    React.createElement("textarea", { className: "inp", value: formData.notes, onChange: e => setFormData(p => ({...p, notes: e.target.value})), placeholder: "Detay", rows: 3, style: { resize: 'vertical', minHeight: 64 } })
                 ),
                 React.createElement("div", { style: { fontSize: 12, color: 'var(--ink-3)', textAlign: 'center', padding: 8, background: 'var(--surface)', borderRadius: 9, marginTop: 10 } },
                     (formData.repeat && formData.repeat !== 'none' ? repeatLabel(formData.repeat) + " · " : "") + "Tarih: " + new Date(formData.date || selectedDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -3378,7 +3793,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
                     React.createElement("label", { className: "tk-form-lbl" }, "Not"),
-                    React.createElement("input", { className: "inp", type: "text", value: ledgerForm.note, onChange: e => setLedgerForm(p => ({...p, note: e.target.value})), placeholder: "Açıklama..." })
+                    React.createElement("input", { className: "inp", type: "text", value: ledgerForm.note, onChange: e => setLedgerForm(p => ({...p, note: e.target.value})), placeholder: "Açıklama" })
                 )
             )
         ),
@@ -4361,7 +4776,7 @@ function App() {
                     )),
                     field('Kaptan Tel', input({ key: 'driverPhone_' + (q.driverPhone || ''), defaultValue: q.driverPhone || '', onBlur: e => quickInputSet({ driverPhone: e.target.value }), placeholder: 'Telefon', inputMode: 'tel', autoComplete: 'tel' })),
                     field('Plaka', input({ defaultValue: q.plate || '', onBlur: e => quickInputSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
-                    field('Uçuş', input({ defaultValue: q.flightCode || '', onBlur: e => quickInputSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK...' })),
+                    field('Uçuş', input({ defaultValue: q.flightCode || '', onBlur: e => quickInputSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK' })),
                     field('Müşteri Öder mi?', select({
                         value: q.paymentCollect || 'yes',
                         onChange: e => quickSet(e.target.value === 'no'
@@ -4926,7 +5341,12 @@ function App() {
         const activeDayKey = (selectedRangeDay && selectedRangeDay.startsWith(monthKey)) ? selectedRangeDay : fallbackDayKey;
         const activeDayDate = parseDateKey(activeDayKey) || monthCursor;
         const monthRows = byCollectionFilter(listRows.filter(t => t.date && String(t.date).startsWith(monthKey)), activeCollectFilter);
-        const rangeRows = byCollectionFilter(listRows.filter(t => t.date === activeDayKey), activeCollectFilter);
+        const monthDayMap = monthRows.reduce((acc, t) => {
+            const dk = t.date || 'Tarihsiz';
+            (acc[dk] || (acc[dk] = [])).push(t);
+            return acc;
+        }, {});
+        const rangeRows = (monthDayMap[activeDayKey] || []).slice();
         const rangeProfit = summaryNetKar(rangeRows);
         const monthProfit = Math.round(monthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
         const monthLabel = monthCursor.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
@@ -4966,7 +5386,7 @@ function App() {
         };
         const isCurrentMonth = monthKey === todayMonthKey;
         const weekNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-        const dateRangeSection = React.createElement("div", { className: "lg-month-cal-card" },
+        const dateRangeSection = React.createElement("div", { className: "lg-month-cal-card ko-real-cal-card" },
             React.createElement("div", { className: "lg-month-cal-head" },
                 React.createElement("button", { className: "lg-month-nav", onClick: () => shiftMonth(-1), title: "Önceki ay" }, '‹'),
                 React.createElement("div", { className: "lg-month-title-wrap" },
@@ -4981,17 +5401,22 @@ function App() {
                     const inMonth = rd.getMonth() === monthIndex;
                     const isToday = dk === todayKey;
                     const isSelected = dk === activeDayKey;
-                    const dayTransfers = inMonth ? byCollectionFilter(listRows.filter(t => t.date === dk), activeCollectFilter) : [];
+                    const dayTransfers = inMonth ? (monthDayMap[dk] || []) : [];
                     const cnt = dayTransfers.length;
                     const doneCnt = dayTransfers.filter(x => x.status === 'tam').length;
+                    const dayProfit = summaryNetKar(dayTransfers);
                     return React.createElement("button", {
                         key: dk,
                         className: 'lg-month-day' + (inMonth ? '' : ' is-other') + (isToday ? ' is-today' : '') + (isSelected ? ' is-selected ko-selected-gold' : '') + (cnt > 0 ? ' has-work' : ''),
                         onClick: () => selectMonthDay(dk),
                         title: inMonth ? (cnt + ' transfer · ' + doneCnt + ' tamam') : ''
                     },
-                        React.createElement("span", { className: "lg-month-day-num" }, rd.getDate()),
-                        React.createElement("span", { className: "lg-month-day-count" }, inMonth && cnt > 0 ? cnt + ' transfer' : ''));
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 } },
+                            React.createElement("span", { className: "lg-month-day-num" }, rd.getDate()),
+                            isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#1F3A5F', flexShrink: 0 } })),
+                        React.createElement("div", { className: "ko-arac-day-meta" },
+                            React.createElement("span", { className: "lg-month-day-count" }, inMonth && cnt > 0 ? cnt + ' transfer' : ''),
+                            inMonth && cnt > 0 && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
                 })),
             React.createElement("div", { className: "lg-month-selected-line" },
                 React.createElement("div", null,
@@ -5150,7 +5575,7 @@ function App() {
         return (React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: '#F6F8FB', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
             React.createElement("div", { className: 'card', style: { width: '100%', maxWidth: 420, textAlign: 'center' } },
                 React.createElement("div", { style: { fontWeight: 900, fontSize: 20, color: NAV, marginBottom: 8 } }, 'Ödeme/KÖ Transfer Takip'),
-                React.createElement("div", { style: { color: SB, fontSize: 14 } }, 'Güvenli giriş hazırlanıyor...'))));
+                React.createElement("div", { style: { color: SB, fontSize: 14 } }, 'Güvenli giriş hazırlanıyor'))));
     }
     if (FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && !authUser) {
         return React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: 'linear-gradient(180deg,#F6F8FB 0%,#F6F8FB 45%,#F6F8FB 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 } },
@@ -5180,7 +5605,7 @@ function App() {
                         React.createElement("div", { style: { color: SB, fontSize: 11 } }, rememberMe ? 'Oturum bu cihazda açık kalır' : 'Tarayıcı kapanınca tekrar giriş gerekir')
                     ),
                     authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#FF3B30', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
-                    React.createElement("button", { onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? '#AEAEB2' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 900, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor...' : 'Güvenli Giriş Yap'),
+                    React.createElement("button", { onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? '#AEAEB2' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 900, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor' : 'Güvenli Giriş Yap'),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 } },
                         React.createElement("div", { style: { background: '#F6F8FB', border: '1px solid #CFD8E3', borderRadius: 14, padding: '10px 12px' } },
                             React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 3 } }, 'Yetki'),
@@ -6316,7 +6741,7 @@ function App() {
                             React.createElement(SmartPick, { value: form.assignedTo || '', rows: formAgencyRows, onChange: v => sf({ assignedTo: v }), onSelect: a => sf({ assignedTo: a.name }), placeholder: "" })),
                         React.createElement("button", { onClick: () => setAgIn(p => !p), className: "ko-party-add-btn", style: { background: agIn ? R : NAV, border: 'none', color: '#fff', borderRadius: 10, minHeight: 43, padding: '0 12px', fontWeight: 800, fontSize: 16, flexShrink: 0, alignSelf: 'flex-end', cursor: 'pointer' } }, agIn ? '✕' : '+')),
                     agIn && (React.createElement("div", { style: { display: 'flex', gap: 7, marginBottom: 8 } },
-                        React.createElement("input", { type: "text", value: newAg, onChange: e => setNewAg(e.target.value), placeholder: "Yeni acenta...", className: "inp", style: { flex: 1, width: 'auto' } }),
+                        React.createElement("input", { type: "text", value: newAg, onChange: e => setNewAg(e.target.value), placeholder: "Yeni acenta", className: "inp", style: { flex: 1, width: 'auto' } }),
                         React.createElement("button", { onClick: () => { addAg(newAg); setNewAg(''); setAgIn(false); }, style: { background: G, border: 'none', color: '#fff', borderRadius: 10, padding: '0 14px', fontWeight: 800, fontSize: 16, cursor: 'pointer' } }, "\u2713"))),
                     /* Alt Acenta: kullanıcı tercihi - gizli, mini simge ile açılır */
                     (form.altAcenta || form.__showAltAcenta) ? React.createElement("div", { className: "ko-party-alt-row", style: { display: 'grid', gridTemplateColumns: form.altAcenta ? 'minmax(0,1fr) minmax(0,1fr) 36px' : 'minmax(0,1fr) 36px', gap: 7, alignItems: 'flex-end' } },
@@ -6355,7 +6780,7 @@ function App() {
                         React.createElement(SmartPick, { value: form.driverName || '', rows: formDriverRows, onChange: v => {
                                 const dr = formDriverRows.find(d => nm(d.name) === nm(v));
                                 sf({ driverName: v, driverPhone: dr ? (dr.phone || '') : form.driverPhone });
-                            }, onSelect: d => sf({ driverName: d.name, driverPhone: d.phone || '' }), placeholder: "Kaptan adı / telefon..." }),
+                            }, onSelect: d => sf({ driverName: d.name, driverPhone: d.phone || '' }), placeholder: "Kaptan adı / telefon" }),
                         React.createElement("button", { onClick: () => {
                                 const dn = (form.driverName || '').trim();
                                 const exists = formDriverRows.some(d => nm(d.name) === nm(dn));
@@ -6580,15 +7005,15 @@ function App() {
                         React.createElement("input", {
                             value: form.tourCommissionShop || '',
                             onChange: e => sf({ tourCommissionShop: e.target.value }),
-                            placeholder: "Küçük not (mağaza, açıklama...)", className: "inp",
+                            placeholder: "Küçük not (mağaza, açıklama)", className: "inp",
                             style: { fontSize: 11, padding: '6px 10px', background: '#EEF2F7', border: '1px solid #CFD8E3', color: '#53647C', fontStyle: 'italic' }
                         })),
-                    React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar...", rows: 2, className: "inp", style: { resize: 'none' } })),
+                    React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar", rows: 2, className: "inp", style: { resize: 'none' } })),
                 React.createElement("button", { onClick: submit, style: { width: '100%', background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 14, padding: '14px', fontWeight: 800, fontSize: '15px', boxShadow: '0 6px 22px rgba(20,33,61,.22)', cursor: 'pointer', letterSpacing: .3 } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     /* Arama — tek başına üstte */
-                    React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Ara...", className: "inp", style: { fontSize: '14px' } })),
+                    React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Ara", className: "inp", style: { fontSize: '14px' } })),
                 visibleListRows.length === 0 ? (React.createElement("div", { style: { textAlign: 'center', paddingTop: 40 } },
                     React.createElement("div", { style: { fontSize: 46, marginBottom: 8 } }, "✈️"),
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'),
@@ -6637,7 +7062,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
             tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
+            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
@@ -6722,13 +7147,13 @@ function App() {
                         "\u2601\uFE0F Scriptable Widget Verisini Aktar"),
                     React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F6F8FB', borderRadius: 8, border: '1px dashed #CFD8E3', lineHeight: 1.4 } },
                         "Ana ekrandaki uygulama kendi verisini g\u00FCnceller; Scriptable widget ise GitHub'daki \u201Cdata.json\u201D dosyas\u0131n\u0131 okur. Bu buton temiz veriyi panoya al\u0131r ve GitHub'\u0131 a\u00E7ar: dosyadakini sil, panodakini yap\u0131\u015Ft\u0131r, \u201CCommit changes\u201D de. Widget sonra yenilenir."),
-                    React.createElement("textarea", { readOnly: true, value: rstTxt, placeholder: "Yedek burada da g\u00F6r\u00FCn\u00FCr...", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #CFD8E3', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
+                    React.createElement("textarea", { readOnly: true, value: rstTxt, placeholder: "Yedek burada da g\u00F6r\u00FCn\u00FCr", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #CFD8E3', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
                 React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
                     React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: NAV, marginBottom: 6 } }, "\uD83D\uDCE5 Geri Y\u00FCkle"),
                     React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 8 } }, "Dosyalar/iCloud Drive\u2019daki .json yede\u011Fini se\u00E7ebilir veya eski y\u00F6ntemle panodan y\u00FCkleyebilirsin."),
                     React.createElement("input", { type: "file", accept: ".json,application/json", onChange: e => { const f = e.target.files && e.target.files[0]; restoreFromFile(f); e.target.value = ''; }, className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 12px', marginBottom: 8, background: '#fff' } }),
                     React.createElement("button", { onClick: pasteAndRestore, style: { width: '100%', background: '#14213D', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } }, "\uD83D\uDCCB Panodakini Y\u00FCkle"),
-                    React.createElement("textarea", { value: rstTxt, onChange: e => setRstTxt(e.target.value), onPaste: e => { const pasted = (e.clipboardData || window.clipboardData).getData('text'); if (pasted) setTimeout(() => setRstTxt(pasted), 0); }, placeholder: "Yedek veriyi buraya yap\u0131\u015Ft\u0131r\u0131n...", rows: 4, style: { width: '100%', background: 'white', border: '1.5px solid ' + BOR, borderRadius: 10, padding: '10px 12px', fontSize: '13px', color: TX, resize: 'none', outline: 'none', marginBottom: 8, display: 'block' } }),
+                    React.createElement("textarea", { value: rstTxt, onChange: e => setRstTxt(e.target.value), onPaste: e => { const pasted = (e.clipboardData || window.clipboardData).getData('text'); if (pasted) setTimeout(() => setRstTxt(pasted), 0); }, placeholder: "Yedek veriyi buraya yap\u0131\u015Ft\u0131r\u0131n", rows: 4, style: { width: '100%', background: 'white', border: '1.5px solid ' + BOR, borderRadius: 10, padding: '10px 12px', fontSize: '13px', color: TX, resize: 'none', outline: 'none', marginBottom: 8, display: 'block' } }),
                     React.createElement("button", { onClick: doRestore, disabled: !rstTxt.trim(), style: { width: '100%', background: rstTxt.trim() ? NAV : '#AEAEB2', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: rstTxt.trim() ? 'pointer' : 'default' } }, "\u2B06\uFE0F Yap\u0131\u015Ft\u0131r\u0131lan Yede\u011Fi Y\u00FCkle")))))));
 }
 class AppErrorBoundary extends React.Component {
