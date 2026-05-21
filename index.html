@@ -2858,6 +2858,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const n = Math.round(moneyValue(v));
         return n ? fr(n) + '₺' : '—';
     };
+    const hesapOpenRows = liste => (liste || []).filter(t => !t.firmSettled);
+    const hesapOpenNet = liste => Math.round(hesapOpenRows(liste).reduce((s, t) => s + moneyValue(t.netOl), 0));
     const hesapCustomerAmount = t => {
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
         return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
@@ -2929,7 +2931,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const secondIsOlmez = parts.length > 1 && nm(parts[1]).includes('olmeztur');
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
-        const totalNet = Math.round((liste || []).reduce((s, t) => s + moneyValue(t.netOl), 0));
+        const totalNet = hesapOpenNet(liste);
         const tone = isOlmezToAgency
             ? {
                 bd: '#2F8F5B',
@@ -2954,7 +2956,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("div", { className: "ko-account-section-stats" },
                     React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
                     React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 520, color: tone.accent } }, isOpen ? '▲' : '▼'))),
-            isOpen && (liste.length
+            isOpen && ((liste || []).length
                 ? React.createElement("div", { className: "ko-account-table-wrap" },
                     React.createElement("div", { className: "ko-account-table ko-account-transfer-table" },
                         React.createElement("div", { className: "ko-account-row ko-account-row-head" },
@@ -2966,7 +2968,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("div", { className: "ko-account-cell" }, "Araç"),
                             React.createElement("div", { className: "ko-account-cell" }, "Net"),
                             React.createElement("div", { className: "ko-account-cell" }, "Durum")),
-                        liste.map((t, i) => renderHesapSheetRow(t, i, borderTone))))
+                        (liste || []).map((t, i) => renderHesapSheetRow(t, i, borderTone))))
                 : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok')));
     };
 
@@ -2989,8 +2991,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const hData = hesapData(sel);
                 const { ts, al, ver, net } = hData;
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
-                const mAl = Math.round(mts.filter(t => moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
-                const mVer = Math.round(mts.filter(t => moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
+                const mtsOpen = hesapOpenRows(mts);
+                const mAl = Math.round(mtsOpen.filter(t => moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
+                const mVer = Math.round(mtsOpen.filter(t => moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
                 const sirali = ts.slice().sort(sortHesapTs);
                 const normalSirali = sirali.filter(t => t.kaynak !== 'odelo');
                 const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi');
@@ -3056,7 +3059,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: TX } }, "Ayl\u0131k"),
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
-                        [mts.length, 'Transfer', NAV, '#F7FAF8'],
+                        [mtsOpen.length, 'Transfer', NAV, '#F7FAF8'],
                         ['+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5'],
                         ['−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7']
                     ].map(([v, l, col, bg]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
@@ -3081,12 +3084,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 700, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCB Kendi\nHesab\u0131m")),
                     renderHesapDetayModal());
             })()
-            : (function() {
-                const firmRows = filtered.map(firm => {
-                    const { ts, al, ver, net } = hesapData(firm);
-                    const openTs = ts.filter(t => !t.firmSettled);
-                    if (openTs.length === 0) return null;
-                    const netVal = Math.round(moneyValue(net));
+	            : (function() {
+	                const firmRows = filtered.map(firm => {
+	                    const { ts } = hesapData(firm);
+	                    const openTs = ts.filter(t => !t.firmSettled);
+	                    if (openTs.length === 0) return null;
+	                    const netVal = hesapOpenNet(openTs);
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
