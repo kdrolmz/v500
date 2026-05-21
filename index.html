@@ -1413,6 +1413,153 @@ function transferNetAmount(t) {
 function shouldUseOnlyPlate16TabForSummary(t) {
     return !!findAnyPlate16SeferForTransfer(t) || isPlate16Transfer(t);
 }
+const PLATE16_AUTO_TRIP_PREFIX = 'plate16_auto_';
+const plate16AutoTripId = t => PLATE16_AUTO_TRIP_PREFIX + String((t && t.id) || '');
+const isPlate16AutoTrip = k => !!(k && (k.autoPlate16 || String(k.id || '').startsWith(PLATE16_AUTO_TRIP_PREFIX)));
+const transferPassengerName = t => {
+    const p = Array.isArray(t && t.passengers) && t.passengers.length ? t.passengers[0] : null;
+    return String((p && (p.name || p.fullName)) || (t && (t.passengerName || t.customerName || t.clientName)) || '').trim();
+};
+const plate16TransferTripIncome = t => {
+    const net = Math.round(olmezPotentialKar(t));
+    if (net !== 0)
+        return net;
+    return Math.round(transferCustomerTRYValue(t) || moneyValue(t && t.driverPayment));
+};
+const plate16TransferRoute = t => [t && t.pickup, t && t.dropoff].filter(Boolean).join(' → ');
+const plate16TransferToTrip = (t, existing) => {
+    const id = plate16AutoTripId(t);
+    const gelir = plate16TransferTripIncome(t);
+    const passenger = transferPassengerName(t);
+    return {
+        ...(existing || {}),
+        id,
+        type: 'sefer',
+        autoPlate16: true,
+        source: 'transfer',
+        transferId: t.id,
+        date: t.date || (existing && existing.date) || new Date().toISOString().split('T')[0],
+        time: t.time || (existing && existing.time) || '',
+        isVeren: t.givenBy || t.assignedTo || (existing && existing.isVeren) || '',
+        sofor: t.driverName || (existing && existing.sofor) || '',
+        yolcu: passenger || (existing && existing.yolcu) || 'Transfer',
+        guzergah: plate16TransferRoute(t) || (existing && existing.guzergah) || '',
+        musteri: Math.round(transferCustomerTRYValue(t)) || (existing && existing.musteri) || '',
+        arac: gelir || (existing && existing.arac) || 0,
+        not: t.notes || (existing && existing.not) || '',
+        transferUpdatedAt: t.clientUpdatedAt || t.updatedAt || t.createdAt || '',
+        updatedAt: new Date().toISOString()
+    };
+};
+const scoreManualPlate16TripMatch = (trip, transfer) => {
+    if (!trip || !transfer || String(trip.date || '') !== String(transfer.date || ''))
+        return 0;
+    let score = 3;
+    const transferNameRaw = transferPassengerName(transfer);
+    const transferName = nm(transferNameRaw);
+    const tripName = nm(trip.yolcu || '');
+    if (transferName && tripName) {
+        if (transferName === tripName || transferName.includes(tripName) || tripName.includes(transferName))
+            score += 4;
+        else
+            score += Math.round(tokenOverlapScore(transferNameRaw, trip.yolcu || '') * 3);
+    }
+    const routeScore = tokenOverlapScore(plate16TransferRoute(transfer), trip.guzergah || '');
+    if (routeScore >= 0.45)
+        score += 2;
+    const transferAmount = Math.round(plate16TransferTripIncome(transfer) || transferCustomerTRYValue(transfer));
+    const tripAmount = Math.round(moneyValue(trip.arac || trip.musteri));
+    if (transferAmount > 0 && tripAmount > 0 && Math.abs(transferAmount - tripAmount) <= 50)
+        score += 3;
+    if (transfer.driverName && trip.sofor && nm(transfer.driverName) === nm(trip.sofor))
+        score += 1;
+    return score;
+};
+const findManualPlate16TripForTransfer = (transfer, rows, usedIds) => {
+    const candidates = (rows || [])
+        .filter(k => k && k.type === 'sefer' && !isPlate16AutoTrip(k) && !k.transferId && !usedIds.has(k.id))
+        .map(k => ({ k, score: scoreManualPlate16TripMatch(k, transfer) }))
+        .filter(x => x.score >= 7)
+        .sort((a, b) => b.score - a.score);
+    return candidates.length ? candidates[0].k : null;
+};
+const sameAracRecord = (a, b) => {
+    const keys = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+    for (const key of keys) {
+        const av = a && a[key] == null ? '' : String(a && a[key]);
+        const bv = b && b[key] == null ? '' : String(b && b[key]);
+        if (av !== bv)
+            return false;
+    }
+    return true;
+};
+function syncPlate16TransfersIntoAracK(records, transfers) {
+    const base = Array.isArray(records) ? records : [];
+    const activeTransfers = (Array.isArray(transfers) ? transfers : [])
+        .filter(t => t && t.id && isPlate16Transfer(t) && t.status !== 'iptal');
+    const activeByAutoId = new Map(activeTransfers.map(t => [plate16AutoTripId(t), t]));
+    const activeAutoIds = new Set(activeByAutoId.keys());
+    const staleAutoIds = new Set(base.filter(k => isPlate16AutoTrip(k) && !activeAutoIds.has(k.id)).map(k => k.id));
+    const usedManualIds = new Set();
+    const manualToAuto = new Map();
+
+    activeTransfers.forEach(t => {
+        const autoId = plate16AutoTripId(t);
+        if (base.some(k => k && k.id === autoId))
+            return;
+        const match = findManualPlate16TripForTransfer(t, base, usedManualIds);
+        if (match && match.id) {
+            usedManualIds.add(match.id);
+            manualToAuto.set(match.id, autoId);
+        }
+    });
+
+    const placedAutoIds = new Set();
+    const next = [];
+    base.forEach(k => {
+        if (!k)
+            return;
+        if (staleAutoIds.has(k.id))
+            return;
+        if (k.type === 'gider' && staleAutoIds.has(k.seferId))
+            return;
+        if (manualToAuto.has(k.id)) {
+            const autoId = manualToAuto.get(k.id);
+            const transfer = activeByAutoId.get(autoId);
+            next.push(plate16TransferToTrip(transfer, k));
+            placedAutoIds.add(autoId);
+            return;
+        }
+        if (k.type === 'gider' && manualToAuto.has(k.seferId)) {
+            const autoId = manualToAuto.get(k.seferId);
+            const transfer = activeByAutoId.get(autoId);
+            next.push({ ...k, seferId: autoId, date: (transfer && transfer.date) || k.date });
+            return;
+        }
+        if (isPlate16AutoTrip(k)) {
+            const transfer = activeByAutoId.get(k.id);
+            if (transfer) {
+                next.push(plate16TransferToTrip(transfer, k));
+                placedAutoIds.add(k.id);
+            }
+            return;
+        }
+        if (k.type === 'gider' && activeByAutoId.has(k.seferId)) {
+            const transfer = activeByAutoId.get(k.seferId);
+            const date = (transfer && transfer.date) || k.date;
+            next.push(String(k.date || '') === String(date || '') ? k : { ...k, date });
+            return;
+        }
+        next.push(k);
+    });
+    activeTransfers.forEach(t => {
+        const autoId = plate16AutoTripId(t);
+        if (!placedAutoIds.has(autoId))
+            next.push(plate16TransferToTrip(t, null));
+    });
+    const same = next.length === base.length && next.every((item, i) => sameAracRecord(item, base[i]));
+    return same ? records : next;
+}
 function externalTransferNetAmount(t) {
     return shouldUseOnlyPlate16TabForSummary(t) ? 0 : transferNetAmount(t);
 }
@@ -2078,10 +2225,12 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
                         const gTop = Math.round(gd.reduce((x, k) => x + moneyValue(k.tutar), 0));
                         const sNet = Math.round(moneyValue(s.arac) - gTop);
                         const isOpen = !!openTrip[s.id];
+                        const autoTrip = !!s.autoPlate16;
                         return React.createElement("div", { key: s.id, className: "ko-arac-job-card" },
                             React.createElement("button", { type: "button", className: "ko-arac-job-head", onClick: () => setOpenTrip(p => ({ ...p, [s.id]: !p[s.id] })) },
                                 React.createElement("div", { style: { minWidth: 0 } },
                                     s.isVeren && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#F2F2F7', color: NAV, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6 } }, s.isVeren),
+                                    autoTrip && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#FFF1F0', color: R, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6, marginLeft: s.isVeren ? 5 : 0 } }, "Transferden otomatik"),
                                     React.createElement("div", { className: "ko-arac-job-title" }, s.yolcu || 'Araç işi'),
                                     React.createElement("div", { className: "ko-arac-job-sub" }, [s.guzergah, s.sofor ? 'Kaptan: ' + s.sofor : ''].filter(Boolean).join(' · ') || 'Detaya gir')),
                                 React.createElement("div", { className: "ko-arac-job-money" },
@@ -2106,10 +2255,10 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
                                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } }, GIDER_KAT.map(cat => React.createElement("button", { key: cat.id, type: "button", onClick: () => setExpenseForm(p => ({ ...p, kat: cat.id })), style: { minHeight: 36, borderRadius: 10, border: '1px solid ' + (expenseForm.kat === cat.id ? R : BOR), background: expenseForm.kat === cat.id ? R : '#fff', color: expenseForm.kat === cat.id ? '#fff' : TX, fontSize: 10, fontWeight: 520, cursor: 'pointer' } }, cat.n))),
                                     React.createElement("input", { value: expenseForm.not, onChange: e => setExpenseForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
                                     React.createElement("button", { type: "button", onClick: saveExpense, style: { background: R, color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, "Gideri kaydet")),
-                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr' : '1fr 1fr 1fr', gap: 6 } },
                                     React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => openExpenseForm(s.id), style: { color: R } }, expenseOpen && expenseForm.target === s.id ? "Gider formu açık" : "Gider ekle"),
-                                    React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
-                                    React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
+                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
+                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 520, color: R, padding: '9px 0 2px' } }, "Gün giderleri"),
@@ -4105,6 +4254,11 @@ function App() {
     useEffect(() => {
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
     }, [aracK]);
+    useEffect(() => {
+        if (!storageReady)
+            return;
+        setAracK(p => syncPlate16TransfersIntoAracK(p, T));
+    }, [storageReady, T]);
     const tip = m => { setToast(m); setTimeout(() => setToast(''), 2300); };
     const sf = p => setForm(f => ({ ...f, ...p }));
     const openNewTransferForm = () => {
