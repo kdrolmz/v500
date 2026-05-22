@@ -4257,6 +4257,8 @@ function App() {
     const submitBusyRef = useRef(false);
     const quickDraftRef = useRef(null);
     const draftSaveTimerRef = useRef(null);
+    const plate16SyncTimerRef = useRef(null);
+    const plate16SyncSigRef = useRef(null);
     /* PERF FIX: Bu ref'ler ile useEffect'lerin sonsuz/gereksiz tetiklenmesini önlüyoruz.
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
@@ -4280,8 +4282,50 @@ function App() {
     useEffect(() => {
         if (!storageReady)
             return;
-        setAracK(p => syncPlate16TransfersIntoAracK(p, T));
-    }, [storageReady, T, aracK]);
+        const plateRows = (T || []).filter(t => t && t.id && isPlate16Transfer(t));
+        const sig = plateRows.map(t => [
+            t.id,
+            t.date || '',
+            t.time || '',
+            t.status || '',
+            t.plate || '',
+            t.givenBy || '',
+            t.assignedTo || '',
+            t.driverName || '',
+            transferPassengerName(t),
+            t.pickup || '',
+            t.dropoff || '',
+            t.notes || '',
+            t.paymentAmount || '',
+            t.paymentCurrency || '',
+            t.driverPayment || '',
+            t.altAcentaUcreti || '',
+            t.updatedAt || '',
+            t.clientUpdatedAt || ''
+        ].join('|')).join('::');
+        if (plate16SyncSigRef.current === sig)
+            return;
+        plate16SyncSigRef.current = sig;
+        if (plate16SyncTimerRef.current)
+            clearTimeout(plate16SyncTimerRef.current);
+        plate16SyncTimerRef.current = setTimeout(() => {
+            plate16SyncTimerRef.current = null;
+            setAracK(p => {
+                try {
+                    return syncPlate16TransfersIntoAracK(p, T);
+                } catch (e) {
+                    console.error('[PLATE16 SYNC] hata', e);
+                    return p;
+                }
+            });
+        }, 80);
+        return () => {
+            if (plate16SyncTimerRef.current) {
+                clearTimeout(plate16SyncTimerRef.current);
+                plate16SyncTimerRef.current = null;
+            }
+        };
+    }, [storageReady, T]);
     const tip = m => { setToast(m); setTimeout(() => setToast(''), 2300); };
     const sf = p => setForm(f => ({ ...f, ...p }));
     const openNewTransferForm = () => {
