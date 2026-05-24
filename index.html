@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#F5F5F7">
+<meta name="theme-color" content="#07182C">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Apple Premium</title>
+<title>KÖ Transfer Takip - Ölmez Navy Premium</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -57,7 +57,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .lg-profit-label,.lg-period-label{font-size:11.2px !important;font-weight:430 !important;color:var(--muted) !important}
 .lg-row{font-weight:430 !important;font-size:10.8px !important;line-height:1.32 !important;color:#636366 !important;margin-top:4px !important;display:flex !important;gap:6px !important;align-items:center !important}
 .lg-transfer-date{font-weight:430 !important;font-size:10.8px !important;line-height:1.32 !important;color:#636366 !important}
-.tcard-passenger{font-size:11.1px !important;font-weight:400 !important;color:#636366 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.tcard-passenger{font-size:11.1px !important;font-weight:400 !important;color:#636366 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .tcard-amount-sub{font-size:9.8px !important;font-weight:410 !important;color:#6F7484 !important;margin-top:2px !important}
 .tk-ledger-sub{color:var(--muted) !important;font-weight:430 !important;font-size:12px}
 .hdr{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);display:none !important}
@@ -71,7 +71,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .tabbar-inner{margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:0;padding:6px 8px;background:#fff !important;border:0 !important;height:var(--tabbar-h) !important;max-width:none !important;border-color:transparent !important;box-shadow:none !important;border-radius:0 !important}
 .tab{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid transparent;padding:6px 4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:transparent;touch-action:manipulation;position:relative !important;border-radius:14px !important;font-size:10.5px !important;font-weight:540 !important;color:var(--muted) !important}
 .tab-icon{line-height:1;pointer-events:none;font-size:18px !important;color:var(--muted) !important}
-.tab-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;pointer-events:none}
+.tab-label{white-space:nowrap;overflow:hidden;text-overflow:clip;max-width:100%;pointer-events:none}
 .tab.is-active{border-color:rgba(60,60,67,.42) !important;background:#F5F5F7 !important;color:var(--ink) !important}
 .tab-fab{justify-self:center;align-self:center;border-radius:50% !important;border:1.5px solid rgba(60,60,67,.46) !important;font-weight:500;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(60,60,67,.10) !important;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;position:relative !important;width:50px !important;height:50px !important;border-color:rgba(60,60,67,.46) !important;color:var(--ink) !important;background:#fff !important;font-size:31px !important}
 .tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;border-radius:999px;background:#1C1C1E;color:#fff;font-size:12px;font-weight:700;padding:0 8px;pointer-events:none}
@@ -116,13 +116,13 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .lg-mini-upcoming-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .lg-upcoming-time{font-size:14px !important;font-weight:570 !important;font-variant-numeric:tabular-nums !important;color:#1C1C1E !important}
 .lg-mini-time{font-size:13.5px !important;font-weight:590 !important;color:var(--ink) !important}
-.lg-route{font-size:11.8px !important;line-height:1.25 !important;font-weight:420 !important;color:#2C2C2E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.lg-route{font-size:11.8px !important;line-height:1.25 !important;font-weight:420 !important;color:#2C2C2E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .lg-mini-route{font-size:12px !important;font-weight:420 !important;color:var(--muted) !important}
 .lg-chip-row{display:flex;flex-wrap:wrap;margin-top:6px !important;gap:5px !important}
 .lg-chip,.lg-chip-soft,.lg-mini-pill{display:inline-flex;align-items:center;gap:4px;border-color:var(--line-2) !important;border:1px solid #D1D1D6 !important;border-radius:999px !important;background:#fff !important;color:#636366 !important;font-size:10px !important;font-weight:500 !important;padding:3px 7px !important;line-height:1.1 !important}
 .tcard-header{display:grid;align-items:center;grid-template-columns:auto minmax(0,1fr) auto !important;gap:8px !important;padding:10px !important}
 .tcard-time-big{font-variant-numeric:tabular-nums;letter-spacing:0 !important;font-size:15.5px !important;font-weight:570 !important;color:#1C1C1E !important;line-height:1.08 !important}
-.tcard-agency{font-size:12.2px !important;font-weight:540 !important;color:#1C1C1E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.tcard-agency{font-size:12.2px !important;font-weight:540 !important;color:#1C1C1E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .tcard-amount{font-variant-numeric:tabular-nums;font-size:12.1px !important;font-weight:570 !important;line-height:1.1 !important}
 .tcard-expanded{border-top:1px solid var(--line);background:#fff !important;border-top-color:var(--line) !important;padding:9px !important}
 .date-hdr-txt{font-size:13px !important;font-weight:570 !important}
@@ -168,7 +168,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-tour-commission-box{margin-top:8px}
 .ko-account-firm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important}
 .ko-account-firm-card-title{display:flex;justify-content:space-between;gap:6px !important;align-items:center !important}
-.ko-account-firm-card-title b{font-size:12px !important;font-weight:540 !important;line-height:1.18 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-account-firm-card-title b{font-size:12px !important;font-weight:540 !important;line-height:1.18 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .ko-account-firm-card-title span{font-size:11px !important;font-weight:560 !important;line-height:1.1 !important;white-space:nowrap !important}
 .ko-hesap-month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .ko-hesap-green-frame,.ko-hesap-month-stat{border:1px solid rgba(60,60,67,.32) !important;border-radius:12px !important;background:#fff !important;padding:10px !important}
@@ -207,10 +207,10 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tcard-stripe{width:3px !important;min-width:3px !important;border-radius:999px !important;background:var(--accent) !important}
 .tcard-time-type{font-weight:430 !important;font-size:11px !important;color:#636366 !important;margin-top:3px !important}
 .tcard-time{font-size:11.5px !important;font-weight:430 !important;color:var(--muted) !important;grid-area:time !important;min-width:0 !important}
-.tcard-route{font-size:11.4px !important;font-weight:410 !important;color:#636366 !important;line-height:1.25 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.tcard-route{font-size:11.4px !important;font-weight:410 !important;color:#636366 !important;line-height:1.25 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .tcard-pill,.tcard-paystatus{display:inline-flex !important;align-items:center !important;justify-content:center !important;border:1px solid var(--line-2) !important;border-radius:999px !important;background:#fff !important;color:var(--muted) !important;line-height:1.1 !important;font-size:9.6px !important;font-weight:500 !important;padding:3px 6px !important;border-color:#D1D1D6 !important}
 .tcard-pill-status-tam{background:#F2F2F7 !important;border-color:rgba(60,60,67,.30) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
-.tcard-pill-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
+.tcard-pill-status-bos{background:#FFF8E8 !important;border-color:rgba(181,154,82,.30) !important;color:#B59A52 !important;-webkit-text-fill-color:#B59A52 !important}
 .tcard-pill-status-iptal,.tcard-paystatus.is-none{background:#fff5f4 !important;border-color:rgba(178,96,92,.32) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .tcard-expanded>div{border:1px solid var(--line) !important;border-radius:12px !important;background:#fff !important;border-color:#D1D1D6 !important}
 .tcard-expanded button{border:1px solid var(--line-2) !important;border-radius:999px !important;background:#fff !important;color:var(--ink) !important;font-size:11px !important;font-weight:540 !important;padding:7px 10px !important}
@@ -256,17 +256,17 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-arac-day.is-selected *,.lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *{color:#1C1C1E !important;-webkit-text-fill-color:#1C1C1E !important}
 .ko-arac-day.is-selected .ko-arac-day-count,.lg-month-day.is-selected .lg-month-day-count,.lg-month-day.ko-selected-gold .lg-month-day-count{background:rgba(60,60,67,.08) !important;color:#1C1C1E !important;-webkit-text-fill-color:#1C1C1E !important}
 .ko-arac-day-num,.lg-month-day-num{font-weight:520 !important}
-.ko-arac-day-count,.lg-month-day-count{font-size:8.8px !important;font-weight:430 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
-.ko-arac-day-net,.lg-month-day-net{font-size:9px !important;font-weight:520 !important;max-width:100% !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-arac-day-count,.lg-month-day-count{font-size:8.8px !important;font-weight:430 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
+.ko-arac-day-net,.lg-month-day-net{font-size:9px !important;font-weight:520 !important;max-width:100% !important;overflow:hidden !important;text-overflow:clip !important}
 .ko-arac-day-panel{padding:11px !important;border-radius:17px !important}
 .ko-arac-day-panel-head{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:start !important;gap:8px !important;margin-bottom:10px !important}
 .ko-arac-day-netbox{max-width:108px !important;text-align:right !important;justify-self:end !important}
 .ko-arac-day-netbox-label{font-size:8.5px !important;font-weight:430 !important;color:#636366 !important;text-transform:uppercase !important;white-space:nowrap !important}
-.ko-arac-day-netbox-value{font-size:16px !important;font-weight:560 !important;line-height:1.08 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.ko-arac-day-netbox-value{font-size:16px !important;font-weight:560 !important;line-height:1.08 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .ko-arac-year-toggle-btn,.ko-arac-report-btn{font-size:12px !important;font-weight:520 !important;border-radius:13px !important;box-shadow:0 1px 5px rgba(60,60,67,.04) !important}
 .ko-arac-report-btn{background:#fff !important;color:#1C1C1E !important;border:1px solid #D1D1D6 !important}
 .lg-month-selected-line{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
-.lg-month-selected-title{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.lg-month-selected-title{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .lg-month-selected-count{white-space:nowrap !important;font-weight:520 !important}
 .lg-home .lg-upcoming-card{border-radius:15px !important;padding:10px 11px !important}
 .lg-flight{border:1px solid #D1D1D6 !important;border-radius:999px !important;background:#fff !important;font-size:10px !important;font-weight:500 !important;padding:3px 7px !important;line-height:1.1 !important;white-space:nowrap !important;color:#636366 !important}
@@ -280,7 +280,7 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tcard-paystatus.is-paid{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:var(--green-2) !important;-webkit-text-fill-color:var(--green-2) !important}
 .lg-chip-ok{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:var(--green-2) !important;-webkit-text-fill-color:var(--green-2) !important}
 .lg-chip-status-tam{background:#F2F2F7 !important;border-color:rgba(60,60,67,.28) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
-.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
+.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(181,154,82,.30) !important;color:#B59A52 !important;-webkit-text-fill-color:#B59A52 !important}
 .lg-chip-wait,.lg-chip-status-iptal{background:#fff5f4 !important;border-color:rgba(178,96,92,.30) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{background:#fff5f4 !important;border-color:rgba(178,96,92,.26) !important;color:#a85b57 !important}
 .ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{background:#f2f7f4 !important;border-color:rgba(60,60,67,.26) !important;color:#4f7868 !important}
@@ -292,7 +292,7 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-account-net-cell b{font-weight:570 !important}
 .lg-arac-head-card{padding:12px !important}
 .lg-arac-head-row{margin-bottom:10px !important;gap:8px !important}
-.lg-arac-head-title{font-size:15px !important;font-weight:560 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;color:#1C1C1E !important}
+.lg-arac-head-title{font-size:15px !important;font-weight:560 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;color:#1C1C1E !important}
 .lg-arac-month-input{width:132px !important;min-height:34px !important;padding:6px 8px !important;border-radius:10px !important;font-size:12px !important;font-weight:430 !important;text-align:center !important;flex:none !important;background:#fff !important;border-color:#D1D1D6 !important}
 .ko-contact-manager,.ko-debt-manager{padding:10px !important;border-color:#D1D1D6 !important}
 .ko-contact-toggle,.ko-firma-toggle{background:#fff !important;border-color:#D1D1D6 !important;border-radius:13px !important;padding:10px 12px !important;font-size:12.2px !important;font-weight:500 !important;color:#1C1C1E !important;box-shadow:0 1px 3px rgba(60,60,67,.035) !important}
@@ -324,7 +324,7 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-debt-card{padding:9px !important;border-color:#D1D1D6 !important;border-radius:12px !important;box-shadow:none !important}
 .ko-debt-card div{font-weight:420 !important}
 .ko-debt-card button{padding:7px 2px !important;font-size:9.6px !important;font-weight:520 !important}
-@media(max-width:700px){main.main-cont{padding:12px 10px calc(var(--tabbar-h) + var(--sa-b) + 14px) !important;padding-left:10px !important;padding-right:10px !important;padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 16px) !important}.lg-home{gap:12px}.lg-greeting-card{padding:14px !important}.lg-period-row{gap:7px !important}.lg-period-card{padding:10px !important;min-height:64px !important}.lg-profit-card{padding:10px !important;min-height:68px !important}.lg-period-value,.lg-profit-value{font-size:20px}.lg-section-title{font-size:16.5px !important}.ko-passenger-fields,.ko-party-row,.ko-party-alt-row{grid-template-columns:1fr}.ko-smart-control{flex-direction:row !important}.ko-smart-native-select{max-width:none;width:100%}.ko-smart-icon-select{max-width:42px !important;width:42px !important;min-width:42px !important;flex:0 0 42px !important}.ko-account-firm-cards{grid-template-columns:repeat(2,minmax(0,1fr)) !important}.tabbar-inner{max-width:none !important;height:var(--tabbar-h) !important}.tab-label{font-size:10px !important}.tab-fab{width:48px !important;height:48px !important}.lg-profit-row{margin-bottom:34px !important}.lg-month-day{min-height:40px !important;border-radius:9px !important}.lg-month-day-num{font-size:11.5px !important}.lg-month-day-count{font-size:7.5px !important}.tcard-header,.ko-contact-section{padding:9px !important}.tcard-time-big{font-size:15px !important}.tab-icon,.lg-greeting-title{font-size:17px !important}.lg-home .lg-upcoming-card{padding:9px 10px !important}.tcard-body{grid-template-columns:42px minmax(0,1fr) auto !important;gap:5px 7px !important}.tcard-right{min-width:66px !important}.ko-account-table-wrap{overflow:visible !important}.ko-account-transfer-table{min-width:0 !important;display:flex !important;flex-direction:column !important;gap:7px !important}.ko-account-row-head,.ko-account-status-cell small{display:none !important}.ko-account-row.ko-account-transfer-row{display:grid !important;grid-template-columns:52px minmax(0,1fr) auto !important;grid-template-areas:"date name status" "time route net" "cust driver net" !important;gap:5px 8px !important;align-items:center !important;padding:9px 10px !important;border:1px solid #D1D1D6 !important;border-radius:14px !important;background:#fff !important;margin:0 !important;box-shadow:0 1px 4px rgba(60,60,67,.04) !important}.ko-account-row.ko-account-transfer-row.is-closed{background:#F5F5F7 !important;border-color:rgba(60,60,67,.22) !important}.ko-account-row.ko-account-transfer-row.is-open{background:#fffdfc !important;border-color:rgba(178,96,92,.18) !important}.ko-account-cell{border-bottom:0 !important;padding:0 !important;min-width:0 !important}.ko-account-date-cell{grid-area:date !important}.ko-account-time-cell{grid-area:time !important}.ko-account-name-cell{grid-area:name !important}.ko-account-route-cell{grid-area:route !important}.ko-account-row .ko-account-money-cell:nth-child(5){grid-area:cust !important}.ko-account-row .ko-account-money-cell:nth-child(6){grid-area:driver !important}.ko-account-net-cell{grid-area:net !important;text-align:right !important}.ko-account-status-cell{grid-area:status !important;justify-self:end !important;text-align:right !important}.ko-account-route-cell small,.ko-account-flow{white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}.ko-account-name-cell b{font-size:12.2px !important}.ko-account-date-cell b,.ko-account-time-cell b{font-size:11.4px !important}.ko-account-money-cell b{font-size:11.2px !important}.ko-account-net-cell b{font-size:12px !important}.lg-arac-head-card{padding:11px !important}.lg-arac-head-title{font-size:14px !important}.lg-arac-month-input{width:124px !important;font-size:11.5px !important}.lg-arac-head-row{margin-bottom:9px !important}.ko-contact-manager{padding:10px !important}.ko-contact-groups{gap:10px !important}.ko-contact-grid{gap:6px !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important}.ko-contact-name{font-size:10.2px !important;max-height:2.25em !important}.ko-contact-phone{font-size:9.4px !important;max-height:2.15em !important}.ko-contact-form{grid-template-columns:minmax(0,1fr) 72px 30px !important}.ko-contact-form input{font-size:11.5px !important;padding:7px 8px !important}.ko-contact-card{min-height:54px !important;padding:6px !important}.ko-firma-toggle,.ko-contact-toggle,.ko-debt-toggle{padding:9px 11px !important;font-size:11.8px !important}.ko-contact-card button{min-height:22px !important}.ko-debt-form-row{grid-template-columns:74px minmax(0,1fr) 68px !important}.ko-debt-card{padding:8px !important}}
+@media(max-width:700px){main.main-cont{padding:12px 10px calc(var(--tabbar-h) + var(--sa-b) + 14px) !important;padding-left:10px !important;padding-right:10px !important;padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 16px) !important}.lg-home{gap:12px}.lg-greeting-card{padding:14px !important}.lg-period-row{gap:7px !important}.lg-period-card{padding:10px !important;min-height:64px !important}.lg-profit-card{padding:10px !important;min-height:68px !important}.lg-period-value,.lg-profit-value{font-size:20px}.lg-section-title{font-size:16.5px !important}.ko-passenger-fields,.ko-party-row,.ko-party-alt-row{grid-template-columns:1fr}.ko-smart-control{flex-direction:row !important}.ko-smart-native-select{max-width:none;width:100%}.ko-smart-icon-select{max-width:42px !important;width:42px !important;min-width:42px !important;flex:0 0 42px !important}.ko-account-firm-cards{grid-template-columns:repeat(2,minmax(0,1fr)) !important}.tabbar-inner{max-width:none !important;height:var(--tabbar-h) !important}.tab-label{font-size:10px !important}.tab-fab{width:48px !important;height:48px !important}.lg-profit-row{margin-bottom:34px !important}.lg-month-day{min-height:40px !important;border-radius:9px !important}.lg-month-day-num{font-size:11.5px !important}.lg-month-day-count{font-size:7.5px !important}.tcard-header,.ko-contact-section{padding:9px !important}.tcard-time-big{font-size:15px !important}.tab-icon,.lg-greeting-title{font-size:17px !important}.lg-home .lg-upcoming-card{padding:9px 10px !important}.tcard-body{grid-template-columns:42px minmax(0,1fr) auto !important;gap:5px 7px !important}.tcard-right{min-width:66px !important}.ko-account-table-wrap{overflow:visible !important}.ko-account-transfer-table{min-width:0 !important;display:flex !important;flex-direction:column !important;gap:7px !important}.ko-account-row-head,.ko-account-status-cell small{display:none !important}.ko-account-row.ko-account-transfer-row{display:grid !important;grid-template-columns:52px minmax(0,1fr) auto !important;grid-template-areas:"date name status" "time route net" "cust driver net" !important;gap:5px 8px !important;align-items:center !important;padding:9px 10px !important;border:1px solid #D1D1D6 !important;border-radius:14px !important;background:#fff !important;margin:0 !important;box-shadow:0 1px 4px rgba(60,60,67,.04) !important}.ko-account-row.ko-account-transfer-row.is-closed{background:#F5F5F7 !important;border-color:rgba(60,60,67,.22) !important}.ko-account-row.ko-account-transfer-row.is-open{background:#fffdfc !important;border-color:rgba(178,96,92,.18) !important}.ko-account-cell{border-bottom:0 !important;padding:0 !important;min-width:0 !important}.ko-account-date-cell{grid-area:date !important}.ko-account-time-cell{grid-area:time !important}.ko-account-name-cell{grid-area:name !important}.ko-account-route-cell{grid-area:route !important}.ko-account-row .ko-account-money-cell:nth-child(5){grid-area:cust !important}.ko-account-row .ko-account-money-cell:nth-child(6){grid-area:driver !important}.ko-account-net-cell{grid-area:net !important;text-align:right !important}.ko-account-status-cell{grid-area:status !important;justify-self:end !important;text-align:right !important}.ko-account-route-cell small,.ko-account-flow{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}.ko-account-name-cell b{font-size:12.2px !important}.ko-account-date-cell b,.ko-account-time-cell b{font-size:11.4px !important}.ko-account-money-cell b{font-size:11.2px !important}.ko-account-net-cell b{font-size:12px !important}.lg-arac-head-card{padding:11px !important}.lg-arac-head-title{font-size:14px !important}.lg-arac-month-input{width:124px !important;font-size:11.5px !important}.lg-arac-head-row{margin-bottom:9px !important}.ko-contact-manager{padding:10px !important}.ko-contact-groups{gap:10px !important}.ko-contact-grid{gap:6px !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important}.ko-contact-name{font-size:10.2px !important;max-height:2.25em !important}.ko-contact-phone{font-size:9.4px !important;max-height:2.15em !important}.ko-contact-form{grid-template-columns:minmax(0,1fr) 72px 30px !important}.ko-contact-form input{font-size:11.5px !important;padding:7px 8px !important}.ko-contact-card{min-height:54px !important;padding:6px !important}.ko-firma-toggle,.ko-contact-toggle,.ko-debt-toggle{padding:9px 11px !important;font-size:11.8px !important}.ko-contact-card button{min-height:22px !important}.ko-debt-form-row{grid-template-columns:74px minmax(0,1fr) 68px !important}.ko-debt-card{padding:8px !important}}
 @media(min-width:900px){main.main-cont{padding:18px 22px calc(var(--tabbar-h) + 24px) !important;}.desk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.desk-wide{grid-column:1/-1}.lg-home{max-width:1180px}.tabbar-inner{max-width:none}}
 /* PERF: ekran dışı kartları render etme, emoji/simge rendering'ini hızlandır */
 .lg-upcoming-card,.lg-mini-upcoming{content-visibility:auto;contain-intrinsic-size:auto 64px;contain:layout paint style}
@@ -355,16 +355,16 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
   --green:#1F7A4D !important;
   --green-2:#18804F !important;
   --red:#A85C55 !important;
-  --yellow:#9A6A1F !important;
+  --yellow:#B59A52 !important;
   --ok:#18804F !important;
   --ok-bg:#F2F7F4 !important;
   --ok-bd:rgba(31,122,77,.24) !important;
   --info:#2F65A7 !important;
   --info-bg:#EAF3FF !important;
   --info-bd:rgba(47,101,167,.22) !important;
-  --warn:#9A6A1F !important;
+  --warn:#B59A52 !important;
   --warn-bg:#FFF8E8 !important;
-  --warn-bd:rgba(154,106,31,.28) !important;
+  --warn-bd:rgba(181,154,82,.28) !important;
   --err:#A85C55 !important;
   --err-bg:#FFF1F0 !important;
   --err-bd:rgba(168,92,85,.24) !important;
@@ -393,7 +393,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#A85C55 !importa
 }
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important;border-color:#D1D1D6 !important;color:#636366 !important;-webkit-text-fill-color:#636366 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{background:#EAF3FF !important;border-color:rgba(47,101,167,.24) !important;color:#2F65A7 !important;-webkit-text-fill-color:#2F65A7 !important}
-.tcard-pill-status-bos,.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
+.tcard-pill-status-bos,.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(181,154,82,.30) !important;color:#B59A52 !important;-webkit-text-fill-color:#B59A52 !important}
 .tcard-paystatus.is-paid,.lg-chip-ok{background:#F2F7F4 !important;border-color:rgba(31,122,77,.28) !important;color:#18804F !important;-webkit-text-fill-color:#18804F !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{background:#FFF1F0 !important;border-color:rgba(168,92,85,.24) !important;color:#A85C55 !important;-webkit-text-fill-color:#A85C55 !important}
 .tcard-stripe{background:#A85C55 !important}
@@ -492,6 +492,581 @@ body :where(div,span,b,strong,small,label,button,input,select,textarea){
   .tcard-body{grid-template-columns:44px minmax(0,1fr) auto !important}
 }
 
+/* OLMEZ NAVY PREMIUM RESET - visual only, business logic untouched */
+:root{
+  --olmez-navy:#07182C;
+  --olmez-navy-2:#0D2745;
+  --olmez-navy-3:#123557;
+  --olmez-cream:#F4F7FB;
+  --olmez-white:#FFFFFF;
+  --olmez-silver:#D7DDE6;
+  --olmez-silver-2:#B9C3D0;
+  --olmez-ink:#07182C;
+  --olmez-muted:#667085;
+  --olmez-faint:#98A2B3;
+  --olmez-red:#A85C55;
+  --olmez-red-soft:#FFF1F0;
+  --olmez-green:#18804F;
+  --olmez-green-soft:#EFF8F2;
+  --olmez-blue:#2F65A7;
+  --olmez-blue-soft:#EAF3FF;
+  --olmez-yellow:#B59A52;
+  --olmez-yellow-soft:#FFF8E8;
+  --bg:#F4F7FB !important;
+  --card:#FFFFFF !important;
+  --soft:#F7F9FC !important;
+  --surface:#F4F7FB !important;
+  --line:#D7DDE6 !important;
+  --line-2:#B9C3D0 !important;
+  --ink:#07182C !important;
+  --ink-2:#0D2745 !important;
+  --ink-3:#667085 !important;
+  --ink-4:#98A2B3 !important;
+  --muted:#667085 !important;
+  --faint:#98A2B3 !important;
+  --accent:#A85C55 !important;
+  --accent-2:#8F4F49 !important;
+  --accent-soft:#FFF1F0 !important;
+  --brand:#07182C !important;
+  --brand-2:#0D2745 !important;
+  --brand-soft:#EEF3F8 !important;
+  --brand-softer:#F7F9FC !important;
+  --brand-bd:#D7DDE6 !important;
+  --green:#18804F !important;
+  --green-2:#18804F !important;
+  --red:#A85C55 !important;
+  --yellow:#B59A52 !important;
+  --ok:#18804F !important;
+  --ok-bg:#EFF8F2 !important;
+  --ok-bd:rgba(24,128,79,.24) !important;
+  --info:#2F65A7 !important;
+  --info-bg:#EAF3FF !important;
+  --info-bd:rgba(47,101,167,.24) !important;
+  --warn:#B59A52 !important;
+  --warn-bg:#FFF8E8 !important;
+  --warn-bd:rgba(181,154,82,.30) !important;
+  --err:#A85C55 !important;
+  --err-bg:#FFF1F0 !important;
+  --err-bd:rgba(168,92,85,.24) !important;
+  --shadow:0 1px 2px rgba(7,24,44,.06) !important;
+}
+html,body,#root,.app-shell{
+  background:#F4F7FB !important;
+  color:#07182C !important;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Arial,sans-serif !important;
+}
+body *,body *::before,body *::after{
+  animation:none !important;
+  transition:none !important;
+  text-shadow:none !important;
+  filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  letter-spacing:0 !important;
+}
+[style*="linear-gradient"]{
+  background:#07182C !important;
+  background-image:none !important;
+}
+div[style*="linear-gradient"],section[style*="linear-gradient"],span[style*="linear-gradient"]{
+  background:#FFFFFF !important;
+  background-image:none !important;
+}
+button[style*="linear-gradient"]{
+  background:#07182C !important;
+  background-image:none !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}
+main.main-cont{
+  max-width:1180px !important;
+  padding-top:calc(var(--sa-t) + 12px) !important;
+  padding-left:12px !important;
+  padding-right:12px !important;
+  background:#F4F7FB !important;
+}
+.card,.lg-glass-card,.lg-metric-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card{
+  background:#FFFFFF !important;
+  color:#07182C !important;
+  border:1px solid #D7DDE6 !important;
+  box-shadow:0 1px 2px rgba(7,24,44,.06) !important;
+}
+.lg-greeting-card{
+  background:#07182C !important;
+  border-color:#B9C3D0 !important;
+  box-shadow:none !important;
+  color:#FFFFFF !important;
+}
+.lg-greeting-card .lg-eyebrow,.lg-greeting-card .lg-date,.lg-greeting-card .lg-greeting-title{
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}
+.lg-greeting-card .lg-date,.lg-greeting-card .lg-eyebrow{
+  opacity:.78 !important;
+}
+.lg-backup-btn,.lg-refresh-btn,.hdr-iconbtn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{
+  background:#FFFFFF !important;
+  border:1px solid #B9C3D0 !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  box-shadow:none !important;
+}
+.lg-greeting-card .lg-backup-btn,.lg-greeting-card .lg-refresh-btn{
+  background:rgba(255,255,255,.10) !important;
+  border-color:rgba(255,255,255,.34) !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}
+input,select,textarea,.inp{
+  background:#FFFFFF !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  border:1px solid #B9C3D0 !important;
+  box-shadow:none !important;
+}
+input:focus,select:focus,textarea:focus,.inp:focus{
+  border-color:#07182C !important;
+  box-shadow:0 0 0 3px rgba(7,24,44,.10) !important;
+}
+body,button,input,select,textarea,.inp{
+  font-weight:400 !important;
+}
+body :where(div,span,b,strong,small,label,button,input,select,textarea){
+  font-weight:400 !important;
+}
+.lg-greeting-title,.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.date-hdr-txt,.ko-pwa-brand-title,.tk-month-title,.tk-panel-date{
+  font-weight:520 !important;
+}
+.tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.lg-period-value,.lg-profit-value,.lg-profit-detail-value,.lg-profit-month-total,.ko-account-stat-total,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b{
+  font-weight:500 !important;
+}
+.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{
+  font-weight:480 !important;
+}
+.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.lg-month-selected-kicker,.date-hdr-meta,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl,.lg-profit-label,.lg-period-label{
+  color:#667085 !important;
+  -webkit-text-fill-color:#667085 !important;
+  font-weight:380 !important;
+}
+.lg-greeting-title,.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.ko-arac-job-title,.ko-account-cell b,.ko-account-firm-card-title b,.tcard-agency,.tcard-time-big,.lg-upcoming-time,.lg-mini-time,.ko-pwa-brand-title{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.lg-greeting-card .lg-greeting-title{
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}
+.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{
+  color:#18804F !important;
+  -webkit-text-fill-color:#18804F !important;
+}
+.is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.tcard{
+  border-radius:18px !important;
+  overflow:hidden !important;
+  contain:layout paint style !important;
+}
+.tcard-header{
+  padding:11px !important;
+}
+.tcard-body{
+  display:grid !important;
+  grid-template-columns:48px minmax(0,1fr) auto !important;
+  grid-template-areas:"time pills amount" "flow flow flow" !important;
+  gap:7px 9px !important;
+  min-width:0 !important;
+}
+.tcard-stripe{
+  width:3px !important;
+  min-width:3px !important;
+  background:#A85C55 !important;
+}
+.tcard-pills{
+  gap:5px !important;
+}
+.tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight{
+  background:#FFFFFF !important;
+  border:1px solid #D7DDE6 !important;
+  color:#667085 !important;
+  -webkit-text-fill-color:#667085 !important;
+  border-radius:999px !important;
+  font-size:9.8px !important;
+  font-weight:430 !important;
+}
+.tcard-pill-status-tam,.lg-chip-status-tam{
+  background:#EAF3FF !important;
+  border-color:rgba(47,101,167,.24) !important;
+  color:#2F65A7 !important;
+  -webkit-text-fill-color:#2F65A7 !important;
+}
+.tcard-pill-status-bos,.lg-chip-status-bos{
+  background:#FFF8E8 !important;
+  border-color:rgba(181,154,82,.30) !important;
+  color:#9E7F2D !important;
+  -webkit-text-fill-color:#9E7F2D !important;
+}
+.tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none{
+  background:#FFF1F0 !important;
+  border-color:rgba(168,92,85,.24) !important;
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{
+  background:#EFF8F2 !important;
+  border-color:rgba(24,128,79,.24) !important;
+  color:#18804F !important;
+  -webkit-text-fill-color:#18804F !important;
+}
+.tcard-paystatus.is-pending,.lg-chip-wait{
+  background:#FFF1F0 !important;
+  border-color:rgba(168,92,85,.24) !important;
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b,.ko-contact-name,.ko-contact-phone{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+}
+.tcard-flow{
+  border-top:1px solid #E5EAF1 !important;
+  padding-top:7px !important;
+}
+.tcard-expanded,.ko-arac-job-detail{
+  background:#F7F9FC !important;
+  border-color:#D7DDE6 !important;
+}
+.tabbar{
+  background:#FFFFFF !important;
+  border-top:1px solid #D7DDE6 !important;
+  box-shadow:none !important;
+}
+.tabbar-inner{
+  background:#FFFFFF !important;
+  border:0 !important;
+  box-shadow:none !important;
+  height:74px !important;
+}
+.tab{
+  color:#667085 !important;
+  -webkit-text-fill-color:#667085 !important;
+  background:transparent !important;
+  border-color:transparent !important;
+  font-weight:420 !important;
+}
+.tab-icon{
+  color:#667085 !important;
+  -webkit-text-fill-color:#667085 !important;
+}
+.tab.is-active{
+  background:#EEF3F8 !important;
+  border-color:#D7DDE6 !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.tab.is-active .tab-icon,.tab.is-active .tab-label{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.tab-fab{
+  background:#07182C !important;
+  border-color:#07182C !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  box-shadow:none !important;
+}
+.lg-period-card.is-active,.lg-profit-card.is-active,.lg-choice.is-active,.lg-datebox.is-selected,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active,.tk-cell.tk-selected{
+  background:#EEF3F8 !important;
+  border-color:#07182C !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  box-shadow:none !important;
+}
+.lg-month-cal-card,.ko-real-cal-card{
+  border-radius:24px !important;
+  padding:13px !important;
+  overflow:visible !important;
+}
+.lg-month-cal-head{
+  padding:0 0 11px !important;
+  margin-bottom:10px !important;
+  border-bottom:1px solid #D7DDE6 !important;
+}
+.lg-month-title-main{
+  font-size:19px !important;
+  line-height:1.12 !important;
+  text-transform:capitalize !important;
+}
+.lg-month-title-sub{
+  font-size:11px !important;
+  line-height:1.22 !important;
+}
+.lg-month-weekdays,.lg-month-grid,.ko-arac-month-grid{
+  gap:4px !important;
+}
+.lg-month-weekdays div,.tk-weekday{
+  color:#98A2B3 !important;
+  -webkit-text-fill-color:#98A2B3 !important;
+  font-size:10px !important;
+  font-weight:430 !important;
+}
+.lg-month-day,.ko-arac-day,.tk-cell{
+  background:#FFFFFF !important;
+  border:1px solid #D7DDE6 !important;
+  border-radius:13px !important;
+  min-height:66px !important;
+  padding:6px 4px !important;
+  box-shadow:none !important;
+  display:grid !important;
+  grid-template-rows:auto 1fr !important;
+  align-items:start !important;
+  justify-content:stretch !important;
+  gap:4px !important;
+  overflow:visible !important;
+  text-align:center !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  contain:layout paint style !important;
+}
+.tk-cell{
+  min-height:50px !important;
+}
+.lg-month-day.is-other,.ko-arac-day.is-other{
+  opacity:.38 !important;
+  background:#F7F9FC !important;
+}
+.lg-month-day.has-work,.ko-arac-day.has-work{
+  background:#F7F9FC !important;
+  border-color:#B9C3D0 !important;
+}
+.lg-month-day.is-today,.ko-arac-day.is-today,.tk-cell.tk-today{
+  border-color:rgba(168,92,85,.44) !important;
+}
+.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected{
+  background:#FFF1F0 !important;
+  border-color:#A85C55 !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.ko-arac-day.is-selected *,.tk-cell.tk-selected *{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.lg-month-day>div:first-child,.ko-arac-day>div:first-child{
+  width:100% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0 !important;
+}
+.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  font-size:13px !important;
+  line-height:1 !important;
+  text-align:center !important;
+}
+.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.lg-month-day.is-selected .lg-month-day-num,.lg-month-day.ko-selected-gold .lg-month-day-num,.lg-month-day.is-selected.is-today .lg-month-day-num,.lg-month-day.ko-selected-gold.is-today .lg-month-day-num,.ko-arac-day.is-selected .ko-arac-day-num,.ko-arac-day.is-selected.is-today .ko-arac-day-num,.tk-cell.tk-selected .tk-cell-num{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{
+  width:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:2px !important;
+  min-width:0 !important;
+  overflow:visible !important;
+}
+.lg-month-day-count,.ko-arac-day-count{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  font-size:8px !important;
+  font-weight:380 !important;
+  line-height:1.08 !important;
+  text-align:center !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:normal !important;
+}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  color:#18804F !important;
+  -webkit-text-fill-color:#18804F !important;
+  font-size:7.2px !important;
+  font-weight:400 !important;
+  line-height:1.05 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  font-variant-numeric:tabular-nums !important;
+}
+.lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.lg-month-selected-line{
+  margin-top:10px !important;
+  padding:10px 0 0 !important;
+  border-top:1px solid #D7DDE6 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+.lg-month-selected-title,.lg-month-selected-count,.ko-arac-day-netbox-value{
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+.lg-month-selected-count{
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+}
+.tk-cell-count{
+  color:#667085 !important;
+  -webkit-text-fill-color:#667085 !important;
+  font-weight:390 !important;
+  text-overflow:clip !important;
+}
+.tk-cell-dot{
+  background:#A85C55 !important;
+}
+.ko-account-section-head,.ko-debt-toggle,.ko-contact-toggle,.ko-firma-toggle,.ko-contact-section{
+  background:#FFFFFF !important;
+  border-color:#D7DDE6 !important;
+  color:#07182C !important;
+  -webkit-text-fill-color:#07182C !important;
+  box-shadow:none !important;
+}
+.ko-account-row.ko-account-transfer-row{
+  background:#FFFFFF !important;
+  border-color:#D7DDE6 !important;
+  box-shadow:none !important;
+}
+.ko-account-row.ko-account-transfer-row.is-closed{
+  background:#F7F9FC !important;
+  border-color:#D7DDE6 !important;
+}
+.ko-account-row.ko-account-transfer-row.is-open{
+  background:#FFFFFF !important;
+  border-color:#B9C3D0 !important;
+}
+.ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{
+  background:#FFF1F0 !important;
+  border-color:rgba(168,92,85,.24) !important;
+  color:#A85C55 !important;
+  -webkit-text-fill-color:#A85C55 !important;
+}
+.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{
+  background:#EFF8F2 !important;
+  border-color:rgba(24,128,79,.24) !important;
+  color:#18804F !important;
+  -webkit-text-fill-color:#18804F !important;
+}
+.toast{
+  background:#07182C !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  box-shadow:none !important;
+}
+:where(.tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.lg-transfer-date,.lg-row,.ko-account-flow,.ko-account-cell small,.ko-arac-job-title,.ko-arac-job-sub,.ko-contact-name,.ko-contact-phone,.lg-month-selected-title,.lg-month-selected-count,.lg-month-day-count,.ko-arac-day-count,.lg-month-day-net,.ko-arac-day-net){
+  text-overflow:clip !important;
+}
+.tcard *,.lg-upcoming-card *,.ko-account-row *,.lg-month-day *,.ko-arac-day *{
+  min-width:0 !important;
+}
+@media(max-width:700px){
+  main.main-cont{
+    padding-left:10px !important;
+    padding-right:10px !important;
+    padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 14px) !important;
+  }
+  .lg-home{
+    gap:11px !important;
+  }
+  .lg-greeting-card{
+    border-radius:22px !important;
+    padding:15px !important;
+  }
+  .lg-greeting-title{
+    font-size:18px !important;
+    line-height:1.12 !important;
+  }
+  .lg-section-title{
+    font-size:16.5px !important;
+  }
+  .lg-period-row,.lg-profit-row{
+    gap:8px !important;
+  }
+  .lg-period-card,.lg-profit-card{
+    border-radius:18px !important;
+    min-height:68px !important;
+    padding:10px !important;
+  }
+  .tcard-body{
+    grid-template-columns:45px minmax(0,1fr) auto !important;
+  }
+  .tcard-time-big{
+    font-size:15px !important;
+  }
+  .lg-month-cal-card,.ko-real-cal-card{
+    border-radius:22px !important;
+    padding:11px !important;
+  }
+  .lg-month-weekdays,.lg-month-grid,.ko-arac-month-grid{
+    gap:3px !important;
+  }
+  .lg-month-day,.ko-arac-day{
+    min-height:64px !important;
+    border-radius:12px !important;
+    padding:6px 3px !important;
+    gap:3px !important;
+  }
+  .lg-month-day-num,.ko-arac-day-num{
+    font-size:12.5px !important;
+  }
+  .lg-month-day-count,.ko-arac-day-count{
+    font-size:7.6px !important;
+    line-height:1.06 !important;
+  }
+  .lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{
+    font-size:6.8px !important;
+    line-height:1.05 !important;
+  }
+  .tabbar-inner{
+    height:74px !important;
+    padding:6px 7px !important;
+  }
+  .tab-label{
+    font-size:9.8px !important;
+    text-overflow:clip !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -541,7 +1116,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#1C1C1E', NAV2 = '#2C2C2E', GOLD = '#A85C55';
-const G = '#1F7A4D', O = '#9A6A1F', R = '#A85C55', BR = '#D1D1D6';
+const G = '#1F7A4D', O = '#B59A52', R = '#A85C55', BR = '#D1D1D6';
 const TX = '#1C1C1E', SB = '#636366', INP = '#F5F5F7', BOR = 'rgba(60,60,67,.18)';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#1C1C1E', bg: '#F2F2F7', b: '#D1D1D6' },
@@ -4094,7 +4669,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                     }, "▲ Alacak"),
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})),
-                        style: { background: ledgerForm.ltype === 'out' ? 'linear-gradient(135deg,#A85C55,#C92820)' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#A85C55' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
+                        style: { background: ledgerForm.ltype === 'out' ? 'linear-gradient(135deg,#A85C55,#A85C55)' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#A85C55' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
                     }, "▼ Borç")
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
