@@ -2774,8 +2774,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
     const [detayT, setDetayT] = useState(null);
     const [openHesapSections, setOpenHesapSections] = useState({});
+    const [openAdjustmentPanel, setOpenAdjustmentPanel] = useState(false);
     const [adjForm, setAdjForm] = useState(() => ({ type: 'received', amount: '', date: accountAdjustmentDateKey(new Date()), time: accountAdjustmentTimeKey(new Date()), note: '' }));
   const [odeloOpen, setOdeloOpen] = useState(false);
+    useEffect(() => {
+        setOpenAdjustmentPanel(false);
+    }, [sel]);
     const togSettle = (id, firm, forceState) => sT(p => {
         const now = new Date().toISOString();
         const next = (p || []).map(x => {
@@ -3156,7 +3160,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             csv += 'Alt transferler,' + Math.round(gA.al) + ',' + Math.round(gA.ver) + ',' + Math.round(gA.net) + '\n';
         }
         if (manualGrup.length > 0) {
-            csv += 'Manuel ödeme / bakiye,' + Math.round(gM.al) + ',' + Math.round(gM.ver) + ',' + Math.round(gM.net) + '\n';
+            csv += 'Ödeme / Bakiye,' + Math.round(gM.al) + ',' + Math.round(gM.ver) + ',' + Math.round(gM.net) + '\n';
         }
         csv += 'TOPLAM,' + Math.round(al) + ',' + Math.round(ver) + ',' + Math.round(net) + '\n';
         csv += '\n';
@@ -3234,13 +3238,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (isBalenturFirm(firm)) {
             addSection(OL + ' - ' + firm, benVerdim, 'normal');
             addSection(firm + ' - ' + OL, oVerdi, 'normal');
-            if (manualGrup.length) addSection('Manuel ödeme / bakiye', manualGrup, 'normal');
+            if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
             addSection('Odelo', odeloGrup, 'odelo');
         } else {
             addSection(OL + ' - ' + firm, benVerdim, 'normal');
             addSection(firm + ' - ' + OL, oVerdi, 'normal');
             if (altGrup.length) addSection('Alt acenta', altGrup, 'normal');
-            if (manualGrup.length) addSection('Manuel ödeme / bakiye', manualGrup, 'normal');
+            if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
         }
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -3680,21 +3684,41 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const previewText = moneyValue(adjForm.amount) > 0
             ? ((previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺')
             : '0₺';
-        return React.createElement("div", { className: "ko-account-manual-panel", style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 14, padding: 12, display: 'flex', flexDirection: 'column', gap: 9 } },
-            React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } },
+        return React.createElement("div", { className: "ko-account-manual-panel", style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 12, padding: openAdjustmentPanel ? 10 : 0, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' } },
+            React.createElement("button", {
+                type: "button",
+                onClick: () => setOpenAdjustmentPanel(v => !v),
+                style: {
+                    width: '100%',
+                    background: '#fff',
+                    border: 'none',
+                    padding: openAdjustmentPanel ? '0 0 2px' : '8px 10px',
+                    minHeight: openAdjustmentPanel ? 0 : 34,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    alignItems: 'center',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    font: 'inherit'
+                }
+            },
                 React.createElement("div", null,
-                    React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 520 } }, "Manuel ödeme / bakiye"),
-                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, meta.help)),
-                React.createElement("div", { className: previewNet >= 0 ? "is-pos" : "is-neg", style: { fontSize: 12.5, fontWeight: 520, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }, previewText)),
-            React.createElement("div", { className: "ko-account-manual-grid", style: { display: 'grid', gridTemplateColumns: '1.2fr .75fr .65fr', gap: 7 } },
-                React.createElement("select", { className: "inp", value: adjForm.type, onChange: e => setAdjForm(f => ({ ...f, type: e.target.value })), style: { minWidth: 0 } },
-                    ACCOUNT_ADJUSTMENT_TYPES.map(x => React.createElement("option", { key: x.id, value: x.id }, x.label))),
-                React.createElement("input", { className: "inp", type: "number", inputMode: "decimal", value: adjForm.amount, onChange: e => setAdjForm(f => ({ ...f, amount: e.target.value })), placeholder: "Tutar" }),
-                React.createElement("button", { type: "button", onClick: saveAccountAdjustment, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 520, cursor: 'pointer', minHeight: 38 } }, "Kaydet")),
-            React.createElement("div", { className: "ko-account-manual-grid ko-account-manual-grid-bottom", style: { display: 'grid', gridTemplateColumns: '.8fr .6fr 1.2fr', gap: 7 } },
-                React.createElement("input", { className: "inp", type: "date", value: adjForm.date, onChange: e => setAdjForm(f => ({ ...f, date: e.target.value })) }),
-                React.createElement("input", { className: "inp", type: "time", value: adjForm.time, onChange: e => setAdjForm(f => ({ ...f, time: e.target.value })) }),
-                React.createElement("input", { className: "inp", value: adjForm.note, onChange: e => setAdjForm(f => ({ ...f, note: e.target.value })), placeholder: "Not" })));
+                    React.createElement("div", { style: { fontSize: 12.2, color: TX, fontWeight: 520, lineHeight: 1.15 } }, "Ödeme / Bakiye"),
+                    openAdjustmentPanel && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, meta.help)),
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 } },
+                    (openAdjustmentPanel || moneyValue(adjForm.amount) > 0) && React.createElement("span", { className: previewNet >= 0 ? "is-pos" : "is-neg", style: { fontSize: 12.5, fontWeight: 520, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }, previewText),
+                    React.createElement("span", { style: { fontSize: 12, color: SB, fontWeight: 520 } }, openAdjustmentPanel ? '▲' : '▼'))),
+            openAdjustmentPanel && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "ko-account-manual-grid", style: { display: 'grid', gridTemplateColumns: '1.2fr .75fr .65fr', gap: 7 } },
+                    React.createElement("select", { className: "inp", value: adjForm.type, onChange: e => setAdjForm(f => ({ ...f, type: e.target.value })), style: { minWidth: 0 } },
+                        ACCOUNT_ADJUSTMENT_TYPES.map(x => React.createElement("option", { key: x.id, value: x.id }, x.label))),
+                    React.createElement("input", { className: "inp", type: "number", inputMode: "decimal", value: adjForm.amount, onChange: e => setAdjForm(f => ({ ...f, amount: e.target.value })), placeholder: "Tutar" }),
+                    React.createElement("button", { type: "button", onClick: saveAccountAdjustment, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 520, cursor: 'pointer', minHeight: 38 } }, "Kaydet")),
+                React.createElement("div", { className: "ko-account-manual-grid ko-account-manual-grid-bottom", style: { display: 'grid', gridTemplateColumns: '.8fr .6fr 1.2fr', gap: 7 } },
+                    React.createElement("input", { className: "inp", type: "date", value: adjForm.date, onChange: e => setAdjForm(f => ({ ...f, date: e.target.value })) }),
+                    React.createElement("input", { className: "inp", type: "time", value: adjForm.time, onChange: e => setAdjForm(f => ({ ...f, time: e.target.value })) }),
+                    React.createElement("input", { className: "inp", value: adjForm.note, onChange: e => setAdjForm(f => ({ ...f, note: e.target.value })), placeholder: "Not" }))));
     };
 
     const renderHesapBolum = (baslik, liste, renk) => {
@@ -3845,7 +3869,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement(React.Fragment, null,
-                            manualKayitlar.length > 0 && renderHesapBolum("Manuel ödeme / bakiye", manualKayitlar, NAV),
+                            manualKayitlar.length > 0 && renderHesapBolum("Ödeme / Bakiye", manualKayitlar, NAV),
                             renderHesapBolum("\u00D6lmeztur - " + sel, benimVerdiklerim, R),
                             renderHesapBolum(sel + " - \u00D6lmeztur", onunVerdikleri, NAV),
                             renderHesapBolum('Alt acenta işleri', altKayitlar, O),
