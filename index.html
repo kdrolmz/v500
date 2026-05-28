@@ -1316,9 +1316,10 @@ const transferMergeIdentity = t => {
 const transferStamp = t => {
     try {
         if (!t) return 0;
-        const raw = t.updatedAt || t.clientUpdatedAt || t.createdAt || '';
-        const n = raw ? Date.parse(String(raw)) : 0;
-        return isNaN(n) ? 0 : n;
+        /* BUG FIX: Tüm zaman alanlarının EN BÜYÜĞÜNÜ al — hangisi güncellendiyse o kazansın */
+        const vals = [t.clientUpdatedAt, t.updatedAt, t.createdAt]
+            .map(r => { const n = r ? Date.parse(String(r)) : 0; return isNaN(n) ? 0 : n; });
+        return Math.max(0, ...vals);
     } catch (e) { return 0; }
 };
 const transferCompleteness = t => {
@@ -1332,8 +1333,14 @@ const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
     if (!b) return a;
     const as = transferStamp(a), bs = transferStamp(b);
     if (bs !== as) return bs > as ? b : a;
-    const ac = transferCompleteness(a), bc = transferCompleteness(b);
-    if (bc !== ac) return bc > ac ? b : a;
+    /* BUG FIX: Zaman damgası eşitse, sonradan gelen kayıt (yüksek rank) kazanır.
+       Önceden burada "daha dolu olan kazansın" mantığı vardı; bu, kullanıcı bir alanı
+       (ör. işi yapan acenta) kasıtlı boşaltınca/değiştirince eski dolu hali geri getiriyordu.
+       Sadece iki damga da 0 (hiç tarih yok) ise doluluğa bakarız. */
+    if (as === 0 && bs === 0) {
+        const ac = transferCompleteness(a), bc = transferCompleteness(b);
+        if (bc !== ac) return bc > ac ? b : a;
+    }
     if (bRank !== aRank) return bRank >= aRank ? b : a;
     return b;
 };
@@ -1429,6 +1436,20 @@ const mergeRecordLists = (preferred, fallback) => {
 const snapshotDeletedIds = (...items) => uniq(items.flatMap(x => Array.isArray(x) ? x : (x && Array.isArray(x.del) ? x.del : []))).map(String);
 const mergeSnapshots = (preferred, fallback, deletedIds) => {
     const allDeleted = snapshotDeletedIds(deletedIds || [], preferred || {}, fallback || {});
+    /* BUG FIX: Gider/araç/borç/todo gibi listeler için "son yazan kazanır" mantığı.
+       Önceden mergeRecordLists ile birleştiriliyordu; bu birleştirme hiçbir şeyi silmediği için
+       kullanıcının sildiği bir gider, buluttaki eski kopyadan geri geliyordu.
+       Artık hangi snapshot daha yeniyse (clientUpdatedAt) o tarafın listesi olduğu gibi kabul edilir. */
+    const pStamp = snapshotStamp(preferred);
+    const fStamp = snapshotStamp(fallback);
+    const preferredNewer = pStamp >= fStamp;
+    const pickList = (key) => {
+        const pv = (preferred && Array.isArray(preferred[key])) ? preferred[key] : null;
+        const fv = (fallback && Array.isArray(fallback[key])) ? fallback[key] : null;
+        if (pv === null) return fv || [];
+        if (fv === null) return pv || [];
+        return preferredNewer ? pv : fv;
+    };
     return {
         ...(fallback || {}),
         ...(preferred || {}),
@@ -1444,11 +1465,11 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
             }
         }),
         ap: { ...((fallback && fallback.ap) || {}), ...((preferred && preferred.ap) || {}) },
-        ak: mergeRecordLists((preferred && preferred.ak) || [], (fallback && fallback.ak) || []),
-        db: mergeRecordLists((preferred && preferred.db) || [], (fallback && fallback.db) || []),
-        tk: mergeRecordLists((preferred && preferred.tk) || [], (fallback && fallback.tk) || []),
-        tl: mergeRecordLists((preferred && preferred.tl) || [], (fallback && fallback.tl) || []),
-        adj: mergeRecordLists((preferred && preferred.adj) || [], (fallback && fallback.adj) || []),
+        ak: pickList('ak'),
+        db: pickList('db'),
+        tk: pickList('tk'),
+        tl: pickList('tl'),
+        adj: pickList('adj'),
         r: (preferred && preferred.r) || (fallback && fallback.r),
         ru: (preferred && preferred.ru) || (fallback && fallback.ru),
     };
@@ -5486,16 +5507,10 @@ function App() {
                             cloudLoadedRef.current = true;
                             cloudWritingRef.current = true;
                             writeDeletedTransferIds(mergedPayload.del || []);
-                            /* BUG FIX: Local son 8 saniyede değiştirilmişse (kullanıcı düzenleme yaptı)
-                               cloud'dan gelen veriyle üzerine yazma. Bu düzenle-kapat-geri-dön hatasını çözer. */
-                            const now8s = Date.now() - 8000;
-                            const localWriteTs = localPayload && localPayload._localWriteAt ? Date.parse(localPayload._localWriteAt) || 0 : localTs;
-                            if (localWriteTs < now8s || localWriteTs <= cloudTs) {
-                                hydrateSnapshot(mergedPayload, false);
-                            } else {
-                                /* Local daha yeni - sadece deletedIds ve diğer meta güncelle, T'ye dokunma */
-                                writeDeletedTransferIds(mergedPayload.del || []);
-                            }
+                            /* mergeSnapshots artık "son yazan kazanır" mantığıyla doğru birleştiriyor:
+                               transferlerde en yeni updatedAt kazanır, gider/araç listelerinde en yeni
+                               snapshot bütünüyle kazanır. Bu yüzden merge sonucunu her zaman uygulayabiliriz. */
+                            hydrateSnapshot(mergedPayload, false);
                             /* PERF FIX: Eski kod burada 2x büyük JSON.stringify yapıyordu (T 5000+ ise
                                donmaya yol açıyor). Hafif şekilde uzunluk+stamp karşılaştırması yapıyoruz;
                                mergedPayload boyutu cloud payload'dan farklıysa veya local daha yeniyse yazılıyor. */
@@ -5577,7 +5592,8 @@ function App() {
                 if (saveSig === lastSaveSigRef.current)
                     return;
                 lastSaveSigRef.current = saveSig;
-                const snapshot = { ...snapshotCore, date: new Date().toISOString() };
+                const nowIso = new Date().toISOString();
+                const snapshot = { ...snapshotCore, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
                 if(cloudEnabled() && authUser && !cloudWritingRef.current){
                     if (!cloudLoadedRef.current) {
@@ -5589,7 +5605,7 @@ function App() {
                         return;
                     }
                     console.log('[CLOUD] yazılıyor:', snapshot.t.length, 'transfer');
-                    cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: snapshot.date }, { merge: true })
+                    cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: snapshot.clientUpdatedAt }, { merge: true })
                       .then(function(){ console.log('[CLOUD] OK', snapshot.t.length); })
                       .catch(function(err){
                         console.error('[CLOUD] HATA', err);
@@ -5872,7 +5888,8 @@ function App() {
             companyCollected,
             customerCollected: !!draft.customerCollected,
             vehiclePaid: !!draft.vehiclePaid,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            clientUpdatedAt: new Date().toISOString()
         };
         const next = normalizeTransfer(base);
         setT(p => {
