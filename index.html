@@ -1732,20 +1732,60 @@ const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
         const rows = (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id);
         return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
     });
-async function putGithubCalendarFile(token, filename, text) {
+const githubCalendarHeaders = token => ({
+    Authorization: 'Bearer ' + token,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+});
+async function githubCalendarBodyText(res) {
+    try {
+        const txt = await res.text();
+        if (!txt) return '';
+        try {
+            const data = JSON.parse(txt);
+            return data && data.message ? data.message : txt.slice(0, 160);
+        } catch (e) {
+            return txt.slice(0, 160);
+        }
+    } catch (e) {
+        return '';
+    }
+}
+function githubCalendarError(status, detail) {
+    const tail = detail ? ' · ' + detail : '';
+    if (status === 401) return 'Token yanlış veya süresi dolmuş (401)' + tail;
+    if (status === 403) return 'Token izni eksik: v500 için Contents Read and write olmalı (403)' + tail;
+    if (status === 404) return 'Repo görünmüyor: Resource owner kdrolmz, repo v500 seçili olmalı (404)' + tail;
+    if (status === 409) return 'GitHub aynı anda güncellendi, tekrar Şimdi Yayınla bas (409)' + tail;
+    if (status === 422) return 'GitHub yazmayı kabul etmedi; branch veya dosya yetkisini kontrol et (422)' + tail;
+    return 'GitHub hatası: ' + status + tail;
+}
+async function getGithubCalendarBranch(token) {
+    const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO;
+    const res = await fetch(api, { headers: githubCalendarHeaders(token) });
+    if (res.ok) {
+        const data = await res.json();
+        return (data && data.default_branch) || GITHUB_CALENDAR_BRANCH;
+    }
+    const detail = await githubCalendarBodyText(res);
+    throw new Error(githubCalendarError(res.status, detail));
+}
+async function putGithubCalendarFile(token, filename, text, branch) {
     const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO + '/contents/' + encodeURIComponent(filename);
-    const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
-    const current = await fetch(api + '?ref=' + encodeURIComponent(GITHUB_CALENDAR_BRANCH), { headers });
+    const headers = githubCalendarHeaders(token);
+    const targetBranch = branch || GITHUB_CALENDAR_BRANCH;
+    const current = await fetch(api + '?ref=' + encodeURIComponent(targetBranch), { headers });
     let sha = null;
     if (current.ok) {
         const data = await current.json();
         sha = data && data.sha;
     } else if (current.status !== 404) {
-        throw new Error('GitHub okuma hatası: ' + current.status);
+        const detail = await githubCalendarBodyText(current);
+        throw new Error(githubCalendarError(current.status, detail));
     }
     const body = {
         message: 'Apple takvim guncelle',
-        branch: GITHUB_CALENDAR_BRANCH,
+        branch: targetBranch,
         content: utf8Base64(text)
     };
     if (sha) body.sha = sha;
@@ -1754,8 +1794,10 @@ async function putGithubCalendarFile(token, filename, text) {
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
     });
-    if (!saved.ok)
-        throw new Error('GitHub yazma hatası: ' + saved.status);
+    if (!saved.ok) {
+        const detail = await githubCalendarBodyText(saved);
+        throw new Error(githubCalendarError(saved.status, detail));
+    }
     return true;
 }
 function tourCommissionTotal(t) {
@@ -6238,16 +6280,18 @@ function App() {
         setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
         try {
             const files = buildAppleCalendarPublishFiles(T);
+            const branch = await getGithubCalendarBranch(token);
             for (const f of files)
-                await putGithubCalendarFile(token, f.filename, f.text);
+                await putGithubCalendarFile(token, f.filename, f.text, branch);
             const stamp = new Date().toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             setGithubCalendarMsg('Son güncelleme: ' + stamp);
             if (!silent) tip('Apple Takvim yayını güncellendi');
             return true;
         } catch (e) {
             console.error('[APPLE CALENDAR GITHUB]', e);
-            setGithubCalendarMsg('Yayınlanamadı: token veya GitHub iznini kontrol et');
-            if (!silent) tip('Apple Takvim yayını başarısız');
+            const msg = (e && e.message) ? e.message : 'Yayınlanamadı';
+            setGithubCalendarMsg(msg);
+            if (!silent) tip(msg);
             return false;
         } finally {
             setGithubCalendarBusy(false);
@@ -8454,8 +8498,6 @@ function App() {
                     ),
                     React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: G, color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
                         "\uD83D\uDCC1 iCloud / Dosyalar'a Yedek \u0130ndir"),
-                    React.createElement("button", { onClick: exportAppleCalendar, style: { width: '100%', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
-                        "\uD83D\uDCC5 Apple Takvim Dosyalar\u0131n\u0131 Haz\u0131rla"),
                     React.createElement("div", { style: { background: '#fff', border: '1px solid #D1D1D6', borderRadius: 12, padding: 10, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8 } },
                             React.createElement("div", { style: { fontWeight: 800, fontSize: 12.5, color: TX } }, "Apple Takvim Otomatik"),
@@ -8467,7 +8509,7 @@ function App() {
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 7 } },
                             React.createElement("button", { onClick: () => setGithubCalendarAuto(v => !v), style: { background: githubCalendarAuto ? G : '#F2F2F7', color: githubCalendarAuto ? '#fff' : TX, border: '1px solid ' + (githubCalendarAuto ? G : '#D1D1D6'), borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' } }, githubCalendarAuto ? "Otomatik Açık" : "Otomatik Kapalı"),
                             React.createElement("button", { onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy, style: { background: githubCalendarBusy ? '#AEAEB2' : '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: githubCalendarBusy ? 'default' : 'pointer' } }, githubCalendarBusy ? "Yayınlanıyor" : "Şimdi Yayınla")),
-                        React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.35, marginBottom: 7 } }, githubCalendarMsg || "Renkli Apple takvimleri aşağıdan bir kez aç."),
+                        React.createElement("div", { style: { fontSize: 10.5, color: githubCalendarMsg && /hata|yanlış|eksik|görünmüyor|kabul|Repo|Token/i.test(githubCalendarMsg) ? R : SB, lineHeight: 1.35, marginBottom: 7, fontWeight: githubCalendarMsg ? 700 : 500 } }, githubCalendarMsg || "Renkli Apple takvimleri aşağıdan bir kez aç."),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } },
                             APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", { key: meta.id, onClick: () => openAppleCalendarSubscription(meta), style: { background: '#fff', color: '#1C1C1E', border: '1px solid ' + meta.color, borderLeft: '5px solid ' + meta.color, borderRadius: 9, padding: '8px 5px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer', minHeight: 34 } }, meta.id === 'arrival' ? 'Gelen' : meta.id === 'departure' ? 'Giden' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP')))),
                     React.createElement("button", { onClick: doBackup, style: { width: '100%', background: '#FFFFFF', color: G, border: '1.5px solid #D1D1D6', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
