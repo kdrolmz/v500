@@ -210,6 +210,10 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tab::before,.tab::after,.tab.is-active::before,.tab.is-active::after,.tab-fab::before,.tab-fab::after{content:none !important;display:none !important}
 .tab.is-active .tab-icon,.tab.is-active .tab-label{color:var(--ink) !important}
 .tcard-stripe{width:3px !important;min-width:3px !important;border-radius:999px !important;background:var(--accent) !important}
+.tcard.t-arrival .tcard-stripe{background:#6FAF84 !important}
+.tcard.t-departure .tcard-stripe,.tcard.t-intercity .tcard-stripe{background:#B8B1A5 !important}
+.tcard.t-tour .tcard-stripe{background:#D9BD63 !important}
+.tcard.t-shortpass .tcard-stripe{background:#A98AC7 !important}
 .tcard-time-type{font-weight:430 !important;font-size:11px !important;color:#636366 !important;margin-top:3px !important}
 .tcard-time{font-size:11.5px !important;font-weight:430 !important;color:var(--muted) !important;grid-area:time !important;min-width:0 !important}
 .tcard-route{font-size:11.4px !important;font-weight:410 !important;color:#636366 !important;line-height:1.25 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
@@ -929,11 +933,11 @@ const NAV = '#1C1C1E', NAV2 = '#2C2C2E', GOLD = '#A85C55';
 const G = '#1F7A4D', O = '#9A6A1F', R = '#A85C55', BR = '#D1D1D6';
 const TX = '#1C1C1E', SB = '#636366', INP = '#F5F5F7', BOR = 'rgba(60,60,67,.18)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#1C1C1E', bg: '#F2F2F7', b: '#D1D1D6' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#636366', bg: '#F5F5F7', b: '#D1D1D6' },
-    { id: 'tour', n: 'Tur', ico: '🗺️', c: '#1C1C1E', bg: '#F5F5F7', b: '#D1D1D6' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '🏨', c: '#636366', bg: '#F5F5F7', b: '#D1D1D6' },
-    { id: 'intercity', n: 'Şehirlerarası', ico: '🛣️', c: '#1C1C1E', bg: '#F2F2F7', b: '#D1D1D6' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#6F675D', bg: '#F1EEE8', b: '#D8D1C7' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#2F7A4E', bg: '#EAF5EE', b: '#BFDCC8' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#8B6A16', bg: '#FFF7D9', b: '#E6D18A' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6F4E91', bg: '#F3ECFA', b: '#D5BEE7' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#6F675D', bg: '#F1EEE8', b: '#D8D1C7' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -1552,6 +1556,23 @@ async function saveBlob(blob, filename) {
 async function shareTextFile(filename, text, mime) {
     return saveBlob(new Blob([text], { type: mime || 'text/plain;charset=utf-8' }), filename);
 }
+async function downloadText(text, filename, mime) {
+    return shareTextFile(filename, text, mime);
+}
+async function shareTextFiles(files, title) {
+    const items = (files || []).map(f => new File([f.text], f.filename, { type: f.mime || 'text/calendar;charset=utf-8' }));
+    try {
+        if (items.length && navigator.share && navigator.canShare && navigator.canShare({ files: items })) {
+            await navigator.share({ files: items, title: title || 'Apple Takvim' });
+            return true;
+        }
+    } catch (e) { }
+    let ok = false;
+    for (const f of (files || [])) {
+        ok = (await shareTextFile(f.filename, f.text, f.mime || 'text/calendar;charset=utf-8')) || ok;
+    }
+    return ok;
+}
 async function downloadWorkbook(wb, filename) {
     try {
         if (IS_IOS) {
@@ -1566,6 +1587,176 @@ async function downloadWorkbook(wb, filename) {
     }
     catch (e) { }
     return false;
+}
+const APPLE_CALENDAR_TYPES = [
+    { id: 'arrival', filename: 'apple-takvim-gelen.ics', name: 'KÖ Gelen Yolcu', color: '#6FAF84' },
+    { id: 'departure', filename: 'apple-takvim-giden.ics', name: 'KÖ Giden Yolcu', color: '#B8B1A5' },
+    { id: 'tour', filename: 'apple-takvim-turlar.ics', name: 'KÖ Turlar', color: '#D9BD63' },
+    { id: 'shortpass', filename: 'apple-takvim-kisa-pas.ics', name: 'KÖ Kısa Pas', color: '#A98AC7' },
+    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: '#B8B1A5' }
+];
+const GITHUB_CALENDAR_OWNER = 'kdrolmz';
+const GITHUB_CALENDAR_REPO = 'v500';
+const GITHUB_CALENDAR_BRANCH = 'main';
+const GITHUB_CALENDAR_TOKEN_KEY = 'ko_github_calendar_token_v1';
+const GITHUB_CALENDAR_AUTO_KEY = 'ko_github_calendar_auto_v1';
+const APPLE_CALENDAR_WEB_BASE = 'https://kdrolmz.github.io/v500/';
+const APPLE_CALENDAR_WEBCAL_BASE = 'webcal://kdrolmz.github.io/v500/';
+const appleCalendarTypeMeta = id => APPLE_CALENDAR_TYPES.find(x => x.id === id) || APPLE_CALENDAR_TYPES[0];
+const appleCalendarUrl = meta => APPLE_CALENDAR_WEB_BASE + meta.filename;
+const appleCalendarWebcalUrl = meta => APPLE_CALENDAR_WEBCAL_BASE + meta.filename;
+const utf8Base64 = text => btoa(unescape(encodeURIComponent(String(text || ''))));
+const icsPad = n => String(n).padStart(2, '0');
+const icsEscape = v => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+const icsFold = line => {
+    const s = String(line || '');
+    const out = [];
+    for (let i = 0; i < s.length; i += 72)
+        out.push((i ? ' ' : '') + s.slice(i, i + 72));
+    return out.join('\r\n');
+};
+const icsLocalDateTime = d => d.getFullYear() + icsPad(d.getMonth() + 1) + icsPad(d.getDate()) + 'T' + icsPad(d.getHours()) + icsPad(d.getMinutes()) + '00';
+const icsUtcDateTime = d => d.getUTCFullYear() + icsPad(d.getUTCMonth() + 1) + icsPad(d.getUTCDate()) + 'T' + icsPad(d.getUTCHours()) + icsPad(d.getUTCMinutes()) + '00Z';
+const parseTransferDateTime = t => {
+    const dm = String((t && t.date) || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dm)
+        return null;
+    const tm = String((t && t.time) || '').match(/^(\d{1,2}):(\d{2})/);
+    return new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]), tm ? Number(tm[1]) : 9, tm ? Number(tm[2]) : 0, 0, 0);
+};
+const appleCalendarVehicle = t => {
+    const v = VEHS.find(x => x.id === (t && t.vehicle));
+    return v ? v.n : String((t && t.vehicle) || '').trim();
+};
+const transferCalendarIcon = t => {
+    const type = String((t && t.transferType) || 'arrival');
+    if (type === 'arrival') return '🛬';
+    if (type === 'departure') return '🛫';
+    if (type === 'tour') return '🏔️';
+    if (type === 'shortpass') return '⚡';
+    if (type === 'intercity') return '🚐';
+    return '🔴';
+};
+const transferCalendarRoute = t => {
+    const type = String((t && t.transferType) || 'arrival');
+    const from = shortLoc(t && t.pickup);
+    const to = shortLoc(t && t.dropoff);
+    if (type === 'tour' && (!to || to === '—'))
+        return (from && from !== '—' ? from : 'Tur') + ' Tur';
+    if (from && to && from !== '—' && to !== '—')
+        return from + ' → ' + to;
+    return from && from !== '—' ? from : (to && to !== '—' ? to : 'Transfer');
+};
+const appleCalendarPaymentText = t => {
+    const parts = [];
+    const currency = String((t && t.paymentCurrency) || 'TRY').toUpperCase();
+    const amount = moneyValue(t && t.paymentAmount);
+    if (t && t.paymentCollect === 'no')
+        parts.push('Müşteri ödemez');
+    else if (amount > 0)
+        parts.push('Müşteri: ' + amount.toLocaleString('tr-TR') + ' ' + currency);
+    if (t && t.paymentToMe)
+        parts.push('Hesap bana geldi');
+    if (moneyValue(t && t.driverPayment) > 0)
+        parts.push('Araç: ' + moneyValue(t.driverPayment).toLocaleString('tr-TR') + ' ₺');
+    if (moneyValue(t && t.altAcentaUcreti) > 0)
+        parts.push('Alt acenta: ' + moneyValue(t.altAcentaUcreti).toLocaleString('tr-TR') + ' ₺');
+    return 'Ödeme: ' + (parts.length ? parts.join(' | ') : '-');
+};
+const appleCalendarTitle = t => {
+    const tm = String((t && t.time) || '').slice(0, 5) || '--:--';
+    return [transferCalendarIcon(t) + ' ' + tm, transferCalendarRoute(t), appleCalendarVehicle(t)].filter(Boolean).join(' | ');
+};
+const appleCalendarDescription = t => {
+    const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
+    const customer = passengers || (t && (t.passengerName || t.customerName || t.clientName)) || '';
+    return [
+        'Müşteri: ' + (customer || '-'),
+        'Şoför: ' + ([t && t.driverName, t && t.driverPhone].filter(Boolean).join(' / ') || '-'),
+        'İşi veren: ' + ((t && t.givenBy) || '-'),
+        'İşi yapan: ' + ((t && t.assignedTo) || '-'),
+        'Alt acenta: ' + ((t && t.altAcenta) || '-'),
+        'Araç: ' + [appleCalendarVehicle(t), inferPlate(t)].filter(Boolean).join(' / '),
+        'Güzergah: ' + [t && t.pickup, t && t.dropoff].filter(Boolean).join(' → '),
+        (t && t.flightCode) ? ('Uçuş: ' + flightCodeClean(t.flightCode)) : '',
+        (t && t.notes) ? ('Not: ' + t.notes) : '',
+        appleCalendarPaymentText(t)
+    ].filter(Boolean).join('\n');
+};
+const buildAppleCalendarIcs = (transfers, meta) => {
+    const now = new Date();
+    const rows = (transfers || []).filter(t => t && t.date && t.status !== 'iptal').slice()
+        .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
+    const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Olmeztur//Transfer Takvim//TR',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:' + icsEscape(meta.name),
+        'X-WR-TIMEZONE:Europe/Istanbul',
+        'X-APPLE-CALENDAR-COLOR:' + meta.color
+    ];
+    rows.forEach(t => {
+        const start = parseTransferDateTime(t);
+        if (!start)
+            return;
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+        const updated = new Date(t.clientUpdatedAt || t.updatedAt || t.createdAt || now);
+        lines.push(
+            'BEGIN:VEVENT',
+            'UID:' + icsEscape('ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'),
+            'DTSTAMP:' + icsUtcDateTime(now),
+            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? now : updated),
+            'SEQUENCE:' + Math.max(0, Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000)),
+            'DTSTART:' + icsLocalDateTime(start),
+            'DTEND:' + icsLocalDateTime(end),
+            'SUMMARY:' + icsEscape(appleCalendarTitle(t)),
+            'LOCATION:' + icsEscape([t.pickup, t.dropoff].filter(Boolean).join(' → ')),
+            'DESCRIPTION:' + icsEscape(appleCalendarDescription(t)),
+            'CATEGORIES:' + icsEscape(meta.name),
+            'STATUS:CONFIRMED',
+            'TRANSP:OPAQUE',
+            'END:VEVENT'
+        );
+    });
+    lines.push('END:VCALENDAR');
+    return lines.map(icsFold).join('\r\n') + '\r\n';
+};
+const buildAppleCalendarFiles = transfers => APPLE_CALENDAR_TYPES
+    .map(meta => ({ meta, rows: (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id) }))
+    .filter(x => x.rows.length)
+    .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta) }));
+const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
+    .map(meta => {
+        const rows = (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id);
+        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
+    });
+async function putGithubCalendarFile(token, filename, text) {
+    const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO + '/contents/' + encodeURIComponent(filename);
+    const headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    const current = await fetch(api + '?ref=' + encodeURIComponent(GITHUB_CALENDAR_BRANCH), { headers });
+    let sha = null;
+    if (current.ok) {
+        const data = await current.json();
+        sha = data && data.sha;
+    } else if (current.status !== 404) {
+        throw new Error('GitHub okuma hatası: ' + current.status);
+    }
+    const body = {
+        message: 'Apple takvim guncelle',
+        branch: GITHUB_CALENDAR_BRANCH,
+        content: utf8Base64(text)
+    };
+    if (sha) body.sha = sha;
+    const saved = await fetch(api, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    if (!saved.ok)
+        throw new Error('GitHub yazma hatası: ' + saved.status);
+    return true;
 }
 function tourCommissionTotal(t) {
     if (!t)
@@ -4148,6 +4339,13 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         const v = VEHS.find(x => x.id === (t && t.vehicle));
         return v ? v.n : ((t && t.vehicle) ? String(t.vehicle) : 'Vito');
     };
+    const todoCalendarIcon = t => {
+        if ((t && t.category) === 'odeme') return '💰';
+        if ((t && t.category) === 'acil' || (t && t.priority) === 'high') return '🔴';
+        return '';
+    };
+    const todoCalendarTitle = t => [todoCalendarIcon(t), t && t.title].filter(Boolean).join(' ');
+    const transferPanelTitle = t => [transferCalendarIcon(t), transferCalendarRoute(t), vehicleName(t)].filter(Boolean).join(' | ');
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -4178,7 +4376,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         const transfers = (T || []).filter(x => x.date === dateKey && x.status !== 'iptal').map(t => ({
             type: 'transfer',
             id: 't_' + t.id,
-            title: (t.pickup || '—') + ' → ' + (t.dropoff || '—'),
+            title: transferPanelTitle(t),
             sub: ['Araç: ' + vehicleName(t), t.plate ? '🚐 ' + t.plate : '', t.givenBy || '', t.assignedTo && t.assignedTo !== t.givenBy ? '· ' + t.assignedTo : '', (t.passengers && t.passengers[0] && t.passengers[0].name) ? '· ' + t.passengers[0].name : ''].filter(Boolean).join(' '),
             time: t.time || '',
             done: transferLooksDone(t),
@@ -4188,7 +4386,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         const tds = (todos || []).filter(x => x.date === dateKey && x.kind !== 'event').map(t => ({
             type: 'todo',
             id: 'td_' + t.id,
-            title: t.title,
+            title: todoCalendarTitle(t),
             sub: t.notes || '',
             time: t.time || '',
             done: !!t.done,
@@ -4200,7 +4398,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         const evs = (todos || []).filter(x => x.eventDate === dateKey && x.kind === 'event').map(t => ({
             type: 'event',
             id: 'ev_' + t.id,
-            title: t.title,
+            title: todoCalendarTitle(t),
             sub: t.notes || '',
             time: t.time || '',
             done: false,
@@ -4519,7 +4717,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         return renderDayItem({
             type: t.kind === 'event' ? 'event' : 'todo',
             id: 'audit_td_' + t.id,
-            title: t.title || 'Başlıksız kayıt',
+            title: todoCalendarTitle(t) || 'Başlıksız kayıt',
             sub: [dateText, t.notes || ''].filter(Boolean).join(' · '),
             time: t.time || '',
             done: true,
@@ -4893,6 +5091,10 @@ function App() {
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } });
+    const [githubCalendarToken, setGithubCalendarToken] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || ''; }catch(e){ return ''; } });
+    const [githubCalendarAuto, setGithubCalendarAuto] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_AUTO_KEY) === '1'; }catch(e){ return false; } });
+    const [githubCalendarBusy, setGithubCalendarBusy] = useState(false);
+    const [githubCalendarMsg, setGithubCalendarMsg] = useState('');
     const [storageReady, setStorageReady] = useState(false);
     const [authBusy, setAuthBusy] = useState(false);
     const [authError, setAuthError] = useState('');
@@ -4907,6 +5109,8 @@ function App() {
     const draftSaveTimerRef = useRef(null);
     const plate16SyncTimerRef = useRef(null);
     const plate16SyncSigRef = useRef(null);
+    const calendarPublishTimerRef = useRef(null);
+    const calendarPublishSigRef = useRef('');
     /* PERF FIX: Bu ref'ler ile useEffect'lerin sonsuz/gereksiz tetiklenmesini önlüyoruz.
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
@@ -4914,6 +5118,16 @@ function App() {
     useEffect(() => {
         try { localStorage.setItem('ko_active_tab', tab); } catch (e) {}
     }, [tab]);
+    useEffect(() => {
+        try {
+            const tok = (githubCalendarToken || '').trim();
+            if (tok) localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, tok);
+            else localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
+        } catch (e) {}
+    }, [githubCalendarToken]);
+    useEffect(() => {
+        try { localStorage.setItem(GITHUB_CALENDAR_AUTO_KEY, githubCalendarAuto ? '1' : '0'); } catch (e) {}
+    }, [githubCalendarAuto]);
     useEffect(() => {
         if (tab !== 'new' || editId) return;
         if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
@@ -6013,6 +6227,91 @@ function App() {
         const ok = await downloadText(payload, 'Olmeztur_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
     };
+    const publishAppleCalendarToGithub = async (silent) => {
+        const token = (githubCalendarToken || '').trim();
+        if (!token) {
+            setGithubCalendarMsg('GitHub token girilmedi');
+            if (!silent) tip('GitHub token gir');
+            return false;
+        }
+        setGithubCalendarBusy(true);
+        setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
+        try {
+            const files = buildAppleCalendarPublishFiles(T);
+            for (const f of files)
+                await putGithubCalendarFile(token, f.filename, f.text);
+            const stamp = new Date().toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            setGithubCalendarMsg('Son güncelleme: ' + stamp);
+            if (!silent) tip('Apple Takvim yayını güncellendi');
+            return true;
+        } catch (e) {
+            console.error('[APPLE CALENDAR GITHUB]', e);
+            setGithubCalendarMsg('Yayınlanamadı: token veya GitHub iznini kontrol et');
+            if (!silent) tip('Apple Takvim yayını başarısız');
+            return false;
+        } finally {
+            setGithubCalendarBusy(false);
+        }
+    };
+    const openAppleCalendarSubscription = meta => {
+        window.location.href = appleCalendarWebcalUrl(meta);
+    };
+    const exportAppleCalendar = async () => {
+        const files = buildAppleCalendarFiles(T);
+        if (!files.length) {
+            tip('Takvime aktarılacak transfer yok');
+            return;
+        }
+        const ok = await shareTextFiles(files, 'KÖ Transfer Apple Takvim');
+        tip(ok ? 'Apple Takvim dosyaları hazır' : 'Takvim dosyası oluşturulamadı');
+    };
+    useEffect(() => {
+        if (!storageReady || !githubCalendarAuto || !(githubCalendarToken || '').trim())
+            return;
+        const rows = (T || []).map(t => [
+            t && t.id,
+            t && t.date,
+            t && t.time,
+            t && t.transferType,
+            t && t.status,
+            t && t.pickup,
+            t && t.dropoff,
+            t && t.vehicle,
+            t && t.plate,
+            t && t.driverName,
+            t && t.driverPhone,
+            t && t.givenBy,
+            t && t.assignedTo,
+            t && t.altAcenta,
+            t && t.flightCode,
+            t && t.notes,
+            t && t.paymentAmount,
+            t && t.paymentCurrency,
+            t && t.paymentCollect,
+            t && t.paymentToMe,
+            t && t.driverPayment,
+            t && t.altAcentaUcreti,
+            transferPassengerName(t),
+            t && t.updatedAt,
+            t && t.clientUpdatedAt
+        ].join('|')).sort().join('::');
+        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + rows;
+        if (calendarPublishSigRef.current === sig)
+            return;
+        calendarPublishSigRef.current = sig;
+        if (calendarPublishTimerRef.current)
+            clearTimeout(calendarPublishTimerRef.current);
+        calendarPublishTimerRef.current = setTimeout(() => {
+            calendarPublishTimerRef.current = null;
+            publishAppleCalendarToGithub(true);
+        }, 1400);
+        return () => {
+            if (calendarPublishTimerRef.current) {
+                clearTimeout(calendarPublishTimerRef.current);
+                calendarPublishTimerRef.current = null;
+            }
+        };
+    }, [storageReady, T, githubCalendarAuto, githubCalendarToken]);
     const restoreFromFile = async file => {
         try {
             if (!file) {
@@ -8155,6 +8454,22 @@ function App() {
                     ),
                     React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: G, color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
                         "\uD83D\uDCC1 iCloud / Dosyalar'a Yedek \u0130ndir"),
+                    React.createElement("button", { onClick: exportAppleCalendar, style: { width: '100%', background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
+                        "\uD83D\uDCC5 Apple Takvim Dosyalar\u0131n\u0131 Haz\u0131rla"),
+                    React.createElement("div", { style: { background: '#fff', border: '1px solid #D1D1D6', borderRadius: 12, padding: 10, marginBottom: 8 } },
+                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                            React.createElement("div", { style: { fontWeight: 800, fontSize: 12.5, color: TX } }, "Apple Takvim Otomatik"),
+                            React.createElement("span", { style: { fontSize: 10, color: githubCalendarAuto ? G : SB, fontWeight: 800 } }, githubCalendarAuto ? "Açık" : "Kapalı")),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 78px', gap: 6, marginBottom: 6 } },
+                            React.createElement("input", { type: "password", value: githubCalendarToken, onChange: e => setGithubCalendarToken(e.target.value), placeholder: "GitHub token", autoComplete: "off", spellCheck: false, className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 11px', background: '#F9F9FB' } }),
+                            React.createElement("button", { onClick: () => { setGithubCalendarToken(''); setGithubCalendarAuto(false); setGithubCalendarMsg('Token bu cihazdan silindi'); tip('Token silindi'); }, style: { background: '#F2F2F7', color: TX, border: '1px solid #D1D1D6', borderRadius: 10, padding: '10px 5px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, "Token Sil")),
+                        React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.35, marginBottom: 7 } }, "Token her cihazda ayrı saklanır; iPhone ve MacBook'ta bir kez gir. Yalnızca GitHub'a takvim dosyası yazmak için kullanılır."),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 7 } },
+                            React.createElement("button", { onClick: () => setGithubCalendarAuto(v => !v), style: { background: githubCalendarAuto ? G : '#F2F2F7', color: githubCalendarAuto ? '#fff' : TX, border: '1px solid ' + (githubCalendarAuto ? G : '#D1D1D6'), borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' } }, githubCalendarAuto ? "Otomatik Açık" : "Otomatik Kapalı"),
+                            React.createElement("button", { onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy, style: { background: githubCalendarBusy ? '#AEAEB2' : '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: githubCalendarBusy ? 'default' : 'pointer' } }, githubCalendarBusy ? "Yayınlanıyor" : "Şimdi Yayınla")),
+                        React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.35, marginBottom: 7 } }, githubCalendarMsg || "Renkli Apple takvimleri aşağıdan bir kez aç."),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } },
+                            APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", { key: meta.id, onClick: () => openAppleCalendarSubscription(meta), style: { background: '#fff', color: '#1C1C1E', border: '1px solid ' + meta.color, borderLeft: '5px solid ' + meta.color, borderRadius: 9, padding: '8px 5px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer', minHeight: 34 } }, meta.id === 'arrival' ? 'Gelen' : meta.id === 'departure' ? 'Giden' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP')))),
                     React.createElement("button", { onClick: doBackup, style: { width: '100%', background: '#FFFFFF', color: G, border: '1.5px solid #D1D1D6', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
                         "\uD83D\uDCCB Toplam ",
                         T.length,
