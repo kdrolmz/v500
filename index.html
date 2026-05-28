@@ -1384,6 +1384,23 @@ const removeEditedTransferClones = (arr, editId, previous) => {
         return true;
     });
 };
+const removeTransferAndOldCopies = (rows, target) => {
+    if (!target)
+        return rows || [];
+    return removeEditedTransferClones(rows || [], target.id, target);
+};
+const deletedIdsFromRemovedRows = (beforeRows, afterRows, target) => {
+    const afterIds = new Set((afterRows || []).map(x => String((x && x.id) || '')).filter(Boolean));
+    const ids = [];
+    if (target && target.id)
+        ids.push(String(target.id));
+    (beforeRows || []).forEach(x => {
+        const id = String((x && x.id) || '');
+        if (id && !afterIds.has(id))
+            ids.push(id);
+    });
+    return uniq(ids);
+};
 const persistTransfersImmediately = transfers => {
     try {
         const now = new Date().toISOString();
@@ -1607,6 +1624,7 @@ const GITHUB_CALENDAR_REPO = 'v500';
 const GITHUB_CALENDAR_BRANCH = 'main';
 const GITHUB_CALENDAR_TOKEN_KEY = 'ko_github_calendar_token_v1';
 const GITHUB_CALENDAR_AUTO_KEY = 'ko_github_calendar_auto_v1';
+const APPLE_CALENDAR_SYNC_REV_KEY = 'ko_apple_calendar_sync_rev_v1';
 const APPLE_CALENDAR_WEB_BASE = 'https://kdrolmz.github.io/v500/';
 const APPLE_CALENDAR_WEBCAL_BASE = 'webcal://kdrolmz.github.io/v500/';
 const appleCalendarTypeMeta = id => APPLE_CALENDAR_TYPES.find(x => x.id === id) || APPLE_CALENDAR_TYPES[0];
@@ -1615,6 +1633,17 @@ const appleCalendarWebcalUrl = meta => APPLE_CALENDAR_WEBCAL_BASE + meta.filenam
 const utf8Base64 = text => btoa(unescape(encodeURIComponent(String(text || ''))));
 const icsPad = n => String(n).padStart(2, '0');
 const icsEscape = v => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+const readAppleCalendarSyncRev = () => { try { return localStorage.getItem(APPLE_CALENDAR_SYNC_REV_KEY) || ''; } catch (e) { return ''; } };
+const bumpAppleCalendarSyncRev = () => {
+    const rev = String(Date.now());
+    try { localStorage.setItem(APPLE_CALENDAR_SYNC_REV_KEY, rev); } catch (e) {}
+    return rev;
+};
+const appleCalendarRevDate = rev => {
+    const n = Number(rev);
+    const d = n > 0 ? new Date(n) : new Date();
+    return Number.isNaN(d.getTime()) ? new Date() : d;
+};
 const icsFold = line => {
     const s = String(line || '');
     const out = [];
@@ -1700,8 +1729,11 @@ const appleCalendarDescription = t => {
         appleCalendarPaymentText(t)
     ].filter(Boolean).join('\n');
 };
-const buildAppleCalendarIcs = (transfers, meta) => {
+const buildAppleCalendarIcs = (transfers, meta, syncRev) => {
     const now = new Date();
+    const rev = syncRev || readAppleCalendarSyncRev() || String(now.getTime());
+    const revDate = appleCalendarRevDate(rev);
+    const revStamp = icsUtcDateTime(revDate);
     const rows = (transfers || []).filter(t => t && t.date && t.status !== 'iptal').slice()
         .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
     const lines = [
@@ -1711,10 +1743,13 @@ const buildAppleCalendarIcs = (transfers, meta) => {
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
         'X-WR-CALNAME:' + icsEscape(meta.name),
+        'X-WR-CALDESC:' + icsEscape('Olmeztur transfer yayini - ' + rev),
+        'X-OLMEZTUR-SYNC-REV:' + icsEscape(rev),
+        'LAST-MODIFIED:' + revStamp,
         'X-WR-TIMEZONE:Europe/Istanbul',
         'X-APPLE-CALENDAR-COLOR:' + meta.color,
-        'REFRESH-INTERVAL;VALUE=DURATION:PT1M',
-        'X-PUBLISHED-TTL:PT1M'
+        'REFRESH-INTERVAL;VALUE=DURATION:PT30S',
+        'X-PUBLISHED-TTL:PT30S'
     ];
     rows.forEach(t => {
         const start = parseTransferDateTime(t);
@@ -1722,18 +1757,27 @@ const buildAppleCalendarIcs = (transfers, meta) => {
             return;
         const end = new Date(start.getTime() + 60 * 60 * 1000);
         const updated = new Date(t.clientUpdatedAt || t.updatedAt || t.createdAt || now);
+        const created = new Date(t.createdAt || t.clientUpdatedAt || t.updatedAt || now);
+        const eventSeq = Math.max(
+            0,
+            Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000),
+            Math.floor(revDate.getTime() / 1000)
+        );
         lines.push(
             'BEGIN:VEVENT',
             'UID:' + icsEscape('ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'),
             'DTSTAMP:' + icsUtcDateTime(now),
-            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? now : updated),
-            'SEQUENCE:' + Math.max(0, Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000)),
+            'CREATED:' + icsUtcDateTime(isNaN(created.getTime()) ? now : created),
+            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? revDate : updated),
+            'SEQUENCE:' + eventSeq,
             'DTSTART:' + icsLocalDateTime(start),
             'DTEND:' + icsLocalDateTime(end),
             'SUMMARY:' + icsEscape(appleCalendarTitle(t)),
             'LOCATION:' + icsEscape([t.pickup, t.dropoff].filter(Boolean).join(' → ')),
             'DESCRIPTION:' + icsEscape(appleCalendarDescription(t)),
             'CATEGORIES:' + icsEscape(meta.name),
+            'URL:' + icsEscape(APPLE_CALENDAR_WEB_BASE + '?transfer=' + encodeURIComponent(String(t.id || transferDuplicateKey(t))) + '&rev=' + encodeURIComponent(rev)),
+            'X-OLMEZTUR-UPDATED:' + icsEscape(rev),
             'STATUS:CONFIRMED',
             'TRANSP:OPAQUE',
             'END:VEVENT'
@@ -1745,11 +1789,11 @@ const buildAppleCalendarIcs = (transfers, meta) => {
 const buildAppleCalendarFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => ({ meta, rows: (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id) }))
     .filter(x => x.rows.length)
-    .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta) }));
-const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
+    .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta, String(Date.now())) }));
+const buildAppleCalendarPublishFiles = (transfers, syncRev) => APPLE_CALENDAR_TYPES
     .map(meta => {
         const rows = (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id);
-        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
+        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta, syncRev), meta };
     });
 const githubCalendarHeaders = token => ({
     Authorization: 'Bearer ' + token,
@@ -5219,6 +5263,7 @@ function App() {
     const calendarPublishSigRef = useRef('');
     const calendarPublishInFlightRef = useRef(false);
     const calendarPublishAgainRef = useRef(false);
+    const calendarLatestRowsRef = useRef(null);
     /* PERF FIX: Bu ref'ler ile useEffect'lerin sonsuz/gereksiz tetiklenmesini önlüyoruz.
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
@@ -5635,10 +5680,11 @@ function App() {
             if (calendarPublishTimerRef.current)
                 clearTimeout(calendarPublishTimerRef.current);
             calendarPublishSigRef.current = '';
-            const publishRows = Array.isArray(rows) ? rows.slice() : null;
+            if (Array.isArray(rows))
+                calendarLatestRowsRef.current = dedupeTransfers(rows);
             calendarPublishTimerRef.current = setTimeout(() => {
                 calendarPublishTimerRef.current = null;
-                publishAppleCalendarToGithub(true, publishRows);
+                publishAppleCalendarToGithub(true);
             }, 120);
         } catch (e) {
             console.error('[APPLE CALENDAR queue] hata', e);
@@ -5879,14 +5925,14 @@ function App() {
         const draft = quickDraftRef.current || quickEditT;
         if (!draft || !draft.id) return;
         if (!window.confirm('Bu transfer silinsin mi?')) return;
-        const deletedIds = readDeletedTransferIds();
-        const sid = String(draft.id);
-        if (!deletedIds.includes(sid)) deletedIds.push(sid);
-        writeDeletedTransferIds(deletedIds);
         /* BUG FIX: silinen transferi localStorage'dan ANINDA çıkar - cloud listener
            geri yüklemesin */
         setT(p => {
-            const filtered = p.filter(x => x.id !== draft.id);
+            const before = Array.isArray(p) ? p : [];
+            const target = before.find(x => String((x && x.id) || '') === String(draft.id)) || draft;
+            const filtered = removeTransferAndOldCopies(before, target);
+            const ids = deletedIdsFromRemovedRows(before, filtered, target);
+            writeDeletedTransferIds([...readDeletedTransferIds(), ...ids]);
             return persistTransferRowsNow(filtered);
         });
         quickDraftRef.current = null;
@@ -5929,15 +5975,15 @@ function App() {
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
-        const deletedIds = readDeletedTransferIds();
-        const sid = String(id);
-        if (!deletedIds.includes(sid)) deletedIds.push(sid);
-        writeDeletedTransferIds(deletedIds);
         /* BUG FIX: Silinen transferi state'ten ve localStorage'dan ANINDA çıkar.
            Önceden cloud save 500ms debounce ile yazıyordu, bu sırada cloud listener gelirse
            silinen transferi geri eklemeye çalışıyordu. Şimdi localStorage anında güncel. */
         setT(p => {
-            const filtered = p.filter(x => x.id !== id);
+            const before = Array.isArray(p) ? p : [];
+            const target = before.find(x => String((x && x.id) || '') === String(id)) || { id };
+            const filtered = removeTransferAndOldCopies(before, target);
+            const ids = deletedIdsFromRemovedRows(before, filtered, target);
+            writeDeletedTransferIds([...readDeletedTransferIds(), ...ids]);
             return persistTransferRowsNow(filtered);
         });
         tip('Silindi');
@@ -6412,6 +6458,8 @@ function App() {
             if (!silent) tip('GitHub token gir');
             return false;
         }
+        if (Array.isArray(transferRowsOverride))
+            calendarLatestRowsRef.current = dedupeTransfers(transferRowsOverride);
         if (calendarPublishInFlightRef.current) {
             calendarPublishAgainRef.current = true;
             if (!silent) {
@@ -6423,15 +6471,19 @@ function App() {
         calendarPublishInFlightRef.current = true;
         setGithubCalendarBusy(true);
         setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
+        let publishOk = false;
         try {
-            const publishRows = Array.isArray(transferRowsOverride) ? transferRowsOverride : T;
-            const files = buildAppleCalendarPublishFiles(publishRows);
+            const publishRows = dedupeTransfers(Array.isArray(calendarLatestRowsRef.current) ? calendarLatestRowsRef.current : T);
+            calendarLatestRowsRef.current = publishRows;
+            const syncRev = bumpAppleCalendarSyncRev();
+            const files = buildAppleCalendarPublishFiles(publishRows, syncRev);
             const branch = await getGithubCalendarBranch(token);
             for (const f of files)
                 await putGithubCalendarFile(token, f.filename, f.text, branch);
             const stamp = new Date().toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             setGithubCalendarMsg('Son güncelleme: ' + stamp);
             if (!silent) tip('Apple Takvim yayını güncellendi');
+            publishOk = true;
             return true;
         } catch (e) {
             console.error('[APPLE CALENDAR GITHUB]', e);
@@ -6444,7 +6496,9 @@ function App() {
             setGithubCalendarBusy(false);
             if (calendarPublishAgainRef.current) {
                 calendarPublishAgainRef.current = false;
-                setTimeout(() => publishAppleCalendarToGithub(true, transferRowsOverride), 250);
+                setTimeout(() => publishAppleCalendarToGithub(true), 250);
+            } else if (publishOk) {
+                calendarLatestRowsRef.current = null;
             }
         }
     };
@@ -6494,6 +6548,7 @@ function App() {
         if (calendarPublishSigRef.current === sig)
             return;
         calendarPublishSigRef.current = sig;
+        calendarLatestRowsRef.current = dedupeTransfers(T || []);
         if (calendarPublishTimerRef.current)
             clearTimeout(calendarPublishTimerRef.current);
         calendarPublishTimerRef.current = setTimeout(() => {
