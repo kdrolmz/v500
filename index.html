@@ -1843,7 +1843,7 @@ function getPlate16SeferNetById(seferId) {
     return Math.round(gelir - gider);
 }
 function getPlate16RemainingAmount(t) {
-    const sefer = findAnyPlate16SeferForTransfer(t);
+    const sefer = findPlate16SeferForTransfer(t);
     if (!sefer)
         return null;
     return getPlate16SeferNetById(sefer.id);
@@ -1862,7 +1862,7 @@ function transferNetAmount(t) {
     return remaining === null ? base : remaining;
 }
 function shouldUseOnlyPlate16TabForSummary(t) {
-    return !!findAnyPlate16SeferForTransfer(t) || isPlate16Transfer(t);
+    return isPlate16Transfer(t);
 }
 const PLATE16_AUTO_TRIP_PREFIX = 'plate16_auto_';
 const plate16AutoTripId = t => PLATE16_AUTO_TRIP_PREFIX + String((t && t.id) || '');
@@ -6191,8 +6191,9 @@ function App() {
             isOpen && React.createElement("div", { className: 'tcard-expanded' },
                 /* Ölmeztur/16 LMZ 55 Net özeti — kart içi */
                 (() => {
-                    const potKar = olmezPotentialKar(t);
                     const isPlate16 = isPlate16Transfer(t);
+                    const plateNet = isPlate16 ? getPlate16RemainingAmount(t) : null;
+                    const potKar = isPlate16 && plateNet !== null ? plateNet : olmezPotentialKar(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
                     const netColor = potKar > 0 ? G : (potKar < 0 ? R : SB);
                     const netBg    = potKar > 0 ? '#F2F2F7' : (potKar < 0 ? '#FFF1EF' : '#F5F5F7');
