@@ -5283,7 +5283,8 @@ function App() {
     }, [tab]);
     useEffect(() => {
         try {
-            const tok = (githubCalendarToken || '').trim();
+            /* Token yapıştırırken araya kaçan boşluk/satır sonu temizlenir */
+            const tok = (githubCalendarToken || '').replace(/\s+/g, '').trim();
             if (tok) localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, tok);
             else localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
         } catch (e) {}
@@ -6451,7 +6452,8 @@ function App() {
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
     };
     const publishAppleCalendarToGithub = async (silent) => {
-        const token = (githubCalendarToken || '').trim();
+        /* BUG FIX: Token yapıştırırken araya kaçan boşluk/satır sonu/görünmez karakterleri temizle */
+        const token = (githubCalendarToken || '').replace(/\s+/g, '').trim();
         if (!token) {
             setGithubCalendarMsg('GitHub token girilmedi');
             if (!silent) tip('GitHub token gir');
@@ -6479,7 +6481,11 @@ function App() {
             return true;
         } catch (e) {
             console.error('[APPLE CALENDAR GITHUB]', e);
-            const msg = (e && e.message) ? e.message : 'Yayınlanamadı';
+            let msg = (e && e.message) ? e.message : 'Yayınlanamadı';
+            /* "Load failed" / "Failed to fetch" = istek GitHub'a hiç ulaşamadı (ağ/erişim sorunu) */
+            if (/load failed|failed to fetch|networkerror|network error/i.test(msg)) {
+                msg = 'İnternete ulaşılamadı (istek GitHub\'a gitmedi). İnternet bağlantını kontrol et; uygulamayı ana ekran kısayolu yerine Safari\'de açıp tekrar dene.';
+            }
             setGithubCalendarMsg(msg);
             if (!silent) tip(msg);
             return false;
