@@ -39,7 +39,12 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .lg-period-card,.lg-profit-card{border:1px solid var(--line) !important;color:var(--ink) !important;contain:layout paint style;user-select:none;text-align:left;background:#fff !important;box-shadow:var(--shadow) !important;min-height:70px !important;padding:9px 10px !important;border-color:var(--line) !important;border-radius:16px !important}
 .lg-period-panel{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;background:#fff !important;border-color:var(--line) !important;box-shadow:var(--shadow) !important;padding:10px !important}
 .lg-upcoming-card{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;background:#fff !important;box-shadow:var(--shadow) !important;padding:10px !important;border-color:var(--line) !important}
-.lg-profit-detail{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;display:none !important;background:#fff !important;border-color:var(--line) !important;box-shadow:var(--shadow) !important}
+.lg-profit-detail{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;display:block !important;background:#fff !important;border-color:var(--line) !important;box-shadow:var(--shadow) !important;padding:10px !important}
+.lg-profit-detail-row,.lg-profit-month-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.lg-profit-detail-label,.lg-profit-month-name{font-size:11px;font-weight:520;color:var(--muted)}
+.lg-profit-months{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.lg-profit-month{padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.lg-profit-month-lines{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;margin-top:6px;font-size:10px;color:var(--muted)}
 .tcard{border:1px solid var(--line) !important;color:var(--ink) !important;contain:layout paint style;content-visibility:auto;contain-intrinsic-size:auto 76px;overflow:hidden;box-shadow:var(--shadow) !important;margin-bottom:8px !important;border-radius:15px !important;border-color:#D1D1D6 !important;background:#fff !important}
 .date-hdr{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff !important;box-shadow:var(--shadow) !important;padding:9px 10px !important;margin:8px 0 7px !important;border-color:var(--line) !important}
 .tk-card,.tk-panel,.tk-ledger{border:1px solid var(--line) !important;border-radius:var(--r) !important;color:var(--ink) !important;padding:12px !important;background:#fff !important;border-color:var(--line) !important;box-shadow:var(--shadow) !important}
@@ -7104,14 +7109,6 @@ function App() {
                             React.createElement("div", { className: detailValueClass(d.olmez) }, fmtTLHomeSigned(d.olmez))
                         ),
                         React.createElement("div", { className: "lg-profit-detail-row" },
-                            React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Gelir"),
-                            React.createElement("div", { className: "lg-profit-detail-value" }, fmtTLHome(d.plate.gelir))
-                        ),
-                        React.createElement("div", { className: "lg-profit-detail-row" },
-                            React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Gider"),
-                            React.createElement("div", { className: "lg-profit-detail-value is-neg" }, "-" + fmtTLHome(d.plate.gider))
-                        ),
-                        React.createElement("div", { className: "lg-profit-detail-row" },
                             React.createElement("div", { className: "lg-profit-detail-label" }, "16 LMZ 55 Net"),
                             React.createElement("div", { className: detailValueClass(d.plate.net) }, fmtTLHomeSigned(d.plate.net))
                         ),
@@ -7127,9 +7124,7 @@ function App() {
                                 ),
                                 React.createElement("div", { className: "lg-profit-month-lines" },
                                     React.createElement("div", null, "Ölmeztur ", React.createElement("strong", null, fmtTLHomeSigned(m.olmez))),
-                                    React.createElement("div", null, "16 LMZ Net ", React.createElement("strong", null, fmtTLHomeSigned(m.plate.net))),
-                                    React.createElement("div", null, "16 LMZ Gelir ", React.createElement("strong", null, fmtTLHome(m.plate.gelir))),
-                                    React.createElement("div", null, "Gider ", React.createElement("strong", null, "-" + fmtTLHome(m.plate.gider)))
+                                    React.createElement("div", null, "16 LMZ 55 ", React.createElement("strong", null, fmtTLHomeSigned(m.plate.net)))
                                 )
                             ))
                         )
