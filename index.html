@@ -250,7 +250,7 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-arac-job-head{width:100%;border:0;background:#fff;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;text-align:left;align-items:center}
 .ko-arac-job-title{font-size:13.5px;font-weight:560;color:#1C1C1E;line-height:1.2;overflow-wrap:anywhere}
 .ko-arac-job-sub{font-size:10.8px;font-weight:410;color:#636366;line-height:1.35;margin-top:3px;overflow-wrap:anywhere}
-.ko-arac-job-money{text-align:right;display:flex;flex-direction:column;gap:4px;min-width:92px}
+.ko-arac-job-money{text-align:right;display:flex;flex-direction:column;gap:4px;min-width:92px;padding-right:26px}
 .ko-arac-money-line{display:flex;justify-content:flex-end;gap:5px;align-items:baseline;font-variant-numeric:tabular-nums}
 .ko-arac-money-line span{font-size:9.2px;font-weight:430;color:#636366}
 .ko-arac-money-line b{font-size:12.5px;font-weight:560;color:#1C1C1E}
@@ -1711,7 +1711,9 @@ const buildAppleCalendarIcs = (transfers, meta) => {
         'METHOD:PUBLISH',
         'X-WR-CALNAME:' + icsEscape(meta.name),
         'X-WR-TIMEZONE:Europe/Istanbul',
-        'X-APPLE-CALENDAR-COLOR:' + meta.color
+        'X-APPLE-CALENDAR-COLOR:' + meta.color,
+        'REFRESH-INTERVAL;VALUE=DURATION:PT15M',
+        'X-PUBLISHED-TTL:PT15M'
     ];
     rows.forEach(t => {
         const start = parseTransferDateTime(t);
@@ -2214,6 +2216,66 @@ const sameAracRecord = (a, b) => {
     }
     return true;
 };
+/* BUG FIX: Araç sekmesinde aynı iş 2-3 kez görünme sorununu çözer.
+   1) Aynı ID'li kayıtları teke indirir.
+   2) İçerik imzası (tarih+yolcu+güzergah+bedel) aynı olan SEFER kayıtlarını teke indirir
+      (örn. manuel girilmiş + transferden otomatik gelmiş aynı iş). Otomatik (transfer kaynaklı)
+      olanı tercih eder, çünkü o transferle senkron kalır. */
+const aracTripContentSig = k => {
+    if (!k) return '';
+    return [
+        String(k.date || '').trim(),
+        nm(k.yolcu || ''),
+        nm(k.guzergah || ''),
+        nm(k.sofor || ''),
+        Math.round(moneyValue(k.arac || 0))
+    ].join('|');
+};
+const dedupeAracK = records => {
+    const base = Array.isArray(records) ? records : [];
+    /* 1. ID bazlı dedupe */
+    const byId = new Map();
+    base.forEach(k => {
+        if (!k) return;
+        const id = k.id != null ? String(k.id) : ('row:' + JSON.stringify(k));
+        if (!byId.has(id)) {
+            byId.set(id, k);
+        } else {
+            /* Aynı ID iki kez varsa: otomatik/transfer kaynaklı olanı VEYA daha dolu olanı tut */
+            const prev = byId.get(id);
+            const better = (isPlate16AutoTrip(k) && !isPlate16AutoTrip(prev)) ? k
+                         : (Object.keys(k).length >= Object.keys(prev).length ? k : prev);
+            byId.set(id, better);
+        }
+    });
+    const idDeduped = Array.from(byId.values());
+    /* 2. İçerik bazlı dedupe (sadece SEFER kayıtları için) */
+    const seferSig = new Map();
+    const giderler = [];
+    const seferler = [];
+    idDeduped.forEach(k => {
+        if (k && k.type === 'gider') { giderler.push(k); return; }
+        if (k && k.type === 'sefer') {
+            const sig = aracTripContentSig(k);
+            if (!sig || sig === '|||0') { seferler.push(k); return; }
+            if (!seferSig.has(sig)) {
+                seferSig.set(sig, k);
+            } else {
+                const prev = seferSig.get(sig);
+                /* Otomatik (transfer kaynaklı) olanı tercih et; ikisi de aynıysa ID küçük olanı */
+                const keep = isPlate16AutoTrip(k) && !isPlate16AutoTrip(prev) ? k
+                           : (!isPlate16AutoTrip(k) && isPlate16AutoTrip(prev) ? prev
+                           : (String(k.id) < String(prev.id) ? k : prev));
+                seferSig.set(sig, keep);
+            }
+            return;
+        }
+        seferler.push(k);
+    });
+    const keptSeferler = [...seferSig.values(), ...seferler];
+    /* Giderleri koru (gün gideri seferi silinmiş olsa bile kalabilir) */
+    return [...keptSeferler, ...giderler];
+};
 function syncPlate16TransfersIntoAracK(records, transfers) {
     const base = Array.isArray(records) ? records : [];
     const activeTransfers = (Array.isArray(transfers) ? transfers : [])
@@ -2282,8 +2344,10 @@ function syncPlate16TransfersIntoAracK(records, transfers) {
         if (!placedAutoIds.has(autoId))
             next.push(plate16TransferToTrip(t, null));
     });
-    const same = next.length === base.length && next.every((item, i) => sameAracRecord(item, base[i]));
-    return same ? records : next;
+    /* BUG FIX: Senkron sonrası her zaman dedupe et — manuel+otomatik kopyalar temizlensin */
+    const cleaned = dedupeAracK(next);
+    const same = cleaned.length === base.length && cleaned.every((item, i) => sameAracRecord(item, base[i]));
+    return same ? records : cleaned;
 }
 function externalTransferNetAmount(t) {
     return shouldUseOnlyPlate16TabForSummary(t) ? 0 : transferNetAmount(t);
@@ -2670,7 +2734,7 @@ function AracTab({ tip, aracK, setAracK }) {
             ay,
             ")"))));
 }
-function AracCalendarTab({ tip, aracK, setAracK }) {
+function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
     const pad = n => String(n).padStart(2, '0');
     const dateKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     const todayKey = dateKey(new Date());
@@ -2986,7 +3050,18 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
                         const sNet = Math.round(moneyValue(s.arac) - gTop);
                         const isOpen = !!openTrip[s.id];
                         const autoTrip = !!s.autoPlate16;
-                        return React.createElement("div", { key: s.id, className: "ko-arac-job-card" },
+                        return React.createElement("div", { key: s.id, className: "ko-arac-job-card", style: { position: 'relative' } },
+                            React.createElement("button", { type: "button", title: "Sil", onClick: e => {
+                                e.stopPropagation();
+                                if (autoTrip) {
+                                    if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi?')) return;
+                                    const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
+                                    if (onDeleteTransfer) onDeleteTransfer(tid);
+                                    else { setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
+                                } else {
+                                    deleteTrip(s.id);
+                                }
+                            }, style: { position: 'absolute', top: 6, right: 6, zIndex: 4, width: 26, height: 26, borderRadius: 8, border: '1px solid #FFC4C0', background: '#FFF1F0', color: R, fontSize: 13, lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 } }, "🗑️"),
                             React.createElement("button", { type: "button", className: "ko-arac-job-head", onClick: () => setOpenTrip(p => ({ ...p, [s.id]: !p[s.id] })) },
                                 React.createElement("div", { style: { minWidth: 0 } },
                                     s.isVeren && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#F2F2F7', color: NAV, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6 } }, s.isVeren),
@@ -3015,10 +3090,16 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
                                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } }, GIDER_KAT.map(cat => React.createElement("button", { key: cat.id, type: "button", onClick: () => setExpenseForm(p => ({ ...p, kat: cat.id })), style: { minHeight: 36, borderRadius: 10, border: '1px solid ' + (expenseForm.kat === cat.id ? R : BOR), background: expenseForm.kat === cat.id ? R : '#fff', color: expenseForm.kat === cat.id ? '#fff' : TX, fontSize: 10, fontWeight: 520, cursor: 'pointer' } }, cat.n))),
                                     React.createElement("input", { value: expenseForm.not, onChange: e => setExpenseForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
                                     React.createElement("button", { type: "button", onPointerDown: e => e.stopPropagation(), onClick: saveExpense, style: { background: R, color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, "Gideri kaydet")),
-                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr' : '1fr 1fr 1fr', gap: 6 } },
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                                     React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => openExpenseForm(s.id), style: { color: R } }, expenseOpen && expenseForm.target === s.id ? "Gider formu açık" : "Gider ekle"),
                                     !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
-                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
+                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"),
+                                    autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => {
+                                        if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi? (Transfer sekmesinden de kalkar)')) return;
+                                        const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
+                                        if (onDeleteTransfer) onDeleteTransfer(tid);
+                                        else { setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
+                                    }, style: { color: R, borderColor: '#FFC4C0' } }, "🗑️ Transferi sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 520, color: R, padding: '9px 0 2px' } }, "Gün giderleri"),
@@ -5313,7 +5394,7 @@ function App() {
             setRates(prev => ({ ...prev, ...d.r }));
         if (d.ru)
             setLastRateUpdate(d.ru);
-        setAracK(d.ak || []);
+        setAracK(dedupeAracK(d.ak || []));
         setDebts(d.db || []);
         const adjRows = Array.isArray(d.adj) ? d.adj : (Array.isArray(d.accountAdjustments) ? d.accountAdjustments : []);
         setAccountAdjustments(adjRows.map(normalizeAccountAdjustment).filter(x => x.firm));
@@ -5427,6 +5508,11 @@ function App() {
         dedupeDoneRef.current = true;
         setT(prev => {
             const next = dedupeTransfers(prev || []);
+            return next.length === (prev || []).length ? prev : next;
+        });
+        /* BUG FIX: Açılışta araç kayıtlarındaki mevcut kopyaları (2-3 kez görünen işler) bir kez temizle */
+        setAracK(prev => {
+            const next = dedupeAracK(prev || []);
             return next.length === (prev || []).length ? prev : next;
         });
     }, [storageReady]);
@@ -5813,6 +5899,7 @@ function App() {
         setQuickEditT(null);
         /* BUG FIX: Silme sonrası Apple takvimde de silinsin */
         calendarPublishSigRef.current = '';
+        try { if ((githubCalendarToken || '').trim()) setTimeout(() => publishAppleCalendarToGithub(true), 300); } catch (e) {}
         tip('Silindi');
     };
 	    const editT = t => openFullEditT(t);
@@ -5868,8 +5955,44 @@ function App() {
         });
         /* BUG FIX: Silme sonrası Apple takvimde de silinsin - sig sıfırla, hemen yayınlansın */
         calendarPublishSigRef.current = '';
+        try { if ((githubCalendarToken || '').trim()) setTimeout(() => publishAppleCalendarToGithub(true), 300); } catch (e) {}
         tip('Silindi');
     } };
+    /* Araç sekmesinden "transferden otomatik" işi silmek için: asıl transferi siler.
+       AracCalendarTab kendi onayını sorduğu için burada confirm yok. */
+    const deleteTransferById = id => {
+        if (!id) return;
+        const deletedIds = readDeletedTransferIds();
+        const sid = String(id);
+        if (!deletedIds.includes(sid)) deletedIds.push(sid);
+        writeDeletedTransferIds(deletedIds);
+        setT(p => {
+            const filtered = (p || []).filter(x => x.id !== id);
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const snap = JSON.parse(raw);
+                    if (snap && Array.isArray(snap.t)) {
+                        snap.t = snap.t.filter(x => x && x.id !== id);
+                        snap.del = deletedIds;
+                        const now = new Date().toISOString();
+                        snap.date = now;
+                        snap.clientUpdatedAt = now;
+                        snap._localWriteAt = now;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+                    }
+                }
+            } catch (e) { console.error('[DEL BY ID] localStorage hatası', e); }
+            return filtered;
+        });
+        /* Otomatik araç işini de aracK'dan anında çıkar */
+        setAracK(p => (Array.isArray(p) ? p : []).filter(k =>
+            !(k && (String(k.transferId || '') === sid || String(k.id || '') === ('plate16_auto_' + sid)))
+        ));
+        calendarPublishSigRef.current = '';
+        try { if ((githubCalendarToken || '').trim()) setTimeout(() => publishAppleCalendarToGithub(true), 300); } catch (e) {}
+        tip('Transfer silindi');
+    };
     const getQ = locName => { const l = LOCS.find(x => x.n === locName); return l && l.q ? l.q : locName; };
     const drvMsg = (t, withMaps) => {
         const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -8498,7 +8621,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
             tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
+            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
