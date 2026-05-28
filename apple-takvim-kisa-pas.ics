@@ -1,0 +1,94 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Olmeztur//Transfer Takvim//TR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:KÖ Kısa Pas
+X-WR-TIMEZONE:Europe/Istanbul
+X-APPLE-CALENDAR-COLOR:#A98AC7
+BEGIN:VEVENT
+UID:ko-transfer-pdf_balen_olmez_20260202_1750_057_karsilama-ucreti@olmez
+ tur
+DTSTAMP:20260528T125800Z
+LAST-MODIFIED:20260512T073500Z
+SEQUENCE:1778571352
+DTSTART:20260202T175000
+DTEND:20260202T185000
+SUMMARY:⚡ 17:50 | - → - | Vito
+LOCATION:- → -
+DESCRIPTION:Müşteri: KARŞILAMA ÜCRETİ\nŞoför: -\nİşi veren: Balentur\nİş
+ i yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: - → -\nNot: PDF 
+ aktarım: BALEN-ÖLMEZ | PDF kalan: -₺150\nÖdeme: Müşteri: 150 TRY
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-pdf_balen_olmez_20260204_1515_058_odelo-karsilama@olmezt
+ ur
+DTSTAMP:20260528T125800Z
+LAST-MODIFIED:20260512T073500Z
+SEQUENCE:1778571352
+DTSTART:20260204T151500
+DTEND:20260204T161500
+SUMMARY:⚡ 15:15 | - → - | Vito
+LOCATION:- → -
+DESCRIPTION:Müşteri: ODELO KARŞILAMA\nŞoför: -\nİşi veren: Balentur\nİşi
+  yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: - → -\nNot: PDF a
+ ktarım: BALEN-ÖLMEZ | PDF kalan: -₺150\nÖdeme: Müşteri: 150 TRY
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1777821407800_1hg776@olmeztur
+DTSTAMP:20260528T125800Z
+LAST-MODIFIED:20260512T073500Z
+SEQUENCE:1778571352
+DTSTART:20260504T080000
+DTEND:20260504T090000
+SUMMARY:⚡ 08:00 | Ramada Nilüfer → Odelo | Vito
+LOCATION:Ramada Nilüfer  → Odelo
+DESCRIPTION:Müşteri: Boris Ramsak\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
+ 16 LMZ 55\nGüzergah: Ramada Nilüfer  → Odelo\nÖdeme: Müşteri: 800 TRY | 
+ Araç: 800 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1778047244047_qxv6ts@olmeztur
+DTSTAMP:20260528T125800Z
+LAST-MODIFIED:20260512T073500Z
+SEQUENCE:1778571352
+DTSTART:20260506T080000
+DTEND:20260506T090000
+SUMMARY:⚡ 08:00 | Ramada Nilüfer → Odelo | Vito
+LOCATION:Ramada Nilüfer → Odelo
+DESCRIPTION:Müşteri: Ramsik Basak\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
+ 16 LMZ 55\nGüzergah: Ramada Nilüfer → Odelo\nÖdeme: Müşteri ödemez | Ara
+ ç: 800 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1778246457933_aaokje@olmeztur
+DTSTAMP:20260528T125800Z
+LAST-MODIFIED:20260512T073500Z
+SEQUENCE:1778571352
+DTSTART:20260508T170000
+DTEND:20260508T180000
+SUMMARY:⚡ 17:00 | Bursa Suite → Bursa | Vito
+LOCATION:Bursa Suite → Bursa / Mudanya
+DESCRIPTION:Müşteri: Kon Chen\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\
+ nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito /
+  16 LMZ 55\nGüzergah: Bursa Suite → Bursa / Mudanya\nÖdeme: Müşteri ödem
+ ez | Araç: 1.750 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
