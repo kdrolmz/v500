@@ -1884,16 +1884,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1778504674635_wkeyan@olmeztur
 DTSTAMP:20260528T220000Z
-LAST-MODIFIED:20260529T000000Z
-SEQUENCE:1780012800
+LAST-MODIFIED:20260528T220000Z
+SEQUENCE:1780005648
 DTSTART:20260529T125000
 DTEND:20260529T135000
 SUMMARY:🛬 12:50 SAW→Bursa Sprinter
 LOCATION:Sabiha Gökçen Havalimanı (SAW) → Bursa/Kestel
 DESCRIPTION:Müşteri: Khaled Almahını\, Mohammad Alnaser\, Shaheena Shaık
- \, Fatemah Ali\nŞoför: Balentur\nİşi veren: Ölmeztur\nİşi yapan: Balentu
- r\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havalimanı (SA
- W) → Bursa/Kestel\nUçuş: KU157\nÖdeme: Müşteri: 170 USD | Araç: 4.500 ₺
+ \, Fatemah Ali\nŞoför: Balentur\nİşi veren: Ölmeztur\nİşi yapan: Musa Bü
+ yükdağ\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havaliman
+ ı (SAW) → Bursa/Kestel\nUçuş: KU157\nÖdeme: Müşteri: 7.800 TRY | Hesap b
+ ana geldi | Araç: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
