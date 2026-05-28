@@ -1316,21 +1316,15 @@ const transferMergeIdentity = t => {
 const transferStamp = t => {
     try {
         if (!t) return 0;
-        const stamps = [t.updatedAt, t.clientUpdatedAt, t.createdAt, t._localEdited]
-            .map(raw => {
-                if (!raw) return 0;
-                if (raw && typeof raw === 'object' && raw.toDate)
-                    return raw.toDate().getTime() || 0;
-                const n = Date.parse(String(raw || ''));
-                return isNaN(n) ? 0 : n;
-            });
-        return Math.max(0, ...stamps);
+        const raw = t.updatedAt || t.clientUpdatedAt || t.createdAt || '';
+        const n = raw ? Date.parse(String(raw)) : 0;
+        return isNaN(n) ? 0 : n;
     } catch (e) { return 0; }
 };
 const transferCompleteness = t => {
     if (!t) return 0;
     const p = ((t.passengers || [])[0] || {});
-    return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, t.plate, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
+    return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
         .reduce((s, v) => s + (String(v || '').trim() ? 1 : 0), 0);
 };
 const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
@@ -1384,23 +1378,6 @@ const removeEditedTransferClones = (arr, editId, previous) => {
         return true;
     });
 };
-const removeTransferAndOldCopies = (rows, target) => {
-    if (!target)
-        return rows || [];
-    return removeEditedTransferClones(rows || [], target.id, target);
-};
-const deletedIdsFromRemovedRows = (beforeRows, afterRows, target) => {
-    const afterIds = new Set((afterRows || []).map(x => String((x && x.id) || '')).filter(Boolean));
-    const ids = [];
-    if (target && target.id)
-        ids.push(String(target.id));
-    (beforeRows || []).forEach(x => {
-        const id = String((x && x.id) || '');
-        if (id && !afterIds.has(id))
-            ids.push(id);
-    });
-    return uniq(ids);
-};
 const persistTransfersImmediately = transfers => {
     try {
         const now = new Date().toISOString();
@@ -1410,14 +1387,18 @@ const persistTransfersImmediately = transfers => {
         } catch (e) {
             snap = {};
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        /* BUG FIX: clientUpdatedAt her zaman şu anki zaman olmalı ki
+           cloud listener "local daha yeni" olduğunu anlasın ve üzerine yazmasın. */
+        const newSnap = {
             ...snap,
             t: transfers || [],
             del: readDeletedTransferIds(),
             v: 26,
             date: now,
-            clientUpdatedAt: now
-        }));
+            clientUpdatedAt: now,
+            _localWriteAt: now
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
     } catch (e) {
         console.error('[LS] anlık transfer yazma hatası', e);
     }
@@ -1475,7 +1456,8 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
 const snapshotStamp = s => {
     try {
         if (!s) return 0;
-        const raw = s.clientUpdatedAt || s.date || s.updatedAt || '';
+        /* BUG FIX: _localWriteAt en güncel timestamp - her persist'te güncelleniyor */
+        const raw = s._localWriteAt || s.clientUpdatedAt || s.date || s.updatedAt || '';
         if (raw && typeof raw === 'object' && raw.toDate) return raw.toDate().getTime() || 0;
         const n = Date.parse(String(raw || ''));
         return isNaN(n) ? 0 : n;
@@ -1507,7 +1489,7 @@ const normalizeTransfer = t => {
     return {
         ...fixed,
         id: fixed.id || ('tr_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)),
-        updatedAt: fixed.updatedAt || fixed.clientUpdatedAt || fixed.createdAt || '',
+        updatedAt: fixed.updatedAt || fixed.createdAt || new Date().toISOString(),
         plate: inferPlate(fixed),
         passengers,
         passengerCount: Math.max(1, parseInt(fixed.passengerCount, 10) || passengers.length || 1),
@@ -1624,7 +1606,6 @@ const GITHUB_CALENDAR_REPO = 'v500';
 const GITHUB_CALENDAR_BRANCH = 'main';
 const GITHUB_CALENDAR_TOKEN_KEY = 'ko_github_calendar_token_v1';
 const GITHUB_CALENDAR_AUTO_KEY = 'ko_github_calendar_auto_v1';
-const APPLE_CALENDAR_SYNC_REV_KEY = 'ko_apple_calendar_sync_rev_v1';
 const APPLE_CALENDAR_WEB_BASE = 'https://kdrolmz.github.io/v500/';
 const APPLE_CALENDAR_WEBCAL_BASE = 'webcal://kdrolmz.github.io/v500/';
 const appleCalendarTypeMeta = id => APPLE_CALENDAR_TYPES.find(x => x.id === id) || APPLE_CALENDAR_TYPES[0];
@@ -1633,17 +1614,6 @@ const appleCalendarWebcalUrl = meta => APPLE_CALENDAR_WEBCAL_BASE + meta.filenam
 const utf8Base64 = text => btoa(unescape(encodeURIComponent(String(text || ''))));
 const icsPad = n => String(n).padStart(2, '0');
 const icsEscape = v => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
-const readAppleCalendarSyncRev = () => { try { return localStorage.getItem(APPLE_CALENDAR_SYNC_REV_KEY) || ''; } catch (e) { return ''; } };
-const bumpAppleCalendarSyncRev = () => {
-    const rev = String(Date.now());
-    try { localStorage.setItem(APPLE_CALENDAR_SYNC_REV_KEY, rev); } catch (e) {}
-    return rev;
-};
-const appleCalendarRevDate = rev => {
-    const n = Number(rev);
-    const d = n > 0 ? new Date(n) : new Date();
-    return Number.isNaN(d.getTime()) ? new Date() : d;
-};
 const icsFold = line => {
     const s = String(line || '');
     const out = [];
@@ -1729,11 +1699,8 @@ const appleCalendarDescription = t => {
         appleCalendarPaymentText(t)
     ].filter(Boolean).join('\n');
 };
-const buildAppleCalendarIcs = (transfers, meta, syncRev) => {
+const buildAppleCalendarIcs = (transfers, meta) => {
     const now = new Date();
-    const rev = syncRev || readAppleCalendarSyncRev() || String(now.getTime());
-    const revDate = appleCalendarRevDate(rev);
-    const revStamp = icsUtcDateTime(revDate);
     const rows = (transfers || []).filter(t => t && t.date && t.status !== 'iptal').slice()
         .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
     const lines = [
@@ -1743,13 +1710,8 @@ const buildAppleCalendarIcs = (transfers, meta, syncRev) => {
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
         'X-WR-CALNAME:' + icsEscape(meta.name),
-        'X-WR-CALDESC:' + icsEscape('Olmeztur transfer yayini - ' + rev),
-        'X-OLMEZTUR-SYNC-REV:' + icsEscape(rev),
-        'LAST-MODIFIED:' + revStamp,
         'X-WR-TIMEZONE:Europe/Istanbul',
-        'X-APPLE-CALENDAR-COLOR:' + meta.color,
-        'REFRESH-INTERVAL;VALUE=DURATION:PT30S',
-        'X-PUBLISHED-TTL:PT30S'
+        'X-APPLE-CALENDAR-COLOR:' + meta.color
     ];
     rows.forEach(t => {
         const start = parseTransferDateTime(t);
@@ -1757,27 +1719,18 @@ const buildAppleCalendarIcs = (transfers, meta, syncRev) => {
             return;
         const end = new Date(start.getTime() + 60 * 60 * 1000);
         const updated = new Date(t.clientUpdatedAt || t.updatedAt || t.createdAt || now);
-        const created = new Date(t.createdAt || t.clientUpdatedAt || t.updatedAt || now);
-        const eventSeq = Math.max(
-            0,
-            Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000),
-            Math.floor(revDate.getTime() / 1000)
-        );
         lines.push(
             'BEGIN:VEVENT',
             'UID:' + icsEscape('ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'),
             'DTSTAMP:' + icsUtcDateTime(now),
-            'CREATED:' + icsUtcDateTime(isNaN(created.getTime()) ? now : created),
-            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? revDate : updated),
-            'SEQUENCE:' + eventSeq,
+            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? now : updated),
+            'SEQUENCE:' + Math.max(0, Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000)),
             'DTSTART:' + icsLocalDateTime(start),
             'DTEND:' + icsLocalDateTime(end),
             'SUMMARY:' + icsEscape(appleCalendarTitle(t)),
             'LOCATION:' + icsEscape([t.pickup, t.dropoff].filter(Boolean).join(' → ')),
             'DESCRIPTION:' + icsEscape(appleCalendarDescription(t)),
             'CATEGORIES:' + icsEscape(meta.name),
-            'URL:' + icsEscape(APPLE_CALENDAR_WEB_BASE + '?transfer=' + encodeURIComponent(String(t.id || transferDuplicateKey(t))) + '&rev=' + encodeURIComponent(rev)),
-            'X-OLMEZTUR-UPDATED:' + icsEscape(rev),
             'STATUS:CONFIRMED',
             'TRANSP:OPAQUE',
             'END:VEVENT'
@@ -1789,11 +1742,11 @@ const buildAppleCalendarIcs = (transfers, meta, syncRev) => {
 const buildAppleCalendarFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => ({ meta, rows: (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id) }))
     .filter(x => x.rows.length)
-    .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta, String(Date.now())) }));
-const buildAppleCalendarPublishFiles = (transfers, syncRev) => APPLE_CALENDAR_TYPES
+    .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta) }));
+const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => {
         const rows = (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id);
-        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta, syncRev), meta };
+        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
     });
 const githubCalendarHeaders = token => ({
     Authorization: 'Bearer ' + token,
@@ -2657,6 +2610,7 @@ function AracTab({ tip, aracK, setAracK }) {
                                                             fr(gTop),
                                                             "\u20BA"))),
                                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 } },
+                                                    React.createElement("button", { onClick: e => { e.stopPropagation(); silSefer(sefer.id); }, style: { background: '#FFF0EF', border: '1px solid #FFC4C0', borderRadius: 7, padding: '3px 8px', fontSize: 11, fontWeight: 700, color: R, cursor: 'pointer', lineHeight: 1.2 }, title: 'Sil' }, '\uD83D\uDDD1\uFE0F'),
                                                     React.createElement("div", { style: { fontSize: 14, fontWeight: 470, color: sNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } },
                                                         fn(sNet),
                                                         "\u20BA"),
@@ -2716,7 +2670,7 @@ function AracTab({ tip, aracK, setAracK }) {
             ay,
             ")"))));
 }
-function AracCalendarTab({ tip, aracK, setAracK, T = [], setT, onTransferRowsChanged }) {
+function AracCalendarTab({ tip, aracK, setAracK }) {
     const pad = n => String(n).padStart(2, '0');
     const dateKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     const todayKey = dateKey(new Date());
@@ -2908,25 +2862,6 @@ function AracCalendarTab({ tip, aracK, setAracK, T = [], setT, onTransferRowsCha
         setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id && k.seferId !== id));
         tip('Silindi');
     };
-    const removeAutoTripFromPlate16 = trip => {
-        const tid = String((trip && trip.transferId) || String((trip && trip.id) || '').replace(PLATE16_AUTO_TRIP_PREFIX, ''));
-        if (!window.confirm('Bu 16 LMZ 55 araç kartı silinsin mi? Transfer kartı kalır, sadece plakası temizlenir.'))
-            return;
-        const nowIso = new Date().toISOString();
-        if (tid && typeof setT === 'function') {
-            setT(prev => {
-                const next = dedupeTransfers((prev || []).map(t => String((t && t.id) || '') === tid
-                    ? normalizeTransfer({ ...t, plate: '', ownPlate16: false, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso })
-                    : t));
-                persistTransfersImmediately(next);
-                if (typeof onTransferRowsChanged === 'function')
-                    onTransferRowsChanged(next);
-                return next;
-            });
-        }
-        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== trip.id && k.seferId !== trip.id));
-        tip('Araç kartı silindi');
-    };
     const openExpenseForm = target => {
         setExpenseForm({ target: target || 'day', kat: 'fuel', tutar: '', not: '' });
         setExpenseOpen(true);
@@ -3080,12 +3015,10 @@ function AracCalendarTab({ tip, aracK, setAracK, T = [], setT, onTransferRowsCha
                                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } }, GIDER_KAT.map(cat => React.createElement("button", { key: cat.id, type: "button", onClick: () => setExpenseForm(p => ({ ...p, kat: cat.id })), style: { minHeight: 36, borderRadius: 10, border: '1px solid ' + (expenseForm.kat === cat.id ? R : BOR), background: expenseForm.kat === cat.id ? R : '#fff', color: expenseForm.kat === cat.id ? '#fff' : TX, fontSize: 10, fontWeight: 520, cursor: 'pointer' } }, cat.n))),
                                     React.createElement("input", { value: expenseForm.not, onChange: e => setExpenseForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
                                     React.createElement("button", { type: "button", onPointerDown: e => e.stopPropagation(), onClick: saveExpense, style: { background: R, color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, "Gideri kaydet")),
-                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr 1fr' : '1fr 1fr 1fr', gap: 6 } },
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr' : '1fr 1fr 1fr', gap: 6 } },
                                     React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => openExpenseForm(s.id), style: { color: R } }, expenseOpen && expenseForm.target === s.id ? "Gider formu açık" : "Gider ekle"),
                                     !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
-                                    autoTrip
-                                        ? React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => removeAutoTripFromPlate16(s), style: { color: R, borderColor: '#FFC4C0' } }, "Sil")
-                                        : React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
+                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 520, color: R, padding: '9px 0 2px' } }, "Gün giderleri"),
@@ -3121,7 +3054,7 @@ function AracCalendarTab({ tip, aracK, setAracK, T = [], setT, onTransferRowsCha
                 tip('Aylık araç raporu kopyalandı');
             }, className: "ko-arac-report-btn", style: { width: '100%', background: '#fff', color: NAV, border: '1px solid ' + BOR, borderRadius: 13, padding: 12, fontWeight: 520, cursor: 'pointer' } }, "Aylık raporu kopyala"));
 }
-function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, onTransferRowsChanged }) {
+function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments }) {
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
@@ -3140,12 +3073,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 return x;
             const sf = { ...(x.settledFirms || {}) };
             sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm];
-            return { ...x, settledFirms: sf, updatedAt: now, clientUpdatedAt: now, _localEdited: now };
+            return { ...x, settledFirms: sf, updatedAt: now, clientUpdatedAt: now };
         });
-        if (typeof onTransferRowsChanged === 'function')
-            onTransferRowsChanged(next);
-        else
-            persistTransfersImmediately(next);
+        persistTransfersImmediately(next);
         return next;
     });
     const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
@@ -5263,7 +5193,6 @@ function App() {
     const calendarPublishSigRef = useRef('');
     const calendarPublishInFlightRef = useRef(false);
     const calendarPublishAgainRef = useRef(false);
-    const calendarLatestRowsRef = useRef(null);
     /* PERF FIX: Bu ref'ler ile useEffect'lerin sonsuz/gereksiz tetiklenmesini önlüyoruz.
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
@@ -5448,11 +5377,9 @@ function App() {
                             const data = snap.data() || {};
                             const payload = data.payload || data;
                             if(!payload || !Array.isArray(payload.t)) { cloudLoadedRef.current = true; return; }
+                            const mergedPayload = mergeSnapshots(payload, localPayload || {}, deletedIds);
                             const localTs = snapshotStamp(localPayload);
                             const cloudTs = snapshotStamp(payload) || snapshotStamp(data);
-                            const mergedPayload = localTs >= cloudTs
-                                ? mergeSnapshots(localPayload || {}, payload, deletedIds)
-                                : mergeSnapshots(payload, localPayload || {}, deletedIds);
                             const mergedTs = Math.max(localTs, cloudTs, snapshotStamp(mergedPayload));
                             mergedPayload.v = 26;
                             mergedPayload.date = mergedPayload.date || new Date(mergedTs || Date.now()).toISOString();
@@ -5460,7 +5387,16 @@ function App() {
                             cloudLoadedRef.current = true;
                             cloudWritingRef.current = true;
                             writeDeletedTransferIds(mergedPayload.del || []);
-                            hydrateSnapshot(mergedPayload, false);
+                            /* BUG FIX: Local son 8 saniyede değiştirilmişse (kullanıcı düzenleme yaptı)
+                               cloud'dan gelen veriyle üzerine yazma. Bu düzenle-kapat-geri-dön hatasını çözer. */
+                            const now8s = Date.now() - 8000;
+                            const localWriteTs = localPayload && localPayload._localWriteAt ? Date.parse(localPayload._localWriteAt) || 0 : localTs;
+                            if (localWriteTs < now8s || localWriteTs <= cloudTs) {
+                                hydrateSnapshot(mergedPayload, false);
+                            } else {
+                                /* Local daha yeni - sadece deletedIds ve diğer meta güncelle, T'ye dokunma */
+                                writeDeletedTransferIds(mergedPayload.del || []);
+                            }
                             /* PERF FIX: Eski kod burada 2x büyük JSON.stringify yapıyordu (T 5000+ ise
                                donmaya yol açıyor). Hafif şekilde uzunluk+stamp karşılaştırması yapıyoruz;
                                mergedPayload boyutu cloud payload'dan farklıysa veya local daha yeniyse yazılıyor. */
@@ -5561,7 +5497,7 @@ function App() {
                     console.warn('[CLOUD] Yazılmadı - oturum yok. Veriler sadece bu cihazda.');
                 }
             } catch(inner) { console.error('[SAVE inner]', inner); }
-        }, 250);
+        }, 500);
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
@@ -5631,78 +5567,6 @@ function App() {
         setDrivers(p => [...p.filter(d => d.name !== nmv), { name: nmv, phone: ph }]);
     };
     const cpTxt = txt => { copyText(txt); tip('Kopyalandı!'); };
-    const persistSnapshotImmediately = (overrides = {}) => {
-        try {
-            const now = new Date().toISOString();
-            const has = key => Object.prototype.hasOwnProperty.call(overrides, key);
-            const transferRows = dedupeTransfers(has('t') ? (overrides.t || []) : (T || []));
-            const aracRows = has('ak') ? (overrides.ak || []) : (aracK || []);
-            const snapshotCore = {
-                t: transferRows,
-                a: has('a') ? overrides.a : agencies,
-                ap: has('ap') ? overrides.ap : agencyPhones,
-                dr: has('dr') ? overrides.dr : drivers,
-                r: rates,
-                ru: lastRateUpdate,
-                ak: aracRows,
-                db: debts,
-                adj: accountAdjustments,
-                tk: todos,
-                tl: tkLedger,
-                del: readDeletedTransferIds(),
-                v: 26
-            };
-            const snapshot = { ...snapshotCore, date: now, clientUpdatedAt: now };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
-            lastSaveSigRef.current = JSON.stringify(snapshotCore);
-            if (cloudEnabled() && authUser) {
-                cloudLoadedRef.current = true;
-                cloudWritingRef.current = true;
-                cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: now }, { merge: true })
-                    .catch(function(err) {
-                        console.error('[CLOUD immediate] HATA', err);
-                        try { tip('☁ Kayıt buluta yazılamadı'); } catch (e) {}
-                    })
-                    .finally(function() {
-                        setTimeout(function() { cloudWritingRef.current = false; }, 250);
-                    });
-            }
-            return snapshot;
-        } catch (e) {
-            console.error('[SAVE immediate] hata', e);
-            return null;
-        }
-    };
-    const queueAppleCalendarPublish = rows => {
-        try {
-            if (!githubCalendarAuto || !(githubCalendarToken || '').trim())
-                return;
-            if (calendarPublishTimerRef.current)
-                clearTimeout(calendarPublishTimerRef.current);
-            calendarPublishSigRef.current = '';
-            if (Array.isArray(rows))
-                calendarLatestRowsRef.current = dedupeTransfers(rows);
-            calendarPublishTimerRef.current = setTimeout(() => {
-                calendarPublishTimerRef.current = null;
-                publishAppleCalendarToGithub(true);
-            }, 120);
-        } catch (e) {
-            console.error('[APPLE CALENDAR queue] hata', e);
-        }
-    };
-    const persistTransferRowsNow = rows => {
-        const clean = dedupeTransfers(rows || []);
-        persistSnapshotImmediately({ t: clean });
-        queueAppleCalendarPublish(clean);
-        return clean;
-    };
-    const setAracKPersist = updater => setAracK(prev => {
-        const base = Array.isArray(prev) ? prev : [];
-        const next = typeof updater === 'function' ? updater(base) : updater;
-        const clean = Array.isArray(next) ? next : [];
-        persistSnapshotImmediately({ ak: clean });
-        return clean;
-    });
     const submit = () => {
         if (submitBusyRef.current) return;
         submitBusyRef.current = true;
@@ -5730,11 +5594,12 @@ function App() {
         
         if (editId) {
             const nowIso = new Date().toISOString();
-            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso };
+            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
             const t = normalizeTransfer(base);
             setT(p => {
                 const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
-                return persistTransferRowsNow(next);
+                persistTransfersImmediately(next);
+                return next;
             });
             setEditId(null);
             tip('Güncellendi');
@@ -5749,8 +5614,7 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const createdIso = new Date().toISOString();
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: createdIso, updatedAt: createdIso, clientUpdatedAt: createdIso, _localEdited: createdIso, settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
                 if (form.isReturn) {
@@ -5763,7 +5627,6 @@ function App() {
                 // Sadece ilk transferden sonra TEK kez ekle (tekrarlanan transferlerde tekrar ekleme)
                 if (form.hasReturn && form.returnDate && loopCount === 0) {
                     const retId = Date.now().toString() + 'RD_' + Math.random().toString(36).slice(2, 8);
-                    const retIso = new Date().toISOString();
                     // Otomatik tip ters çevir: arrival ↔ departure (diğerleri aynen kalır)
                     const retType = form.transferType === 'arrival' ? 'departure' 
                                   : form.transferType === 'departure' ? 'arrival' 
@@ -5778,10 +5641,7 @@ function App() {
                         dropoff: form.pickup,    // Otomatik ters güzergah
                         transferType: retType,
                         // Yeni ID ile yeni createdAt
-                        createdAt: retIso,
-                        updatedAt: retIso,
-                        clientUpdatedAt: retIso,
-                        _localEdited: retIso,
+                        createdAt: new Date().toISOString(),
                         // Ana transfer ile ilişki kuralım
                         linkedTransferId: outId
                     };
@@ -5794,7 +5654,8 @@ function App() {
             
             setT(p => {
                 const next = dedupeTransfers([...(p || []), ...transfersToAdd]);
-                return persistTransferRowsNow(next);
+                persistTransfersImmediately(next);
+                return next;
             });
             tip(transfersToAdd.length + ' Transfer Eklendi');
         }
@@ -5894,7 +5755,6 @@ function App() {
         const cTRY = toTRY(draft.paymentAmount, draft.paymentCurrency);
         const companyCollected = !!(draft.companyCollected || draft.settled);
         const passengers = ensureQuickPassengers(draft);
-        const nowIso = new Date().toISOString();
         const base = {
             ...prev,
             ...draft,
@@ -5908,14 +5768,13 @@ function App() {
             companyCollected,
             customerCollected: !!draft.customerCollected,
             vehiclePaid: !!draft.vehiclePaid,
-            updatedAt: nowIso,
-            clientUpdatedAt: nowIso,
-            _localEdited: nowIso
+            updatedAt: new Date().toISOString()
         };
         const next = normalizeTransfer(base);
         setT(p => {
             const list = dedupeTransfers([...removeEditedTransferClones(p || [], next.id, prev), next]);
-            return persistTransferRowsNow(list);
+            persistTransfersImmediately(list);
+            return list;
         });
         quickDraftRef.current = null;
         setQuickEditT(null);
@@ -5925,18 +5784,35 @@ function App() {
         const draft = quickDraftRef.current || quickEditT;
         if (!draft || !draft.id) return;
         if (!window.confirm('Bu transfer silinsin mi?')) return;
+        const deletedIds = readDeletedTransferIds();
+        const sid = String(draft.id);
+        if (!deletedIds.includes(sid)) deletedIds.push(sid);
+        writeDeletedTransferIds(deletedIds);
         /* BUG FIX: silinen transferi localStorage'dan ANINDA çıkar - cloud listener
            geri yüklemesin */
         setT(p => {
-            const before = Array.isArray(p) ? p : [];
-            const target = before.find(x => String((x && x.id) || '') === String(draft.id)) || draft;
-            const filtered = removeTransferAndOldCopies(before, target);
-            const ids = deletedIdsFromRemovedRows(before, filtered, target);
-            writeDeletedTransferIds([...readDeletedTransferIds(), ...ids]);
-            return persistTransferRowsNow(filtered);
+            const filtered = p.filter(x => x.id !== draft.id);
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const snap = JSON.parse(raw);
+                    if (snap && Array.isArray(snap.t)) {
+                        snap.t = snap.t.filter(x => x && x.id !== draft.id);
+                        snap.del = deletedIds;
+                        const now = new Date().toISOString();
+                        snap.date = now;
+                        snap.clientUpdatedAt = now;
+                        snap._localWriteAt = now;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+                    }
+                }
+            } catch (e) { console.error('[DEL Q] localStorage anında güncelleme hatası', e); }
+            return filtered;
         });
         quickDraftRef.current = null;
         setQuickEditT(null);
+        /* BUG FIX: Silme sonrası Apple takvimde de silinsin */
+        calendarPublishSigRef.current = '';
         tip('Silindi');
     };
 	    const editT = t => openFullEditT(t);
@@ -5945,47 +5821,53 @@ function App() {
         const customerCollected = isCustomerCollected(t);
         const newId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         const nowIso = new Date().toISOString();
-        const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
-        setT(p => {
-            const next = dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]);
-            return persistTransferRowsNow(next);
-        });
+        const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
+        setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
         tip('Kopyalandı');
     };
     const toggleSettled = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isCompanyCollected(cur);
-        const nowIso = new Date().toISOString();
-        setT(p => {
-            const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
-            return persistTransferRowsNow(next);
-        });
+        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString() }) : x)));
         tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
     };
     const toggleVehiclePaid = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isVehiclePaid(cur);
-        const nowIso = new Date().toISOString();
-        setT(p => {
-            const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
-            return persistTransferRowsNow(next);
-        });
+        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: new Date().toISOString() }) : x)));
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
+        const deletedIds = readDeletedTransferIds();
+        const sid = String(id);
+        if (!deletedIds.includes(sid)) deletedIds.push(sid);
+        writeDeletedTransferIds(deletedIds);
         /* BUG FIX: Silinen transferi state'ten ve localStorage'dan ANINDA çıkar.
            Önceden cloud save 500ms debounce ile yazıyordu, bu sırada cloud listener gelirse
            silinen transferi geri eklemeye çalışıyordu. Şimdi localStorage anında güncel. */
         setT(p => {
-            const before = Array.isArray(p) ? p : [];
-            const target = before.find(x => String((x && x.id) || '') === String(id)) || { id };
-            const filtered = removeTransferAndOldCopies(before, target);
-            const ids = deletedIdsFromRemovedRows(before, filtered, target);
-            writeDeletedTransferIds([...readDeletedTransferIds(), ...ids]);
-            return persistTransferRowsNow(filtered);
+            const filtered = p.filter(x => x.id !== id);
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const snap = JSON.parse(raw);
+                    if (snap && Array.isArray(snap.t)) {
+                        snap.t = snap.t.filter(x => x && x.id !== id);
+                        snap.del = deletedIds;
+                        const now = new Date().toISOString();
+                        snap.date = now;
+                        snap.clientUpdatedAt = now;
+                        snap._localWriteAt = now;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+                    }
+                }
+            } catch (e) { console.error('[DEL] localStorage anında güncelleme hatası', e); }
+            return filtered;
         });
+        /* BUG FIX: Silme sonrası Apple takvimde de silinsin - sig sıfırla, hemen yayınlansın */
+        calendarPublishSigRef.current = '';
         tip('Silindi');
     } };
     const getQ = locName => { const l = LOCS.find(x => x.n === locName); return l && l.q ? l.q : locName; };
@@ -6179,12 +6061,6 @@ function App() {
         const input = (props, extraStyle) => React.createElement("input", {
             className: "inp",
             ...props,
-            onChange: e => {
-                if (props && typeof props.onChange === 'function')
-                    props.onChange(e);
-                else if (props && typeof props.onBlur === 'function')
-                    props.onBlur(e);
-            },
             style: { width: '100%', fontSize: 13, padding: '10px 11px', ...(extraStyle || {}) }
         });
         const select = (props, options) => React.createElement("select", {
@@ -6284,7 +6160,7 @@ function App() {
 		                        input({ type: 'text', inputMode: 'decimal', defaultValue: q.tourCommission || '', onBlur: e => quickInputSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
 		                        input({ defaultValue: q.tourCommissionShop || '', onBlur: e => quickInputSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
 		                    ), true),
-                    field('Not', React.createElement("textarea", { className: "inp", defaultValue: q.notes || '', onChange: e => quickInputSet({ notes: e.target.value }), onBlur: e => quickInputSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
+                    field('Not', React.createElement("textarea", { className: "inp", defaultValue: q.notes || '', onBlur: e => quickInputSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
                 null,
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
                     toggle('Müşteri alındı', !!q.customerCollected, { customerCollected: !q.customerCollected }),
@@ -6451,15 +6327,13 @@ function App() {
         const ok = await downloadText(payload, 'Olmeztur_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
     };
-    const publishAppleCalendarToGithub = async (silent, transferRowsOverride) => {
+    const publishAppleCalendarToGithub = async (silent) => {
         const token = (githubCalendarToken || '').trim();
         if (!token) {
             setGithubCalendarMsg('GitHub token girilmedi');
             if (!silent) tip('GitHub token gir');
             return false;
         }
-        if (Array.isArray(transferRowsOverride))
-            calendarLatestRowsRef.current = dedupeTransfers(transferRowsOverride);
         if (calendarPublishInFlightRef.current) {
             calendarPublishAgainRef.current = true;
             if (!silent) {
@@ -6471,19 +6345,14 @@ function App() {
         calendarPublishInFlightRef.current = true;
         setGithubCalendarBusy(true);
         setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
-        let publishOk = false;
         try {
-            const publishRows = dedupeTransfers(Array.isArray(calendarLatestRowsRef.current) ? calendarLatestRowsRef.current : T);
-            calendarLatestRowsRef.current = publishRows;
-            const syncRev = bumpAppleCalendarSyncRev();
-            const files = buildAppleCalendarPublishFiles(publishRows, syncRev);
+            const files = buildAppleCalendarPublishFiles(T);
             const branch = await getGithubCalendarBranch(token);
             for (const f of files)
                 await putGithubCalendarFile(token, f.filename, f.text, branch);
             const stamp = new Date().toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
             setGithubCalendarMsg('Son güncelleme: ' + stamp);
             if (!silent) tip('Apple Takvim yayını güncellendi');
-            publishOk = true;
             return true;
         } catch (e) {
             console.error('[APPLE CALENDAR GITHUB]', e);
@@ -6496,9 +6365,7 @@ function App() {
             setGithubCalendarBusy(false);
             if (calendarPublishAgainRef.current) {
                 calendarPublishAgainRef.current = false;
-                setTimeout(() => publishAppleCalendarToGithub(true), 250);
-            } else if (publishOk) {
-                calendarLatestRowsRef.current = null;
+                setTimeout(() => publishAppleCalendarToGithub(true), 700);
             }
         }
     };
@@ -6544,17 +6411,16 @@ function App() {
             t && t.updatedAt,
             t && t.clientUpdatedAt
         ].join('|')).sort().join('::');
-        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + readDeletedTransferIds().join(',') + '::' + rows;
+        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + rows;
         if (calendarPublishSigRef.current === sig)
             return;
         calendarPublishSigRef.current = sig;
-        calendarLatestRowsRef.current = dedupeTransfers(T || []);
         if (calendarPublishTimerRef.current)
             clearTimeout(calendarPublishTimerRef.current);
         calendarPublishTimerRef.current = setTimeout(() => {
             calendarPublishTimerRef.current = null;
             publishAppleCalendarToGithub(true);
-        }, 350);
+        }, 500);
         return () => {
             if (calendarPublishTimerRef.current) {
                 clearTimeout(calendarPublishTimerRef.current);
@@ -6586,12 +6452,9 @@ function App() {
             return false;
         writeDeletedTransferIds([]);
         hydrateSnapshot(d, true);
-        const restoreStamp = new Date().toISOString();
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: restoreStamp, clientUpdatedAt: restoreStamp }));
-        } catch(e) {}
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: d.date || new Date().toISOString() })); } catch(e) {}
         if(cloudEnabled() && authUser){
-            cloudDocRef.set({ payload: { ...d, v: 26, date: restoreStamp, clientUpdatedAt: restoreStamp }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: restoreStamp }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
+            cloudDocRef.set({ payload: { ...d, v: 26, date: d.date || new Date().toISOString() }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: d.date || new Date().toISOString() }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
         }
         tip('Geri yüklendi!');
         return true;
@@ -8634,8 +8497,8 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, onTransferRowsChanged: persistTransferRowsNow }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracKPersist, T: T, setT: setT, onTransferRowsChanged: persistTransferRowsNow })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
