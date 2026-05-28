@@ -1108,6 +1108,7 @@ const isOlmezturParty = v => {
     const slug = firmSlug(v);
     return slug === firmSlug(OL) || slug === 'olmeztur' || slug === 'olmezturizm' || slug.includes('olmez');
 };
+const hasOlmezturSide = t => !!(t && (isOlmezturParty(t.givenBy) || isOlmezturParty(t.assignedTo)));
 const isBalenturFirm = v => ['balentur', 'balontur', 'balontour'].includes(firmSlug(v));
 const isOdeloFirm = v => firmSlug(v) === 'odelo';
 const accountAdjustmentDateKey = d => {
@@ -1784,28 +1785,36 @@ async function putGithubCalendarFile(token, filename, text, branch) {
     const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO + '/contents/' + encodeURIComponent(filename);
     const headers = githubCalendarHeaders(token);
     const targetBranch = branch || GITHUB_CALENDAR_BRANCH;
-    const current = await fetch(api + '?ref=' + encodeURIComponent(targetBranch), { headers });
-    let sha = null;
-    if (current.ok) {
-        const data = await current.json();
-        sha = data && data.sha;
-    } else if (current.status !== 404) {
-        const detail = await githubCalendarBodyText(current);
-        throw new Error(githubCalendarError(current.status, detail));
-    }
-    const body = {
-        message: 'Apple takvim guncelle',
-        branch: targetBranch,
-        content: utf8Base64(text)
-    };
-    if (sha) body.sha = sha;
-    const saved = await fetch(api, {
-        method: 'PUT',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-    });
-    if (!saved.ok) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        const current = await fetch(api + '?ref=' + encodeURIComponent(targetBranch) + '&_=' + Date.now(), {
+            headers: { ...headers, 'Cache-Control': 'no-cache' }
+        });
+        let sha = null;
+        if (current.ok) {
+            const data = await current.json();
+            sha = data && data.sha;
+        } else if (current.status !== 404) {
+            const detail = await githubCalendarBodyText(current);
+            throw new Error(githubCalendarError(current.status, detail));
+        }
+        const body = {
+            message: 'Apple takvim guncelle',
+            branch: targetBranch,
+            content: utf8Base64(text)
+        };
+        if (sha) body.sha = sha;
+        const saved = await fetch(api, {
+            method: 'PUT',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (saved.ok)
+            return true;
         const detail = await githubCalendarBodyText(saved);
+        if (saved.status === 409 && attempt < 2) {
+            await new Promise(r => setTimeout(r, 450 + attempt * 650));
+            continue;
+        }
         throw new Error(githubCalendarError(saved.status, detail));
     }
     return true;
@@ -1849,12 +1858,16 @@ function transferCustomerTRYValue(t) {
     return stored || raw;
 }
 function olmezKar(t) {
+    if (!hasOlmezturSide(t))
+        return 0;
     const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
-    const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
-    const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
+    const givenOl = isOlmezturParty(t.givenBy);
+    const assignedOl = isOlmezturParty(t.assignedTo);
+    const alan = assignedOl && t.givenBy && !givenOl;
+    const veren = givenOl && t.assignedTo && !assignedOl;
     /* HAKEDİŞ kuralı:
        - alan (givenBy=firma, assignedTo=OL) → hakediş iş verenin (firma) → OL kârına EKLENMEZ
        - veren (givenBy=OL, assignedTo=firma) → hakediş iş verenin (OL) → OL kârına EKLENİR
@@ -1880,13 +1893,17 @@ function olmezKar(t) {
    Mantık: müşteri ücreti - araç ücreti (alt acenta varsa - alt acenta ücreti) */
 function olmezPotentialKar(t) {
     if (!t) return 0;
+    if (!hasOlmezturSide(t))
+        return 0;
     const c = transferCustomerTRYValue(t);
     const d = moneyValue(t.driverPayment);
     const alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
-    const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
-    const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
+    const givenOl = isOlmezturParty(t.givenBy);
+    const assignedOl = isOlmezturParty(t.assignedTo);
+    const alan = assignedOl && t.givenBy && !givenOl;
+    const veren = givenOl && t.assignedTo && !assignedOl;
     /* HAKEDİŞ kuralı: alan durumda hakediş iş veren firmaya, OL'a değil. */
     if (alan) {
         /* Başka firma verdi, biz yaptık — hakediş firmaya, OL'a kalmaz */
@@ -1908,7 +1925,7 @@ function calcAltAcentaPaylasim(t) {
     const d = moneyValue(t.driverPayment);
     const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
-    const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
+    const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     if (!alan || !yes || t.paymentToMe)
         return null;
     const musteriFarki = c - alt;
@@ -1933,8 +1950,10 @@ function calcBal(t) {
     const alt = moneyValue(t.altAcentaUcreti);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
-    const veren = t.givenBy === OL && t.assignedTo && t.assignedTo !== OL;
-    const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
+    const givenOl = isOlmezturParty(t.givenBy);
+    const assignedOl = isOlmezturParty(t.assignedTo);
+    const veren = givenOl && t.assignedTo && !assignedOl;
+    const alan = assignedOl && t.givenBy && !givenOl;
     if (!veren && !alan)
         return null;
     const firm = veren ? t.assignedTo : t.givenBy;
@@ -1984,7 +2003,7 @@ function calcAltBal(t) {
     const d = moneyValue(t.driverPayment);
     const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
-    const alan = t.assignedTo === OL && t.givenBy && t.givenBy !== OL;
+    const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     const altKomisyonKesinti = tourCommissionShare(t);
     if (t.paymentToMe)
         return { firm: t.altAcenta, netOl: -alt };
@@ -2274,6 +2293,9 @@ function externalPotentialNet(t) {
 }
 function potentialSummaryNet(liste) {
     return Math.round((liste || []).reduce((s, t) => s + externalPotentialNet(t), 0));
+}
+function hasOlmezDisplayNet(t) {
+    return !!(t && !shouldUseOnlyPlate16TabForSummary(t) && hasOlmezturSide(t));
 }
 function olmezDisplayNet(liste) {
     return Math.round((liste || []).reduce((s, t) => s + Math.round(externalPotentialNet(t)), 0));
@@ -5163,6 +5185,8 @@ function App() {
     const plate16SyncSigRef = useRef(null);
     const calendarPublishTimerRef = useRef(null);
     const calendarPublishSigRef = useRef('');
+    const calendarPublishInFlightRef = useRef(false);
+    const calendarPublishAgainRef = useRef(false);
     /* PERF FIX: Bu ref'ler ile useEffect'lerin sonsuz/gereksiz tetiklenmesini önlüyoruz.
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
@@ -5987,6 +6011,7 @@ function App() {
         const pax = passengers[0] || {};
         const cTRY = toTRY(q.paymentAmount, q.paymentCurrency);
         const previewNet = Math.round(formPreviewAmounts({ ...q, customerTRY: cTRY, totalTRY: cTRY }).olmezNet);
+        const quickShowOlmezNet = hasOlmezturSide(q) && !isPlate16Transfer(q);
         const quickAgencyListId = "ko-quick-agency-list";
         const quickDriverListId = "ko-quick-driver-list";
         const quickAgencyOptions = uniqNames([OL, ...agencies, ...(T || []).flatMap(t => [t.givenBy, t.assignedTo, t.altAcenta])]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
@@ -6045,7 +6070,7 @@ function App() {
                         React.createElement("div", { style: { fontWeight: 850, fontSize: 16, color: TX, letterSpacing: 0 } }, "Transfer Düzenle"),
                         React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3, lineHeight: 1.35 } }, "Sekme değişmeden aynı transfer kaydı güncellenir.")),
                     React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14, flexShrink: 0 } }, "✕")),
-                React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#C8D8CC' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+                quickShowOlmezNet && React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#C8D8CC' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 750, textTransform: 'uppercase', letterSpacing: .4 } }, (q.date || 'Tarih yok') + ' · ' + (q.time || '--:--')),
                         React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 700, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (q.pickup || 'Alış') + ' → ' + (q.dropoff || 'Bırakış'))),
@@ -6286,6 +6311,15 @@ function App() {
             if (!silent) tip('GitHub token gir');
             return false;
         }
+        if (calendarPublishInFlightRef.current) {
+            calendarPublishAgainRef.current = true;
+            if (!silent) {
+                setGithubCalendarMsg('Yayın devam ediyor, bitince tekrar denenecek');
+                tip('Yayın devam ediyor');
+            }
+            return false;
+        }
+        calendarPublishInFlightRef.current = true;
         setGithubCalendarBusy(true);
         setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
         try {
@@ -6304,7 +6338,12 @@ function App() {
             if (!silent) tip(msg);
             return false;
         } finally {
+            calendarPublishInFlightRef.current = false;
             setGithubCalendarBusy(false);
+            if (calendarPublishAgainRef.current) {
+                calendarPublishAgainRef.current = false;
+                setTimeout(() => publishAppleCalendarToGithub(true), 700);
+            }
         }
     };
     const openAppleCalendarSubscription = meta => {
@@ -6550,6 +6589,9 @@ function App() {
                 /* Ölmeztur/16 LMZ 55 Net özeti — kart içi */
                 (() => {
                     const isPlate16 = isPlate16Transfer(t);
+                    const showOlmezNet = hasOlmezturSide(t);
+                    if (!isPlate16 && !showOlmezNet)
+                        return null;
                     const plateNet = isPlate16 ? getPlate16RemainingAmount(t) : null;
                     const potKar = isPlate16 && plateNet !== null ? plateNet : olmezPotentialKar(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
@@ -6593,7 +6635,7 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12, fontWeight: 700, color: TX, marginTop: 2, fontVariantNumeric: 'tabular-nums' } }, vehiclePayTxt)
                     ),
                     /* Net Kâr — full row, clearly labelled */
-                    React.createElement("div", { style: { gridColumn: '1 / -1', background: tk >= 0 ? '#F2F2F7' : '#FFF0EF', borderRadius: 9, padding: '9px 12px', border: '1px solid ' + (tk >= 0 ? '#D1D1D6' : '#FFC4C0'), display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                    hasOlmezDisplayNet(t) && React.createElement("div", { style: { gridColumn: '1 / -1', background: tk >= 0 ? '#F2F2F7' : '#FFF0EF', borderRadius: 9, padding: '9px 12px', border: '1px solid ' + (tk >= 0 ? '#D1D1D6' : '#FFC4C0'), display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                         React.createElement("div", null,
                             React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase' } }, '📊 Net Kâr (Ölmeztur)'),
                             React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 500, marginTop: 2 } }, 'Müşteri − Araç ücreti')
@@ -6782,6 +6824,7 @@ function App() {
                     const cnt = dayTransfers.length;
                     const doneCnt = dayTransfers.filter(x => x.status === 'tam').length;
                     const dayProfit = olmezDisplayNet(dayTransfers);
+                    const dayHasOlmezNet = dayTransfers.some(hasOlmezDisplayNet);
                     return React.createElement("button", {
                         key: dk,
                         className: 'lg-month-day' + (inMonth ? '' : ' is-other') + (isToday ? ' is-today' : '') + (isSelected ? ' is-selected ko-selected-gold' : '') + (cnt > 0 ? ' has-work' : ''),
@@ -6793,7 +6836,7 @@ function App() {
                             isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#A85C55', flexShrink: 0 } })),
                         React.createElement("div", { className: "ko-arac-day-meta" },
                             React.createElement("span", { className: "lg-month-day-count" }, inMonth && cnt > 0 ? cnt + ' transfer' : ''),
-                            inMonth && cnt > 0 && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
+                            inMonth && cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
                 })),
             React.createElement("div", { className: "lg-month-selected-line" },
                 React.createElement("div", null,
@@ -6894,6 +6937,7 @@ function App() {
     const formPreviewT = { ...form, customerTRY: cTRY2, totalTRY: cTRY2 };
     const formPreview = formPreviewAmounts(formPreviewT);
     const fNet = formPreview.olmezNet;
+    const formShowOlmezNet = hasOlmezDisplayNet(formPreviewT);
     const firmPreviewBal = formPreview.firmBal;
     const altPreviewBal = formPreview.altBal;
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
@@ -8314,7 +8358,7 @@ function App() {
                                 altPreviewNet >= 0 ? '+' : '−',
                                 previewTL(altPreviewNet),
                                 " \u20BA"))),
-                        React.createElement("div", {
+                        formShowOlmezNet && React.createElement("div", {
                             style: {
                                 padding: '11px 13px',
                                 borderRadius: 12,
