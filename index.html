@@ -2027,6 +2027,9 @@ function externalPotentialNet(t) {
 function potentialSummaryNet(liste) {
     return Math.round((liste || []).reduce((s, t) => s + externalPotentialNet(t), 0));
 }
+function olmezDisplayNet(liste) {
+    return Math.round((liste || []).reduce((s, t) => s + Math.round(externalPotentialNet(t)), 0));
+}
 function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur }) {
     return (React.createElement("div", null,
         React.createElement("span", { className: "lbl" }, lbl),
@@ -2460,6 +2463,7 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
         });
         return map;
     }, [rows]);
+    const allTripIds = React.useMemo(() => new Set(trips.map(k => String(k.id))), [trips]);
     const calendarDays = React.useMemo(() => {
         const [y, m] = monthKey.split('-').map(Number);
         const first = new Date(y || new Date().getFullYear(), (m || 1) - 1, 1);
@@ -2473,16 +2477,22 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
             const dayRows = byDay[key] || [];
             const gunTrips = dayRows.filter(k => k.type === 'sefer');
             const gunExpenses = dayRows.filter(k => k.type === 'gider');
+            const gunTripIds = new Set(gunTrips.map(k => String(k.id)));
+            const linkedExpenses = expenses.filter(k => gunTripIds.has(String(k.seferId || '')));
+            const looseExpenses = gunExpenses.filter(k => !allTripIds.has(String(k.seferId || '')));
+            const expenseRows = Array.from(new Map([...linkedExpenses, ...looseExpenses].map(k => [String(k.id), k])).values());
             const gelir = Math.round(gunTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
-            const gider = Math.round(gunExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0));
-            return { key, no: d.getDate(), inMonth: key.startsWith(monthKey), count: gunTrips.length, gider: gunExpenses.length, net: gelir - gider };
+            const gider = Math.round(expenseRows.reduce((s, k) => s + moneyValue(k.tutar), 0));
+            return { key, no: d.getDate(), inMonth: key.startsWith(monthKey), count: gunTrips.length, gider: expenseRows.length, net: gelir - gider };
         });
-    }, [monthKey, byDay]);
+    }, [monthKey, byDay, expenses, allTripIds]);
     const dayRows = byDay[selectedDay] || [];
     const dayTrips = dayRows.filter(k => k.type === 'sefer').sort((a, b) => String(a.id || '').localeCompare(String(b.id || '')));
-    const dayExpenses = dayRows.filter(k => k.type === 'gider');
-    const dayTripIds = new Set(dayTrips.map(k => k.id));
-    const dayLooseExpenses = dayExpenses.filter(k => !dayTripIds.has(k.seferId));
+    const dayTripIds = new Set(dayTrips.map(k => String(k.id)));
+    const sameDateDayExpenses = dayRows.filter(k => k.type === 'gider');
+    const dayLinkedExpenses = expenses.filter(k => dayTripIds.has(String(k.seferId || '')));
+    const dayLooseExpenses = sameDateDayExpenses.filter(k => !allTripIds.has(String(k.seferId || '')));
+    const dayExpenses = Array.from(new Map([...dayLinkedExpenses, ...dayLooseExpenses].map(k => [String(k.id), k])).values());
     const dayIncome = Math.round(dayTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
     const dayExpense = Math.round(dayExpenses.reduce((s, k) => s + moneyValue(k.tutar), 0));
     const dayNet = dayIncome - dayExpense;
@@ -5852,7 +5862,7 @@ function App() {
         const ts = T.filter(t => t.date && String(t.date).slice(0, 7) === monthKey);
         return {
             net: summaryNetKar(ts),
-            potentialNet: potentialSummaryNet(ts),
+            potentialNet: olmezDisplayNet(ts),
             count: ts.filter(t => !shouldUseOnlyPlate16TabForSummary(t)).length
         };
     };
@@ -5897,12 +5907,10 @@ function App() {
             const ext = externalMonthBreakdown(key);
             const ar = plate16MonthBreakdown(key);
             /* Kartlarda görünen rakamların BİREBİR toplamı:
-               - "💰 Ölmeztur Net" etiketli kartlar → isPlate16Transfer=false olanlar
+               - "Ölmeztur Net" kartları → 16 LMZ 55 araç hesabına alınan işler hariç
                - Her transferin olmezPotentialKar değeri kartta nasıl yuvarlandıysa öyle toplanıyor */
             const ayTransferleri = T.filter(t => t.date && String(t.date).slice(0, 7) === key);
-            const olmezKartToplami = ayTransferleri
-                .filter(t => !isPlate16Transfer(t))
-                .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+            const olmezKartToplami = olmezDisplayNet(ayTransferleri);
             return {
                 key,
                 monthIndex: i,
@@ -5918,12 +5926,8 @@ function App() {
             };
         }).filter(m => m.count > 0 || m.net !== 0 || m.olmezKartSum !== 0);
         /* Kartlarda görünen Ölmeztur Net toplamları (kartla birebir aynı) */
-        const monthOlmezKartSum = T
-            .filter(t => t.date && String(t.date).slice(0, 7) === ayStr && !isPlate16Transfer(t))
-            .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
-        const yearOlmezKartSum = T
-            .filter(t => new Date(t.date).getFullYear() === yr && !isPlate16Transfer(t))
-            .reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+        const monthOlmezKartSum = olmezDisplayNet(T.filter(t => t.date && String(t.date).slice(0, 7) === ayStr));
+        const yearOlmezKartSum = olmezDisplayNet(T.filter(t => new Date(t.date).getFullYear() === yr));
         return {
             tot: T.length,
             tam: T.filter(t => t.status === 'tam').length,
@@ -5946,7 +5950,7 @@ function App() {
             yearPlate16Net: arYil,
             ym
         };
-    }, [T, clockTick]);
+    }, [T, aracK, clockTick]);
     const stats = () => statsMemo;
     const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
@@ -6075,7 +6079,7 @@ function App() {
             mC: monthRows.length,
             tam: monthRows.filter(t => t.status === 'tam').length,
             bos: monthRows.filter(t => t.status === 'bos').length,
-            mP: monthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0)
+            mP: olmezDisplayNet(monthRows)
         };
     };
     const listMiniStats = React.useMemo(() => {
@@ -6361,8 +6365,8 @@ function App() {
             return acc;
         }, {});
         const rangeRows = (monthDayMap[activeDayKey] || []).slice();
-        const rangeProfit = summaryNetKar(rangeRows);
-        const monthProfit = Math.round(monthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
+        const rangeProfit = olmezDisplayNet(rangeRows);
+        const monthProfit = olmezDisplayNet(monthRows);
         const monthLabel = monthCursor.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         const rangeLabel = activeDayDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
         const firstOfMonth = new Date(monthYear, monthIndex, 1);
@@ -6418,7 +6422,7 @@ function App() {
                     const dayTransfers = inMonth ? (monthDayMap[dk] || []) : [];
                     const cnt = dayTransfers.length;
                     const doneCnt = dayTransfers.filter(x => x.status === 'tam').length;
-                    const dayProfit = summaryNetKar(dayTransfers);
+                    const dayProfit = olmezDisplayNet(dayTransfers);
                     return React.createElement("button", {
                         key: dk,
                         className: 'lg-month-day' + (inMonth ? '' : ' is-other') + (isToday ? ' is-today' : '') + (isSelected ? ' is-selected ko-selected-gold' : '') + (cnt > 0 ? ' has-work' : ''),
@@ -6446,7 +6450,7 @@ function App() {
         /* ── Yıllara Göre Gruplar (2026 > 2025 > ... > aylar > günler) ── */
         const archiveNet = summaryNetKar(visibleListRows);
         const archiveThisMonthRows = byCollectionFilter(listRows.filter(t => t.date && String(t.date).startsWith(todayMonthKey)), activeCollectFilter);
-        const archiveThisMonthProfit = Math.round(archiveThisMonthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
+        const archiveThisMonthProfit = olmezDisplayNet(archiveThisMonthRows);
         const archiveThisMonthOpen = !!expandedT.__archiveThisMonth;
         const statusFilterTone = v => v === 'bos' ? '#9E7C2E' : v === 'tam' ? '#5E5F58' : v === 'iptal' ? '#9E5E58' : '#636366';
         const statusFilterSoft = v => v === 'bos' ? '#FFF8E7' : v === 'tam' ? '#F1F2EF' : v === 'iptal' ? '#F8EEEC' : '#F5F5F7';
@@ -6489,7 +6493,7 @@ function App() {
                 const yearRows = monthKeysInYear.flatMap(mk => Object.values(yearMonths[mk] || {}).flat());
                 const yTotal = yearRows.length;
                 const yDone = yearRows.filter(x => x.status === 'tam').length;
-                const yOlmezProfit = yearRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                const yOlmezProfit = olmezDisplayNet(yearRows);
                 const collectedY = yearRows.filter(x => getCollectionState(x) === 'collected').length;
                 const waitingY = yearRows.filter(x => getCollectionState(x) === 'uncollected').length;
                 const hasYState = Object.prototype.hasOwnProperty.call(openYears, yearKey);
@@ -6510,7 +6514,7 @@ function App() {
                             if (!visibleMonthRows.length) return null;
                             const mTotal = monthRows.length;
                             const mDone = monthRows.filter(x => x.status === 'tam').length;
-                            const mOlmezProfit = monthRows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0);
+                            const mOlmezProfit = olmezDisplayNet(monthRows);
                             const hasMState = Object.prototype.hasOwnProperty.call(openMonths, monthKey);
                             const isMOpen = hasMState ? openMonths[monthKey] : false;
                             const monthTitle = monthKey === 'Tarihsiz' ? 'Tarihsiz' : new Date(monthKey + '-01').toLocaleDateString('tr-TR', { month: 'long' });
@@ -6902,7 +6906,7 @@ function App() {
                 const profitMonthBreakdown = monthKey => {
                     const rows = T.filter(t => t.date && String(t.date).startsWith(monthKey));
                     const plate = plateBreakdownForMonth(monthKey);
-                    const olmez = Math.round(rows.filter(t => !isPlate16Transfer(t)).reduce((s, t) => s + Math.round(olmezPotentialKar(t)), 0));
+                    const olmez = olmezDisplayNet(rows);
                     return {
                         key: monthKey,
                         name: monthKey === mPfx ? AYLAR[now.getMonth()] : AYLAR[parseInt(monthKey.slice(5, 7), 10) - 1],
@@ -7302,8 +7306,8 @@ function App() {
                         const yearTransfers = T.filter(x => x.date && x.date.startsWith(String(yyyy)));
                         
                         // 1) ÖLMEZTUR KAR (DIŞ İŞLER) — 16 LMZ 55 işleri OTOMATİK hariç
-                        // potentialSummaryNet zaten shouldUseOnlyPlate16TabForSummary ile filtreliyor
-                        const olmezKarYear = potentialSummaryNet(yearTransfers);
+                        // olmezDisplayNet takvim/kart mantığıyla aynı net karı toplar.
+                        const olmezKarYear = olmezDisplayNet(yearTransfers);
                         
                         // 2) 16 LMZ 55 KAR — Araç hesabından (gelir - gider) gerçek net
                         // aracK state'i App seviyesinde, doğrudan kullanıyoruz
@@ -7328,7 +7332,7 @@ function App() {
                             const ayKey = yyyy + '-' + String(i + 1).padStart(2, '0');
                             const ayTr = yearTransfers.filter(t => t.date && t.date.startsWith(ayKey));
                             // Ölmeztur ay net (16 LMZ 55 hariç dış işler)
-                            const ayOlmez = potentialSummaryNet(ayTr);
+                            const ayOlmez = olmezDisplayNet(ayTr);
                             // 16 LMZ 55 ay net (gerçek gelir-gider)
                             const ayK = aracK.filter(k => k.date && k.date.startsWith(ayKey));
                             const ayGelir = Math.round(ayK.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
@@ -7346,7 +7350,7 @@ function App() {
                         const buAyBos = buAyTr.filter(t => t.status !== 'tam' && t.status !== 'iptal').length;
                         const buAyIpt = buAyTr.filter(t => t.status === 'iptal').length;
                         // Bu ay net = Ölmeztur dış + 16 LMZ 55
-                        const buAyOlmez = potentialSummaryNet(buAyTr);
+                        const buAyOlmez = olmezDisplayNet(buAyTr);
                         const buAyK = aracK.filter(k => k.date && k.date.startsWith(buAyKey));
                         const buAyPlate = Math.round(buAyK.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0)) -
                                          Math.round(buAyK.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
