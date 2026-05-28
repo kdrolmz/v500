@@ -8727,9 +8727,18 @@ function App() {
                             React.createElement("div", { style: { fontWeight: 800, fontSize: 12.5, color: TX } }, "Apple Takvim Otomatik"),
                             React.createElement("span", { style: { fontSize: 10, color: githubCalendarAuto ? G : SB, fontWeight: 800 } }, githubCalendarAuto ? "Açık" : "Kapalı")),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 78px', gap: 6, marginBottom: 6 } },
-                            React.createElement("input", { type: "password", value: githubCalendarToken, onChange: e => setGithubCalendarToken(e.target.value), placeholder: "GitHub token", autoComplete: "off", spellCheck: false, className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 11px', background: '#F9F9FB' } }),
+                            React.createElement("input", { type: "text", inputMode: "text", value: githubCalendarToken, onChange: e => setGithubCalendarToken(e.target.value), placeholder: "GitHub token (github_pat_...)", autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false, name: "ko-gh-token-field", "data-1p-ignore": "true", "data-lpignore": "true", "data-form-type": "other", className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 11px', background: '#F9F9FB', WebkitTextSecurity: 'none' } }),
                             React.createElement("button", { onClick: () => { setGithubCalendarToken(''); setGithubCalendarAuto(false); setGithubCalendarMsg('Token bu cihazdan silindi'); tip('Token silindi'); }, style: { background: '#F2F2F7', color: TX, border: '1px solid #D1D1D6', borderRadius: 10, padding: '10px 5px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, "Token Sil")),
                         React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.35, marginBottom: 7 } }, "Token her cihazda ayrı saklanır; iPhone ve MacBook'ta bir kez gir. Yalnızca GitHub'a takvim dosyası yazmak için kullanılır."),
+                        (function(){
+                            const tk = (githubCalendarToken || '').replace(/\s+/g, '');
+                            if (!tk) return null;
+                            const ok = tk.startsWith('github_pat_') || tk.startsWith('ghp_');
+                            const tail = tk.length > 4 ? tk.slice(-4) : tk;
+                            return React.createElement("div", { style: { fontSize: 10.5, fontWeight: 700, color: ok ? G : R, lineHeight: 1.35, marginBottom: 7, padding: '6px 8px', borderRadius: 8, background: ok ? '#F0F8F4' : '#FFF1F0', border: '1px solid ' + (ok ? '#BFE3CF' : '#FFC4C0') } },
+                                ok ? ('✓ Token girildi · ' + tk.length + ' karakter · ...' + tail)
+                                   : ('⚠ Bu metin token gibi görünmüyor (github_pat_ ile başlamalı). Uzunluk: ' + tk.length));
+                        })(),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 7 } },
                             React.createElement("button", { onClick: () => setGithubCalendarAuto(v => !v), style: { background: githubCalendarAuto ? G : '#F2F2F7', color: githubCalendarAuto ? '#fff' : TX, border: '1px solid ' + (githubCalendarAuto ? G : '#D1D1D6'), borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' } }, githubCalendarAuto ? "Otomatik Açık" : "Otomatik Kapalı"),
                             React.createElement("button", { onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy, style: { background: githubCalendarBusy ? '#AEAEB2' : '#1C1C1E', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 800, cursor: githubCalendarBusy ? 'default' : 'pointer' } }, githubCalendarBusy ? "Yayınlanıyor" : "Şimdi Yayınla")),
