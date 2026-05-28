@@ -1049,7 +1049,7 @@ const ULKELER = [
 const BF = {
     date: new Date().toISOString().split('T')[0], time: '09:00', flightCode: '',
     transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '',
-    pickup: '', dropoff: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '',
+    pickup: '', dropoff: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '', ownPlate16: false,
     driverName: '', driverPhone: '',
     passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
     childSeat: false, childSeatCount: 0,
@@ -1316,21 +1316,32 @@ const transferMergeIdentity = t => {
 const transferStamp = t => {
     try {
         if (!t) return 0;
-        const raw = t.updatedAt || t.clientUpdatedAt || t.createdAt || '';
-        const n = raw ? Date.parse(String(raw)) : 0;
-        return isNaN(n) ? 0 : n;
+        const stamps = [t.updatedAt, t.clientUpdatedAt, t.createdAt]
+            .map(raw => {
+                if (!raw) return 0;
+                if (raw && typeof raw === 'object' && raw.toDate)
+                    return raw.toDate().getTime() || 0;
+                const n = Date.parse(String(raw || ''));
+                return isNaN(n) ? 0 : n;
+            });
+        return Math.max(0, ...stamps);
     } catch (e) { return 0; }
 };
 const transferCompleteness = t => {
     if (!t) return 0;
     const p = ((t.passengers || [])[0] || {});
-    return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
+    return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, t.plate, t.ownPlate16 ? 'ownPlate16' : '', p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
         .reduce((s, v) => s + (String(v || '').trim() ? 1 : 0), 0);
 };
 const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
     if (!a) return b;
     if (!b) return a;
-    const as = transferStamp(a), bs = transferStamp(b);
+    const localEditStamp = t => {
+        const n = Date.parse(String((t && t._localEdited) || ''));
+        return isNaN(n) ? 0 : n;
+    };
+    const as = Math.max(transferStamp(a), localEditStamp(a));
+    const bs = Math.max(transferStamp(b), localEditStamp(b));
     if (bs !== as) return bs > as ? b : a;
     const ac = transferCompleteness(a), bc = transferCompleteness(b);
     if (bc !== ac) return bc > ac ? b : a;
@@ -1459,11 +1470,16 @@ const snapshotStamp = s => {
     } catch (e) { return 0; }
 };
 const inferPlate = t => {
-    const raw = (t && t.plate ? String(t.plate) : '').trim().toUpperCase();
+    const raw = (t && (t.plate || t.plaka || t.vehiclePlate || t.aracPlaka) ? String(t.plate || t.plaka || t.vehiclePlate || t.aracPlaka) : '').trim().toUpperCase();
     if (np(raw) === np(PLAKA))
         return PLAKA;
     return raw;
 };
+const normalizePlateText = v => {
+    const raw = String(v || '').trim().toUpperCase().replace(/\s+/g, ' ');
+    return np(raw) === np(PLAKA) ? PLAKA : raw;
+};
+const isPlate16Value = v => np(v) === np(PLAKA);
 const repairKnownPlate = t => t;
 const isPlate16Transfer = t => np(inferPlate(repairKnownPlate(t))) === np(PLAKA);
 const needsCustomerCollection = t => !!((t && t.paymentCollect !== 'no') || (t && t.givenBy && t.givenBy !== OL && t.assignedTo === OL));
@@ -1481,11 +1497,13 @@ const normalizeTransfer = t => {
         const base = { ...emptyPassenger(), ...(p || {}), idNo: passengerIdDisplay(p) };
         return (!base.tc && !base.pasaport && base.idNo) ? { ...base, ...splitPassengerId(base.idNo) } : base;
     });
+    const cleanPlate = inferPlate(fixed);
     return {
         ...fixed,
         id: fixed.id || ('tr_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)),
         updatedAt: fixed.updatedAt || fixed.createdAt || new Date().toISOString(),
-        plate: inferPlate(fixed),
+        plate: cleanPlate,
+        ownPlate16: cleanPlate === PLAKA,
         passengers,
         passengerCount: Math.max(1, parseInt(fixed.passengerCount, 10) || passengers.length || 1),
         settled: companyCollected,
@@ -1706,7 +1724,9 @@ const buildAppleCalendarIcs = (transfers, meta) => {
         'METHOD:PUBLISH',
         'X-WR-CALNAME:' + icsEscape(meta.name),
         'X-WR-TIMEZONE:Europe/Istanbul',
-        'X-APPLE-CALENDAR-COLOR:' + meta.color
+        'X-APPLE-CALENDAR-COLOR:' + meta.color,
+        'REFRESH-INTERVAL;VALUE=DURATION:PT1M',
+        'X-PUBLISHED-TTL:PT1M'
     ];
     rows.forEach(t => {
         const start = parseTransferDateTime(t);
@@ -1857,6 +1877,17 @@ function transferCustomerTRYValue(t) {
     }
     return stored || raw;
 }
+function olmezTransferIncomeForAlan(t, c, d) {
+    return d > 0 ? d : c;
+}
+function olmezTransferCost(t, c, d, alt) {
+    if (t && t.altAcenta && alt > 0)
+        return alt;
+    return 0;
+}
+function olmezFirmReceivableForAlan(t, c, d) {
+    return d > 0 ? d : c;
+}
 function olmezKar(t) {
     if (!hasOlmezturSide(t))
         return 0;
@@ -1873,20 +1904,19 @@ function olmezKar(t) {
        - veren (givenBy=OL, assignedTo=firma) → hakediş iş verenin (OL) → OL kârına EKLENİR
        - OL→OL veya dış→dış → hakediş OL'a → eklenir */
     if (alan) {
-        if (t.altAcenta && alt > 0)
-            return d - alt;
-        return d + com;
+        const income = olmezTransferIncomeForAlan(t, c, d);
+        const cost = olmezTransferCost(t, c, d, alt);
+        return income - cost;
     }
     if (veren) {
         if (!yes)
             return com;
-        if (t.altAcenta && alt > 0)
-            return d - alt + com;
-        return c - d + com;
+        const cost = (t.altAcenta && alt > 0) ? alt : d;
+        return c - cost + com;
     }
     if (!yes)
         return comTotal;
-    return c - d + comTotal;
+    return c - ((t.altAcenta && alt > 0) ? alt : d) + comTotal;
 }
 /* POTANSİYEL NET KAR — ödeme alınıp alınmadığından BAĞIMSIZ olarak transferden Ölmeztur'a kalacak tahmini kâr.
    Muhasebeyi (calcBal/calcAltBal) etkilemez; sadece görüntüleme ve alt bar özetinde kullanılır.
@@ -1906,17 +1936,18 @@ function olmezPotentialKar(t) {
     const veren = givenOl && t.assignedTo && !assignedOl;
     /* HAKEDİŞ kuralı: alan durumda hakediş iş veren firmaya, OL'a değil. */
     if (alan) {
-        /* Başka firma verdi, biz yaptık — hakediş firmaya, OL'a kalmaz */
-        if (t.altAcenta && alt > 0) return d - alt;
-        return d + com;
+        /* Başka firma verdi, işi Ölmeztur aldı — net: alınan tutar eksi araç/alt acenta maliyeti. */
+        const income = olmezTransferIncomeForAlan(t, c, d);
+        const cost = olmezTransferCost(t, c, d, alt);
+        return income - cost;
     }
     if (veren) {
         /* Biz verdik, başka firma yaptı — hakediş OL'a kalır */
-        if (t.altAcenta && alt > 0) return d - alt + com;
-        return c - d + com;
+        const cost = (t.altAcenta && alt > 0) ? alt : d;
+        return c - cost + com;
     }
     /* OL→OL veya dış→dış — hakediş OL'a */
-    return c - d + comTotal;
+    return c - ((t.altAcenta && alt > 0) ? alt : d) + comTotal;
 }
 function calcAltAcentaPaylasim(t) {
     if (!t || !t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
@@ -1928,20 +1959,12 @@ function calcAltAcentaPaylasim(t) {
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     if (!alan || !yes || t.paymentToMe)
         return null;
-    const musteriFarki = c - alt;
     const komisyonPayi = tourCommissionShare(t);
-    if (komisyonPayi > 0) {
-        const paylasilacakTutar = musteriFarki + komisyonPayi;
-        return {
-            giverNetOl: -paylasilacakTutar,
-            altNetOl: paylasilacakTutar,
-            komisyonPayi
-        };
-    }
+    const firmaAlacagi = olmezFirmReceivableForAlan(t, c, d);
     return {
-        giverNetOl: d - c,
-        altNetOl: musteriFarki,
-        komisyonPayi: 0
+        giverNetOl: firmaAlacagi - komisyonPayi,
+        altNetOl: -alt + komisyonPayi,
+        komisyonPayi
     };
 }
 function calcBal(t) {
@@ -1966,18 +1989,16 @@ function calcBal(t) {
             Trias verdi → Trias işveren → Trias hakedişi alır. */
 
     if (alan) {
-        // alan: givenBy = firma, assignedTo = OL → işi yapan biz, hakediş firmaya ait
-        // Fatih Erden: müşteri kısmi ödedi → kalan (d - c) firmadan alacak; hakediş firma alacağına +
+        // alan: givenBy = firma, assignedTo = OL → firma bize işi verir; firma hesabında alınacak tutar görünür.
         const altPaylasim = calcAltAcentaPaylasim(t);
         if (altPaylasim)
             return { firm, netOl: altPaylasim.giverNetOl };
         if (yes) {
-            // c=4500 d=4000 com=500 → -(4500-4000) - 500 = -1000 = OL Trias'a 1000 verecek (Trias alacak +1000)
-            // c=2000 d=4500 com=0   → -(2000-4500) = +2500 = OL Trias'tan 2500 alacaklı
-            return { firm, netOl: -(c - d) - com };
+            const firmaAlacagi = olmezFirmReceivableForAlan(t, c, d);
+            if (t.paymentToMe)
+                return { firm, netOl: firmaAlacagi - c - com };
+            return { firm, netOl: firmaAlacagi - com };
         }
-        // müşteri ödemedi: OL Trias'a sadece araç parasının dışında bir şey ödemez; ama Trias OL'a d ödeyecek (ters)
-        // hakediş yine Trias'ın alacağı: -com
         return { firm, netOl: d - com };
     }
 
@@ -2664,7 +2685,7 @@ function AracTab({ tip, aracK, setAracK }) {
             ay,
             ")"))));
 }
-function AracCalendarTab({ tip, aracK, setAracK }) {
+function AracCalendarTab({ tip, aracK, setAracK, T = [], setT }) {
     const pad = n => String(n).padStart(2, '0');
     const dateKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     const todayKey = dateKey(new Date());
@@ -2856,6 +2877,23 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
         setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id && k.seferId !== id));
         tip('Silindi');
     };
+    const removeAutoTripFromPlate16 = trip => {
+        const tid = String((trip && trip.transferId) || String((trip && trip.id) || '').replace(PLATE16_AUTO_TRIP_PREFIX, ''));
+        if (!window.confirm('Bu 16 LMZ 55 araç kartı silinsin mi? Transfer kartı kalır, sadece plakası temizlenir.'))
+            return;
+        const nowIso = new Date().toISOString();
+        if (tid && typeof setT === 'function') {
+            setT(prev => {
+                const next = dedupeTransfers((prev || []).map(t => String((t && t.id) || '') === tid
+                    ? normalizeTransfer({ ...t, plate: '', ownPlate16: false, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso })
+                    : t));
+                persistTransfersImmediately(next);
+                return next;
+            });
+        }
+        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== trip.id && k.seferId !== trip.id));
+        tip('Araç kartı silindi');
+    };
     const openExpenseForm = target => {
         setExpenseForm({ target: target || 'day', kat: 'fuel', tutar: '', not: '' });
         setExpenseOpen(true);
@@ -3009,10 +3047,12 @@ function AracCalendarTab({ tip, aracK, setAracK }) {
                                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } }, GIDER_KAT.map(cat => React.createElement("button", { key: cat.id, type: "button", onClick: () => setExpenseForm(p => ({ ...p, kat: cat.id })), style: { minHeight: 36, borderRadius: 10, border: '1px solid ' + (expenseForm.kat === cat.id ? R : BOR), background: expenseForm.kat === cat.id ? R : '#fff', color: expenseForm.kat === cat.id ? '#fff' : TX, fontSize: 10, fontWeight: 520, cursor: 'pointer' } }, cat.n))),
                                     React.createElement("input", { value: expenseForm.not, onChange: e => setExpenseForm(p => ({ ...p, not: e.target.value })), placeholder: "Not", className: "inp" }),
                                     React.createElement("button", { type: "button", onPointerDown: e => e.stopPropagation(), onClick: saveExpense, style: { background: R, color: '#fff', border: 'none', borderRadius: 12, padding: 12, fontWeight: 560, cursor: 'pointer' } }, "Gideri kaydet")),
-                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr' : '1fr 1fr 1fr', gap: 6 } },
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: autoTrip ? '1fr 1fr' : '1fr 1fr 1fr', gap: 6 } },
                                     React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => openExpenseForm(s.id), style: { color: R } }, expenseOpen && expenseForm.target === s.id ? "Gider formu açık" : "Gider ekle"),
                                     !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => editTrip(s), style: { color: NAV } }, "Düzenle"),
-                                    !autoTrip && React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
+                                    autoTrip
+                                        ? React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => removeAutoTripFromPlate16(s), style: { color: R, borderColor: '#FFC4C0' } }, "Sil")
+                                        : React.createElement("button", { type: "button", className: "ko-arac-soft-btn", onClick: () => deleteTrip(s.id), style: { color: R, borderColor: '#FFC4C0' } }, "Sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 520, color: R, padding: '9px 0 2px' } }, "Gün giderleri"),
@@ -5227,6 +5267,7 @@ function App() {
             t.time || '',
             t.status || '',
             t.plate || '',
+            t.ownPlate16 ? '1' : '0',
             t.givenBy || '',
             t.assignedTo || '',
             t.driverName || '',
@@ -5371,9 +5412,11 @@ function App() {
                             const data = snap.data() || {};
                             const payload = data.payload || data;
                             if(!payload || !Array.isArray(payload.t)) { cloudLoadedRef.current = true; return; }
-                            const mergedPayload = mergeSnapshots(payload, localPayload || {}, deletedIds);
                             const localTs = snapshotStamp(localPayload);
                             const cloudTs = snapshotStamp(payload) || snapshotStamp(data);
+                            const mergedPayload = localTs >= cloudTs
+                                ? mergeSnapshots(localPayload || {}, payload, deletedIds)
+                                : mergeSnapshots(payload, localPayload || {}, deletedIds);
                             const mergedTs = Math.max(localTs, cloudTs, snapshotStamp(mergedPayload));
                             mergedPayload.v = 26;
                             mergedPayload.date = mergedPayload.date || new Date(mergedTs || Date.now()).toISOString();
@@ -5447,7 +5490,7 @@ function App() {
     useEffect(() => { if (!storageReady) return; try {
         /* PERF FIX: Tüm ağır iş (dedupeTransfers + JSON.stringify + localStorage + cloud) 
            setTimeout içine taşındı. Önceden dedupeTransfers ve snapshot oluşturma her render'da 
-           SENKRON çalışıyordu - büyük T listelerinde donma sebebi. Şimdi 500ms debounce sonrası
+           SENKRON çalışıyordu - büyük T listelerinde donma sebebi. Şimdi 250ms debounce sonrası
            tek seferde çalışıyor. */
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(function(){
@@ -5482,7 +5525,7 @@ function App() {
                     console.warn('[CLOUD] Yazılmadı - oturum yok. Veriler sadece bu cihazda.');
                 }
             } catch(inner) { console.error('[SAVE inner]', inner); }
-        }, 500);
+        }, 250);
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
@@ -5579,7 +5622,9 @@ function App() {
         
         if (editId) {
             const nowIso = new Date().toISOString();
-            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const formPlate = normalizePlateText(form.plate);
+            const formOwnPlate16 = isPlate16Value(formPlate);
+            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: formPlate, ownPlate16: formOwnPlate16, customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY, plate: formPlate, ownPlate16: formOwnPlate16 }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso };
             const t = normalizeTransfer(base);
             setT(p => {
                 const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
@@ -5599,7 +5644,10 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const formPlate = normalizePlateText(form.plate);
+                const formOwnPlate16 = isPlate16Value(formPlate);
+                const createdIso = new Date().toISOString();
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: formPlate, ownPlate16: formOwnPlate16, customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY, plate: formPlate, ownPlate16: formOwnPlate16 }), createdAt: createdIso, updatedAt: createdIso, clientUpdatedAt: createdIso, _localEdited: createdIso, settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
                 if (form.isReturn) {
@@ -5697,7 +5745,8 @@ function App() {
             status: n.status || 'tam',
             transferType: n.transferType || 'arrival',
             tripMode: n.tripMode || 'single',
-            plate: (n.plate || '').toUpperCase(),
+            plate: normalizePlateText(n.plate),
+            ownPlate16: isPlate16Transfer(n),
             customerCollected: !!n.customerCollected,
             companyCollected: !!(n.companyCollected || n.settled),
             settled: !!(n.companyCollected || n.settled),
@@ -5740,20 +5789,26 @@ function App() {
         const cTRY = toTRY(draft.paymentAmount, draft.paymentCurrency);
         const companyCollected = !!(draft.companyCollected || draft.settled);
         const passengers = ensureQuickPassengers(draft);
+        const draftPlate = normalizePlateText(draft.plate);
+        const draftOwnPlate16 = isPlate16Value(draftPlate);
+        const nowIso = new Date().toISOString();
         const base = {
             ...prev,
             ...draft,
             editRootId: (prev && prev.editRootId) || draft.editRootId || draft.id,
             passengers,
             passengerCount: Math.max(1, parseInt(draft.passengerCount, 10) || passengers.length || 1),
-            plate: (draft.plate || '').toUpperCase(),
+            plate: draftPlate,
+            ownPlate16: draftOwnPlate16,
             customerTRY: cTRY,
-            profit: olmezKar({ ...draft, customerTRY: cTRY }),
+            profit: olmezKar({ ...draft, customerTRY: cTRY, plate: draftPlate, ownPlate16: draftOwnPlate16 }),
             settled: companyCollected,
             companyCollected,
             customerCollected: !!draft.customerCollected,
             vehiclePaid: !!draft.vehiclePaid,
-            updatedAt: new Date().toISOString()
+            updatedAt: nowIso,
+            clientUpdatedAt: nowIso,
+            _localEdited: nowIso
         };
         const next = normalizeTransfer(base);
         setT(p => {
@@ -5802,22 +5857,36 @@ function App() {
         const customerCollected = isCustomerCollected(t);
         const newId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
         const nowIso = new Date().toISOString();
-        const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
-        setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
+        const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
+        setT(p => {
+            const next = dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]);
+            persistTransfersImmediately(next);
+            return next;
+        });
         tip('Kopyalandı');
     };
     const toggleSettled = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isCompanyCollected(cur);
-        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString() }) : x)));
+        const nowIso = new Date().toISOString();
+        setT(p => {
+            const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
+            persistTransfersImmediately(next);
+            return next;
+        });
         tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
     };
     const toggleVehiclePaid = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
         const newState = !isVehiclePaid(cur);
-        setT(p => dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: new Date().toISOString() }) : x)));
+        const nowIso = new Date().toISOString();
+        setT(p => {
+            const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
+            persistTransfersImmediately(next);
+            return next;
+        });
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
@@ -6038,6 +6107,12 @@ function App() {
         const input = (props, extraStyle) => React.createElement("input", {
             className: "inp",
             ...props,
+            onChange: e => {
+                if (props && typeof props.onChange === 'function')
+                    props.onChange(e);
+                else if (props && typeof props.onBlur === 'function')
+                    props.onBlur(e);
+            },
             style: { width: '100%', fontSize: 13, padding: '10px 11px', ...(extraStyle || {}) }
         });
         const select = (props, options) => React.createElement("select", {
@@ -6094,7 +6169,10 @@ function App() {
                         React.createElement("button", { type: "button", onClick: saveQuickDriver, title: "Kaptanı kaydet", style: { border: '1px solid rgba(60,60,67,.34)', borderRadius: 12, background: 'rgba(231,242,238,.78)', color: G, fontSize: 18, fontWeight: 650, cursor: 'pointer' } }, "+")
                     )),
                     field('Kaptan Tel', input({ key: 'driverPhone_' + (q.driverPhone || ''), defaultValue: q.driverPhone || '', onBlur: e => quickInputSet({ driverPhone: e.target.value }), placeholder: 'Telefon', inputMode: 'tel', autoComplete: 'tel' })),
-                    field('Plaka', input({ defaultValue: q.plate || '', onBlur: e => quickInputSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
+                    field('Plaka', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
+                        input({ value: q.plate || '', onChange: e => { const plate = normalizePlateText(e.target.value); quickSet({ plate, ownPlate16: isPlate16Value(plate) }); }, placeholder: '16 LMZ 55' }),
+                        React.createElement("button", { type: "button", onClick: () => { const active = isPlate16Transfer(quickDraftRef.current || quickEditT); quickSet({ plate: active ? '' : PLAKA, ownPlate16: !active }); }, style: { border: '1px solid ' + (isPlate16Transfer(quickDraftRef.current || quickEditT) ? NAV : BOR), background: isPlate16Transfer(quickDraftRef.current || quickEditT) ? NAV : '#fff', color: isPlate16Transfer(quickDraftRef.current || quickEditT) ? '#fff' : TX, borderRadius: 10, fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, "16 LMZ")
+                    )),
                     field('Uçuş', input({ defaultValue: q.flightCode || '', onBlur: e => quickInputSet({ flightCode: e.target.value.toUpperCase() }), placeholder: 'TK' })),
                     field('Müşteri Öder mi?', select({
                         value: q.paymentCollect || 'yes',
@@ -6137,7 +6215,7 @@ function App() {
 		                        input({ type: 'text', inputMode: 'decimal', defaultValue: q.tourCommission || '', onBlur: e => quickInputSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
 		                        input({ defaultValue: q.tourCommissionShop || '', onBlur: e => quickInputSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
 		                    ), true),
-                    field('Not', React.createElement("textarea", { className: "inp", defaultValue: q.notes || '', onBlur: e => quickInputSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
+                    field('Not', React.createElement("textarea", { className: "inp", defaultValue: q.notes || '', onChange: e => quickInputSet({ notes: e.target.value }), onBlur: e => quickInputSet({ notes: e.target.value }), placeholder: 'Not', rows: 3, style: { width: '100%', fontSize: 13, padding: '10px 11px', resize: 'vertical' } }), true)),
                 null,
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 7, marginTop: 11 } },
                     toggle('Müşteri alındı', !!q.customerCollected, { customerCollected: !q.customerCollected }),
@@ -6342,7 +6420,7 @@ function App() {
             setGithubCalendarBusy(false);
             if (calendarPublishAgainRef.current) {
                 calendarPublishAgainRef.current = false;
-                setTimeout(() => publishAppleCalendarToGithub(true), 700);
+                setTimeout(() => publishAppleCalendarToGithub(true), 250);
             }
         }
     };
@@ -6397,7 +6475,7 @@ function App() {
         calendarPublishTimerRef.current = setTimeout(() => {
             calendarPublishTimerRef.current = null;
             publishAppleCalendarToGithub(true);
-        }, 1400);
+        }, 350);
         return () => {
             if (calendarPublishTimerRef.current) {
                 clearTimeout(calendarPublishTimerRef.current);
@@ -6589,11 +6667,11 @@ function App() {
                 /* Ölmeztur/16 LMZ 55 Net özeti — kart içi */
                 (() => {
                     const isPlate16 = isPlate16Transfer(t);
-                    const showOlmezNet = hasOlmezturSide(t);
+                    const showOlmezNet = hasOlmezDisplayNet(t);
                     if (!isPlate16 && !showOlmezNet)
                         return null;
                     const plateNet = isPlate16 ? getPlate16RemainingAmount(t) : null;
-                    const potKar = isPlate16 && plateNet !== null ? plateNet : olmezPotentialKar(t);
+                    const potKar = isPlate16 ? (plateNet !== null ? plateNet : plate16TransferTripIncome(t)) : olmezPotentialKar(t);
                     const lbl = isPlate16 ? '🚐 16 LMZ 55 Net' : '💰 Ölmeztur Net';
                     const netColor = potKar > 0 ? G : (potKar < 0 ? R : SB);
                     const netBg    = potKar > 0 ? '#F2F2F7' : (potKar < 0 ? '#FFF1EF' : '#F5F5F7');
@@ -8216,23 +8294,23 @@ function App() {
                             React.createElement("button", { onClick: () => { setDrIn(false); setNewDr({ name: '', phone: '' }); }, style: { background: INP, border: 'none', borderRadius: 10, padding: '0 12px', cursor: 'pointer', fontSize: 16 } }, "\u2715")))),
                     form.driverName && !drIn && (React.createElement("div", { style: { display: 'flex', gap: 6, marginTop: 7 } },
                         React.createElement("input", { type: "tel", value: form.driverPhone, onChange: e => sf({ driverPhone: e.target.value }), placeholder: "Telefon", className: "inp", style: { flex: 1, width: 'auto' } }),
-                        React.createElement("input", { type: "text", value: form.plate || '', onChange: e => sf({ plate: e.target.value.toUpperCase() }), placeholder: "Plaka", className: "inp", style: { width: 90, flex: 'none', fontWeight: 700 } }),
+                        React.createElement("input", { type: "text", value: form.plate || '', onChange: e => { const plate = normalizePlateText(e.target.value); sf({ plate, ownPlate16: isPlate16Value(plate) }); }, placeholder: "Plaka", className: "inp", style: { width: 90, flex: 'none', fontWeight: 700 } }),
                         // Plaka 16 LMZ 55 hızlı seçim butonu — tek tıkla yaz
                         React.createElement("button", { 
                             type: "button",
-                            className: "lg-choice" + (form.plate === PLAKA ? " is-active ko-selected-gold" : ""),
-                            onClick: () => sf({ plate: form.plate === PLAKA ? '' : PLAKA }),
+                            className: "lg-choice" + (isPlate16Transfer(form) ? " is-active ko-selected-gold" : ""),
+                            onClick: () => sf({ plate: isPlate16Transfer(form) ? '' : PLAKA, ownPlate16: !isPlate16Transfer(form) }),
                             title: "16 LMZ 55 plakasını seç/kaldır",
                             style: { 
                                 width: 'auto', flex: 'none',
-                                background: form.plate === PLAKA ? 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)' : 'var(--surface)',
-                                color: form.plate === PLAKA ? '#fff' : 'var(--brand)',
-                                border: '1.5px solid ' + (form.plate === PLAKA ? 'var(--brand-2)' : 'var(--brand-bd)'),
+                                background: isPlate16Transfer(form) ? 'linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%)' : 'var(--surface)',
+                                color: isPlate16Transfer(form) ? '#fff' : 'var(--brand)',
+                                border: '1.5px solid ' + (isPlate16Transfer(form) ? 'var(--brand-2)' : 'var(--brand-bd)'),
                                 borderRadius: 10, padding: '0 11px',
                                 fontSize: 11, fontWeight: 800, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', gap: 4,
                                 whiteSpace: 'nowrap',
-                                boxShadow: form.plate === PLAKA ? '0 2px 8px rgba(60,60,67,.25)' : 'none',
+                                boxShadow: isPlate16Transfer(form) ? '0 2px 8px rgba(60,60,67,.25)' : 'none',
                                 transition: 'all .15s ease'
                             }
                         }, "🚐 ", PLAKA)))),
@@ -8265,7 +8343,7 @@ function App() {
                                 }, 
                                 style: { width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid ' + (form.paymentToMe ? '#1C1C1E' : '#D1D1D6'), background: form.paymentToMe ? '#F2F2F7' : '#F5F5F7', color: form.paymentToMe ? '#1C1C1E' : '#636366', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' } 
                             }, form.paymentToMe ? "✓ HESAP / ÖDEME BANA GELDİ" : "Hesap bana geldiyse tıkla"),
-                            form.paymentToMe && React.createElement("div", { style: { fontSize: '10px', color: '#1C1C1E', marginTop: '5px', textAlign: 'center', fontWeight: 'bold' } }, "Hesap Düzenlendi: Alt acenteye sadece araç ücreti (-borç) yazılacak.")
+                            form.paymentToMe && React.createElement("div", { style: { fontSize: '10px', color: '#1C1C1E', marginTop: '5px', textAlign: 'center', fontWeight: 'bold' } }, "Ödeme sana geldiyse firma hesabına sadece fark yazılır.")
                         ),                        React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 7 } },
                             React.createElement("div", { style: { flex: 1 } },
                                 React.createElement("span", { className: "lbl" }, "Tutar"),
@@ -8475,7 +8553,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
             tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK })),
+            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, T: T, setT: setT })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
