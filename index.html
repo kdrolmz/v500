@@ -2672,7 +2672,7 @@ function AracTab({ tip, aracK, setAracK }) {
             ay,
             ")"))));
 }
-function AracCalendarTab({ tip, aracK, setAracK, T = [], setT }) {
+function AracCalendarTab({ tip, aracK, setAracK, T = [], setT, onTransferRowsChanged }) {
     const pad = n => String(n).padStart(2, '0');
     const dateKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     const todayKey = dateKey(new Date());
@@ -2875,6 +2875,8 @@ function AracCalendarTab({ tip, aracK, setAracK, T = [], setT }) {
                     ? normalizeTransfer({ ...t, plate: '', ownPlate16: false, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso })
                     : t));
                 persistTransfersImmediately(next);
+                if (typeof onTransferRowsChanged === 'function')
+                    onTransferRowsChanged(next);
                 return next;
             });
         }
@@ -3075,7 +3077,7 @@ function AracCalendarTab({ tip, aracK, setAracK, T = [], setT }) {
                 tip('Aylık araç raporu kopyalandı');
             }, className: "ko-arac-report-btn", style: { width: '100%', background: '#fff', color: NAV, border: '1px solid ' + BOR, borderRadius: 13, padding: 12, fontWeight: 520, cursor: 'pointer' } }, "Aylık raporu kopyala"));
 }
-function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments }) {
+function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, onTransferRowsChanged }) {
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
@@ -3096,7 +3098,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm];
             return { ...x, settledFirms: sf, updatedAt: now, clientUpdatedAt: now, _localEdited: now };
         });
-        persistTransfersImmediately(next);
+        if (typeof onTransferRowsChanged === 'function')
+            onTransferRowsChanged(next);
+        else
+            persistTransfersImmediately(next);
         return next;
     });
     const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
@@ -5581,6 +5586,77 @@ function App() {
         setDrivers(p => [...p.filter(d => d.name !== nmv), { name: nmv, phone: ph }]);
     };
     const cpTxt = txt => { copyText(txt); tip('Kopyalandı!'); };
+    const persistSnapshotImmediately = (overrides = {}) => {
+        try {
+            const now = new Date().toISOString();
+            const has = key => Object.prototype.hasOwnProperty.call(overrides, key);
+            const transferRows = dedupeTransfers(has('t') ? (overrides.t || []) : (T || []));
+            const aracRows = has('ak') ? (overrides.ak || []) : (aracK || []);
+            const snapshotCore = {
+                t: transferRows,
+                a: has('a') ? overrides.a : agencies,
+                ap: has('ap') ? overrides.ap : agencyPhones,
+                dr: has('dr') ? overrides.dr : drivers,
+                r: rates,
+                ru: lastRateUpdate,
+                ak: aracRows,
+                db: debts,
+                adj: accountAdjustments,
+                tk: todos,
+                tl: tkLedger,
+                del: readDeletedTransferIds(),
+                v: 26
+            };
+            const snapshot = { ...snapshotCore, date: now, clientUpdatedAt: now };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+            lastSaveSigRef.current = JSON.stringify(snapshotCore);
+            if (cloudEnabled() && authUser) {
+                cloudLoadedRef.current = true;
+                cloudWritingRef.current = true;
+                cloudDocRef.set({ payload: snapshot, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: now }, { merge: true })
+                    .catch(function(err) {
+                        console.error('[CLOUD immediate] HATA', err);
+                        try { tip('☁ Kayıt buluta yazılamadı'); } catch (e) {}
+                    })
+                    .finally(function() {
+                        setTimeout(function() { cloudWritingRef.current = false; }, 250);
+                    });
+            }
+            return snapshot;
+        } catch (e) {
+            console.error('[SAVE immediate] hata', e);
+            return null;
+        }
+    };
+    const queueAppleCalendarPublish = rows => {
+        try {
+            if (!githubCalendarAuto || !(githubCalendarToken || '').trim())
+                return;
+            if (calendarPublishTimerRef.current)
+                clearTimeout(calendarPublishTimerRef.current);
+            calendarPublishSigRef.current = '';
+            const publishRows = Array.isArray(rows) ? rows.slice() : null;
+            calendarPublishTimerRef.current = setTimeout(() => {
+                calendarPublishTimerRef.current = null;
+                publishAppleCalendarToGithub(true, publishRows);
+            }, 120);
+        } catch (e) {
+            console.error('[APPLE CALENDAR queue] hata', e);
+        }
+    };
+    const persistTransferRowsNow = rows => {
+        const clean = dedupeTransfers(rows || []);
+        persistSnapshotImmediately({ t: clean });
+        queueAppleCalendarPublish(clean);
+        return clean;
+    };
+    const setAracKPersist = updater => setAracK(prev => {
+        const base = Array.isArray(prev) ? prev : [];
+        const next = typeof updater === 'function' ? updater(base) : updater;
+        const clean = Array.isArray(next) ? next : [];
+        persistSnapshotImmediately({ ak: clean });
+        return clean;
+    });
     const submit = () => {
         if (submitBusyRef.current) return;
         submitBusyRef.current = true;
@@ -5612,8 +5688,7 @@ function App() {
             const t = normalizeTransfer(base);
             setT(p => {
                 const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
-                persistTransfersImmediately(next);
-                return next;
+                return persistTransferRowsNow(next);
             });
             setEditId(null);
             tip('Güncellendi');
@@ -5673,8 +5748,7 @@ function App() {
             
             setT(p => {
                 const next = dedupeTransfers([...(p || []), ...transfersToAdd]);
-                persistTransfersImmediately(next);
-                return next;
+                return persistTransferRowsNow(next);
             });
             tip(transfersToAdd.length + ' Transfer Eklendi');
         }
@@ -5795,8 +5869,7 @@ function App() {
         const next = normalizeTransfer(base);
         setT(p => {
             const list = dedupeTransfers([...removeEditedTransferClones(p || [], next.id, prev), next]);
-            persistTransfersImmediately(list);
-            return list;
+            return persistTransferRowsNow(list);
         });
         quickDraftRef.current = null;
         setQuickEditT(null);
@@ -5814,20 +5887,7 @@ function App() {
            geri yüklemesin */
         setT(p => {
             const filtered = p.filter(x => x.id !== draft.id);
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) {
-                    const snap = JSON.parse(raw);
-                    if (snap && Array.isArray(snap.t)) {
-                        snap.t = snap.t.filter(x => x && x.id !== draft.id);
-                        snap.del = deletedIds;
-                        snap.date = new Date().toISOString();
-                        snap.clientUpdatedAt = snap.date;
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
-                    }
-                }
-            } catch (e) { console.error('[DEL Q] localStorage anında güncelleme hatası', e); }
-            return filtered;
+            return persistTransferRowsNow(filtered);
         });
         quickDraftRef.current = null;
         setQuickEditT(null);
@@ -5842,8 +5902,7 @@ function App() {
         const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
         setT(p => {
             const next = dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]);
-            persistTransfersImmediately(next);
-            return next;
+            return persistTransferRowsNow(next);
         });
         tip('Kopyalandı');
     };
@@ -5854,8 +5913,7 @@ function App() {
         const nowIso = new Date().toISOString();
         setT(p => {
             const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
-            persistTransfersImmediately(next);
-            return next;
+            return persistTransferRowsNow(next);
         });
         tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
     };
@@ -5866,8 +5924,7 @@ function App() {
         const nowIso = new Date().toISOString();
         setT(p => {
             const next = dedupeTransfers(p.map(x => x.id === id ? normalizeTransfer({ ...x, vehiclePaid: newState, updatedAt: nowIso, clientUpdatedAt: nowIso, _localEdited: nowIso }) : x));
-            persistTransfersImmediately(next);
-            return next;
+            return persistTransferRowsNow(next);
         });
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
@@ -5881,20 +5938,7 @@ function App() {
            silinen transferi geri eklemeye çalışıyordu. Şimdi localStorage anında güncel. */
         setT(p => {
             const filtered = p.filter(x => x.id !== id);
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) {
-                    const snap = JSON.parse(raw);
-                    if (snap && Array.isArray(snap.t)) {
-                        snap.t = snap.t.filter(x => x && x.id !== id);
-                        snap.del = deletedIds;
-                        snap.date = new Date().toISOString();
-                        snap.clientUpdatedAt = snap.date;
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
-                    }
-                }
-            } catch (e) { console.error('[DEL] localStorage anında güncelleme hatası', e); }
-            return filtered;
+            return persistTransferRowsNow(filtered);
         });
         tip('Silindi');
     } };
@@ -6361,7 +6405,7 @@ function App() {
         const ok = await downloadText(payload, 'Olmeztur_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
     };
-    const publishAppleCalendarToGithub = async (silent) => {
+    const publishAppleCalendarToGithub = async (silent, transferRowsOverride) => {
         const token = (githubCalendarToken || '').trim();
         if (!token) {
             setGithubCalendarMsg('GitHub token girilmedi');
@@ -6380,7 +6424,8 @@ function App() {
         setGithubCalendarBusy(true);
         setGithubCalendarMsg('Apple Takvim yayını güncelleniyor...');
         try {
-            const files = buildAppleCalendarPublishFiles(T);
+            const publishRows = Array.isArray(transferRowsOverride) ? transferRowsOverride : T;
+            const files = buildAppleCalendarPublishFiles(publishRows);
             const branch = await getGithubCalendarBranch(token);
             for (const f of files)
                 await putGithubCalendarFile(token, f.filename, f.text, branch);
@@ -6399,7 +6444,7 @@ function App() {
             setGithubCalendarBusy(false);
             if (calendarPublishAgainRef.current) {
                 calendarPublishAgainRef.current = false;
-                setTimeout(() => publishAppleCalendarToGithub(true), 250);
+                setTimeout(() => publishAppleCalendarToGithub(true, transferRowsOverride), 250);
             }
         }
     };
@@ -6445,7 +6490,7 @@ function App() {
             t && t.updatedAt,
             t && t.clientUpdatedAt
         ].join('|')).sort().join('::');
-        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + rows;
+        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + readDeletedTransferIds().join(',') + '::' + rows;
         if (calendarPublishSigRef.current === sig)
             return;
         calendarPublishSigRef.current = sig;
@@ -6486,9 +6531,12 @@ function App() {
             return false;
         writeDeletedTransferIds([]);
         hydrateSnapshot(d, true);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: d.date || new Date().toISOString() })); } catch(e) {}
+        const restoreStamp = new Date().toISOString();
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: restoreStamp, clientUpdatedAt: restoreStamp }));
+        } catch(e) {}
         if(cloudEnabled() && authUser){
-            cloudDocRef.set({ payload: { ...d, v: 26, date: d.date || new Date().toISOString() }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: d.date || new Date().toISOString() }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
+            cloudDocRef.set({ payload: { ...d, v: 26, date: restoreStamp, clientUpdatedAt: restoreStamp }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: restoreStamp }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
         }
         tip('Geri yüklendi!');
         return true;
@@ -8531,8 +8579,8 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 800, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 800, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 700, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 800, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
-            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, T: T, setT: setT })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, onTransferRowsChanged: persistTransferRowsNow }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracKPersist, T: T, setT: setT, onTransferRowsChanged: persistTransferRowsNow })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
            ═══════════════════════════════════════════════════════════════ */
