@@ -210,10 +210,10 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tab::before,.tab::after,.tab.is-active::before,.tab.is-active::after,.tab-fab::before,.tab-fab::after{content:none !important;display:none !important}
 .tab.is-active .tab-icon,.tab.is-active .tab-label{color:var(--ink) !important}
 .tcard-stripe{width:3px !important;min-width:3px !important;border-radius:999px !important;background:var(--accent) !important}
-.tcard.t-arrival .tcard-stripe{background:#6FAF84 !important}
-.tcard.t-departure .tcard-stripe,.tcard.t-intercity .tcard-stripe{background:#B8B1A5 !important}
-.tcard.t-tour .tcard-stripe{background:#D9BD63 !important}
-.tcard.t-shortpass .tcard-stripe{background:#A98AC7 !important}
+.tcard.t-arrival .tcard-stripe{background:#0F9D58 !important}
+.tcard.t-departure .tcard-stripe,.tcard.t-intercity .tcard-stripe{background:#8E8276 !important}
+.tcard.t-tour .tcard-stripe{background:#E6B422 !important}
+.tcard.t-shortpass .tcard-stripe{background:#8E44AD !important}
 .tcard-time-type{font-weight:430 !important;font-size:11px !important;color:#636366 !important;margin-top:3px !important}
 .tcard-time{font-size:11.5px !important;font-weight:430 !important;color:var(--muted) !important;grid-area:time !important;min-width:0 !important}
 .tcard-route{font-size:11.4px !important;font-weight:410 !important;color:#636366 !important;line-height:1.25 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
@@ -933,11 +933,11 @@ const NAV = '#1C1C1E', NAV2 = '#2C2C2E', GOLD = '#A85C55';
 const G = '#1F7A4D', O = '#9A6A1F', R = '#A85C55', BR = '#D1D1D6';
 const TX = '#1C1C1E', SB = '#636366', INP = '#F5F5F7', BOR = 'rgba(60,60,67,.18)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#6F675D', bg: '#F1EEE8', b: '#D8D1C7' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#2F7A4E', bg: '#EAF5EE', b: '#BFDCC8' },
-    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#8B6A16', bg: '#FFF7D9', b: '#E6D18A' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6F4E91', bg: '#F3ECFA', b: '#D5BEE7' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#6F675D', bg: '#F1EEE8', b: '#D8D1C7' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#62584F', bg: '#ECE7DF', b: '#CBBFB3' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#0F7F45', bg: '#DDF3E6', b: '#8ED0A8' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#A87500', bg: '#FFF0B8', b: '#E1B83F' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#71349A', bg: '#EFE0FA', b: '#B884D6' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#62584F', bg: '#ECE7DF', b: '#CBBFB3' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -1589,11 +1589,11 @@ async function downloadWorkbook(wb, filename) {
     return false;
 }
 const APPLE_CALENDAR_TYPES = [
-    { id: 'arrival', filename: 'apple-takvim-gelen.ics', name: 'KÖ Gelen Yolcu', color: '#6FAF84' },
-    { id: 'departure', filename: 'apple-takvim-giden.ics', name: 'KÖ Giden Yolcu', color: '#B8B1A5' },
-    { id: 'tour', filename: 'apple-takvim-turlar.ics', name: 'KÖ Turlar', color: '#D9BD63' },
-    { id: 'shortpass', filename: 'apple-takvim-kisa-pas.ics', name: 'KÖ Kısa Pas', color: '#A98AC7' },
-    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: '#B8B1A5' }
+    { id: 'arrival', filename: 'apple-takvim-gelen.ics', name: 'KÖ Gelen Yolcu', color: '#0F9D58' },
+    { id: 'departure', filename: 'apple-takvim-giden.ics', name: 'KÖ Giden Yolcu', color: '#8E8276' },
+    { id: 'tour', filename: 'apple-takvim-turlar.ics', name: 'KÖ Turlar', color: '#E6B422' },
+    { id: 'shortpass', filename: 'apple-takvim-kisa-pas.ics', name: 'KÖ Kısa Pas', color: '#8E44AD' },
+    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: '#8E8276' }
 ];
 const GITHUB_CALENDAR_OWNER = 'kdrolmz';
 const GITHUB_CALENDAR_REPO = 'v500';
@@ -1637,15 +1637,25 @@ const transferCalendarIcon = t => {
     if (type === 'intercity') return '🚐';
     return '🔴';
 };
+const appleCalendarCompactLoc = name => {
+    const s = shortLoc(name);
+    if (!s || s === '—') return '';
+    return String(s)
+        .replace(/\s+Havalimanı/gi, '')
+        .replace(/\s+Airport/gi, '')
+        .replace(/\s+Transfer/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
 const transferCalendarRoute = t => {
     const type = String((t && t.transferType) || 'arrival');
-    const from = shortLoc(t && t.pickup);
-    const to = shortLoc(t && t.dropoff);
-    if (type === 'tour' && (!to || to === '—'))
-        return (from && from !== '—' ? from : 'Tur') + ' Tur';
-    if (from && to && from !== '—' && to !== '—')
-        return from + ' → ' + to;
-    return from && from !== '—' ? from : (to && to !== '—' ? to : 'Transfer');
+    const from = appleCalendarCompactLoc(t && t.pickup);
+    const to = appleCalendarCompactLoc(t && t.dropoff);
+    if (type === 'tour')
+        return (to || from || 'Tur') + ' Tur';
+    if (from && to)
+        return from + '→' + to;
+    return from || to || 'Transfer';
 };
 const appleCalendarPaymentText = t => {
     const parts = [];
@@ -1665,7 +1675,7 @@ const appleCalendarPaymentText = t => {
 };
 const appleCalendarTitle = t => {
     const tm = String((t && t.time) || '').slice(0, 5) || '--:--';
-    return [transferCalendarIcon(t) + ' ' + tm, transferCalendarRoute(t), appleCalendarVehicle(t)].filter(Boolean).join(' | ');
+    return [transferCalendarIcon(t) + ' ' + tm, transferCalendarRoute(t), appleCalendarVehicle(t)].filter(Boolean).join(' ');
 };
 const appleCalendarDescription = t => {
     const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
@@ -4387,7 +4397,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         return '';
     };
     const todoCalendarTitle = t => [todoCalendarIcon(t), t && t.title].filter(Boolean).join(' ');
-    const transferPanelTitle = t => [transferCalendarIcon(t), transferCalendarRoute(t), vehicleName(t)].filter(Boolean).join(' | ');
+    const transferPanelTitle = t => [transferCalendarIcon(t), transferCalendarRoute(t), vehicleName(t)].filter(Boolean).join(' ');
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
