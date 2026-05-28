@@ -1755,6 +1755,14 @@ const githubCalendarHeaders = token => ({
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'
 });
+/* BUG FIX: GitHub API isteklerine zaman aşımı ekle. "Load failed" çoğu zaman
+   istek yanıt vermeden takıldığında çıkar; 20 sn sonra net hata veririz. */
+const githubFetch = (url, opts, ms) => {
+    const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => { try { ctrl.abort(); } catch (e) {} }, ms || 20000) : null;
+    const finalOpts = ctrl ? { ...(opts || {}), signal: ctrl.signal } : (opts || {});
+    return fetch(url, finalOpts).finally(() => { if (timer) clearTimeout(timer); });
+};
 async function githubCalendarBodyText(res) {
     try {
         const txt = await res.text();
@@ -1780,22 +1788,32 @@ function githubCalendarError(status, detail) {
 }
 async function getGithubCalendarBranch(token) {
     const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO;
-    const res = await fetch(api, { headers: githubCalendarHeaders(token) });
-    if (res.ok) {
-        const data = await res.json();
-        return (data && data.default_branch) || GITHUB_CALENDAR_BRANCH;
+    try {
+        const res = await githubFetch(api, { headers: githubCalendarHeaders(token) }, 15000);
+        if (res.ok) {
+            const data = await res.json();
+            return (data && data.default_branch) || GITHUB_CALENDAR_BRANCH;
+        }
+        /* 401/403/404 gibi gerçek izin/repo hatalarını ilet */
+        const detail = await githubCalendarBodyText(res);
+        throw new Error(githubCalendarError(res.status, detail));
+    } catch (e) {
+        /* Ağ/timeout hatasında yayını durdurma — varsayılan branch ile devam et.
+           Asıl yazma adımı (putGithubCalendarFile) gerçek hatayı zaten yakalar. */
+        if (e && /abort|load failed|failed to fetch|network/i.test(String(e.message || ''))) {
+            return GITHUB_CALENDAR_BRANCH;
+        }
+        throw e;
     }
-    const detail = await githubCalendarBodyText(res);
-    throw new Error(githubCalendarError(res.status, detail));
 }
 async function putGithubCalendarFile(token, filename, text, branch) {
     const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO + '/contents/' + encodeURIComponent(filename);
     const headers = githubCalendarHeaders(token);
     const targetBranch = branch || GITHUB_CALENDAR_BRANCH;
     for (let attempt = 0; attempt < 3; attempt++) {
-        const current = await fetch(api + '?ref=' + encodeURIComponent(targetBranch) + '&_=' + Date.now(), {
+        const current = await githubFetch(api + '?ref=' + encodeURIComponent(targetBranch) + '&_=' + Date.now(), {
             headers: { ...headers, 'Cache-Control': 'no-cache' }
-        });
+        }, 20000);
         let sha = null;
         if (current.ok) {
             const data = await current.json();
@@ -1810,11 +1828,11 @@ async function putGithubCalendarFile(token, filename, text, branch) {
             content: utf8Base64(text)
         };
         if (sha) body.sha = sha;
-        const saved = await fetch(api, {
+        const saved = await githubFetch(api, {
             method: 'PUT',
             headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
-        });
+        }, 25000);
         if (saved.ok)
             return true;
         const detail = await githubCalendarBodyText(saved);
