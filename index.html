@@ -5627,7 +5627,15 @@ function App() {
             try {
                 const cleanTransfers = dedupeTransfers(T);
                 const snapshotCore = { t: cleanTransfers, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26 };
-                const saveSig = JSON.stringify(snapshotCore);
+                /* PERF: Tüm snapshot'ı JSON.stringify ile imzalamak binlerce kayıtta donma/çökme yaratıyordu.
+                   Hafif imza: kayıt sayıları + son güncelleme damgalarının toplamı. */
+                const sigParts = [
+                    cleanTransfers.length,
+                    cleanTransfers.reduce((s, x) => s + (Date.parse(x.updatedAt || x.clientUpdatedAt || x.createdAt || '') || 0), 0),
+                    agencies.length, drivers.length, aracK.length, debts.length, accountAdjustments.length, todos.length, tkLedger.length,
+                    JSON.stringify(rates), lastRateUpdate || '', (readDeletedTransferIds() || []).length
+                ];
+                const saveSig = sigParts.join('|');
                 if (saveSig === lastSaveSigRef.current)
                     return;
                 lastSaveSigRef.current = saveSig;
@@ -7622,7 +7630,8 @@ function App() {
                 const renderHomeTransfer = t => {
                     if (!t)
                         return React.createElement("div", { className: "lg-empty" }, "Bu dönem transfer yok");
-                    const pas = (t.passengers || []).map(p => p && p.name).filter(Boolean).join(', ') || 'Misafir';
+                    /* Sadece ilk yazılan müşteri adı gösterilir */
+                    const firstPas = ((t.passengers || []).map(p => p && p.name).filter(Boolean)[0]) || 'Misafir';
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
@@ -7631,33 +7640,36 @@ function App() {
                     const vehName = appleCalendarVehicle ? appleCalendarVehicle(t) : (t.vehicle || '');
                     const stColor = t.status === 'tam' ? '#4A7256' : t.status === 'iptal' ? '#B0524C' : '#9A7636';
                     const stBg = t.status === 'tam' ? '#E6EFE8' : t.status === 'iptal' ? '#FBEEEC' : '#F4EBDA';
+                    /* İşi veren → işi yapan (+ alt acenta varsa) */
+                    const acentaParts = [];
+                    if (t.givenBy) acentaParts.push(t.givenBy);
+                    if (t.assignedTo && t.assignedTo !== t.givenBy) acentaParts.push(t.assignedTo);
+                    if (t.altAcenta && t.altAcenta !== t.assignedTo) acentaParts.push(t.altAcenta);
+                    const acentaText = acentaParts.join(' → ');
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
                         style: { background: '#fff', border: '1px solid var(--line)', borderRadius: 12, padding: '8px 11px 8px 12px', boxShadow: 'var(--shadow)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: tip.c } }),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 } },
-                            React.createElement("span", { style: { fontSize: 9, fontWeight: 560, padding: '1px 7px', borderRadius: 999, background: tip.bg, color: tip.c } }, tip.n),
-                            vehName && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388' } }, vehName),
-                            flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', marginLeft: 'auto' } }, flight)
+                        React.createElement("div", { style: { display: 'flex', gap: 9 } },
+                            React.createElement("div", { style: { fontSize: 14, fontWeight: 580, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', flexShrink: 0, alignSelf: 'center', minWidth: 42 } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minWidth: 0, flex: 1 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 560, padding: '1px 7px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0 } }, tip.n),
+                                    vehName && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', flexShrink: 0 } }, vehName),
+                                    flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', marginLeft: 'auto', flexShrink: 0 } }, flight)
+                                ),
+                                React.createElement("div", { style: { fontSize: 12, fontWeight: 500, color: '#2A2724', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText)
+                            )
                         ),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 8 } },
-                            React.createElement("span", { style: { fontSize: 13, fontWeight: 570, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', flexShrink: 0 } }, t.time || '--:--'),
-                            React.createElement("span", { style: { fontSize: 12, fontWeight: 500, color: '#2A2724', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 } }, routeText)
-                        ),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
-                            React.createElement("span", { style: { fontSize: 9, fontWeight: 550, padding: '1px 7px', borderRadius: 999, background: stBg, color: stColor } }, sl),
-                            React.createElement("span", { style: { fontSize: 10, color: '#9A9388', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 } }, pas),
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 } },
                             React.createElement("button", {
                                 onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                style: {
-                                    fontSize: 9, fontWeight: 600, marginLeft: 'auto', flexShrink: 0, cursor: 'pointer',
-                                    border: 'none', borderRadius: 999, padding: '2px 9px',
-                                    background: collectionState === 'collected' ? '#E6EFE8' : '#F4EBDA',
-                                    color: collectionState === 'collected' ? '#4A7256' : '#9A7636'
-                                }
-                            }, collectionState === 'collected' ? '✓ Tahsil edildi' : 'Tahsil bekliyor')
+                                style: { fontSize: 9, fontWeight: 600, padding: '1px 8px', borderRadius: 999, border: 'none', cursor: 'pointer', flexShrink: 0, background: collectionState === 'collected' ? '#E6EFE8' : stBg, color: collectionState === 'collected' ? '#4A7256' : stColor }
+                            }, collectionState === 'collected' ? '✓ ' + sl : sl),
+                            React.createElement("span", { style: { fontSize: 10, color: '#6B655C', fontWeight: 500, flexShrink: 0 } }, firstPas),
+                            acentaText && React.createElement("span", { style: { fontSize: 9.5, color: '#9A9388', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 } }, "· " + acentaText)
                         )
                     );
                 };
@@ -8752,22 +8764,22 @@ function App() {
            ═══════════════════════════════════════════════════════════════ */
         React.createElement("nav", { className: "tabbar" },
             React.createElement("div", { className: "tabbar-inner" },
-                React.createElement("button", { className: "tab" + (tab === 'home' ? ' is-active' : ''), onClick: () => setTab('home') },
+                React.createElement("button", { className: "tab" + (tab === 'home' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('home'); }, onClick: () => setTab('home') },
                     React.createElement("div", { className: "tab-icon" }, "⌂"),
                     React.createElement("div", { className: "tab-label" }, "Ana Sayfa")
                 ),
-                React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onClick: () => setTab('list') },
+                React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('list'); }, onClick: () => setTab('list') },
                     React.createElement("div", { className: "tab-icon" }, "≡"),
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
-                React.createElement("button", { className: "tab-fab", onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
+                React.createElement("button", { className: "tab-fab", onPointerDown: (e) => { e.preventDefault(); openNewTransferForm(); }, onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
                     React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
-                React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onClick: () => setTab('hesap') },
+                React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('hesap'); }, onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, "₺"),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
                 ),
-                React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onClick: () => setTab('arac') },
+                React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('arac'); }, onClick: () => setTab('arac') },
                     React.createElement("div", { className: "tab-icon" }, "▰"),
                     React.createElement("div", { className: "tab-label" }, "Araç")
                 )
