@@ -399,23 +399,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1780080500477_guewt7@olmeztur
-DTSTAMP:20260529T184800Z
-LAST-MODIFIED:20260529T184800Z
-SEQUENCE:1780080500
-DTSTART:20260529T100000
-DTEND:20260529T110000
-SUMMARY:10:00 · Oylat Tur Turu  Sprinter
-LOCATION:Bursa → Oylat Tur
-DESCRIPTION:Müşteri: Mohammad masarra\nŞoför: Yaşar Taşdemir / 0 (537) 5
- 63 78 19\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tu
- r\nAraç: Sprinter\nGüzergah: Bursa → Oylat Tur\nÖdeme: Müşteri: 10.100 T
- RY | Araç: 7.800 ₺ | Alt acenta: 7.500 ₺
-CATEGORIES:KÖ Turlar
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1780030837537_d6x6sm@olmeztur
 DTSTAMP:20260529T184800Z
 LAST-MODIFIED:20260529T050000Z
@@ -428,6 +411,23 @@ DESCRIPTION:Müşteri: Naif aljolood\nŞoför: Kadir Ölmez / +90 (543) 287 0
  6 87\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
  ito / 16 LMZ 55\nGüzergah: Bursa Suite → Bursa Tur\nÖdeme: Müşteri ödeme
  z | Araç: 4.500 ₺
+CATEGORIES:KÖ Turlar
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1780080500477_guewt7@olmeztur
+DTSTAMP:20260529T184800Z
+LAST-MODIFIED:20260529T184800Z
+SEQUENCE:1780080520
+DTSTART:20260530T100000
+DTEND:20260530T110000
+SUMMARY:10:00 · Oylat Tur Turu  Sprinter
+LOCATION:Bursa → Oylat Tur
+DESCRIPTION:Müşteri: Mohammad masarra\nŞoför: Yaşar Taşdemir / 0 (537) 5
+ 63 78 19\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tu
+ r\nAraç: Sprinter\nGüzergah: Bursa → Oylat Tur\nÖdeme: Müşteri: 10.100 T
+ RY | Araç: 7.800 ₺ | Alt acenta: 7.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
