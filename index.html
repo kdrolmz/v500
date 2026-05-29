@@ -210,10 +210,10 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tab::before,.tab::after,.tab.is-active::before,.tab.is-active::after,.tab-fab::before,.tab-fab::after{content:none !important;display:none !important}
 .tab.is-active .tab-icon,.tab.is-active .tab-label{color:var(--ink) !important}
-.tcard-stripe{width:3px !important;min-width:3px !important;border-radius:999px !important;background:var(--accent) !important}
+.tcard-stripe{width:5px !important;min-width:5px !important;border-radius:999px !important;background:var(--accent) !important}
 .tcard.t-arrival .tcard-stripe{background:#5E8B6A !important}
-.tcard.t-departure .tcard-stripe{background:#9C8C7A !important}
-.tcard.t-intercity .tcard-stripe{background:#9CAE8C !important}
+.tcard.t-departure .tcard-stripe{background:#8A8378 !important}
+.tcard.t-intercity .tcard-stripe{background:#9C8C7A !important}
 .tcard.t-tour .tcard-stripe{background:#C99A4E !important}
 .tcard.t-shortpass .tcard-stripe{background:#8A6E92 !important}
 .tcard-time-type{font-weight:430 !important;font-size:11px !important;color:#636366 !important;margin-top:3px !important}
@@ -643,7 +643,7 @@ body :where(div,span,b,strong,small,label,button,input,select,textarea){font-wei
   padding-top:7px !important;
   min-width:0 !important;
 }
-.tcard-stripe{width:3px !important;min-width:3px !important;background:#7E766A !important}
+.tcard-stripe{width:5px !important;min-width:5px !important;background:#7E766A !important}
 .tcard-pills{display:flex !important;flex-wrap:wrap !important;gap:5px !important;min-width:0 !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight{
   background:#FFFFFF !important;
@@ -882,6 +882,35 @@ body :where(div,span,b,strong,small,label,button,input,select,textarea){font-wei
   .tabbar-inner{height:74px !important;padding:6px 7px !important}
   .tab-label{font-size:9.8px !important;text-overflow:clip !important}
 }
+.lg-home .lg-greeting-card{overflow:hidden !important}
+.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{
+  border-color:#D9DDD7 !important;
+  box-shadow:none !important;
+  -webkit-text-fill-color:#4F6B45 !important;
+}
+.lg-home-transfer-list>div,.lg-today-list-standalone>div{contain:layout paint style}
+.view-arac .ko-arac-day.is-today{
+  border-color:rgba(94,122,82,.58) !important;
+  background:#F7F9F4 !important;
+}
+.view-arac .ko-arac-day.is-today .ko-arac-day-num{
+  color:#5E7A52 !important;
+  -webkit-text-fill-color:#5E7A52 !important;
+}
+.view-arac .ko-arac-day.is-selected.is-today{
+  background:#EEF3EB !important;
+  border-color:#4F6B45 !important;
+}
+.tabbar .tab-fab{
+  background:#E6EFE8 !important;
+  border-color:#A9BE9D !important;
+  color:#4A7256 !important;
+  -webkit-text-fill-color:#4A7256 !important;
+}
+.tabbar .tab-fab-plus{
+  color:#4A7256 !important;
+  -webkit-text-fill-color:#4A7256 !important;
+}
 
 </style>
 </head>
@@ -935,11 +964,11 @@ const NAV = '#1C1C1E', NAV2 = '#2C2C2E', GOLD = '#4F6B45';
 const G = '#4F6B45', O = '#5E7A52', R = '#B0524C', BR = '#DAD4CB';
 const TX = '#1C1C1E', SB = '#6B6B66', INP = '#F4F1EC', BOR = 'rgba(79,107,69,.18)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#7A6E5F', bg: '#F1ECE4', b: '#C9BCAD' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#8A8378', bg: '#F0EFEB', b: '#C9C3BA' },
     { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#4A7256', bg: '#E6EFE8', b: '#9CBBA6' },
-    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#9A7636', bg: '#F4EBDA', b: '#D2B888' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6E5A77', bg: '#EDE6F0', b: '#B7A6C0' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#5E7355', bg: '#EAEFE6', b: '#A9BE9D' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#C99A4E', bg: '#F4EBDA', b: '#D2B888' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#8A6E92', bg: '#EDE6F0', b: '#B7A6C0' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#9C8C7A', bg: '#EFE8DE', b: '#C9BAA8' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -967,77 +996,30 @@ const GIDER_KAT = [
     { id: 'other', n: 'Diğer', ico: '📎' },
 ];
 const LOCS = [
-    { n: 'İstanbul Havalimanı (IST)', i: '✈️', q: 'Istanbul Airport IST Turkey' },
-    { n: 'Sabiha Gökçen Havalimanı (SAW)', i: '✈️', q: 'Sabiha Gokcen Airport Istanbul' },
-    { n: 'Ankara Esenboğa (ESB)', i: '✈️', q: 'Ankara Esenboga Airport' },
-    { n: 'İzmir Adnan Menderes (ADB)', i: '✈️', q: 'Izmir Adnan Menderes Airport' },
-    { n: 'Antalya Havalimanı (AYT)', i: '✈️', q: 'Antalya Airport' },
-    { n: 'Dalaman Havalimanı (DLM)', i: '✈️', q: 'Dalaman Airport Turkey' },
-    { n: 'Bodrum Milas (BJV)', i: '✈️', q: 'Milas Bodrum Airport' },
-    { n: 'Trabzon Havalimanı (TZX)', i: '✈️', q: 'Trabzon Airport' },
-    { n: 'Bursa Yenişehir (BTZ)', i: '✈️', q: 'Bursa Yenisehir Airport' },
-    { n: 'İstanbul / Taksim', i: '📍', q: 'Taksim Square Istanbul' },
-    { n: 'İstanbul / Beşiktaş', i: '📍', q: 'Besiktas Istanbul' },
-    { n: 'İstanbul / Şişli', i: '📍', q: 'Sisli Istanbul' },
-    { n: 'İstanbul / Beyoğlu', i: '📍', q: 'Beyoglu Istanbul' },
-    { n: 'İstanbul / Fatih Sultanahmet', i: '📍', q: 'Sultanahmet Istanbul' },
-    { n: 'İstanbul / Bakırköy', i: '📍', q: 'Bakirkoy Istanbul' },
-    { n: 'İstanbul / Sarıyer', i: '📍', q: 'Sariyer Istanbul' },
-    { n: 'İstanbul / Eyüpsultan', i: '📍', q: 'Eyupsultan Istanbul' },
-    { n: 'İstanbul / Bahçelievler', i: '📍', q: 'Bahcelievler Istanbul' },
-    { n: 'İstanbul / Zeytinburnu', i: '📍', q: 'Zeytinburnu Istanbul' },
-    { n: 'İstanbul / Bağcılar', i: '📍', q: 'Bagcilar Istanbul' },
-    { n: 'İstanbul / Küçükçekmece', i: '📍', q: 'Kucukcekmece Istanbul' },
-    { n: 'İstanbul / Büyükçekmece', i: '📍', q: 'Buyukcekmece Istanbul' },
-    { n: 'İstanbul / Kadıköy (Asya)', i: '📍', q: 'Kadikoy Istanbul' },
-    { n: 'İstanbul / Üsküdar (Asya)', i: '📍', q: 'Uskudar Istanbul' },
-    { n: 'İstanbul / Maltepe (Asya)', i: '📍', q: 'Maltepe Istanbul' },
-    { n: 'İstanbul / Kartal (Asya)', i: '📍', q: 'Kartal Istanbul' },
-    { n: 'İstanbul / Pendik (Asya)', i: '📍', q: 'Pendik Istanbul' },
-    { n: 'İstanbul / Ataşehir (Asya)', i: '📍', q: 'Atasehir Istanbul' },
-    { n: 'İstanbul / Beykoz (Asya)', i: '📍', q: 'Beykoz Istanbul' },
-    { n: 'İstanbul / Tuzla (Asya)', i: '📍', q: 'Tuzla Istanbul' },
-    { n: 'İstanbul / Çırağan Palace Kempinski', i: '🏨', q: 'Ciragan Palace Kempinski Istanbul' },
-    { n: 'İstanbul / Raffles Hotel', i: '🏨', q: 'Raffles Istanbul' },
-    { n: 'İstanbul / Ritz-Carlton', i: '🏨', q: 'Ritz-Carlton Istanbul' },
-    { n: 'İstanbul / Grand Hyatt', i: '🏨', q: 'Grand Hyatt Istanbul' },
-    { n: 'İstanbul / Four Seasons Bosphorus', i: '🏨', q: 'Four Seasons Hotel Istanbul Bosphorus' },
-    { n: 'İstanbul / Shangri-La', i: '🏨', q: 'Shangri-La Bosphorus Istanbul' },
-    { n: 'İstanbul / Mandarin Oriental', i: '🏨', q: 'Mandarin Oriental Bosphorus Istanbul' },
-    { n: 'İstanbul / Conrad Istanbul', i: '🏨', q: 'Conrad Istanbul Bosphorus' },
-    { n: 'İstanbul / W Hotel Istanbul', i: '🏨', q: 'W Istanbul Hotel' },
-    { n: 'İstanbul / Marriott Şişli', i: '🏨', q: 'Istanbul Marriott Hotel Sisli' },
-    { n: 'İstanbul / Hilton Bosphorus', i: '🏨', q: 'Hilton Istanbul Bosphorus' },
-    { n: 'İstanbul / InterContinental', i: '🏨', q: 'InterContinental Istanbul' },
-    { n: 'İstanbul / Swissôtel Bosphorus', i: '🏨', q: 'Swissotel The Bosphorus Istanbul' },
-    { n: 'İstanbul / Pera Palace', i: '🏨', q: 'Pera Palace Hotel Istanbul' },
-    { n: 'İstanbul / Peninsula Istanbul', i: '🏨', q: 'The Peninsula Istanbul' },
-    { n: 'İstanbul / DoubleTree Topkapı', i: '🏨', q: 'DoubleTree Hilton Istanbul Topkapi' },
-    { n: 'Bursa / Osmangazi', i: '📍', q: 'Osmangazi Bursa' },
-    { n: 'Bursa / Nilüfer', i: '📍', q: 'Nilufer Bursa' },
-    { n: 'Bursa / Yıldırım', i: '📍', q: 'Yildirim Bursa' },
-    { n: 'Bursa / Gemlik', i: '📍', q: 'Gemlik Bursa' },
-    { n: 'Bursa / Mudanya', i: '📍', q: 'Mudanya Bursa' },
-    { n: 'Bursa / Gürsu', i: '📍', q: 'Gursu Bursa' },
-    { n: 'Bursa / Görükle', i: '📍', q: 'Gorukle Bursa' },
-    { n: 'Bursa / İnegöl', i: '📍', q: 'Inegol Bursa' },
-    { n: 'Bursa / Orhangazi', i: '📍', q: 'Orhangazi Bursa' },
-    { n: 'Bursa / İznik', i: '📍', q: 'Iznik Bursa' },
-    { n: 'Bursa / Uludağ', i: '🏔️', q: 'Uludag Bursa Turkey' },
-    { n: 'Bursa / Sheraton Grand', i: '🏨', q: 'Sheraton Grand Bursa Hotel' },
-    { n: 'Bursa / Hilton Garden Inn', i: '🏨', q: 'Hilton Garden Inn Bursa' },
-    { n: 'Bursa / DoubleTree Bursa', i: '🏨', q: 'DoubleTree by Hilton Bursa' },
-    { n: 'Bursa / Crowne Plaza', i: '🏨', q: 'Crowne Plaza Bursa' },
-    { n: 'Bursa / Almira Hotel', i: '🏨', q: 'Almira Hotel Bursa' },
-    { n: 'Ankara / Çankaya', i: '📍', q: 'Cankaya Ankara' },
-    { n: 'Ankara / Kızılay', i: '📍', q: 'Kizilay Ankara' },
-    { n: 'Antalya / Kemer', i: '🏖️', q: 'Kemer Antalya' },
-    { n: 'Antalya / Belek', i: '🏖️', q: 'Belek Antalya' },
-    { n: 'Antalya / Alanya', i: '🏖️', q: 'Alanya Antalya' },
-    { n: 'Bodrum / Merkez', i: '🏖️', q: 'Bodrum Turkey' },
-    { n: 'Marmaris / Merkez', i: '🏖️', q: 'Marmaris Turkey' },
-    { n: 'Fethiye / Göcek', i: '🏖️', q: 'Gocek Fethiye Turkey' },
-    { n: 'Kapadokya / Göreme', i: '🏔️', q: 'Goreme Cappadocia Turkey' },
+    { n: 'İstanbul Havalimanı', i: '✈️', q: 'Istanbul Airport IST Turkey' },
+    { n: 'Sabiha Gökçen Havalimanı', i: '✈️', q: 'Sabiha Gokcen Airport Istanbul' },
+    { n: 'Ankara Esenboğa Havalimanı', i: '✈️', q: 'Ankara Esenboga Airport' },
+    { n: 'İzmir Adnan Menderes Havalimanı', i: '✈️', q: 'Izmir Adnan Menderes Airport' },
+    { n: 'Antalya Havalimanı', i: '✈️', q: 'Antalya Airport' },
+    { n: 'Dalaman Havalimanı', i: '✈️', q: 'Dalaman Airport Turkey' },
+    { n: 'Bodrum Milas Havalimanı', i: '✈️', q: 'Milas Bodrum Airport' },
+    { n: 'Trabzon Havalimanı', i: '✈️', q: 'Trabzon Airport' },
+    { n: 'Bursa Yenişehir Havalimanı', i: '✈️', q: 'Bursa Yenisehir Airport' },
+    { n: 'İstanbul', i: '📍', q: 'Istanbul Turkey' },
+    { n: 'Bursa', i: '📍', q: 'Bursa Turkey' },
+    { n: 'Ankara', i: '📍', q: 'Ankara Turkey' },
+    { n: 'İzmir', i: '📍', q: 'Izmir Turkey' },
+    { n: 'Antalya', i: '📍', q: 'Antalya Turkey' },
+    { n: 'Muğla', i: '📍', q: 'Mugla Turkey' },
+    { n: 'Trabzon', i: '📍', q: 'Trabzon Turkey' },
+    { n: 'Nevşehir', i: '📍', q: 'Nevsehir Turkey' },
+    { n: 'Yalova', i: '📍', q: 'Yalova Turkey' },
+    { n: 'Kocaeli', i: '📍', q: 'Kocaeli Turkey' },
+    { n: 'Sakarya', i: '📍', q: 'Sakarya Turkey' },
+    { n: 'Balıkesir', i: '📍', q: 'Balikesir Turkey' },
+    { n: 'Çanakkale', i: '📍', q: 'Canakkale Turkey' },
+    { n: 'Eskişehir', i: '📍', q: 'Eskisehir Turkey' },
+    { n: 'Bilecik', i: '📍', q: 'Bilecik Turkey' },
 ];
 const ULKELER = [
     { k: 'TR', n: 'Türkiye' }, { k: 'DE', n: 'Almanya' }, { k: 'GB', n: 'İngiltere' },
@@ -1225,19 +1207,32 @@ const uniqNames = arr => {
 };
 const shortLoc = name => {
     if (!name) return '—';
-    const n = String(name);
-    if (/İstanbul Havalimanı/i.test(n)) return 'İHL';
-    if (/Sabiha Gökçen/i.test(n)) return 'SAW';
-    if (/Ankara Esenboğa/i.test(n)) return 'ESB';
-    if (/İzmir Adnan/i.test(n)) return 'ADB';
-    if (/Antalya Havalimanı/i.test(n)) return 'AYT';
-    if (/Dalaman/i.test(n)) return 'DLM';
-    if (/Bodrum Milas/i.test(n)) return 'BJV';
-    if (/Trabzon Havalimanı/i.test(n)) return 'TZX';
-    if (/Bursa Yenişehir/i.test(n)) return 'BTZ';
+    const n = String(name).trim();
+    if (!n) return '—';
+    if (/^(İHL|IHL)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\(IST\)/i.test(n)) return 'İstanbul Havalimanı';
+    if (/^SAW$/i.test(n) || /Sabiha Gökçen|Sabiha Gokcen|\(SAW\)/i.test(n)) return 'Sabiha Gökçen Havalimanı';
+    if (/^ESB$/i.test(n) || /Ankara Esenboğa|Ankara Esenboga|\(ESB\)/i.test(n)) return 'Ankara Esenboğa Havalimanı';
+    if (/^ADB$/i.test(n) || /İzmir Adnan|Izmir Adnan|\(ADB\)/i.test(n)) return 'İzmir Adnan Menderes Havalimanı';
+    if (/^AYT$/i.test(n) || /Antalya Havalimanı|Antalya Airport|\(AYT\)/i.test(n)) return 'Antalya Havalimanı';
+    if (/^DLM$/i.test(n) || /Dalaman|\(DLM\)/i.test(n)) return 'Dalaman Havalimanı';
+    if (/^BJV$/i.test(n) || /Bodrum Milas|Milas Bodrum|\(BJV\)/i.test(n)) return 'Bodrum Milas Havalimanı';
+    if (/^TZX$/i.test(n) || /Trabzon Havalimanı|Trabzon Airport|\(TZX\)/i.test(n)) return 'Trabzon Havalimanı';
+    if (/^BTZ$/i.test(n) || /Bursa Yenişehir|Bursa Yenisehir|\(BTZ\)/i.test(n)) return 'Bursa Yenişehir Havalimanı';
     const slash = n.match(/^([A-ZÇĞİÖŞÜa-zçğıöşü]+)\s*\//);
     if (slash) return slash[1];
-    return n.split('(')[0].trim();
+    const provinceList = ['İstanbul','Istanbul','Bursa','Ankara','İzmir','Izmir','Antalya','Muğla','Mugla','Trabzon','Nevşehir','Nevsehir','Yalova','Kocaeli','Sakarya','Balıkesir','Balikesir','Çanakkale','Canakkale','Eskişehir','Eskisehir','Bilecik'];
+    const hit = provinceList.find(p => new RegExp('(^|[^A-ZÇĞİÖŞÜa-zçğıöşü])' + p + '([^A-ZÇĞİÖŞÜa-zçğıöşü]|$)', 'i').test(n));
+    if (hit) {
+        if (/Istanbul/i.test(hit)) return 'İstanbul';
+        if (/Izmir/i.test(hit)) return 'İzmir';
+        if (/Mugla/i.test(hit)) return 'Muğla';
+        if (/Nevsehir/i.test(hit)) return 'Nevşehir';
+        if (/Balikesir/i.test(hit)) return 'Balıkesir';
+        if (/Canakkale/i.test(hit)) return 'Çanakkale';
+        if (/Eskisehir/i.test(hit)) return 'Eskişehir';
+        return hit;
+    }
+    return n.split('(')[0].split(',')[0].trim();
 };
 const transferStartDate = t => {
     if (!t || !t.date || !t.time) return null;
@@ -2441,7 +2436,7 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
     return (React.createElement("div", null,
         React.createElement("span", { className: "lbl" }, lbl),
         React.createElement("div", { style: { position: 'relative' } },
-            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir, havaliman\u0131, otel, il\u00E7e" }),
+            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir veya havaliman\u0131" }),
             show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #F2F2F7', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
                 React.createElement("span", { style: { fontSize: 14 } }, s.i),
                 React.createElement("span", null, s.n)))))))));
@@ -3071,7 +3066,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 560, cursor: 'pointer' } }, "‹"),
                 React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 520, color: NAV } }),
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 560, cursor: 'pointer' } }, "›"),
-                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: 'none', background: R, color: '#fff', fontWeight: 560, cursor: 'pointer' } }, "Bugün"))),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#EEF3EB', color: '#4F6B45', fontWeight: 560, cursor: 'pointer' } }, "Bugün"))),
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 520, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
@@ -6072,6 +6067,7 @@ function App() {
     };
     const getQ = locName => { const l = LOCS.find(x => x.n === locName); return l && l.q ? l.q : locName; };
     const drvMsg = (t, withMaps) => {
+        withMaps = false;
         const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         const px = (t.passengers || []).map((p, i) => {
             let line = (i + 1) + '. 👤 ' + (p.name || 'Misafir');
@@ -6096,10 +6092,6 @@ function App() {
             if (rotaItem) msg += rotaItem.ico + ' Rota: ' + rotaItem.n + '\n';
         }
         msg += '🎯 Varış: ' + t.dropoff + '\n';
-        if (withMaps) {
-            msg += '🗺️ Alış Konumu: https://maps.google.com/?q=' + encodeURIComponent(getQ(t.pickup)) + '\n';
-            msg += '🗺️ Varış Konumu: https://maps.google.com/?q=' + encodeURIComponent(getQ(t.dropoff)) + '\n';
-        }
         msg += '\n👥 Misafirler (' + t.passengerCount + ')\n' + px;
         if (t.paymentToMe) msg += '\n\n💳 Tahsilat: Hesap/ödeme bana geldi';
         else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
@@ -6213,7 +6205,7 @@ function App() {
     };
     const openMsg = (t, tp) => {
         if (tp === 'drv') {
-            setMsgM({ tp, t, withMaps: !!t.useMaps, txt: drvMsg(t, !!t.useMaps) });
+            setMsgM({ tp, t, withMaps: false, txt: drvMsg(t, false) });
             return;
         }
         if (tp === 'cus') {
@@ -6226,7 +6218,7 @@ function App() {
         }
         setMsgM({ txt: brdMsg(t), tp, t });
     };
-    const activeMsg = msgM ? (msgM.tp === 'drv' ? drvMsg(msgM.t, !!msgM.withMaps) : msgM.tp === 'cus' ? cusMsg(msgM.t, msgM.lang || 'tr') : msgM.tp === 'bos' ? msgM.txt : msgM.txt) : '';
+    const activeMsg = msgM ? (msgM.tp === 'drv' ? drvMsg(msgM.t, false) : msgM.tp === 'cus' ? cusMsg(msgM.t, msgM.lang || 'tr') : msgM.tp === 'bos' ? msgM.txt : msgM.txt) : '';
     const renderQuickEditModal = () => {
         if (!quickEditT) return null;
         const q = quickEditT;
@@ -6296,7 +6288,7 @@ function App() {
                 quickShowOlmezNet && React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#C8D8CC' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 750, textTransform: 'uppercase', letterSpacing: .4 } }, (q.date || 'Tarih yok') + ' · ' + (q.time || '--:--')),
-                        React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 560, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (q.pickup || 'Alış') + ' → ' + (q.dropoff || 'Bırakış'))),
+                        React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 560, marginTop: 3, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (q.pickup ? shortLoc(q.pickup) : 'Alış') + ' → ' + (q.dropoff ? shortLoc(q.dropoff) : 'Bırakış'))),
                     React.createElement("div", { style: { fontSize: 18, fontWeight: 850, color: previewNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } }, (previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺')),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 9 } },
                     field('Tarih', input({ type: 'date', defaultValue: q.date || '', onBlur: e => quickInputSet({ date: e.target.value }) })),
@@ -6900,7 +6892,7 @@ function App() {
                             e.stopPropagation();
                             const cl = t.driverPhone.replace(/\D/g, '');
                             const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl;
-                            window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(drvMsg(t, !!t.useMaps)), '_blank');
+                            window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(drvMsg(t, false)), '_blank');
                         }, style: { background: '#F2F2F7', color: '#1C1C1E', border: '1px solid #D1D1D6', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, fontWeight: 560 } }, '📱 WA')
                         : React.createElement("button", { disabled: true, style: { background: 'var(--surface)', color: 'var(--ink-4)', border: '1px solid var(--line)', borderRadius: 10, padding: '9px 0', fontSize: 11, fontWeight: 560 } }, '📱 WA'),
                     React.createElement("button", { onClick: e => { e.stopPropagation(); delT(t.id); }, style: { background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid var(--err-bd)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, fontWeight: 560 } }, '🗑 Sil')
@@ -7622,6 +7614,10 @@ function App() {
                             React.createElement("div", { className: "lg-period-sub" }, sub)
                         )
                 );
+                const homeLoc = loc => {
+                    const s = shortLoc(loc);
+                    return s && s !== '—' ? s : 'Belirtilmedi';
+                };
                 const renderHomeTransfer = t => {
                     if (!t)
                         return React.createElement("div", { className: "lg-empty" }, "Bu dönem transfer yok");
@@ -7630,41 +7626,44 @@ function App() {
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
-                    const routeText = (t.pickup || '—') + ' → ' + (t.dropoff || '—');
+                    const routeText = homeLoc(t.pickup) + ' → ' + homeLoc(t.dropoff);
                     const tip = TIPLER.find(x => x.id === t.transferType) || TIPLER[1];
                     const vehName = appleCalendarVehicle ? appleCalendarVehicle(t) : (t.vehicle || '');
-                    const stColor = t.status === 'tam' ? '#4A7256' : t.status === 'iptal' ? '#B0524C' : '#9A7636';
-                    const stBg = t.status === 'tam' ? '#E6EFE8' : t.status === 'iptal' ? '#FBEEEC' : '#F4EBDA';
-                    /* İşi veren → işi yapan (+ alt acenta varsa) */
-                    const acentaParts = [];
-                    if (t.givenBy) acentaParts.push(t.givenBy);
-                    if (t.assignedTo && t.assignedTo !== t.givenBy) acentaParts.push(t.assignedTo);
-                    if (t.altAcenta && t.altAcenta !== t.assignedTo) acentaParts.push(t.altAcenta);
-                    const acentaText = acentaParts.join(' → ');
+                    const acentaMain = [t.givenBy, t.assignedTo].filter(Boolean).join(' / ');
+                    const acentaText = acentaMain || 'Firma belirtilmedi';
+                    const altText = t.altAcenta || '';
+                    const payDone = collectionState === 'collected';
+                    const payText = payDone ? 'Tahsil edildi' : 'Tahsilat bekliyor';
+                    const payBg = payDone ? '#E6EFE8' : '#F5EBD6';
+                    const payColor = payDone ? '#4A7256' : '#8A6A2F';
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
                         style: { background: '#fff', border: '1px solid var(--line)', borderRadius: 12, padding: '8px 11px 8px 12px', boxShadow: 'var(--shadow)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
-                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: tip.c } }),
-                        React.createElement("div", { style: { display: 'flex', gap: 9 } },
-                            React.createElement("div", { style: { fontSize: 14, fontWeight: 580, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', flexShrink: 0, alignSelf: 'center', minWidth: 42 } }, t.time || '--:--'),
-                            React.createElement("div", { style: { minWidth: 0, flex: 1 } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '52px minmax(0,1fr)', alignItems: 'center', gap: 9, minHeight: 74 } },
+                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 660, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'center' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
                                     React.createElement("span", { style: { fontSize: 9, fontWeight: 560, padding: '1px 7px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0 } }, tip.n),
                                     vehName && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', flexShrink: 0 } }, vehName),
                                     flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', marginLeft: 'auto', flexShrink: 0 } }, flight)
                                 ),
-                                React.createElement("div", { style: { fontSize: 12, fontWeight: 500, color: '#2A2724', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText)
+                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 650, color: '#1C1C1E', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.22 } }, routeText),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                                    React.createElement("button", {
+                                        onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
+                                        style: { fontSize: 9, fontWeight: 600, padding: '2px 8px', borderRadius: 999, border: '1px solid rgba(60,60,67,.12)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
+                                    }, payText),
+                                    React.createElement("span", { style: { fontSize: 10, color: '#6B655C', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
+                                ),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', fontSize: 9.5, color: '#6A7068', fontWeight: 500, lineHeight: 1.18 } },
+                                    React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
+                                    altText && React.createElement("span", { style: { color: '#4F6B45', fontWeight: 650 } }, "→"),
+                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#4F6B45', fontWeight: 520 } }, altText)
+                                )
                             )
-                        ),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, paddingLeft: 51 } },
-                            React.createElement("button", {
-                                onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                style: { fontSize: 9, fontWeight: 600, padding: '1px 8px', borderRadius: 999, border: 'none', cursor: 'pointer', flexShrink: 0, background: collectionState === 'collected' ? '#E6EFE8' : stBg, color: collectionState === 'collected' ? '#4A7256' : stColor }
-                            }, collectionState === 'collected' ? '✓ ' + sl : sl),
-                            React.createElement("span", { style: { fontSize: 10, color: '#6B655C', fontWeight: 500, flexShrink: 0 } }, firstPas),
-                            acentaText && React.createElement("span", { style: { fontSize: 9.5, color: '#9A9388', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 } }, "· " + acentaText)
                         )
                     );
                 };
@@ -7701,7 +7700,7 @@ function App() {
                             },
                             React.createElement("div", { className: "lg-mini-time" }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0 } },
-                                React.createElement("div", { className: "lg-mini-route" }, (t.pickup || '—') + ' → ' + (t.dropoff || '—')),
+                                React.createElement("div", { className: "lg-mini-route" }, homeLoc(t.pickup) + ' → ' + homeLoc(t.dropoff)),
                                 React.createElement("div", { className: "lg-mini-date" }, homeDateLabel(t.date))
                             ),
                             miniFlight && React.createElement("div", { className: "lg-mini-pill" }, miniFlight)
@@ -7764,21 +7763,21 @@ function App() {
                 };
 
                 return React.createElement("div", { className: "lg-home" },
-                    React.createElement("div", { className: "lg-glass-card lg-greeting-card", style: { flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: '13px 14px' } },
-                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 } },
-                            React.createElement("div", { style: { minWidth: 0 } },
-                                React.createElement("div", { style: { fontSize: 16, fontWeight: 550, color: '#2A2724', letterSpacing: '-0.01em', lineHeight: 1.15 } }, "Operasyon Sistemi"),
-                                React.createElement("div", { style: { fontSize: 11, fontWeight: 400, color: '#9A9388', marginTop: 3 } }, todayFmt)
+                    React.createElement("div", { className: "lg-glass-card lg-greeting-card", style: { flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: '14px 14px 12px', borderRadius: 18 } },
+                        React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'start', gap: 12 } },
+                            React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
+                                React.createElement("div", { style: { fontSize: 16.5, fontWeight: 620, color: '#4A7256', lineHeight: 1.12 } }, "Operasyon Sistemi"),
+                                React.createElement("div", { style: { fontSize: 11, fontWeight: 430, color: '#6A7068', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
-                            React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0 } },
-                                React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek"),
-                                React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile" }, "↻")
+                            React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
+                                React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme", "aria-label": "Yedekleme", style: { width: 34, height: 34, minHeight: 34, padding: 0, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#4F6B45', background: '#F7F7F4' } }, "⇩"),
+                                React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile", "aria-label": "Kurları yenile", style: { width: 34, height: 34, minHeight: 34, padding: 0, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#4F6B45', background: '#F7F7F4' } }, "↻")
                             )
                         ),
-                        React.createElement("div", { style: { display: 'flex', gap: 14, marginTop: 11, justifyContent: 'center' } },
-                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, style: { display: 'flex', alignItems: 'baseline', gap: 4 } },
-                                React.createElement("span", { style: { fontSize: 9.5, fontWeight: 500, color: '#A39C90', letterSpacing: '.02em' } }, code),
-                                React.createElement("span", { style: { fontSize: 11.5, fontWeight: 550, color: '#5E5A52', fontVariantNumeric: 'tabular-nums' } }, rateValue(code))
+                        React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6, marginTop: 11 } },
+                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, style: { minHeight: 30, border: '1px solid #D9DDD7', borderRadius: 12, background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 } },
+                                React.createElement("span", { style: { fontSize: 9.5, fontWeight: 520, color: '#6A7068' } }, code),
+                                React.createElement("span", { style: { fontSize: 11.5, fontWeight: 560, color: '#252823', fontVariantNumeric: 'tabular-nums' } }, rateValue(code))
                             ))
                         )
                     ),
@@ -8292,7 +8291,7 @@ function App() {
                 editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(60,60,67,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 620, color: G } }, "Transfer düzenleniyor"),
-                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup || 'Alış') + ' → ' + (form.dropoff || 'Bırakış'))),
+                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? shortLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? shortLoc(form.dropoff) : 'Bırakış'))),
                     React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(60,60,67,.22)', background: '#fff', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 560, cursor: 'pointer' } }, "Yeni kayıt")),
                 React.createElement("div", { className: "card ko-schedule-card" },
                     /* SOL: Tarih (üstünde TIP açılır pill) + SAĞ: Saat (üstünde MOD açılır pill) */
@@ -8758,23 +8757,23 @@ function App() {
         React.createElement("nav", { className: "tabbar" },
             React.createElement("div", { className: "tabbar-inner" },
                 React.createElement("button", { className: "tab" + (tab === 'home' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('home'); }, onClick: () => setTab('home') },
-                    React.createElement("div", { className: "tab-icon" }, "⌂"),
+                    React.createElement("div", { className: "tab-icon" }, "🏠"),
                     React.createElement("div", { className: "tab-label" }, "Ana Sayfa")
                 ),
                 React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('list'); }, onClick: () => setTab('list') },
-                    React.createElement("div", { className: "tab-icon" }, "≡"),
+                    React.createElement("div", { className: "tab-icon" }, "📋"),
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
                 React.createElement("button", { className: "tab-fab", onPointerDown: (e) => { e.preventDefault(); openNewTransferForm(); }, onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
                     React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
-                React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('hesap'); }, onClick: () => setTab('hesap') },
-                    React.createElement("div", { className: "tab-icon" }, "₺"),
-                    React.createElement("div", { className: "tab-label" }, "Hesap")
-                ),
                 React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('arac'); }, onClick: () => setTab('arac') },
-                    React.createElement("div", { className: "tab-icon" }, "▰"),
+                    React.createElement("div", { className: "tab-icon" }, "🚐"),
                     React.createElement("div", { className: "tab-label" }, "Araç")
+                ),
+                React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('hesap'); }, onClick: () => setTab('hesap') },
+                    React.createElement("div", { className: "tab-icon" }, "💰"),
+                    React.createElement("div", { className: "tab-label" }, "Hesap")
                 )
             )
         ),
@@ -8795,11 +8794,6 @@ function App() {
                         React.createElement("div", { style: { fontSize: 10, color: SB } }, "Mesajı Türkçe, English veya العربية olarak gönderebilirsin.")),
                     React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                         [['tr','Türkçe'],['en','English'],['ar','العربية']].map(([lc,lb]) => React.createElement("button", { key: lc, onClick: () => setMsgM(m => ({ ...m, lang: lc })), style: { background: (msgM.lang || 'tr') === lc ? NAV : '#fff', color: (msgM.lang || 'tr') === lc ? '#fff' : NAV, border: '1px solid ' + ((msgM.lang || 'tr') === lc ? NAV : BOR), borderRadius: 999, padding: '8px 10px', fontWeight: 600, fontSize: '11px', cursor: 'pointer' } }, lb))))),
-                msgM.tp === 'drv' && (React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#F2F2F7', border: '1px solid #D1D1D6', borderRadius: 12, padding: '10px 12px', marginBottom: 12 } },
-                    React.createElement("div", null,
-                        React.createElement("div", { style: { fontWeight: 600, fontSize: 12, color: G } }, "🗺️ Google Maps olsun mu?"),
-                        React.createElement("div", { style: { fontSize: 10, color: SB } }, "Kaptana giden mesaja konum linklerini burada ekleyip kaldırabilirsin.")),
-                    React.createElement("button", { onClick: () => setMsgM(m => ({ ...m, withMaps: !m.withMaps })), style: { minWidth: 82, background: msgM.withMaps ? G : '#fff', color: msgM.withMaps ? '#fff' : NAV, border: '1px solid ' + (msgM.withMaps ? G : BOR), borderRadius: 999, padding: '9px 12px', fontWeight: 600, fontSize: '11px', cursor: 'pointer' } }, msgM.withMaps ? 'Olsun' : 'Olmasın'))),
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 18 } },
                     React.createElement("button", { onClick: () => cpTxt(activeMsg), style: { flex: 1, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 13, padding: 13, fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }, "\uD83D\uDCCB Kopyala"),
                     ((msgM.tp === 'drv' && msgM.t?.driverPhone) || (msgM.tp === 'cus' && msgM.t?.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone)) && (React.createElement("button", { onClick: () => { const raw = msgM.tp === 'drv' ? msgM.t.driverPhone : ((msgM.t.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone) || ''); const cl = String(raw || '').replace(/\D/g, ''); const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl; if (n) window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(activeMsg), '_blank'); }, style: { background: '#1C1C1E', color: '#fff', border: 'none', borderRadius: 13, padding: '13px 16px', fontWeight: 600, fontSize: '13px', cursor: 'pointer' } }, "WA")))))),
