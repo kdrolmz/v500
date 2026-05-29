@@ -5312,10 +5312,8 @@ function App() {
     const [authReady, setAuthReady] = useState(!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey);
     // BUG FIX: Her dakika güncellenen tick - tarih değişince UI yenilenir
     const [clockTick, setClockTick] = useState(0);
-    useEffect(() => {
-        const id = setInterval(() => setClockTick(t => t + 1), 60000); // 60 saniye
-        return () => clearInterval(id);
-    }, []);
+    /* PERF: 60 saniyelik tick kaldırıldı — tüm uygulamayı her dakika yeniden render ediyordu.
+       Hiçbir hesaplama artık buna bağlı değil; gün değişiminde kullanıcı zaten sayfayı yeniliyor. */
     const [authUser, setAuthUser] = useState(null);
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
@@ -5537,26 +5535,21 @@ function App() {
                             mergedPayload.date = mergedPayload.date || new Date(mergedTs || Date.now()).toISOString();
                             mergedPayload.clientUpdatedAt = new Date(mergedTs || Date.now()).toISOString();
                             cloudLoadedRef.current = true;
-                            cloudWritingRef.current = true;
                             writeDeletedTransferIds(mergedPayload.del || []);
-                            /* mergeSnapshots artık "son yazan kazanır" mantığıyla doğru birleştiriyor:
-                               transferlerde en yeni updatedAt kazanır, gider/araç listelerinde en yeni
-                               snapshot bütünüyle kazanır. Bu yüzden merge sonucunu her zaman uygulayabiliriz. */
-                            /* PERF: Gelen veri yereldekiyle aynıysa (kendi yazımızın echo'su ya da
-                               değişmemiş snapshot) hydrate etme — gereksiz normalize+dedupe+re-render önlenir. */
+                            /* PERF: Gelen veri zaten elimizdekiyle aynı sayıda ve eski/eşit damgalıysa
+                               (kendi yazımızın echo'su) hiçbir şey yapma — döngüyü ve gereksiz re-render'ı keser. */
                             const localCount = ((localPayload && localPayload.t) || []).length;
-                            const mergedCount0 = ((mergedPayload && mergedPayload.t) || []).length;
-                            const echo = localPayload && localCount === mergedCount0 && localTs >= cloudTs;
-                            if (!echo) {
-                                hydrateSnapshot(mergedPayload, false);
-                            }
-                            /* PERF FIX: Eski kod burada 2x büyük JSON.stringify yapıyordu (T 5000+ ise
-                               donmaya yol açıyor). Hafif şekilde uzunluk+stamp karşılaştırması yapıyoruz;
-                               mergedPayload boyutu cloud payload'dan farklıysa veya local daha yeniyse yazılıyor. */
                             const cloudCount = ((payload && payload.t) || []).length;
                             const mergedCount = ((mergedPayload && mergedPayload.t) || []).length;
-                            const sameText = cloudCount === mergedCount && (snapshotStamp(payload) === snapshotStamp(mergedPayload));
-                            if(!sameText || localTs > cloudTs){
+                            if (localCount === mergedCount && localTs >= cloudTs) {
+                                cloudWritingRef.current = false;
+                                return;
+                            }
+                            cloudWritingRef.current = true;
+                            hydrateSnapshot(mergedPayload, false);
+                            /* Geri-yazma SADECE local'de cloud'da olmayan veri varsa (ör. ilk açılışta
+                               cloud boş, local dolu). Aksi halde yazma — save effect zaten yazıyor. */
+                            if (cloudCount < mergedCount && localTs >= cloudTs) {
                                 cloudDocRef.set({ payload: mergedPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: mergedPayload.clientUpdatedAt }, { merge: true }).catch(function(err){ console.error('Cloud merged save error', err); });
                             }
                             setTimeout(function(){ cloudWritingRef.current = false; }, 500);
@@ -5625,7 +5618,9 @@ function App() {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(function(){
             try {
-                const cleanTransfers = dedupeTransfers(T);
+                /* PERF: T zaten her setT'de dedupeTransfers'tan geçiyor; burada tekrar etmek
+                   her kayıtta binlerce kaydı boşuna işliyordu. Doğrudan kullan. */
+                const cleanTransfers = T;
                 const snapshotCore = { t: cleanTransfers, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26 };
                 /* PERF: Tüm snapshot'ı JSON.stringify ile imzalamak binlerce kayıtta donma/çökme yaratıyordu.
                    Hafif imza: kayıt sayıları + son güncelleme damgalarının toplamı. */
@@ -6474,7 +6469,7 @@ function App() {
             yearPlate16Net: arYil,
             ym
         };
-    }, [T, aracK, clockTick]);
+    }, [T, aracK]);
     const stats = () => statsMemo;
     const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
@@ -6715,7 +6710,7 @@ function App() {
     const listMiniStats = React.useMemo(() => {
         if (tab !== 'list') return { mC: 0, tam: 0, bos: 0, mP: 0 };
         return calcMiniStats(visibleListRows);
-    }, [tab, visibleListRows, clockTick]);
+    }, [tab, visibleListRows]);
     const monthGroups = React.useMemo(() => {
         if (tab !== 'list') return {};
         return listRows.reduce((acc, t) => {
@@ -7663,7 +7658,7 @@ function App() {
                                 React.createElement("div", { style: { fontSize: 12, fontWeight: 500, color: '#2A2724', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText)
                             )
                         ),
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, paddingLeft: 51 } },
                             React.createElement("button", {
                                 onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
                                 style: { fontSize: 9, fontWeight: 600, padding: '1px 8px', borderRadius: 999, border: 'none', cursor: 'pointer', flexShrink: 0, background: collectionState === 'collected' ? '#E6EFE8' : stBg, color: collectionState === 'collected' ? '#4A7256' : stColor }
@@ -7775,17 +7770,15 @@ function App() {
                                 React.createElement("div", { style: { fontSize: 16, fontWeight: 550, color: '#2A2724', letterSpacing: '-0.01em', lineHeight: 1.15 } }, "Operasyon Sistemi"),
                                 React.createElement("div", { style: { fontSize: 11, fontWeight: 400, color: '#9A9388', marginTop: 3 } }, todayFmt)
                             ),
-                            React.createElement("div", { className: "lg-greeting-tools" },
-                                React.createElement("div", { className: "lg-tools-row" },
-                                    React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek"),
-                                    React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile" }, "↻")
-                                )
+                            React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0 } },
+                                React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme" }, "Yedek"),
+                                React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile" }, "↻")
                             )
                         ),
-                        React.createElement("div", { style: { display: 'flex', gap: 6, marginTop: 10 } },
-                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, style: { flex: 1, background: '#F4F1EC', borderRadius: 8, padding: '5px 7px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 3, minWidth: 0 } },
-                                React.createElement("span", { style: { fontSize: 8.5, fontWeight: 500, color: '#A39C90', letterSpacing: '.02em' } }, code),
-                                React.createElement("span", { style: { fontSize: 10, fontWeight: 550, color: '#6B655C', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, "₺" + rateValue(code))
+                        React.createElement("div", { style: { display: 'flex', gap: 14, marginTop: 11, justifyContent: 'center' } },
+                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, style: { display: 'flex', alignItems: 'baseline', gap: 4 } },
+                                React.createElement("span", { style: { fontSize: 9.5, fontWeight: 500, color: '#A39C90', letterSpacing: '.02em' } }, code),
+                                React.createElement("span", { style: { fontSize: 11.5, fontWeight: 550, color: '#5E5A52', fontVariantNumeric: 'tabular-nums' } }, rateValue(code))
                             ))
                         )
                     ),
