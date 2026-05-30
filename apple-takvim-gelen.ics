@@ -1917,23 +1917,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1779957163157_n07p6n@olmeztur
-DTSTAMP:20260530T194100Z
-LAST-MODIFIED:20260528T083200Z
-SEQUENCE:1779957163
-DTSTART:20260531T021500
-DTEND:20260531T031500
-SUMMARY:02:15 · İstanbul → Bursa  Sprinter
-LOCATION:İstanbul Havalimanı (IST) → Bursa / Osmangazi
-DESCRIPTION:Müşteri: Mohammad Almulla\nŞoför: Balentur\nİşi veren: Jabır
- \nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: İ
- stanbul Havalimanı (IST) → Bursa / Osmangazi\nUçuş: KU151\nÖdeme: Müşter
- i ödemez | Araç: 7.700 ₺ | Alt acenta: 5.500 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1779957339368_tkb0lj@olmeztur
 DTSTAMP:20260530T194100Z
 LAST-MODIFIED:20260528T083500Z
@@ -1981,6 +1964,23 @@ DESCRIPTION:Müşteri: Laila Alenezi ovaakça\nŞoför: Kadir Ölmez / +90 (54
  -\nAraç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı (SAW) → Bu
  rsa Downtown A blok\nUçuş: KU157\nÖdeme: Müşteri: 160 USD | Araç: 6.816 
  ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1779957163157_n07p6n@olmeztur
+DTSTAMP:20260530T194100Z
+LAST-MODIFIED:20260530T194100Z
+SEQUENCE:1780170112
+DTSTART:20260731T021500
+DTEND:20260731T031500
+SUMMARY:02:15 · İstanbul → Bursa  Sprinter
+LOCATION:İstanbul Havalimanı (IST) → Bursa / Osmangazi
+DESCRIPTION:Müşteri: Mohammad Almulla\nŞoför: Balentur\nİşi veren: Jabır
+ \nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: İ
+ stanbul Havalimanı (IST) → Bursa / Osmangazi\nUçuş: KU151\nÖdeme: Müşter
+ i ödemez | Araç: 7.700 ₺ | Alt acenta: 5.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
