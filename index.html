@@ -287,6 +287,7 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .tcard-flow{grid-area:flow !important;display:grid !important;grid-template-columns:1fr !important;gap:4px !important;padding-top:7px !important;margin-top:1px !important;border-top:1px solid #E5E5EA !important;min-width:0 !important}
 .tcard-pills{display:flex !important;flex-wrap:wrap !important;gap:4px !important;align-items:center !important;min-width:0 !important}
 .tcard-pill-flight{color:#636366 !important;background:#F5F5F7 !important}
+.tcard-pill-alt{background:#FBF4E6 !important;border-color:#C9A24E !important;color:#7A5A1E !important;-webkit-text-fill-color:#7A5A1E !important;font-weight:600 !important}
 .tcard-paystatus.is-pending{background:#fff5f4 !important;border-color:rgba(178,96,92,.28) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .tcard-paystatus.is-paid{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:#4F6B45 !important;-webkit-text-fill-color:#4F6B45 !important}
 .lg-chip-ok{background:#f2f7f4 !important;border-color:rgba(31,122,77,.28) !important;color:#4F6B45 !important;-webkit-text-fill-color:#4F6B45 !important}
@@ -403,6 +404,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#4F6B45 !importa
   box-shadow:none !important;
 }
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important;border-color:#D1D1D6 !important;color:#636366 !important;-webkit-text-fill-color:#636366 !important}
+.tcard-pill.tcard-pill-alt{background:#FBF4E6 !important;border-color:#C9A24E !important;color:#7A5A1E !important;-webkit-text-fill-color:#7A5A1E !important;font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{background:#EAF3FF !important;border-color:rgba(47,101,167,.24) !important;color:#2F65A7 !important;-webkit-text-fill-color:#2F65A7 !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{background:#FFF8E8 !important;border-color:rgba(154,106,31,.30) !important;color:#9A6A1F !important;-webkit-text-fill-color:#9A6A1F !important}
 .tcard-paystatus.is-paid,.lg-chip-ok{background:#F2F7F4 !important;border-color:rgba(31,122,77,.28) !important;color:#4F6B45 !important;-webkit-text-fill-color:#4F6B45 !important}
@@ -3316,6 +3318,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             return;
         if (!window.confirm('Bu ödeme kaydı silinsin mi?'))
             return;
+        try { addDeletedAracId(id); } catch (e) {}
         setAccountAdjustments(p => (Array.isArray(p) ? p : []).filter(x => String(x && x.id) !== String(id)));
         tip && tip('Ödeme kaydı silindi');
     };
@@ -5372,6 +5375,9 @@ function App() {
     const lastSaveSigRef = useRef('');
     const cloudBackoffUntilRef = useRef(0);
     const submitBusyRef = useRef(false);
+    /* Canlı state aynası: bulut echo'su localStorage debounce'undan (500ms) önce gelse bile
+       merge sırasında EN GÜNCEL local kayıtları (adj/ak/db/tk/tl) kullanmak için. */
+    const liveStateRef = useRef({});
     const quickDraftRef = useRef(null);
     const draftSaveTimerRef = useRef(null);
     const plate16SyncTimerRef = useRef(null);
@@ -5410,7 +5416,17 @@ function App() {
     }, [tab, form, editId]);
     useEffect(() => {
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
-    }, [aracK]);
+        try {
+            liveStateRef.current = {
+                t: Array.isArray(T) ? T : [],
+                ak: Array.isArray(aracK) ? aracK : [],
+                db: Array.isArray(debts) ? debts : [],
+                adj: Array.isArray(accountAdjustments) ? accountAdjustments : [],
+                tk: Array.isArray(todos) ? todos : [],
+                tl: Array.isArray(tkLedger) ? tkLedger : []
+            };
+        } catch (e) {}
+    }, [T, aracK, debts, accountAdjustments, todos, tkLedger]);
     useEffect(() => {
         if (!storageReady)
             return;
@@ -5571,7 +5587,18 @@ function App() {
                             const data = snap.data() || {};
                             const payload = data.payload || data;
                             if(!payload || !Array.isArray(payload.t)) { cloudLoadedRef.current = true; return; }
-                            const mergedPayload = mergeSnapshots(payload, localPayload || {}, deletedIds);
+                            /* BUG FIX (ödeme/bakiye ve gider kaybı): localStorage 500ms debounce ile yazılıyor.
+                               Bulut echo'su bu yazımdan önce gelirse localPayload eski kalır ve merge yeni eklenen
+                               kaydı (adj/ak/db/tk/tl) kaybeder. Çözüm: merge'in local tarafını EN GÜNCEL React
+                               state'iyle (liveStateRef) zenginleştir; böylece yeni eklenen asla uçmaz. */
+                            const live = liveStateRef.current || {};
+                            const localForMerge = { ...(localPayload || {}) };
+                            ['adj', 'ak', 'db', 'tk', 'tl'].forEach(function(k){
+                                const liveArr = Array.isArray(live[k]) ? live[k] : null;
+                                const lsArr = Array.isArray(localForMerge[k]) ? localForMerge[k] : [];
+                                if (liveArr && liveArr.length >= lsArr.length) localForMerge[k] = liveArr;
+                            });
+                            const mergedPayload = mergeSnapshots(payload, localForMerge, deletedIds);
                             const localTs = snapshotStamp(localPayload);
                             const cloudTs = snapshotStamp(payload) || snapshotStamp(data);
                             const mergedTs = Math.max(localTs, cloudTs, snapshotStamp(mergedPayload));
@@ -5588,17 +5615,26 @@ function App() {
                             const localCount = ((localPayload && localPayload.t) || []).length;
                             const cloudCount = ((payload && payload.t) || []).length;
                             const mergedCount = ((mergedPayload && mergedPayload.t) || []).length;
-                            const localAk = ((localPayload && localPayload.ak) || []).length;
-                            const mergedAk = ((mergedPayload && mergedPayload.ak) || []).length;
-                            if (localCount === mergedCount && localAk === mergedAk && localTs >= cloudTs) {
+                            /* Tüm liste tipleri için canlı state ile birleşmiş sonucu karşılaştır:
+                               herhangi birinde fark varsa hydrate + (gerekirse) geri-yazma yap. */
+                            const listKeys = ['ak', 'db', 'adj', 'tk', 'tl'];
+                            const localLen = k => {
+                                const liveArr = Array.isArray(live[k]) ? live[k] : null;
+                                if (liveArr) return liveArr.length;
+                                return ((localPayload && localPayload[k]) || []).length;
+                            };
+                            const cloudLen = k => ((payload && payload[k]) || []).length;
+                            const mergedLen = k => ((mergedPayload && mergedPayload[k]) || []).length;
+                            const listsLocalMatchMerged = listKeys.every(k => localLen(k) === mergedLen(k));
+                            const cloudMissingSomething = listKeys.some(k => cloudLen(k) < mergedLen(k));
+                            if (localCount === mergedCount && listsLocalMatchMerged && localTs >= cloudTs) {
                                 cloudWritingRef.current = false;
                                 return;
                             }
                             cloudWritingRef.current = true;
                             hydrateSnapshot(mergedPayload, false);
-                            /* Geri-yazma: local'de cloud'da olmayan transfer VEYA araç kaydı varsa yaz. */
-                            const cloudAk = ((payload && payload.ak) || []).length;
-                            if ((cloudCount < mergedCount || cloudAk < mergedAk) && localTs >= cloudTs) {
+                            /* Geri-yazma: local'de (canlı) cloud'da olmayan kayıt varsa buluta yaz. */
+                            if ((cloudCount < mergedCount || cloudMissingSomething) && localTs >= cloudTs) {
                                 cloudDocRef.set({ payload: mergedPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: mergedPayload.clientUpdatedAt }, { merge: true }).catch(function(err){ console.error('Cloud merged save error', err); });
                             }
                             setTimeout(function(){ cloudWritingRef.current = false; }, 500);
@@ -5677,9 +5713,13 @@ function App() {
                     cleanTransfers.length,
                     cleanTransfers.reduce((s, x) => s + (Date.parse(x.updatedAt || x.clientUpdatedAt || x.createdAt || '') || 0), 0),
                     agencies.length, drivers.length, aracK.length, debts.length, accountAdjustments.length, todos.length, tkLedger.length,
-                    /* BUG FIX: aracK içeriği imzaya katılıyor — bir gider silinip başka biri eklenince
-                       sayı sabit kalsa bile imza değişsin ve kayıt mutlaka diske/buluta yazılsın. */
+                    /* BUG FIX: aracK + adj/db/tk/tl içeriği imzaya katılıyor — bir kayıt silinip başka biri
+                       eklenince sayı sabit kalsa bile imza değişsin ve kayıt mutlaka diske/buluta yazılsın. */
                     (Array.isArray(aracK) ? aracK : []).reduce((s, k) => s + (String(k && k.id || '').length) + (Number(moneyValue(k && (k.tutar != null ? k.tutar : k.arac))) || 0), 0),
+                    (Array.isArray(accountAdjustments) ? accountAdjustments : []).reduce((s, k) => s + (String(k && k.id || '').length) + (Number(moneyValue(k && (k.amount != null ? k.amount : k.netOl))) || 0), 0),
+                    (Array.isArray(debts) ? debts : []).reduce((s, k) => s + (String(k && k.id || '').length), 0),
+                    (Array.isArray(todos) ? todos : []).reduce((s, k) => s + (String(k && k.id || '').length), 0),
+                    (Array.isArray(tkLedger) ? tkLedger : []).reduce((s, k) => s + (String(k && k.id || '').length), 0),
                     JSON.stringify(rates), lastRateUpdate || '', (readDeletedTransferIds() || []).length, (readDeletedAracIds() || []).length
                 ];
                 const saveSig = sigParts.join('|');
@@ -6929,7 +6969,7 @@ function App() {
                             React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 560, letterSpacing: .5, textTransform: 'uppercase' } }, 'Ödeme Durumu'),
                             React.createElement("div", { style: { fontSize: 12, fontWeight: 560, color: collectionState === 'collected' ? G : R, marginTop: 2 } }, collectionState === 'collected' ? 'Şirket ödemeyi aldı' : 'Ödeme bekleniyor')
                         ),
-                        t.altAcenta && React.createElement("span", { style: { background: '#fff', color: BR, border: '1px solid #D1D1D6', borderRadius: 6, padding: '3px 7px', fontSize: 10, fontWeight: 560 } }, 'Alt: ' + t.altAcenta)
+                        t.altAcenta && React.createElement("span", { style: { background: '#F2F2F7', color: '#1C1C1E', WebkitTextFillColor: '#1C1C1E', border: '1px solid #C9A24E', borderRadius: 6, padding: '3px 7px', fontSize: 10, fontWeight: 600 } }, 'Alt: ' + t.altAcenta)
                     ),
                     /* Notes */
                     t.notes && React.createElement("div", { style: { gridColumn: '1 / -1', background: '#fff', borderRadius: 9, padding: '8px 10px', border: '1px solid #D1D1D6' } },
