@@ -1045,8 +1045,31 @@ const BF = {
 const STORAGE_KEY = 'tp10';
 const LEGACY_STORAGE_KEYS = ['tp9'];
 const DELETED_TRANSFER_IDS_KEY = 'tp10_deleted_ids';
+const DELETED_ARAC_IDS_KEY = 'tp10_deleted_arac_ids';
 const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]'); } catch (e) { return []; } };
 const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
+const readDeletedAracIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_ARAC_IDS_KEY) || '[]'); } catch (e) { return []; } };
+const writeDeletedAracIds = ids => { try { localStorage.setItem(DELETED_ARAC_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))).slice(-4000))); } catch (e) { } };
+const addDeletedAracId = id => { if (!id) return; try { const cur = readDeletedAracIds(); cur.push(String(id)); writeDeletedAracIds(cur); } catch (e) { } };
+/* ID-bazlı birleştirme: iki snapshot'taki TÜM kayıtları korur (gider dahil),
+   sadece açıkça silinmiş ID'leri çıkarır. Aynı ID iki tarafta varsa daha yeni/dolu olanı tutar.
+   Bu sayede "bir tarafta yeni eklenmiş gider" diğer snapshot eski olsa bile asla kaybolmaz. */
+const mergeRecordsByIdWithDeletes = (preferred, fallback, deletedIds) => {
+    const deleted = new Set((deletedIds || []).map(String));
+    const map = new Map();
+    const put = x => {
+        if (!x) return;
+        const id = (x.id != null) ? String(x.id) : ('row:' + JSON.stringify(x));
+        if (deleted.has(id)) return;
+        if (!map.has(id)) { map.set(id, x); return; }
+        const prev = map.get(id);
+        /* Daha çok alan içeren (daha dolu/güncel) kaydı tut */
+        map.set(id, (Object.keys(x).length >= Object.keys(prev).length) ? x : prev);
+    };
+    (fallback || []).forEach(put);
+    (preferred || []).forEach(put);
+    return Array.from(map.values());
+};
 const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' });
 const passengerIdDisplay = p => String((p && (p.idNo || p.tc || p.pasaport)) || '');
 const splitPassengerId = v => {
@@ -1433,24 +1456,28 @@ const mergeRecordLists = (preferred, fallback) => {
 const snapshotDeletedIds = (...items) => uniq(items.flatMap(x => Array.isArray(x) ? x : (x && Array.isArray(x.del) ? x.del : []))).map(String);
 const mergeSnapshots = (preferred, fallback, deletedIds) => {
     const allDeleted = snapshotDeletedIds(deletedIds || [], preferred || {}, fallback || {});
-    /* BUG FIX: Gider/araç/borç/todo gibi listeler için "son yazan kazanır" mantığı.
-       Önceden mergeRecordLists ile birleştiriliyordu; bu birleştirme hiçbir şeyi silmediği için
-       kullanıcının sildiği bir gider, buluttaki eski kopyadan geri geliyordu.
-       Artık hangi snapshot daha yeniyse (clientUpdatedAt) o tarafın listesi olduğu gibi kabul edilir. */
-    const pStamp = snapshotStamp(preferred);
-    const fStamp = snapshotStamp(fallback);
-    const preferredNewer = pStamp >= fStamp;
-    const pickList = (key) => {
-        const pv = (preferred && Array.isArray(preferred[key])) ? preferred[key] : null;
-        const fv = (fallback && Array.isArray(fallback[key])) ? fallback[key] : null;
-        if (pv === null) return fv || [];
-        if (fv === null) return pv || [];
-        return preferredNewer ? pv : fv;
-    };
+    /* BUG FIX (gider kaybı): Eskiden ak/db/tk/tl/adj listeleri için "son yazan kazanır" vardı.
+       Bu, bir cihazda yeni eklenen gider, diğer (bulut) snapshot biraz daha yeni damgalıysa
+       komple kayboluyordu. Artık ID-bazlı birleştirme yapılıyor: her iki taraftaki tüm kayıtlar
+       korunur, yalnızca AÇIKÇA silinmiş ID'ler (delA / readDeletedAracIds) çıkarılır.
+       Böylece gider ekleyip uygulamayı kapatıp açınca giderler ASLA silinmez. */
+    const delA = new Set([
+        ...((preferred && Array.isArray(preferred.delA)) ? preferred.delA : []),
+        ...((fallback && Array.isArray(fallback.delA)) ? fallback.delA : [])
+    ].map(String));
+    let lsDelA = [];
+    try { lsDelA = readDeletedAracIds(); } catch (e) {}
+    lsDelA.forEach(x => delA.add(String(x)));
+    const mergeById = key => mergeRecordsByIdWithDeletes(
+        (preferred && Array.isArray(preferred[key])) ? preferred[key] : [],
+        (fallback && Array.isArray(fallback[key])) ? fallback[key] : [],
+        Array.from(delA)
+    );
     return {
         ...(fallback || {}),
         ...(preferred || {}),
         del: allDeleted,
+        delA: Array.from(delA),
         t: mergeTransferLists((preferred || {}).t || [], (fallback || {}).t || [], allDeleted),
         a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])]),
         dr: uniq([...(fallback && fallback.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d)), ...(preferred && preferred.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d))]).map(x => {
@@ -1462,11 +1489,11 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
             }
         }),
         ap: { ...((fallback && fallback.ap) || {}), ...((preferred && preferred.ap) || {}) },
-        ak: pickList('ak'),
-        db: pickList('db'),
-        tk: pickList('tk'),
-        tl: pickList('tl'),
-        adj: pickList('adj'),
+        ak: mergeById('ak'),
+        db: mergeById('db'),
+        tk: mergeById('tk'),
+        tl: mergeById('tl'),
+        adj: mergeById('adj'),
         r: (preferred && preferred.r) || (fallback && fallback.r),
         ru: (preferred && preferred.ru) || (fallback && fallback.ru),
     };
@@ -2359,8 +2386,13 @@ function syncPlate16TransfersIntoAracK(records, transfers) {
             return;
         if (staleAutoIds.has(k.id))
             return;
-        if (k.type === 'gider' && staleAutoIds.has(k.seferId))
+        if (k.type === 'gider' && staleAutoIds.has(k.seferId)) {
+            /* BUG FIX (gider kaybı): Bağlı olduğu otomatik iş artık aktif değilse gideri SİLME;
+               gün gideri olarak koru (seferId'yi tarihe çevir). Böylece kullanıcının eklediği
+               gider transfer iptal/değişse bile yok olmaz. */
+            next.push({ ...k, seferId: 'day:' + String(k.date || '') });
             return;
+        }
         if (manualToAuto.has(k.id)) {
             const autoId = manualToAuto.get(k.id);
             const transfer = activeByAutoId.get(autoId);
@@ -2579,12 +2611,12 @@ function AracTab({ tip, aracK, setAracK }) {
     };
     const duzenle = k => { setSf({ date: k.date, isVeren: k.isVeren || '', sofor: k.sofor || '', yolcu: k.yolcu || '', guzergah: k.guzergah || '', musteri: k.musteri || '', arac: k.arac || '', not: k.not || '' }); setEditId(k.id); setShowForm(true); setExpanded(p => ({ ...p, [k.id]: false })); };
     const silSefer = id => { if (!window.confirm('Silinsin mi?'))
-        return; setAracK(p => p.filter(k => k.id !== id && k.seferId !== id)); tip('Silindi'); };
+        return; setAracK(p => { const base = Array.isArray(p) ? p : []; base.forEach(k => { if (k && (k.id === id || k.seferId === id)) addDeletedAracId(k.id); }); return base.filter(k => k.id !== id && k.seferId !== id); }); tip('Silindi'); };
     const kaydetGider = sid => { if (!gf.tutar) {
         tip('Tutar girin');
         return;
     } const sefer = aracK.find(k => k.id === sid); const k = { id: Date.now().toString(), type: 'gider', seferId: sid, date: sefer ? sefer.date : new Date().toISOString().split('T')[0], kat: gf.kat, tutar: gf.tutar, not: gf.not }; setAracK(p => [...p, k]); setGf({ kat: 'fuel', tutar: '', not: '' }); tip('Gider eklendi'); };
-    const silGider = id => { setAracK(p => p.filter(k => k.id !== id)); tip('Silindi'); };
+    const silGider = id => { addDeletedAracId(id); setAracK(p => p.filter(k => k.id !== id)); tip('Silindi'); };
     const toggle = id => setExpanded(p => ({ ...p, [id]: !p[id] }));
     const gunler = {};
     [...msf].sort((a, b) => a.date < b.date ? -1 : 1).forEach(s => { if (!gunler[s.date])
@@ -2869,13 +2901,16 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
     const allTripIds = React.useMemo(() => new Set(trips.map(k => String(k.id))), [trips]);
     const calendarDays = React.useMemo(() => {
         const [y, m] = monthKey.split('-').map(Number);
-        const first = new Date(y || new Date().getFullYear(), (m || 1) - 1, 1);
+        const yy = y || new Date().getFullYear();
+        const mo = (m || 1) - 1;
+        const first = new Date(yy, mo, 1);
         const offset = (first.getDay() + 6) % 7;
-        const start = new Date(first);
-        start.setDate(first.getDate() - offset);
-        return Array.from({ length: 42 }, (_, i) => {
-            const d = new Date(start);
-            d.setDate(start.getDate() + i);
+        const daysInMonth = new Date(yy, mo + 1, 0).getDate();
+        const cells = [];
+        /* Ayın ilk gününden önceki boş hücreler (önceki ayın günleri GÖSTERİLMEZ) */
+        for (let i = 0; i < offset; i++) cells.push({ key: 'blank-pre-' + i, blank: true });
+        for (let dnum = 1; dnum <= daysInMonth; dnum++) {
+            const d = new Date(yy, mo, dnum);
             const key = dateKey(d);
             const dayRows = byDay[key] || [];
             const gunTrips = dayRows.filter(k => k.type === 'sefer');
@@ -2886,8 +2921,11 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
             const expenseRows = Array.from(new Map([...linkedExpenses, ...looseExpenses].map(k => [String(k.id), k])).values());
             const gelir = Math.round(gunTrips.reduce((s, k) => s + moneyValue(k.arac), 0));
             const gider = Math.round(expenseRows.reduce((s, k) => s + moneyValue(k.tutar), 0));
-            return { key, no: d.getDate(), inMonth: key.startsWith(monthKey), count: gunTrips.length, gider: expenseRows.length, net: gelir - gider };
-        });
+            cells.push({ key, no: dnum, inMonth: true, count: gunTrips.length, gider: expenseRows.length, net: gelir - gider });
+        }
+        /* Son satırı tamamlamak için sondaki boş hücreler (sonraki ayın günleri GÖSTERİLMEZ) */
+        while (cells.length % 7 !== 0) cells.push({ key: 'blank-post-' + cells.length, blank: true });
+        return cells;
     }, [monthKey, byDay, expenses, allTripIds]);
     const dayRows = byDay[selectedDay] || [];
     const dayTrips = dayRows.filter(k => k.type === 'sefer').sort((a, b) => String(a.id || '').localeCompare(String(b.id || '')));
@@ -2986,7 +3024,11 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
     const deleteTrip = id => {
         if (!window.confirm('Bu araç işi silinsin mi?'))
             return;
-        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id && k.seferId !== id));
+        setAracK(p => {
+            const base = Array.isArray(p) ? p : [];
+            base.forEach(k => { if (k && (k.id === id || k.seferId === id)) addDeletedAracId(k.id); });
+            return base.filter(k => k.id !== id && k.seferId !== id);
+        });
         tip('Silindi');
     };
     const openExpenseForm = target => {
@@ -3032,6 +3074,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
         tip('Gider eklendi');
     };
     const deleteExpense = id => {
+        addDeletedAracId(id);
         setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id));
         tip('Gider silindi');
     };
@@ -3070,10 +3113,12 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 520, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
+                if (d.blank)
+                    return React.createElement("div", { key: d.key, "aria-hidden": "true", style: { minHeight: 50 } });
                 const active = d.key === selectedDay;
                 const isToday = d.key === todayKey;
                 const hasWork = d.count > 0 || d.gider > 0;
-                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (d.inMonth ? "" : " is-other") + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); if (!d.key.startsWith(monthKey)) setMonthKey(d.key.slice(0, 7)); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#4F6B45' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#EEF3EB' : hasWork ? '#F5F5F7' : d.inMonth ? '#fff' : '#F5F5F7', color: d.inMonth ? TX : '#9AA6B7', padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: d.inMonth ? 1 : .55 } },
+                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#4F6B45' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#EEF3EB' : hasWork ? '#F5F5F7' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
                         React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 520, color: TX, WebkitTextFillColor: TX } }, d.no),
                         isToday && React.createElement("span", { style: { width: 7, height: 7, borderRadius: 99, background: active ? '#4F6B45' : G, flexShrink: 0 } })),
@@ -3120,7 +3165,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                                     if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi?')) return;
                                     const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
                                     if (onDeleteTransfer) onDeleteTransfer(tid);
-                                    else { setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
+                                    else { addDeletedAracId(s.id); setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
                                 } else {
                                     deleteTrip(s.id);
                                 }
@@ -3128,7 +3173,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                             React.createElement("button", { type: "button", className: "ko-arac-job-head", onClick: () => setOpenTrip(p => ({ ...p, [s.id]: !p[s.id] })) },
                                 React.createElement("div", { style: { minWidth: 0 } },
                                     s.isVeren && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#F2F2F7', color: NAV, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6 } }, s.isVeren),
-                                    autoTrip && React.createElement("div", { style: { display: 'inline-flex', maxWidth: '100%', borderRadius: 999, background: '#FFF1F0', color: R, padding: '3px 8px', fontSize: 9.5, fontWeight: 520, marginBottom: 6, marginLeft: s.isVeren ? 5 : 0 } }, "Transferden otomatik"),
+                                    false && React.createElement("div", { style: { display: 'none' } }, "Transferden otomatik"),
                                     React.createElement("div", { className: "ko-arac-job-title" }, s.yolcu || 'Araç işi'),
                                     React.createElement("div", { className: "ko-arac-job-sub" }, [s.guzergah, s.sofor ? 'Kaptan: ' + s.sofor : ''].filter(Boolean).join(' · ') || 'Detaya gir')),
                                 React.createElement("div", { className: "ko-arac-job-money" },
@@ -3161,7 +3206,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                                         if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi? (Transfer sekmesinden de kalkar)')) return;
                                         const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
                                         if (onDeleteTransfer) onDeleteTransfer(tid);
-                                        else { setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
+                                        else { addDeletedAracId(s.id); setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
                                     }, style: { color: R, borderColor: '#FFC4C0' } }, "🗑️ Transferi sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
@@ -5445,6 +5490,8 @@ function App() {
     const hydrateSnapshot = (d, closeModal) => {
         if (d && Array.isArray(d.del))
             writeDeletedTransferIds(d.del);
+        if (d && Array.isArray(d.delA))
+            writeDeletedAracIds(d.delA);
         /* PERF: dedupeTransfers zaten içeride normalizeTransfer çağırıyor;
            burada ikinci kez .map(normalizeTransfer) yapmak gereksiz iki kat maliyet. */
         setT(dedupeTransfers(d.t || []));
@@ -5458,7 +5505,9 @@ function App() {
             setRates(prev => ({ ...prev, ...d.r }));
         if (d.ru)
             setLastRateUpdate(d.ru);
-        setAracK(dedupeAracK(d.ak || []));
+        /* Silinmiş araç kayıtlarını (delA) yüklerken dışarıda bırak */
+        const delASet = new Set((d.delA || readDeletedAracIds() || []).map(String));
+        setAracK(dedupeAracK((d.ak || []).filter(k => k && !delASet.has(String(k.id)))));
         setDebts(d.db || []);
         const adjRows = Array.isArray(d.adj) ? d.adj : (Array.isArray(d.accountAdjustments) ? d.accountAdjustments : []);
         setAccountAdjustments(adjRows.map(normalizeAccountAdjustment).filter(x => x.firm));
@@ -5531,20 +5580,25 @@ function App() {
                             mergedPayload.clientUpdatedAt = new Date(mergedTs || Date.now()).toISOString();
                             cloudLoadedRef.current = true;
                             writeDeletedTransferIds(mergedPayload.del || []);
+                            try { writeDeletedAracIds(mergedPayload.delA || []); } catch(e) {}
                             /* PERF: Gelen veri zaten elimizdekiyle aynı sayıda ve eski/eşit damgalıysa
-                               (kendi yazımızın echo'su) hiçbir şey yapma — döngüyü ve gereksiz re-render'ı keser. */
+                               (kendi yazımızın echo'su) hiçbir şey yapma — döngüyü ve gereksiz re-render'ı keser.
+                               BUG FIX: Araç kayıt (gider/sefer) sayısı da kontrol ediliyor; sadece 't' sayısına
+                               bakmak gider eklemelerinin hydrate edilmeden atlanmasına yol açıyordu. */
                             const localCount = ((localPayload && localPayload.t) || []).length;
                             const cloudCount = ((payload && payload.t) || []).length;
                             const mergedCount = ((mergedPayload && mergedPayload.t) || []).length;
-                            if (localCount === mergedCount && localTs >= cloudTs) {
+                            const localAk = ((localPayload && localPayload.ak) || []).length;
+                            const mergedAk = ((mergedPayload && mergedPayload.ak) || []).length;
+                            if (localCount === mergedCount && localAk === mergedAk && localTs >= cloudTs) {
                                 cloudWritingRef.current = false;
                                 return;
                             }
                             cloudWritingRef.current = true;
                             hydrateSnapshot(mergedPayload, false);
-                            /* Geri-yazma SADECE local'de cloud'da olmayan veri varsa (ör. ilk açılışta
-                               cloud boş, local dolu). Aksi halde yazma — save effect zaten yazıyor. */
-                            if (cloudCount < mergedCount && localTs >= cloudTs) {
+                            /* Geri-yazma: local'de cloud'da olmayan transfer VEYA araç kaydı varsa yaz. */
+                            const cloudAk = ((payload && payload.ak) || []).length;
+                            if ((cloudCount < mergedCount || cloudAk < mergedAk) && localTs >= cloudTs) {
                                 cloudDocRef.set({ payload: mergedPayload, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: mergedPayload.clientUpdatedAt }, { merge: true }).catch(function(err){ console.error('Cloud merged save error', err); });
                             }
                             setTimeout(function(){ cloudWritingRef.current = false; }, 500);
@@ -5616,14 +5670,17 @@ function App() {
                 /* PERF: T zaten her setT'de dedupeTransfers'tan geçiyor; burada tekrar etmek
                    her kayıtta binlerce kaydı boşuna işliyordu. Doğrudan kullan. */
                 const cleanTransfers = T;
-                const snapshotCore = { t: cleanTransfers, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26 };
+                const snapshotCore = { t: cleanTransfers, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26 };
                 /* PERF: Tüm snapshot'ı JSON.stringify ile imzalamak binlerce kayıtta donma/çökme yaratıyordu.
                    Hafif imza: kayıt sayıları + son güncelleme damgalarının toplamı. */
                 const sigParts = [
                     cleanTransfers.length,
                     cleanTransfers.reduce((s, x) => s + (Date.parse(x.updatedAt || x.clientUpdatedAt || x.createdAt || '') || 0), 0),
                     agencies.length, drivers.length, aracK.length, debts.length, accountAdjustments.length, todos.length, tkLedger.length,
-                    JSON.stringify(rates), lastRateUpdate || '', (readDeletedTransferIds() || []).length
+                    /* BUG FIX: aracK içeriği imzaya katılıyor — bir gider silinip başka biri eklenince
+                       sayı sabit kalsa bile imza değişsin ve kayıt mutlaka diske/buluta yazılsın. */
+                    (Array.isArray(aracK) ? aracK : []).reduce((s, k) => s + (String(k && k.id || '').length) + (Number(moneyValue(k && (k.tutar != null ? k.tutar : k.arac))) || 0), 0),
+                    JSON.stringify(rates), lastRateUpdate || '', (readDeletedTransferIds() || []).length, (readDeletedAracIds() || []).length
                 ];
                 const saveSig = sigParts.join('|');
                 if (saveSig === lastSaveSigRef.current)
@@ -6463,7 +6520,7 @@ function App() {
         };
     }, [T, aracK]);
     const stats = () => statsMemo;
-    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), v: 26, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26, date: new Date().toISOString() });
     const doBackup = async () => {
         const payload = JSON.stringify(snapshotPayload(), null, 2);
         const ok = await copyText(payload);
@@ -6645,15 +6702,19 @@ function App() {
             tip('Geçersiz');
             return false;
         }
-        if (!window.confirm(d.t.length + ' transfer geri yüklensin mi?'))
+        const akCount = Array.isArray(d.ak) ? d.ak.length : 0;
+        if (!window.confirm(d.t.length + ' transfer + ' + akCount + ' araç kaydı geri yüklensin mi? (Gider/gelir/kartlar dahil her şey)'))
             return false;
+        /* Yedek = tam gerçek. Eski silme işaretlerini temizle ki yedekteki giderler/işler korunsun. */
         writeDeletedTransferIds([]);
-        hydrateSnapshot(d, true);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...d, v: 26, date: d.date || new Date().toISOString() })); } catch(e) {}
+        writeDeletedAracIds([]);
+        const clean = { ...d, del: [], delA: [], v: 26, date: d.date || new Date().toISOString() };
+        hydrateSnapshot(clean, true);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
         if(cloudEnabled() && authUser){
-            cloudDocRef.set({ payload: { ...d, v: 26, date: d.date || new Date().toISOString() }, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: d.date || new Date().toISOString() }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
+            cloudDocRef.set({ payload: clean, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: clean.date }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
         }
-        tip('Geri yüklendi!');
+        tip('Her şey geri yüklendi!');
         return true;
     }
     catch (e) {
@@ -6900,6 +6961,83 @@ function App() {
             )
         );
     };
+    /* PAYLAŞILAN NET KAR BÖLÜMÜ — hem ana sayfa hem transfer sekmesinin altında kullanılır */
+    const renderNetKarSection = () => {
+        const nowNK = new Date();
+        const yyyyNK = nowNK.getFullYear();
+        const mmNK = String(nowNK.getMonth() + 1).padStart(2, '0');
+        const mPfxNK = yyyyNK + '-' + mmNK;
+        const AYLAR_NK = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+        const yearTNK = T.filter(x => x.date && x.date.startsWith(String(yyyyNK)));
+        const fmtSigned = n => (Math.round(n || 0) >= 0 ? '+' : '') + Math.round(n || 0).toLocaleString('tr-TR') + '₺';
+        const plateBreakdown = monthKey => {
+            const rows = aracK.filter(k => k.date && String(k.date).startsWith(monthKey));
+            const gelir = Math.round(rows.filter(k => k.type === 'sefer').reduce((s, k) => s + moneyValue(k.arac), 0));
+            const gider = Math.round(rows.filter(k => k.type === 'gider').reduce((s, k) => s + moneyValue(k.tutar), 0));
+            return { gelir, gider, net: gelir - gider };
+        };
+        const monthBreakdown = monthKey => {
+            const rows = T.filter(t => t.date && String(t.date).startsWith(monthKey));
+            const plate = plateBreakdown(monthKey);
+            const olmez = olmezDisplayNet(rows);
+            return {
+                key: monthKey,
+                name: AYLAR_NK[parseInt(monthKey.slice(5, 7), 10) - 1],
+                count: rows.length,
+                olmez, plate, total: olmez + plate.net
+            };
+        };
+        const detailFor = scope => {
+            if (scope === 'month') {
+                const m = monthBreakdown(mPfxNK);
+                return { title: m.name + ' Net Kar Detayı', count: m.count, olmez: m.olmez, plate: m.plate, total: m.total, months: null };
+            }
+            const months = Array.from({ length: 12 }, (_, i) => monthBreakdown(yyyyNK + '-' + String(i + 1).padStart(2, '0')));
+            const olmez = months.reduce((s, m) => s + m.olmez, 0);
+            const plate = months.reduce((s, m) => ({ gelir: s.gelir + m.plate.gelir, gider: s.gider + m.plate.gider, net: s.net + m.plate.net }), { gelir: 0, gider: 0, net: 0 });
+            return { title: yyyyNK + ' Yılı Net Kar Detayı', count: yearTNK.length, olmez, plate, total: olmez + plate.net, months };
+        };
+        const selectedProfit = expandedT.__lgProfit || null;
+        const setProfit = p => setExpandedT(x => ({ ...x, __lgProfit: x.__lgProfit === p ? null : p }));
+        const dm = detailFor('month');
+        const dy = detailFor('year');
+        const mainCard = (label, sub, value, scope) => {
+            const active = selectedProfit === scope;
+            return React.createElement("button", {
+                onClick: () => setProfit(scope),
+                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? '#EEF3EB' : '#fff', border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
+            },
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                    React.createElement("div", { style: { fontSize: 10, fontWeight: 500, color: '#9A9388', letterSpacing: '.01em' } }, label),
+                    React.createElement("span", { style: { fontSize: 9, color: '#A39C90', transform: active ? 'rotate(180deg)' : 'none' } }, "▾")),
+                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 600, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#4F6B45' : '#B0524C', lineHeight: 1.05 } }, fmtSigned(value)),
+                React.createElement("div", { style: { fontSize: 8.5, color: '#A39C90', marginTop: 1 } }, sub));
+        };
+        const detailRow = (label, value, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: strong ? '1px solid var(--line)' : 'none' } },
+            React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#8A8378' } }, label),
+            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#4F6B45' : '#B0524C' } }, fmtSigned(value)));
+        const det = selectedProfit === 'year' ? dy : (selectedProfit === 'month' ? dm : null);
+        return React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "lg-section-row", style: { paddingTop: 2 } },
+                React.createElement("div", { className: "lg-section-title" }, "Net Kar")),
+            React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: det ? 8 : 0 } },
+                mainCard("Aylık Net Kar", AYLAR_NK[nowNK.getMonth()] + " " + yyyyNK, dm.total, 'month'),
+                mainCard("Yıllık Net Kar", String(yyyyNK), dy.total, 'year')),
+            det && React.createElement("div", { className: "lg-glass-card", style: { padding: '11px 13px' } },
+                React.createElement("div", { style: { fontSize: 11.5, fontWeight: 650, color: '#1C1C1E', marginBottom: 4 } }, det.title),
+                detailRow("Ölmeztur Net Kar", det.olmez),
+                detailRow(PLAKA + " Net (gider sonrası)", det.plate.net),
+                detailRow("Toplam Net Kar", det.total, true),
+                det.months && React.createElement("div", { style: { marginTop: 9, display: 'flex', flexDirection: 'column', gap: 6 } },
+                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 600, color: '#9A9388', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
+                    det.months.filter(m => m.count > 0 || m.total !== 0).map(m => React.createElement("div", { key: m.key, style: { background: '#fff', borderRadius: 11, padding: '8px 10px', boxShadow: 'inset 0 0 0 1px #EFEAE2' } },
+                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                            React.createElement("div", { style: { fontSize: 11, fontWeight: 600, color: '#6B655C' } }, m.name),
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 650, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#4F6B45' : '#B0524C' } }, fmtSigned(m.total))),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#8A8378' } },
+                            React.createElement("div", null, "Ölmeztur ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.olmez))),
+                            React.createElement("div", null, PLAKA + " ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.plate.net))))))) ));
+    };
     const renderTransferList = () => {
         const renderSectionDays = rows => {
             const dayMap = rows.reduce((acc, t) => {
@@ -6992,13 +7130,13 @@ function App() {
         const rangeLabel = activeDayDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
         const firstOfMonth = new Date(monthYear, monthIndex, 1);
         const firstOffset = (firstOfMonth.getDay() + 6) % 7;
-        const gridStart = new Date(firstOfMonth);
-        gridStart.setDate(firstOfMonth.getDate() - firstOffset);
-        const monthCalendarDays = Array.from({ length: 42 }, (_, i) => {
-            const d = new Date(gridStart);
-            d.setDate(gridStart.getDate() + i);
-            return d;
-        });
+        const daysInThisMonth = new Date(monthYear, monthIndex + 1, 0).getDate();
+        const monthCalendarDays = [];
+        /* Ayın ilk gününden önceki boş hücreler (önceki ay GÖSTERİLMEZ) */
+        for (let i = 0; i < firstOffset; i++) monthCalendarDays.push(null);
+        for (let dnum = 1; dnum <= daysInThisMonth; dnum++) monthCalendarDays.push(new Date(monthYear, monthIndex, dnum));
+        /* Son satırı tamamla (sonraki ay GÖSTERİLMEZ) */
+        while (monthCalendarDays.length % 7 !== 0) monthCalendarDays.push(null);
         const selectMonthDay = dk => {
             setSelectedRangeDay(dk);
             setOpenDays(p => ({ ...p, [dk]: true }));
@@ -7035,28 +7173,29 @@ function App() {
             !isCurrentMonth && React.createElement("button", { className: "lg-month-today-btn", onClick: goToday }, 'Bugüne dön'),
             React.createElement("div", { className: "lg-month-weekdays" }, weekNames.map(w => React.createElement("div", { key: w }, w))),
             React.createElement("div", { className: "lg-month-grid" },
-                monthCalendarDays.map(rd => {
+                monthCalendarDays.map((rd, idx) => {
+                    if (!rd)
+                        return React.createElement("div", { key: 'blank-' + idx, "aria-hidden": "true", className: "lg-month-day", style: { visibility: 'hidden', pointerEvents: 'none', background: 'transparent', border: '0', boxShadow: 'none' } });
                     const dk = fmtDateKey(rd);
-                    const inMonth = rd.getMonth() === monthIndex;
                     const isToday = dk === todayKey;
                     const isSelected = dk === activeDayKey;
-                    const dayTransfers = inMonth ? (monthDayMap[dk] || []) : [];
+                    const dayTransfers = (monthDayMap[dk] || []);
                     const cnt = dayTransfers.length;
                     const doneCnt = dayTransfers.filter(x => x.status === 'tam').length;
                     const dayProfit = olmezDisplayNet(dayTransfers);
                     const dayHasOlmezNet = dayTransfers.some(hasOlmezDisplayNet);
                     return React.createElement("button", {
                         key: dk,
-                        className: 'lg-month-day' + (inMonth ? '' : ' is-other') + (isToday ? ' is-today' : '') + (isSelected ? ' is-selected ko-selected-gold' : '') + (cnt > 0 ? ' has-work' : ''),
+                        className: 'lg-month-day' + (isToday ? ' is-today' : '') + (isSelected ? ' is-selected ko-selected-gold' : '') + (cnt > 0 ? ' has-work' : ''),
                         onClick: () => selectMonthDay(dk),
-                        title: inMonth ? (cnt + ' transfer · ' + doneCnt + ' tamam') : ''
+                        title: (cnt + ' transfer · ' + doneCnt + ' tamam')
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 } },
                             React.createElement("span", { className: "lg-month-day-num" }, rd.getDate()),
                             isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#4F6B45', flexShrink: 0 } })),
                         React.createElement("div", { className: "ko-arac-day-meta" },
-                            React.createElement("span", { className: "lg-month-day-count" }, inMonth && cnt > 0 ? cnt + ' transfer' : ''),
-                            inMonth && cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
+                            React.createElement("span", { className: "lg-month-day-count" }, cnt > 0 ? cnt + ' transfer' : ''),
+                            cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
                 })),
             React.createElement("div", { className: "lg-month-selected-line" },
                 React.createElement("div", null,
@@ -7793,65 +7932,7 @@ function App() {
                             React.createElement("span", { className: "lg-badge" }, todayT.length)
                         )
                     ),
-                    renderPeriodPanel(selectedPeriod),
-
-                    React.createElement("div", { className: "lg-section-row lg-profit-title-row", style: { marginTop: 'auto', paddingTop: 6 } },
-                        React.createElement("div", { className: "lg-section-title" }, "Net Kar")
-                    ),
-                    /* İki ana kart: Aylık Net Kar (sol) + Yıllık Net Kar (sağ). Basınca altında detay açılır. */
-                    (function(){
-                        const dm = profitDetail('month');
-                        const dy = profitDetail('year');
-                        const mainCard = (label, sub, value, scope) => {
-                            const active = selectedProfit === scope;
-                            return React.createElement("button", {
-                                onClick: () => setProfit(scope),
-                                style: {
-                                    flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer',
-                                    background: active ? '#EEF3EB' : '#fff',
-                                    border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'),
-                                    borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)', transition: 'all .15s ease'
-                                }
-                            },
-                                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                                    React.createElement("div", { style: { fontSize: 10, fontWeight: 500, color: '#9A9388', letterSpacing: '.01em' } }, label),
-                                    React.createElement("span", { style: { fontSize: 9, color: '#A39C90', transform: active ? 'rotate(180deg)' : 'none', transition: 'transform .15s' } }, "▾")
-                                ),
-                                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 600, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#4F6B45' : '#B0524C', lineHeight: 1.05 } }, fmtTLHomeSigned(value)),
-                                React.createElement("div", { style: { fontSize: 8.5, color: '#A39C90', marginTop: 1 } }, sub)
-                            );
-                        };
-                        const detailRow = (label, value, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: strong ? '1px solid var(--line)' : 'none' } },
-                            React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#8A8378' } }, label),
-                            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#4F6B45' : '#B0524C' } }, fmtTLHomeSigned(value))
-                        );
-                        const det = selectedProfit === 'year' ? dy : (selectedProfit === 'month' ? dm : null);
-                        return React.createElement(React.Fragment, null,
-                            React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: det ? 8 : 0 } },
-                                mainCard("Aylık Net Kar", AYLAR[now.getMonth()] + " " + yyyy, dm.total, 'month'),
-                                mainCard("Yıllık Net Kar", String(yyyy), dy.total, 'year')
-                            ),
-                            det && React.createElement("div", { className: "lg-glass-card", style: { padding: '11px 13px' } },
-                                React.createElement("div", { style: { fontSize: 11.5, fontWeight: 650, color: '#1C1C1E', marginBottom: 4 } }, det.title),
-                                detailRow("Ölmeztur Net Kar", det.olmez),
-                                detailRow("16 LMZ 55 Net (gider sonrası)", det.plate.net),
-                                detailRow("Toplam Net Kar", det.total, true),
-                                det.months && React.createElement("div", { style: { marginTop: 9, display: 'flex', flexDirection: 'column', gap: 6 } },
-                                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 600, color: '#9A9388', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
-                                    det.months.filter(m => m.count > 0 || m.total !== 0).map(m => React.createElement("div", { key: m.key, style: { background: '#fff', borderRadius: 11, padding: '8px 10px', boxShadow: 'inset 0 0 0 1px #EFEAE2' } },
-                                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                                            React.createElement("div", { style: { fontSize: 11, fontWeight: 600, color: '#6B655C' } }, m.name),
-                                            React.createElement("div", { style: { fontSize: 13, fontWeight: 650, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#4F6B45' : '#B0524C' } }, fmtTLHomeSigned(m.total))
-                                        ),
-                                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#8A8378' } },
-                                            React.createElement("div", null, "Ölmeztur ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtTLHomeSigned(m.olmez))),
-                                            React.createElement("div", null, "16 LMZ 55 ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtTLHomeSigned(m.plate.net)))
-                                        )
-                                    ))
-                                )
-                            )
-                        );
-                    })()
+                    renderPeriodPanel(selectedPeriod)
                 );
 
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8706,6 +8787,8 @@ function App() {
                     React.createElement("div", { style: { fontSize: 46, marginBottom: 8 } }, "✈️"),
                     React.createElement("div", { style: { fontWeight: 560, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'),
                     T.length === 0 && React.createElement("button", { onClick: openNewTransferForm, style: { marginTop: 12, background: NAV, color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 13, fontWeight: 560, cursor: 'pointer' } }, "+ Yeni Transfer"))) : renderTransferList(),
+                /* ── Net Kar — transfer sekmesinin en altında, dock ile arasında nefes alan boşlukla ── */
+                React.createElement("div", { style: { marginTop: 18, marginBottom: 22 } }, renderNetKarSection()),
                 /* ── Alt kart: Özet/Detay + Filtreler — transfer listesinin altında ── */
                 false && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
                     /* Özet — tek satır, kompakt */
@@ -8767,13 +8850,13 @@ function App() {
                 /* FAB — +Yeni (ortada, premium) */
                 React.createElement("button", { className: "tab-fab", onPointerDown: (e) => { e.preventDefault(); openNewTransferForm(); }, onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
                     React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
-                React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('arac'); }, onClick: () => setTab('arac') },
-                    React.createElement("div", { className: "tab-icon" }, "🚐"),
-                    React.createElement("div", { className: "tab-label" }, "Araç")
-                ),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('hesap'); }, onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, "💰"),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
+                ),
+                React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('arac'); }, onClick: () => setTab('arac') },
+                    React.createElement("div", { className: "tab-icon" }, "🚐"),
+                    React.createElement("div", { className: "tab-label" }, "Araç")
                 )
             )
         ),
@@ -8846,13 +8929,11 @@ function App() {
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } },
                             APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", { key: meta.id, onClick: () => openAppleCalendarSubscription(meta), style: { background: '#fff', color: '#1C1C1E', border: '1px solid ' + meta.color, borderLeft: '5px solid ' + meta.color, borderRadius: 9, padding: '8px 5px', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', minHeight: 34 } }, meta.id === 'arrival' ? 'Gelen' : meta.id === 'departure' ? 'Giden' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP')))),
                     React.createElement("button", { onClick: doBackup, style: { width: '100%', background: '#FFFFFF', color: G, border: '1.5px solid #D1D1D6', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
-                        "\uD83D\uDCCB Toplam ",
+                        "\uD83D\uDCCB Her \u015Eeyi Panoya Kopyala (",
                         T.length,
-                        " transfer\u2019\u0131 Panoya Kopyala"),
-                    React.createElement("button", { onClick: doGithubBackup, style: { width: '100%', background: 'linear-gradient(135deg,#1C1C1E 0%,#1C1C1E 100%)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 600, fontSize: '13.5px', cursor: 'pointer', marginBottom: 8, letterSpacing: 0.2, boxShadow: '0 2px 6px rgba(60,60,67,.25)' } },
-                        "\u2601\uFE0F Scriptable Widget Verisini Aktar"),
-                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F5F5F7', borderRadius: 8, border: '1px dashed #D1D1D6', lineHeight: 1.4 } },
-                        "Ana ekrandaki uygulama kendi verisini g\u00FCnceller; Scriptable widget ise GitHub'daki \u201Cdata.json\u201D dosyas\u0131n\u0131 okur. Bu buton temiz veriyi panoya al\u0131r ve GitHub'\u0131 a\u00E7ar: dosyadakini sil, panodakini yap\u0131\u015Ft\u0131r, \u201CCommit changes\u201D de. Widget sonra yenilenir."),
+                        " transfer + giderler)"),
+                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F0F8F4', borderRadius: 8, border: '1px dashed #BFE3CF', lineHeight: 1.4 } },
+                        "Tek dokunu\u015Fla t\u00FCm veri kopyalan\u0131r: transferler, gelirler, giderler, ara\u00E7 i\u015Fleri, hesap kartlar\u0131, bor\u00E7lar ve ayarlar. Geri y\u00FCklerken hepsi tek seferde komple y\u00FCklenir."),
                     React.createElement("textarea", { readOnly: true, value: rstTxt, placeholder: "Yedek burada da g\u00F6r\u00FCn\u00FCr", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #D1D1D6', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
                 React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
                     React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: NAV, marginBottom: 6 } }, "\uD83D\uDCE5 Geri Y\u00FCkle"),
