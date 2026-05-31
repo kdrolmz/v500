@@ -998,7 +998,7 @@ const GIDER_KAT = [
     { id: 'other', n: 'Diğer', ico: '📎' },
 ];
 const LOCS = [
-    { n: 'İST', i: '✈️', q: 'İstanbul Havalimanı Istanbul Airport IST IHL Turkey' },
+    { n: 'İstanbul Havalimanı', i: '✈️', q: 'İST IST İHL IHL İstanbul Havalimanı Istanbul Airport Turkey' },
     { n: 'Sabiha Gökçen Havalimanı', i: '✈️', q: 'Sabiha Gokcen Airport Istanbul' },
     { n: 'Ankara Esenboğa Havalimanı', i: '✈️', q: 'Ankara Esenboga Airport' },
     { n: 'İzmir Adnan Menderes Havalimanı', i: '✈️', q: 'Izmir Adnan Menderes Airport' },
@@ -1230,18 +1230,24 @@ const uniqNames = arr => {
         return true;
     });
 };
+const airportAliasKey = v => String(v || '').trim().toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+const isIstanbulAirportName = name => {
+    const k = airportAliasKey(name);
+    return /^(ihl|ist)$/.test(k) || k.includes('istanbul havalimani') || k.includes('istanbul airport') || /\((ist|ihl)\)/.test(k);
+};
 const normalizeLocationName = name => {
     if (name === undefined || name === null) return '';
     const n = String(name).trim();
     if (!n) return '';
-    if (/^(İHL|IHL|İST|IST)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\((?:İST|IST)\)/i.test(n)) return 'İST';
+    if (isIstanbulAirportName(n)) return 'İstanbul Havalimanı';
     return n;
 };
 const shortLoc = name => {
     if (!name) return '—';
     const n = String(name).trim();
     if (!n) return '—';
-    if (/^(İHL|IHL|İST|IST)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\((?:İST|IST)\)/i.test(n)) return 'İST';
+    if (isIstanbulAirportName(n)) return 'İST';
     if (/^SAW$/i.test(n) || /Sabiha Gökçen|Sabiha Gokcen|\(SAW\)/i.test(n)) return 'Sabiha Gökçen Havalimanı';
     if (/^ESB$/i.test(n) || /Ankara Esenboğa|Ankara Esenboga|\(ESB\)/i.test(n)) return 'Ankara Esenboğa Havalimanı';
     if (/^ADB$/i.test(n) || /İzmir Adnan|Izmir Adnan|\(ADB\)/i.test(n)) return 'İzmir Adnan Menderes Havalimanı';
@@ -1265,6 +1271,10 @@ const shortLoc = name => {
         return hit;
     }
     return n.split('(')[0].split(',')[0].trim();
+};
+const fullAirportLoc = name => {
+    const s = shortLoc(name);
+    return /^İST$/i.test(s) ? 'İstanbul Havalimanı' : s;
 };
 const transferStartDate = t => {
     if (!t || !t.date || !t.time) return null;
@@ -1437,6 +1447,34 @@ const persistTransfersImmediately = transfers => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
     } catch (e) {
         console.error('[LS] anlık transfer yazma hatası', e);
+    }
+};
+const persistAccountAdjustmentsImmediately = adjustments => {
+    try {
+        const now = new Date().toISOString();
+        let snap = {};
+        try {
+            snap = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
+        } catch (e) {
+            snap = {};
+        }
+        const adj = (Array.isArray(adjustments) ? adjustments : [])
+            .map(normalizeAccountAdjustment)
+            .filter(x => x.firm);
+        const newSnap = {
+            ...snap,
+            adj,
+            accountAdjustments: adj,
+            del: readDeletedTransferIds(),
+            delA: readDeletedAracIds(),
+            v: 26,
+            date: now,
+            clientUpdatedAt: now,
+            _localWriteAt: now
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
+    } catch (e) {
+        console.error('[LS] anlık ödeme/bakiye yazma hatası', e);
     }
 };
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
@@ -3318,7 +3356,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             createdAt: now.toISOString(),
             updatedAt: now.toISOString()
         });
-        setAccountAdjustments(p => [rec, ...(Array.isArray(p) ? p : [])]);
+        setAccountAdjustments(p => {
+            const next = [rec, ...(Array.isArray(p) ? p : [])];
+            persistAccountAdjustmentsImmediately(next);
+            return next;
+        });
         setAdjForm(f => ({ ...f, amount: '', note: '', date: accountAdjustmentDateKey(new Date()), time: accountAdjustmentTimeKey(new Date()) }));
         tip && tip('Ana hesap kaydı eklendi');
     };
@@ -3328,7 +3370,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (!window.confirm('Bu ödeme kaydı silinsin mi?'))
             return;
         try { addDeletedAracId(id); } catch (e) {}
-        setAccountAdjustments(p => (Array.isArray(p) ? p : []).filter(x => String(x && x.id) !== String(id)));
+        setAccountAdjustments(p => {
+            const next = (Array.isArray(p) ? p : []).filter(x => String(x && x.id) !== String(id));
+            persistAccountAdjustmentsImmediately(next);
+            return next;
+        });
         tip && tip('Ödeme kaydı silindi');
     };
     const ozet = firm => {
@@ -7807,7 +7853,7 @@ function App() {
                                 React.createElement("div", { className: "lg-period-sub" }, sub)
                             ),
                             React.createElement("div", { style: { width: 31, height: 32, borderRadius: 7, overflow: 'hidden', background: '#fff', boxShadow: '0 1px 2px rgba(60,50,40,.16), inset 0 0 0 1px #EAE6DF', flexShrink: 0, display: 'flex', flexDirection: 'column' } },
-                                React.createElement("div", { style: { background: '#B0524C', color: '#fff', WebkitTextFillColor: '#fff', minHeight: 10, fontSize: 7.5, fontWeight: 760, textAlign: 'center', padding: '1px 0 0', textTransform: 'uppercase', lineHeight: 1.15 } }, AYLAR[now.getMonth()].slice(0, 3).toLocaleUpperCase('tr-TR')),
+                                React.createElement("div", { style: { background: '#B0524C', color: '#fff', minHeight: 10, fontSize: 7.5, fontWeight: 760, textAlign: 'center', padding: '1px 0 0', textTransform: 'uppercase', lineHeight: 1.15 } }, AYLAR[now.getMonth()].slice(0, 3).toLocaleUpperCase('tr-TR')),
                                 React.createElement("div", { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#2A2724', lineHeight: 1 } }, String(now.getDate()))
                             )
                         )
@@ -7822,8 +7868,8 @@ function App() {
                     return s && s !== '—' ? s : 'Belirtilmedi';
                 };
                 const homeTransferCardLoc = loc => {
-                    const s = homeLoc(loc);
-                    return /^İST$/i.test(s) ? 'İstanbul Havalimanı' : s;
+                    const s = fullAirportLoc(loc);
+                    return s && s !== '—' ? s : 'Belirtilmedi';
                 };
                 const homeVehicleMeta = t => {
                     const raw = String((t && t.vehicle) || '').trim();
@@ -7874,9 +7920,9 @@ function App() {
                     const v = homeVehicleMeta(t);
                     if (!v.name)
                         return null;
-                    return React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, minHeight: 17, padding: '1px 6px 1px 4px', borderRadius: 999, background: v.bg, border: '1px solid ' + v.bd, color: v.fg, flexShrink: 0, maxWidth: 94 } },
+                    return React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, minHeight: 17, padding: '1px 7px 1px 4px', borderRadius: 999, background: v.bg, border: '1px solid ' + v.bd, color: v.fg, flexShrink: 0, maxWidth: 96 } },
                         React.createElement("span", { style: { width: 19, height: 15, borderRadius: 999, background: '#fff', border: '1px solid rgba(60,60,67,.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, homeVehicleIcon(v.id, v.fg)),
-                        React.createElement("span", { style: { fontSize: 9, fontWeight: 600, lineHeight: 1, color: v.fg, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' } }, v.name));
+                        React.createElement("span", { style: { fontSize: 9, fontWeight: 620, lineHeight: 1, color: v.fg, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' } }, v.name));
                 };
                 const renderHomeTransfer = t => {
                     if (!t)
@@ -7903,23 +7949,23 @@ function App() {
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '49px minmax(0,1fr)', alignItems: 'stretch', gap: 8, minHeight: 68 } },
-                            React.createElement("div", { style: { height: '100%', minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, opacity: .88 } },
-                                    React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', minHeight: 17, fontSize: 9, fontWeight: 600, lineHeight: 1, padding: '1px 6px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0 } }, tip.n),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 } },
+                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 560, padding: '1px 7px', minHeight: 17, borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
                                     flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', marginLeft: 'auto', flexShrink: 0 } }, flight)
                                 ),
-                                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 710, color: '#1C1C1E', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.14, padding: '1px 0 2px', overflowWrap: 'anywhere' } }, routeText),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', opacity: .92 } },
+                                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 710, color: '#1C1C1E', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.14, padding: '1px 0 2px' } }, routeText),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
                                     React.createElement("button", {
                                         onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                        style: { fontSize: 8.6, fontWeight: 600, padding: '1px 7px', borderRadius: 999, border: '1px solid rgba(60,60,67,.10)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
+                                        style: { fontSize: 8.6, fontWeight: 600, padding: '1px 7px', borderRadius: 999, border: '1px solid rgba(60,60,67,.12)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
                                     }, payText),
-                                    React.createElement("span", { style: { fontSize: 9.2, color: '#756F66', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
+                                    React.createElement("span", { style: { fontSize: 9.2, color: '#6B655C', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
                                 ),
                                 React.createElement("div", { style: { width: '100%', height: 1, margin: '2px 0 1px', background: 'rgba(60,60,67,.26)', boxShadow: '0 1px 0 rgba(255,255,255,.86)' } }),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#8A8378', fontWeight: 500, lineHeight: 1.14 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#6A7068', fontWeight: 500, lineHeight: 1.14 } },
                                     React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
                                     altText && React.createElement("span", { style: { color: '#4F6B45', fontWeight: 650 } }, "→"),
                                     altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#4F6B45', fontWeight: 520 } }, altText)
@@ -8494,7 +8540,7 @@ function App() {
                 editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(60,60,67,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 620, color: G } }, "Transfer düzenleniyor"),
-                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? shortLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? shortLoc(form.dropoff) : 'Bırakış'))),
+                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? fullAirportLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? fullAirportLoc(form.dropoff) : 'Bırakış'))),
                     React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(60,60,67,.22)', background: '#fff', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 560, cursor: 'pointer' } }, "Yeni kayıt")),
                 React.createElement("div", { className: "card ko-schedule-card" },
                     /* SOL: Tarih (üstünde TIP açılır pill) + SAĞ: Saat (üstünde MOD açılır pill) */
