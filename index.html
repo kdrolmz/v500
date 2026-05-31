@@ -973,32 +973,12 @@ const TIPLER = [
     { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#9C8C7A', bg: '#EFE8DE', b: '#C9BAA8' },
 ];
 const VEHS = [
-    { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐', svg: 'van' },
-    { id: 'caravelle', n: 'Caravelle', cap: '1-8', ico: '🚐', svg: 'van' },
-    { id: 'sprinter', n: 'Sprinter', cap: '1-16', ico: '🚌', svg: 'bus' },
-    { id: 'minibus', n: 'Minibüs', cap: '17-25', ico: '🚌', svg: 'bus' },
-    { id: 'sedan', n: 'Sedan', cap: '1-3', ico: '🚗', svg: 'sedan' },
+    { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
+    { id: 'caravelle', n: 'Caravelle', cap: '1-8', ico: '🚐' },
+    { id: 'sprinter', n: 'Sprinter', cap: '1-16', ico: '🚌' },
+    { id: 'minibus', n: 'Minibüs', cap: '17-25', ico: '🚌' },
+    { id: 'sedan', n: 'Sedan', cap: '1-3', ico: '🚗' },
 ];
-/* Kurumsal (düz çizgi) araç ikonları — bugünkü transferler kartında araç adının yanında gösterilir. */
-const VEHICLE_SVG_PATHS = {
-    sedan: 'M4 30h40M6 30l3-8c.5-1.4 1.9-2.4 3.4-2.4h19.2c1.2 0 2.3.6 3 1.6l4.4 6.2 4 1.2c.9.3 1.6 1.1 1.6 2.1M9 22l3.2-4.8c.7-1 1.8-1.6 3-1.6h11.4c1 0 1.9.4 2.6 1.1l5.3 5.3M13 33a3.2 3.2 0 1 1-6.4 0 3.2 3.2 0 0 1 6.4 0zM39 33a3.2 3.2 0 1 1-6.4 0 3.2 3.2 0 0 1 6.4 0z',
-    van: 'M4 31h40M6 31V14c0-1.7 1.3-3 3-3h22l9 9v11M31 11v9h9M13 31a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM41 31a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM12 16h12',
-    bus: 'M5 33h38M7 33V11c0-1.7 1.3-3 3-3h28c1.7 0 3 1.3 3 3v22M7 14h34M7 21h34M14 33a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM40 33a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM15 8v6M25 8v6M35 8v6'
-};
-const vehicleSvgIcon = (vehId, color, size) => {
-    const v = VEHS.find(x => x.id === vehId);
-    const kind = (v && v.svg) || 'sedan';
-    const d = VEHICLE_SVG_PATHS[kind] || VEHICLE_SVG_PATHS.sedan;
-    const s = size || 15;
-    return React.createElement('svg', {
-        width: s, height: s, viewBox: '0 0 48 48', fill: 'none',
-        xmlns: 'http://www.w3.org/2000/svg',
-        style: { flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }
-    }, React.createElement('path', {
-        d: d, stroke: color || 'currentColor', strokeWidth: 2.4,
-        strokeLinecap: 'round', strokeLinejoin: 'round'
-    }));
-};
 const ROTALAR = [
     { id: 'free', n: 'Ücretsiz Yol', ico: '🛣️' },
     { id: 'fy', n: 'Feribot', ico: '⛴️' },
@@ -1018,7 +998,7 @@ const GIDER_KAT = [
     { id: 'other', n: 'Diğer', ico: '📎' },
 ];
 const LOCS = [
-    { n: 'İST', i: '✈️', q: 'Istanbul Airport IST Turkey' },
+    { n: 'İST', i: '✈️', q: 'İstanbul Havalimanı Istanbul Airport IST IHL Turkey' },
     { n: 'Sabiha Gökçen Havalimanı', i: '✈️', q: 'Sabiha Gokcen Airport Istanbul' },
     { n: 'Ankara Esenboğa Havalimanı', i: '✈️', q: 'Ankara Esenboga Airport' },
     { n: 'İzmir Adnan Menderes Havalimanı', i: '✈️', q: 'Izmir Adnan Menderes Airport' },
@@ -1250,11 +1230,18 @@ const uniqNames = arr => {
         return true;
     });
 };
+const normalizeLocationName = name => {
+    if (name === undefined || name === null) return '';
+    const n = String(name).trim();
+    if (!n) return '';
+    if (/^(İHL|IHL|İST|IST)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\((?:İST|IST)\)/i.test(n)) return 'İST';
+    return n;
+};
 const shortLoc = name => {
     if (!name) return '—';
     const n = String(name).trim();
     if (!n) return '—';
-    if (/^(İHL|IHL|İST|IST)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\(IST\)/i.test(n)) return 'İST';
+    if (/^(İHL|IHL|İST|IST)$/i.test(n) || /İstanbul Havalimanı|Istanbul Airport|\((?:İST|IST)\)/i.test(n)) return 'İST';
     if (/^SAW$/i.test(n) || /Sabiha Gökçen|Sabiha Gokcen|\(SAW\)/i.test(n)) return 'Sabiha Gökçen Havalimanı';
     if (/^ESB$/i.test(n) || /Ankara Esenboğa|Ankara Esenboga|\(ESB\)/i.test(n)) return 'Ankara Esenboğa Havalimanı';
     if (/^ADB$/i.test(n) || /İzmir Adnan|Izmir Adnan|\(ADB\)/i.test(n)) return 'İzmir Adnan Menderes Havalimanı';
@@ -1452,31 +1439,6 @@ const persistTransfersImmediately = transfers => {
         console.error('[LS] anlık transfer yazma hatası', e);
     }
 };
-/* BUG FIX (ödeme/bakiye, gider, borç kapat-aç silinmesi):
-   Bir liste alanı (adj/ak/db/tk/tl) değiştiğinde 500ms debounce'u BEKLEMEDEN
-   localStorage'a anında yazar ve _localWriteAt'i günceller. Böylece bulut
-   onSnapshot echo'su debounce penceresinde gelse bile localPayload her zaman
-   en güncel halde olur; merge yeni eklenen/silinen kaydı asla kaybetmez. */
-const persistFieldImmediately = (field, value) => {
-    try {
-        const now = new Date().toISOString();
-        let snap = {};
-        try { snap = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) { snap = {}; }
-        const newSnap = {
-            ...snap,
-            [field]: Array.isArray(value) ? value : (value || []),
-            del: readDeletedTransferIds(),
-            delA: (function(){ try { return readDeletedAracIds(); } catch (e) { return (snap && snap.delA) || []; } })(),
-            v: 26,
-            date: now,
-            clientUpdatedAt: now,
-            _localWriteAt: now
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
-    } catch (e) {
-        console.error('[LS] anlık alan yazma hatası', field, e);
-    }
-};
 const mergeTransferLists = (preferred, fallback, deletedIds) => {
     const deleted = new Set((deletedIds || []).map(x => String(x)));
     const list = [];
@@ -1583,6 +1545,8 @@ const normalizeTransfer = t => {
         id: fixed.id || ('tr_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)),
         updatedAt: fixed.updatedAt || fixed.createdAt || new Date().toISOString(),
         plate: inferPlate(fixed),
+        pickup: normalizeLocationName(fixed.pickup),
+        dropoff: normalizeLocationName(fixed.dropoff),
         passengers,
         passengerCount: Math.max(1, parseInt(fixed.passengerCount, 10) || passengers.length || 1),
         settled: companyCollected,
@@ -2638,11 +2602,11 @@ function AracTab({ tip, aracK, setAracK }) {
         const id = editId || Date.now().toString();
         const k = { id, type: 'sefer', date: sf.date, isVeren: sf.isVeren, sofor: sf.sofor, yolcu: sf.yolcu, guzergah: sf.guzergah, musteri: sf.musteri, arac: sf.arac, not: sf.not };
         if (editId) {
-            setAracK(p => { const next = (Array.isArray(p) ? p : []).map(x => x.id === editId ? k : x); try { persistFieldImmediately('ak', next); } catch (e) {} return next; });
+            setAracK(p => p.map(x => x.id === editId ? k : x));
             tip('Güncellendi');
         }
         else {
-            setAracK(p => { const next = [...(Array.isArray(p) ? p : []), k]; try { persistFieldImmediately('ak', next); } catch (e) {} return next; });
+            setAracK(p => [...p, k]);
             setExpanded(p => ({ ...p, [id]: true }));
             tip('Sefer eklendi');
         }
@@ -2658,12 +2622,12 @@ function AracTab({ tip, aracK, setAracK }) {
     };
     const duzenle = k => { setSf({ date: k.date, isVeren: k.isVeren || '', sofor: k.sofor || '', yolcu: k.yolcu || '', guzergah: k.guzergah || '', musteri: k.musteri || '', arac: k.arac || '', not: k.not || '' }); setEditId(k.id); setShowForm(true); setExpanded(p => ({ ...p, [k.id]: false })); };
     const silSefer = id => { if (!window.confirm('Silinsin mi?'))
-        return; setAracK(p => { const base = Array.isArray(p) ? p : []; base.forEach(k => { if (k && (k.id === id || k.seferId === id)) addDeletedAracId(k.id); }); const next = base.filter(k => k.id !== id && k.seferId !== id); try { persistFieldImmediately('ak', next); } catch (e) {} return next; }); tip('Silindi'); };
+        return; setAracK(p => { const base = Array.isArray(p) ? p : []; base.forEach(k => { if (k && (k.id === id || k.seferId === id)) addDeletedAracId(k.id); }); return base.filter(k => k.id !== id && k.seferId !== id); }); tip('Silindi'); };
     const kaydetGider = sid => { if (!gf.tutar) {
         tip('Tutar girin');
         return;
-    } const sefer = aracK.find(k => k.id === sid); const k = { id: Date.now().toString(), type: 'gider', seferId: sid, date: sefer ? sefer.date : new Date().toISOString().split('T')[0], kat: gf.kat, tutar: gf.tutar, not: gf.not }; setAracK(p => { const next = [...(Array.isArray(p) ? p : []), k]; try { persistFieldImmediately('ak', next); } catch (e) {} return next; }); setGf({ kat: 'fuel', tutar: '', not: '' }); tip('Gider eklendi'); };
-    const silGider = id => { addDeletedAracId(id); setAracK(p => { const next = (Array.isArray(p) ? p : []).filter(k => k.id !== id); try { persistFieldImmediately('ak', next); } catch (e) {} return next; }); tip('Silindi'); };
+    } const sefer = aracK.find(k => k.id === sid); const k = { id: Date.now().toString(), type: 'gider', seferId: sid, date: sefer ? sefer.date : new Date().toISOString().split('T')[0], kat: gf.kat, tutar: gf.tutar, not: gf.not }; setAracK(p => [...p, k]); setGf({ kat: 'fuel', tutar: '', not: '' }); tip('Gider eklendi'); };
+    const silGider = id => { addDeletedAracId(id); setAracK(p => p.filter(k => k.id !== id)); tip('Silindi'); };
     const toggle = id => setExpanded(p => ({ ...p, [id]: !p[id] }));
     const gunler = {};
     [...msf].sort((a, b) => a.date < b.date ? -1 : 1).forEach(s => { if (!gunler[s.date])
@@ -3050,15 +3014,11 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
         const record = { id, type: 'sefer', date: key, isVeren: tripForm.isVeren, sofor: tripForm.sofor, yolcu: tripForm.yolcu, guzergah: tripForm.guzergah, musteri: tripForm.musteri, arac: tripForm.arac, not: tripForm.not };
         setAracK(p => {
             const base = Array.isArray(p) ? p : [];
-            let next;
             if (editTripId) {
                 const old = base.find(x => x.id === editTripId) || {};
-                next = base.map(x => x.id === editTripId ? { ...old, ...record } : x);
-            } else {
-                next = [...base, record];
+                return base.map(x => x.id === editTripId ? { ...old, ...record } : x);
             }
-            try { persistFieldImmediately('ak', next); } catch (e) {}
-            return next;
+            return [...base, record];
         });
         if (tripForm.sofor)
             rememberSofor(tripForm.sofor);
@@ -3078,9 +3038,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
         setAracK(p => {
             const base = Array.isArray(p) ? p : [];
             base.forEach(k => { if (k && (k.id === id || k.seferId === id)) addDeletedAracId(k.id); });
-            const next = base.filter(k => k.id !== id && k.seferId !== id);
-            try { persistFieldImmediately('ak', next); } catch (e) {}
-            return next;
+            return base.filter(k => k.id !== id && k.seferId !== id);
         });
         tip('Silindi');
     };
@@ -3119,11 +3077,8 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 tutar: String(tutar),
                 not: expenseForm.not || ''
             };
-            const next = [...base, record];
-            try { persistFieldImmediately('ak', next); } catch (e) {}
-            return next;
+            return [...base, record];
         });
-        try {} catch (e) {}
         setOpenTrip(p => ({ ...p, [targetId]: true }));
         setExpenseForm({ target: targetId, kat: 'fuel', tutar: '', not: '' });
         setExpenseOpen(false);
@@ -3131,7 +3086,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
     };
     const deleteExpense = id => {
         addDeletedAracId(id);
-        setAracK(p => { const next = (Array.isArray(p) ? p : []).filter(k => k.id !== id); try { persistFieldImmediately('ak', next); } catch (e) {} return next; });
+        setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== id));
         tip('Gider silindi');
     };
     const expenseLine = k => {
@@ -3221,7 +3176,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                                     if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi?')) return;
                                     const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
                                     if (onDeleteTransfer) onDeleteTransfer(tid);
-                                    else { addDeletedAracId(s.id); setAracK(p => { const next = (Array.isArray(p) ? p : []).filter(k => k.id !== s.id); try { persistFieldImmediately('ak', next); } catch (e) {} return next; }); tip('Silindi'); }
+                                    else { addDeletedAracId(s.id); setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
                                 } else {
                                     deleteTrip(s.id);
                                 }
@@ -3262,7 +3217,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                                         if (!window.confirm('Bu iş transferden otomatik geldi. İlgili transfer silinsin mi? (Transfer sekmesinden de kalkar)')) return;
                                         const tid = s.transferId || String(s.id || '').replace('plate16_auto_', '');
                                         if (onDeleteTransfer) onDeleteTransfer(tid);
-                                        else { addDeletedAracId(s.id); setAracK(p => { const next = (Array.isArray(p) ? p : []).filter(k => k.id !== s.id); try { persistFieldImmediately('ak', next); } catch (e) {} return next; }); tip('Silindi'); }
+                                        else { addDeletedAracId(s.id); setAracK(p => (Array.isArray(p) ? p : []).filter(k => k.id !== s.id)); tip('Silindi'); }
                                     }, style: { color: R, borderColor: '#FFC4C0' } }, "🗑️ Transferi sil"))));
                     }),
                     dayLooseExpenses.length > 0 && React.createElement("div", { style: { border: '1px solid #FFC4C0', borderRadius: 13, padding: '2px 11px 6px', background: '#FFF8F7' } },
@@ -3363,7 +3318,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             createdAt: now.toISOString(),
             updatedAt: now.toISOString()
         });
-        setAccountAdjustments(p => { const next = [rec, ...(Array.isArray(p) ? p : [])]; try { persistFieldImmediately('adj', next); } catch (e) {} return next; });
+        setAccountAdjustments(p => [rec, ...(Array.isArray(p) ? p : [])]);
         setAdjForm(f => ({ ...f, amount: '', note: '', date: accountAdjustmentDateKey(new Date()), time: accountAdjustmentTimeKey(new Date()) }));
         tip && tip('Ana hesap kaydı eklendi');
     };
@@ -3373,7 +3328,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (!window.confirm('Bu ödeme kaydı silinsin mi?'))
             return;
         try { addDeletedAracId(id); } catch (e) {}
-        setAccountAdjustments(p => { const next = (Array.isArray(p) ? p : []).filter(x => String(x && x.id) !== String(id)); try { persistFieldImmediately('adj', next); } catch (e) {} return next; });
+        setAccountAdjustments(p => (Array.isArray(p) ? p : []).filter(x => String(x && x.id) !== String(id)));
         tip && tip('Ödeme kaydı silindi');
     };
     const ozet = firm => {
@@ -4398,36 +4353,6 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 640, color: col } }, v),
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 560, letterSpacing: .3 } }, l))))),
                     renderManualAdjustmentPanel(sel),
-                    (function() {
-                        /* Bu firmaya ait manuel ödeme/bakiye kayıtlarının sabit özeti.
-                           SAĞ: Alacaklar (+ yeşil) — alacağı artıran hareketler (ödeme yaptım / + bakiye).
-                           SOL: Ödemeler  (− kırmızı) — alacağı azaltan hareketler (tahsilat aldım / − bakiye). */
-                        const manualForFirm = normalizedAccountAdjustments.filter(a => nm(a.firm) === nm(sel));
-                        const alacakToplam = Math.round(manualForFirm.reduce((s, a) => s + (a.netOl > 0 ? a.netOl : 0), 0));
-                        const odemeToplam  = Math.round(manualForFirm.reduce((s, a) => s + (a.netOl < 0 ? Math.abs(a.netOl) : 0), 0));
-                        return React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 2 } },
-                            React.createElement("div", {
-                                style: {
-                                    background: '#FFF6F5',
-                                    border: '1px solid #F2C9C5',
-                                    borderRadius: 10,
-                                    padding: '8px 10px'
-                                }
-                            },
-                                React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: R, letterSpacing: .5, marginBottom: 2 } }, "ÖDEMELER"),
-                                React.createElement("div", { style: { fontSize: 15, fontWeight: 680, color: R, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 } }, "−" + fr(odemeToplam) + " ₺")),
-                            React.createElement("div", {
-                                style: {
-                                    background: '#F2FAF4',
-                                    border: '1px solid #C7E6D0',
-                                    borderRadius: 10,
-                                    padding: '8px 10px',
-                                    textAlign: 'right'
-                                }
-                            },
-                                React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: G, letterSpacing: .5, marginBottom: 2 } }, "ALACAKLAR"),
-                                React.createElement("div", { style: { fontSize: 15, fontWeight: 680, color: G, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 } }, "+" + fr(alacakToplam) + " ₺")));
-                    })(),
                     React.createElement("div", { style: { fontWeight: 560, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement(React.Fragment, null,
@@ -4449,11 +4374,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     renderHesapDetayModal());
             })()
 	            : (function() {
-	                const firmRows = filtered.map(firm => {
+	                const firmSummaries = filtered.map(firm => {
 	                    const { ts } = hesapData(firm);
 	                    const openTs = ts.filter(t => !t.firmSettled);
-	                    if (openTs.length === 0) return null;
 	                    const netVal = hesapOpenNet(openTs);
+	                    if (openTs.length === 0 || netVal === 0) return null;
+                    return { firm, netVal };
+                }).filter(Boolean);
+                const totalAlacak = Math.round(firmSummaries.filter(x => x.netVal > 0).reduce((s, x) => s + x.netVal, 0));
+                const totalVerecek = Math.round(firmSummaries.filter(x => x.netVal < 0).reduce((s, x) => s + Math.abs(x.netVal), 0));
+	                const firmRows = firmSummaries.map(({ firm, netVal }) => {
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
@@ -4464,11 +4394,19 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("b", null, firm),
                             React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
                                 (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
-                }).filter(Boolean);
-                return React.createElement("div", { className: "ko-account-firm-cards" },
-                    firmRows.length
-                        ? firmRows
-                        : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok"));
+                });
+                return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    React.createElement("div", { className: "ko-account-firm-cards" },
+                        firmRows.length
+                            ? firmRows
+                            : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok")),
+                    React.createElement("div", { className: "ko-account-overview-totals", style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                        React.createElement("div", { className: "ko-account-overview-total is-pay", style: { minHeight: 48, background: '#FFF8F7', border: '1px solid rgba(178,82,76,.26)', borderRadius: 11, padding: '8px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' } },
+                            React.createElement("div", { style: { fontSize: 8.5, fontWeight: 640, color: R, letterSpacing: .4, marginBottom: 3, textTransform: 'uppercase' } }, "Ödemeler"),
+                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 650, color: R, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', lineHeight: 1.05 } }, "−" + fr(totalVerecek) + " ₺")),
+                        React.createElement("div", { className: "ko-account-overview-total is-rec", style: { minHeight: 48, background: '#F3FAF5', border: '1px solid rgba(79,107,69,.26)', borderRadius: 11, padding: '8px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', textAlign: 'right' } },
+                            React.createElement("div", { style: { fontSize: 8.5, fontWeight: 640, color: G, letterSpacing: .4, marginBottom: 3, textTransform: 'uppercase' } }, "Alacaklar"),
+                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 650, color: G, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', lineHeight: 1.05 } }, "+" + fr(totalAlacak) + " ₺"))));
             })()
         )));
 }
@@ -4500,7 +4438,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const total = moneyValue(newDebt.total);
         const paid = moneyValue(newDebt.paid);
         if (!name || !(total > 0)) return;
-        setDebts(p => { const next = [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, note: (newDebt.note || '').trim() }, ...(Array.isArray(p) ? p : [])]; try { persistFieldImmediately('db', next); } catch (e) {} return next; });
+        setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, note: (newDebt.note || '').trim() }, ...p]);
         setNewDebt({ type: newDebt.type, name: '', total: '', paid: '', note: '' });
         tip(newDebt.type === 'borc' ? 'Borç eklendi' : 'Alacak eklendi');
     };
@@ -4508,14 +4446,14 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const amt = moneyValue(prompt(kind, '0') || '0');
         if (!(amt > 0)) return;
         const note = (prompt('Açıklama', '') || '').trim();
-        setDebts(p => { const next = (Array.isArray(p) ? p : []).map(d => d.id !== id ? d : ({ ...d, total: d.total + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })); try { persistFieldImmediately('db', next); } catch (e) {} return next; });
+        setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, total: d.total + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
         tip(kind + ' eklendi');
     };
     const addPayment = (id, kind) => {
         const amt = moneyValue(prompt(kind, '0') || '0');
         if (!(amt > 0)) return;
         const note = (prompt('Açıklama', '') || '').trim();
-        setDebts(p => { const next = (Array.isArray(p) ? p : []).map(d => d.id !== id ? d : ({ ...d, paid: d.paid + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })); try { persistFieldImmediately('db', next); } catch (e) {} return next; });
+        setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, paid: d.paid + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
         tip(kind + ' eklendi');
     };
     const renderDebt = d => {
@@ -4571,7 +4509,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 8, paddingLeft: 6 } },
                 React.createElement("button", { onClick: () => addPayment(d.id, isBorc ? 'Ödeme' : 'Tahsilat'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Ödeme Ekle' : 'Tahsilat Ekle'),
                 React.createElement("button", { onClick: () => addToDebt(d.id, isBorc ? 'Borç' : 'Alacak'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Borç Ekle' : 'Alacak Ekle'),
-                React.createElement("button", { onClick: () => { if (window.confirm('Silinsin mi?')) setDebts(p => { const next = (Array.isArray(p) ? p : []).filter(x => x.id !== d.id); try { persistFieldImmediately('db', next); } catch (e) {} return next; }); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, 'Sil')));
+                React.createElement("button", { onClick: () => { if (window.confirm('Silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, 'Sil')));
     };
     const borclar = debts.filter(d => d.type === 'borc');
     const alacaklar = debts.filter(d => d.type === 'alacak');
@@ -6340,7 +6278,8 @@ function App() {
         const vehName = veh ? veh.n : 'Vito';
         const vehIco = veh ? veh.ico : '🚐';
         const cleanLoc = loc => {
-            let c = (loc || '').replace(/\s*\([A-Z]{2,4}\)\s*/g, '').trim();
+            let c = normalizeLocationName((loc || '').replace(/\s*\([A-Z]{2,4}\)\s*/g, '').trim());
+            if (/^(İST|IST)$/i.test(c)) return 'İST';
             if (/[Hh]avalimanı|[Aa]irport/.test(c)) return c;
             return c.split('/')[0].split(',')[0].trim();
         };
@@ -6363,8 +6302,9 @@ function App() {
         const gunText = diffDays >= 1 ? 'Yarın' : 'Bugün';
         const rawPickup = t.pickup || '';
         const rawDropoff = t.dropoff || '';
-        const isPickupAirport = /[Hh]avalimanı|[Aa]irport|\(IST\)|\(SAW\)|\(ESB\)|\(ADB\)|\(AYT\)|\(DLM\)|\(BJV\)|\(TZX\)|\(BTZ\)/.test(rawPickup);
-        const isDropoffAirport = /[Hh]avalimanı|[Aa]irport|\(IST\)|\(SAW\)|\(ESB\)|\(ADB\)|\(AYT\)|\(DLM\)|\(BJV\)|\(TZX\)|\(BTZ\)/.test(rawDropoff);
+        const isAirportLoc = loc => /^(İST|IST|SAW|ESB|ADB|AYT|DLM|BJV|TZX|BTZ)$/i.test(String(loc || '').trim()) || /[Hh]avalimanı|[Aa]irport|\((?:İST|IST|SAW|ESB|ADB|AYT|DLM|BJV|TZX|BTZ)\)/.test(String(loc || ''));
+        const isPickupAirport = isAirportLoc(rawPickup);
+        const isDropoffAirport = isAirportLoc(rawDropoff);
         const [h, m] = transferTime.split(':').map(Number);
         const fmtTime = (hh, mm) => hh.toString().padStart(2, '0') + ':' + mm.toString().padStart(2, '0');
         const roundTime = (hh, mm) => { const r = Math.round(mm / 30) * 30; return r >= 60 ? [(hh + 1) % 24, 0] : [hh, r]; };
@@ -6968,7 +6908,7 @@ function App() {
                             React.createElement("span", null, pickup),
                             React.createElement("span", { className: 'arrow' }, '→'),
                             React.createElement("span", null, dropoff),
-                            vh && React.createElement("span", { style: { marginLeft: 8, color: 'var(--ink-4)', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 } }, vehicleSvgIcon(vh.id, 'var(--ink-3)', 15), vh.n)
+                            vh && React.createElement("span", { style: { marginLeft: 8, color: 'var(--ink-4)', fontWeight: 500 } }, vh.ico + ' ' + vh.n)
                         ),
                         (pasName || t.passengerCount) && React.createElement("div", { className: 'tcard-passenger' },
                             '👤 ' + (pasName || 'Misafir') + ' · ' + (t.passengerCount || 1) + ' kişi'
@@ -7620,30 +7560,21 @@ function App() {
                 // Panel aç-kapa
                 const panel = (expandedT['__hp'] === undefined) ? 'day' : expandedT['__hp'];
                 const tp = n => setExpandedT(p => ({ ...p, __hp: (p.__hp === undefined ? 'day' : p.__hp) === n ? false : n }));
-                const AYLAR_KISA = ['OCA','ŞUB','MAR','NİS','MAY','HAZ','TEM','AĞU','EYL','EKİ','KAS','ARA'];
                 const todayCalendarIcon = isActive => React.createElement("span", {
                     style: {
-                        width: 26, height: 30, borderRadius: 7, overflow: 'hidden',
-                        background: isActive ? 'rgba(255,255,255,.95)' : '#fff',
+                        width: 22, height: 25, borderRadius: 7, overflow: 'hidden',
+                        background: isActive ? 'rgba(255,255,255,.9)' : '#fff',
                         border: '1px solid ' + (isActive ? 'rgba(255,255,255,.75)' : 'var(--brand-bd)'),
-                        display: 'grid', gridTemplateRows: '11px 1fr',
-                        boxShadow: '0 1px 3px rgba(0,0,0,.12)'
+                        display: 'grid', gridTemplateRows: '6px 1fr',
+                        boxShadow: '0 1px 2px rgba(0,0,0,.08)'
                     }
                 },
-                    React.createElement("span", {
-                        style: {
-                            background: isActive ? 'var(--ok)' : '#B0524C',
-                            color: '#fff',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 7.5, fontWeight: 800, letterSpacing: '.04em',
-                            lineHeight: 1, textTransform: 'uppercase'
-                        }
-                    }, AYLAR_KISA[now.getMonth()]),
+                    React.createElement("span", { style: { background: isActive ? 'var(--ok)' : 'var(--brand)', display: 'block' } }),
                     React.createElement("span", {
                         style: {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: isActive ? 'var(--ok)' : 'var(--brand-2)',
-                            fontSize: 14, fontWeight: 720, lineHeight: 1,
+                            fontSize: 12, fontWeight: 640, lineHeight: 1,
                             fontVariantNumeric: 'tabular-nums'
                         }
                     }, String(now.getDate()))
@@ -7875,9 +7806,9 @@ function App() {
                                 React.createElement("div", { className: "lg-period-label" }, label),
                                 React.createElement("div", { className: "lg-period-sub" }, sub)
                             ),
-                            React.createElement("div", { style: { width: 27, height: 27, borderRadius: 6, overflow: 'hidden', background: '#fff', boxShadow: '0 1px 2px rgba(60,50,40,.16), inset 0 0 0 1px #EAE6DF', flexShrink: 0, display: 'flex', flexDirection: 'column' } },
-                                React.createElement("div", { style: { background: '#B0524C', color: '#fff', fontSize: 5.5, fontWeight: 600, letterSpacing: '.03em', textAlign: 'center', padding: '1px 0', textTransform: 'uppercase', lineHeight: 1 } }, AYLAR[now.getMonth()].slice(0, 3)),
-                                React.createElement("div", { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontWeight: 600, color: '#2A2724', lineHeight: 1 } }, String(now.getDate()))
+                            React.createElement("div", { style: { width: 31, height: 32, borderRadius: 7, overflow: 'hidden', background: '#fff', boxShadow: '0 1px 2px rgba(60,50,40,.16), inset 0 0 0 1px #EAE6DF', flexShrink: 0, display: 'flex', flexDirection: 'column' } },
+                                React.createElement("div", { style: { background: '#B0524C', color: '#fff', WebkitTextFillColor: '#fff', minHeight: 10, fontSize: 7.5, fontWeight: 760, textAlign: 'center', padding: '1px 0 0', textTransform: 'uppercase', lineHeight: 1.15 } }, AYLAR[now.getMonth()].slice(0, 3).toLocaleUpperCase('tr-TR')),
+                                React.createElement("div", { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#2A2724', lineHeight: 1 } }, String(now.getDate()))
                             )
                         )
                         : React.createElement(React.Fragment, null,
@@ -7890,6 +7821,63 @@ function App() {
                     const s = shortLoc(loc);
                     return s && s !== '—' ? s : 'Belirtilmedi';
                 };
+                const homeTransferCardLoc = loc => {
+                    const s = homeLoc(loc);
+                    return /^İST$/i.test(s) ? 'İstanbul Havalimanı' : s;
+                };
+                const homeVehicleMeta = t => {
+                    const raw = String((t && t.vehicle) || '').trim();
+                    const found = VEHS.find(x => x.id === raw) || VEHS.find(x => nm(x.n) === nm(raw));
+                    const name = found ? found.n : (appleCalendarVehicle ? appleCalendarVehicle(t) : raw);
+                    const id = found ? found.id : firmSlug(name || raw || '');
+                    const colors = id === 'sprinter'
+                        ? { fg: '#4A5F78', bg: '#EEF2F7', bd: '#D8E0EA' }
+                        : id === 'sedan'
+                            ? { fg: '#6A5A3F', bg: '#F7F2EA', bd: '#E5D8C4' }
+                            : { fg: '#4F6B45', bg: '#EEF3EB', bd: '#D9E2D6' };
+                    return { id, name, ...colors };
+                };
+                const homeVehicleIcon = (id, color) => React.createElement("svg", {
+                    viewBox: "0 0 24 16",
+                    width: 18,
+                    height: 14,
+                    "aria-hidden": "true",
+                    style: { display: 'block', color: color, flexShrink: 0 }
+                },
+                    id === 'sprinter'
+                        ? React.createElement(React.Fragment, null,
+                            React.createElement("path", { d: "M2.5 4.8c0-1.2.9-2.2 2.2-2.2h10.7c1 0 1.8.5 2.4 1.3l2.1 3.1c.3.4.4.9.4 1.4v3H2.5V4.8Z", fill: "currentColor", opacity: .18 }),
+                            React.createElement("path", { d: "M4.4 4h10.4c.6 0 1.1.3 1.4.8l1.5 2.2H4.4V4Z", fill: "currentColor", opacity: .42 }),
+                            React.createElement("path", { d: "M2.5 10.8h17.8v1.1c0 .6-.5 1.1-1.1 1.1H3.6c-.6 0-1.1-.5-1.1-1.1v-1.1Z", fill: "currentColor" }),
+                            React.createElement("circle", { cx: 6.4, cy: 13, r: 1.9, fill: "#fff" }),
+                            React.createElement("circle", { cx: 17.2, cy: 13, r: 1.9, fill: "#fff" }),
+                            React.createElement("circle", { cx: 6.4, cy: 13, r: .9, fill: "currentColor" }),
+                            React.createElement("circle", { cx: 17.2, cy: 13, r: .9, fill: "currentColor" }))
+                        : id === 'sedan'
+                            ? React.createElement(React.Fragment, null,
+                                React.createElement("path", { d: "M5.1 7.2 7.4 3.9c.4-.6 1.1-.9 1.8-.9h5.2c.7 0 1.4.3 1.8.9l2.2 3.3 2.1 1.2c.4.2.7.7.7 1.2v1.8H2.8V9.6c0-.5.3-1 .8-1.2l1.5-1.2Z", fill: "currentColor", opacity: .22 }),
+                                React.createElement("path", { d: "M7.8 4.7h7.7l1.6 2.5H6.1l1.7-2.5Z", fill: "currentColor", opacity: .46 }),
+                                React.createElement("path", { d: "M2.8 10.6h18.4v1.2c0 .6-.5 1-1 1H3.8c-.6 0-1-.4-1-1v-1.2Z", fill: "currentColor" }),
+                                React.createElement("circle", { cx: 6.7, cy: 12.8, r: 1.8, fill: "#fff" }),
+                                React.createElement("circle", { cx: 17.4, cy: 12.8, r: 1.8, fill: "#fff" }),
+                                React.createElement("circle", { cx: 6.7, cy: 12.8, r: .85, fill: "currentColor" }),
+                                React.createElement("circle", { cx: 17.4, cy: 12.8, r: .85, fill: "currentColor" }))
+                            : React.createElement(React.Fragment, null,
+                                React.createElement("path", { d: "M3 5.1c0-1.2 1-2.1 2.1-2.1h8.1c.9 0 1.7.4 2.3 1.1l2.8 3.6c.3.4.5.9.5 1.4v2.2H3V5.1Z", fill: "currentColor", opacity: .2 }),
+                                React.createElement("path", { d: "M5.1 4.6h7.6c.6 0 1.2.3 1.6.8l1.8 2.3h-11V4.6Z", fill: "currentColor", opacity: .46 }),
+                                React.createElement("path", { d: "M3 10.7h15.8v1.1c0 .6-.5 1.1-1.1 1.1H4.1c-.6 0-1.1-.5-1.1-1.1v-1.1Z", fill: "currentColor" }),
+                                React.createElement("circle", { cx: 6.4, cy: 12.9, r: 1.8, fill: "#fff" }),
+                                React.createElement("circle", { cx: 16.2, cy: 12.9, r: 1.8, fill: "#fff" }),
+                                React.createElement("circle", { cx: 6.4, cy: 12.9, r: .85, fill: "currentColor" }),
+                                React.createElement("circle", { cx: 16.2, cy: 12.9, r: .85, fill: "currentColor" })));
+                const homeVehicleBadge = t => {
+                    const v = homeVehicleMeta(t);
+                    if (!v.name)
+                        return null;
+                    return React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, minHeight: 17, padding: '1px 6px 1px 4px', borderRadius: 999, background: v.bg, border: '1px solid ' + v.bd, color: v.fg, flexShrink: 0, maxWidth: 94 } },
+                        React.createElement("span", { style: { width: 19, height: 15, borderRadius: 999, background: '#fff', border: '1px solid rgba(60,60,67,.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, homeVehicleIcon(v.id, v.fg)),
+                        React.createElement("span", { style: { fontSize: 9, fontWeight: 600, lineHeight: 1, color: v.fg, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' } }, v.name));
+                };
                 const renderHomeTransfer = t => {
                     if (!t)
                         return React.createElement("div", { className: "lg-empty" }, "Bu dönem transfer yok");
@@ -7898,9 +7886,9 @@ function App() {
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
-                    const routeText = homeLoc(t.pickup) + ' → ' + homeLoc(t.dropoff);
+                    const routeText = homeTransferCardLoc(t.pickup) + ' → ' + homeTransferCardLoc(t.dropoff);
                     const tip = TIPLER.find(x => x.id === t.transferType) || TIPLER[1];
-                    const vehName = appleCalendarVehicle ? appleCalendarVehicle(t) : (t.vehicle || '');
+                    const vehicleBadge = homeVehicleBadge(t);
                     const acentaMain = [t.givenBy, t.assignedTo].filter(Boolean).join(' / ');
                     const acentaText = acentaMain || 'Firma belirtilmedi';
                     const altText = t.altAcenta || '';
@@ -7911,26 +7899,27 @@ function App() {
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
-                        style: { background: '#fff', border: '1px solid var(--line)', borderRadius: 12, padding: '8px 11px 8px 12px', boxShadow: 'var(--shadow)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
+                        style: { background: '#fff', border: '1px solid var(--line)', borderRadius: 13, padding: '7px 10px 7px 12px', boxShadow: '0 1px 6px rgba(60,60,67,.055)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '52px minmax(0,1fr)', alignItems: 'center', gap: 9, minHeight: 74 } },
-                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 660, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'center' } }, t.time || '--:--'),
-                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
-                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 560, padding: '1px 7px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0 } }, tip.n),
-                                    vehName && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', flexShrink: 0 } }, vehName),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '49px minmax(0,1fr)', alignItems: 'stretch', gap: 8, minHeight: 68 } },
+                            React.createElement("div", { style: { height: '100%', minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#4F6B45', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, opacity: .88 } },
+                                    React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', minHeight: 17, fontSize: 9, fontWeight: 600, lineHeight: 1, padding: '1px 6px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0 } }, tip.n),
+                                    vehicleBadge,
                                     flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 500, color: '#9A9388', marginLeft: 'auto', flexShrink: 0 } }, flight)
                                 ),
-                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 650, color: '#1C1C1E', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.22 } }, routeText),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 710, color: '#1C1C1E', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.14, padding: '1px 0 2px', overflowWrap: 'anywhere' } }, routeText),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', opacity: .92 } },
                                     React.createElement("button", {
                                         onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                        style: { fontSize: 9, fontWeight: 600, padding: '2px 8px', borderRadius: 999, border: '1px solid rgba(60,60,67,.12)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
+                                        style: { fontSize: 8.6, fontWeight: 600, padding: '1px 7px', borderRadius: 999, border: '1px solid rgba(60,60,67,.10)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
                                     }, payText),
-                                    React.createElement("span", { style: { fontSize: 10, color: '#6B655C', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
+                                    React.createElement("span", { style: { fontSize: 9.2, color: '#756F66', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
                                 ),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', fontSize: 9.5, color: '#6A7068', fontWeight: 500, lineHeight: 1.18 } },
+                                React.createElement("div", { style: { width: '100%', height: 1, margin: '2px 0 1px', background: 'rgba(60,60,67,.26)', boxShadow: '0 1px 0 rgba(255,255,255,.86)' } }),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#8A8378', fontWeight: 500, lineHeight: 1.14 } },
                                     React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
                                     altText && React.createElement("span", { style: { color: '#4F6B45', fontWeight: 650 } }, "→"),
                                     altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#4F6B45', fontWeight: 520 } }, altText)
