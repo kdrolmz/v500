@@ -1043,6 +1043,7 @@ const BF = {
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
+    driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
     status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
 };
 const STORAGE_KEY = 'tp10';
@@ -4028,8 +4029,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             ['Plaka', detayT.plate || '—'],
             detayT.kaynak === 'odelo' ? ['Odelo Bedeli', fr(detayT.odelloGross || detayT.odeloGross || detayT.customerTRY || detayT.paymentAmount || detayT.driverPayment || 0) + '₺'] : ['Müşteri', odeme],
             remRow,
-            detayT.kaynak === 'odelo' ? (detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Hesabı', '16 LMZ 55 hesabında']) : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺'],
-            detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + (moneyValue(detayT.altAcentaUcreti) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺') : '')] : null,
+            detayT.kaynak === 'odelo' ? (detayT.yon === 'odeloBalentur' ? ['Balentur Ücreti', fr(detayT.balenturCost || detayT.driverPayment || detayT.altAcentaUcreti || 0) + '₺'] : ['Araç Hesabı', '16 LMZ 55 hesabında']) : ['Araç Ödeme', fr(detayT.driverPayment || 0) + '₺' + ((detayT.driverPaymentCurrency && detayT.driverPaymentCurrency !== 'TRY' && moneyValue(detayT.driverPaymentRaw) > 0) ? (' (' + currencySymbolFor(detayT.driverPaymentCurrency) + fr(detayT.driverPaymentRaw) + ')') : '')],
+            detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + (moneyValue(detayT.altAcentaUcreti) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺' + ((detayT.altAcentaCurrency && detayT.altAcentaCurrency !== 'TRY' && moneyValue(detayT.altAcentaRaw) > 0) ? (' (' + currencySymbolFor(detayT.altAcentaCurrency) + fr(detayT.altAcentaRaw) + ')') : '')) : '')] : null,
             hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
             ['Net', (pos ? '+' : '−') + fr(detayT.netOl) + '₺'],
@@ -5478,14 +5479,7 @@ const pdfImportSameTransfer = (a, b) => {
 
 function App() {
     const [T, setT] = useState([]);
-    const [tab, setTab] = useState(() => {
-        try {
-            const saved = localStorage.getItem('ko_active_tab');
-            return ['home', 'list', 'new', 'hesap', 'arac', 'tk'].includes(saved) ? saved : 'home';
-        } catch (e) {
-            return 'home';
-        }
-    });
+    const [tab, setTab] = useState('home');
     const [openKarPanel, setOpenKarPanel] = useState(false);
     const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50, KWD: 144.40 });
     try { window.__KO_RATES = rates; } catch (e) {}
@@ -5977,6 +5971,25 @@ function App() {
         return n * rates.USD; if (c === 'EUR')
         return n * rates.EUR; if (c === 'KWD')
         return n * (rates.KWD || (rates.USD * 3.27)); return n; };
+    /* Araç ücreti: kullanıcı döviz/TL girer; canonical driverPayment HER ZAMAN TL tutulur (muhasebe TL okur). */
+    const setDriverFee = (rawAmount, currency) => {
+        const cur = currency || form.driverPaymentCurrency || 'TRY';
+        const tl = cur === 'TRY' ? moneyValue(rawAmount) : toTRY(rawAmount, cur);
+        sf({
+            driverPaymentRaw: rawAmount,
+            driverPaymentCurrency: cur,
+            driverPayment: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl))
+        });
+    };
+    const setAltFee = (rawAmount, currency) => {
+        const cur = currency || form.altAcentaCurrency || 'TRY';
+        const tl = cur === 'TRY' ? moneyValue(rawAmount) : toTRY(rawAmount, cur);
+        sf({
+            altAcentaRaw: rawAmount,
+            altAcentaCurrency: cur,
+            altAcentaUcreti: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl))
+        });
+    };
     const gS = v => { if (!v || v.length < 2)
         return []; const s = nm(v); return LOCS.filter(l => nm(l.n).includes(s) || nm(l.q || '').includes(s)).slice(0, 10); };
     const chL = (f, v) => { sf({ [f]: v }); setSugg(p => ({ ...p, [f]: gS(v) })); setShowSg(p => ({ ...p, [f]: true })); };
@@ -8814,9 +8827,16 @@ function App() {
                             React.createElement("span", { className: "lbl" }, "Alt Acenta"),
                             React.createElement(SmartPick, { value: form.altAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ altAcenta: v }), onSelect: a => sf({ altAcenta: a.name }), placeholder: "" })),
                         form.altAcenta && (React.createElement("div", { style: { flex: 1 } },
-                            React.createElement("span", { className: "lbl" }, "Alt Acenta \u00DCcreti (\u20BA)"),
-                            React.createElement("input", { type: "text", inputMode: "decimal", value: form.altAcentaUcreti || '', onChange: e => sf({ altAcentaUcreti: e.target.value }), placeholder: "0", className: "inp" }))),
-                        React.createElement("button", { type: "button", onClick: () => sf({ altAcenta: '', altAcentaUcreti: '', __showAltAcenta: false }), title: "Alt acentayı kapat", style: { border: '1px solid ' + BOR, background: '#fff', color: R, borderRadius: 10, minHeight: 43, padding: 0, fontSize: 14, cursor: 'pointer', alignSelf: 'flex-end' } }, '✕')
+                            React.createElement("span", { className: "lbl" }, "Alt Acenta \u00DCcreti"),
+                            React.createElement("div", { style: { display: 'flex', gap: 5 } },
+                                React.createElement("input", { type: "text", inputMode: "decimal", value: (form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), onChange: e => setAltFee(e.target.value, form.altAcentaCurrency || 'TRY'), placeholder: "0", className: "inp", style: { flex: 1 } }),
+                                React.createElement("select", { value: form.altAcentaCurrency || 'TRY', onChange: e => setAltFee((form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), e.target.value), style: { width: 62, background: NAV, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 560, cursor: 'pointer', fontSize: 13 } },
+                                    React.createElement("option", { value: "TRY" }, "\u20BA"),
+                                    React.createElement("option", { value: "USD" }, "$"),
+                                    React.createElement("option", { value: "EUR" }, "\u20AC"),
+                                    React.createElement("option", { value: "KWD" }, "KD"))),
+                            form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY' && moneyValue(form.altAcentaRaw) > 0 && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 4 } }, "\u2248 " + fr(toTRY(form.altAcentaRaw, form.altAcentaCurrency)) + " \u20BA"))),
+                        React.createElement("button", { type: "button", onClick: () => sf({ altAcenta: '', altAcentaUcreti: '', altAcentaRaw: '', altAcentaCurrency: 'TRY', __showAltAcenta: false }), title: "Alt acentayı kapat", style: { border: '1px solid ' + BOR, background: '#fff', color: R, borderRadius: 10, minHeight: 43, padding: 0, fontSize: 14, cursor: 'pointer', alignSelf: 'flex-end' } }, '✕')
                     ) : React.createElement("button", { type: "button", onClick: () => sf({ __showAltAcenta: true }), title: "Alt acenta ekle", style: { border: '1px dashed ' + BOR, background: 'transparent', color: SB, borderRadius: 10, padding: '6px 10px', fontSize: 11, fontWeight: 540, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' } }, '+ Alt acenta'),
                     null),
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -9007,8 +9027,15 @@ function App() {
                                     React.createElement("option", { value: "EUR" }, "\u20AC EUR"),
                                     React.createElement("option", { value: "KWD" }, "KD KWD"))))),
                     React.createElement("div", null,
-                        React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti (₺)' : 'Firmaya Araç Ücreti (₺)'),
-                        React.createElement("input", { type: "text", inputMode: "decimal", value: form.driverPayment, onChange: e => sf({ driverPayment: e.target.value }), placeholder: "0", className: "inp" })),
+                        React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti' : 'Firmaya Araç Ücreti'),
+                        React.createElement("div", { style: { display: 'flex', gap: 5 } },
+                            React.createElement("input", { type: "text", inputMode: "decimal", value: (form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, onChange: e => setDriverFee(e.target.value, form.driverPaymentCurrency || 'TRY'), placeholder: "0", className: "inp", style: { flex: 1 } }),
+                            React.createElement("select", { value: form.driverPaymentCurrency || 'TRY', onChange: e => setDriverFee((form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, e.target.value), style: { width: 62, background: NAV, color: '#fff', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 560, cursor: 'pointer', fontSize: 13 } },
+                                React.createElement("option", { value: "TRY" }, "\u20BA"),
+                                React.createElement("option", { value: "USD" }, "$"),
+                                React.createElement("option", { value: "EUR" }, "\u20AC"),
+                                React.createElement("option", { value: "KWD" }, "KD"))),
+                        form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY' && moneyValue(form.driverPaymentRaw) > 0 && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 4 } }, "\u2248 " + fr(toTRY(form.driverPaymentRaw, form.driverPaymentCurrency)) + " \u20BA (ara\u00e7 hesab\u0131 TL i\u015fler)")),
                     (form.driverPayment || form.paymentAmount) && (React.createElement("div", { style: { marginTop: 10 } },
                         formBalenturOdelo && React.createElement("div", {
                             style: {
