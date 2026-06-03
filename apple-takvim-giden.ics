@@ -1104,16 +1104,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1780347795654_8dpock@olmeztur
 DTSTAMP:20260603T165500Z
-LAST-MODIFIED:20260601T210300Z
-SEQUENCE:1780347795
+LAST-MODIFIED:20260603T165500Z
+SEQUENCE:1780505733
 DTSTART:20260603T010000
 DTEND:20260603T020000
 SUMMARY:01:00 · Bursa → İST  Sprinter
 LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Mohammad Halabı\nŞoför: Balentur\nİşi veren: Salah\
  nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: Bu
- rsa → İstanbul Havalimanı\nÖdeme: Müşteri: 330 USD | Araç: 7.000 ₺ | Alt
-  acenta: 5.500 ₺
+ rsa → İstanbul Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺ | Alt a
+ centa: 5.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
