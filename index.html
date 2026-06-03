@@ -1120,6 +1120,22 @@ const isOlmezturParty = v => {
 const hasOlmezturSide = t => !!(t && (isOlmezturParty(t.givenBy) || isOlmezturParty(t.assignedTo)));
 const isBalenturFirm = v => ['balentur', 'balontur', 'balontour'].includes(firmSlug(v));
 const isOdeloFirm = v => firmSlug(v) === 'odelo';
+/* Jabır firması — bu firmanın hesabında her tutar dolar gösterilir, yanında küçük TL. */
+const isJabirFirm = v => {
+    const s = firmSlug(v);
+    return s === 'jabir' || s === 'cabir' || s === 'gabir' || s.includes('jabir') || s.includes('cabir');
+};
+/* TL tutarı, Jabır gibi döviz hesaplarında dolara çevirip "$X" döndürür; yanında TL karşılığı ayrı. */
+const usdRateNow = () => {
+    const lr = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+    return moneyValue(lr.USD) || 44.35;
+};
+const tlToUsdAmount = tl => {
+    const r = usdRateNow();
+    return r > 0 ? moneyValue(tl) / r : 0;
+};
+const fmtUsd = n => '$' + Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
+const fmtTl = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR') + '₺';
 const accountAdjustmentDateKey = d => {
     const x = d instanceof Date ? d : new Date();
     return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
@@ -1988,6 +2004,30 @@ function transferCustomerTRYValue(t) {
             return converted;
     }
     return stored || raw;
+}
+function currencySymbolFor(code) {
+    const c = String(code || 'TRY').toUpperCase();
+    return c === 'USD' ? '$' : c === 'EUR' ? '€' : c === 'KWD' ? 'KD' : '₺';
+}
+/* Transfer kartı / firma hesabı müşteri tutarını para birimine göre biçimlendirir.
+   Döviz (USD/EUR/KWD) ise: ana metin döviz ("$100"), alt/parantez TL karşılığı ("4.435₺").
+   TL ise: düz "100₺". */
+function transferCustomerDisplay(t) {
+    const currency = String((t && t.paymentCurrency) || 'TRY').toUpperCase();
+    const raw = moneyValue(t && t.paymentAmount);
+    if (currency === 'TRY' || raw <= 0) {
+        const tl = Math.round(transferCustomerTRYValue(t));
+        return { isForeign: false, currency: 'TRY', main: (tl ? fr(tl) + '₺' : '—'), sub: '' };
+    }
+    const sym = currencySymbolFor(currency);
+    const tlVal = Math.round(transferCustomerTRYValue(t));
+    const mainTxt = sym + Math.abs(Math.round(raw)).toLocaleString('tr-TR');
+    return {
+        isForeign: true,
+        currency: currency,
+        main: mainTxt,
+        sub: tlVal > 0 ? fr(tlVal) + '₺' : ''
+    };
 }
 function olmezKar(t) {
     if (!hasOlmezturSide(t))
@@ -4187,15 +4227,27 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             React.createElement("div", { className: "ko-account-cell ko-account-route-cell" },
                 React.createElement("div", { className: "ko-account-flow" }, renderAccountRoute(hesapRouteParts(t), hesapRouteSuffix(t), true)),
                 React.createElement("small", null, routeText)),
-            React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
-                React.createElement("b", null, hesapPlainMoney(hesapCustomerAmount(t))),
-                React.createElement("small", null, "Müşteri")),
+            (() => {
+                const cd = (t.kaynak === 'odelo') ? { isForeign: false } : transferCustomerDisplay(t);
+                if (cd.isForeign) {
+                    return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
+                        React.createElement("b", null, cd.main),
+                        React.createElement("small", null, "Müşteri" + (cd.sub ? ' (' + cd.sub + ')' : '')));
+                }
+                return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
+                    React.createElement("b", null, hesapPlainMoney(hesapCustomerAmount(t))),
+                    React.createElement("small", null, "Müşteri"));
+            })(),
             React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                 React.createElement("b", null, hesapPlainMoney(hesapDriverAmount(t))),
                 React.createElement("small", null, driverText || carText)),
-            React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
-                React.createElement("b", null, hesapMoney(netVal)),
-                kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar))),
+            (isJabirFirm(sel)
+                ? React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
+                    React.createElement("b", null, (netVal >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(netVal))),
+                    React.createElement("small", null, '(' + fmtTl(netVal) + ')'))
+                : React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
+                    React.createElement("b", null, hesapMoney(netVal)),
+                    kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar)))),
             React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
                 React.createElement("button", {
                     type: "button",
@@ -4286,7 +4338,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             React.createElement("button", { className: "ko-account-section-head", type: "button", "data-open": isOpen ? "1" : "0", title: title, onClick: () => setOpenHesapSections(p => ({ ...p, [sectionKey]: !isOpen })), style: { width: '100%', cursor: 'pointer', background: 'transparent', border: 'none', textAlign: 'left', font: 'inherit' } },
                 React.createElement("div", { className: "ko-account-section-title" }, renderAccountTitle(baslik)),
                 React.createElement("div", { className: "ko-account-section-stats" },
-                    React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
+                    isJabirFirm(sel)
+                        ? React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') },
+                            (totalNet >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(totalNet)),
+                            React.createElement("span", { style: { fontSize: 10, fontWeight: 540, opacity: .8, marginLeft: 4 } }, '(' + fmtTl(totalNet) + ')'))
+                        : React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
                     React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 520, color: tone.accent } }, isOpen ? '▲' : '▼'))),
             isOpen && ((liste || []).length
                 ? React.createElement("div", { className: "ko-account-table-wrap" },
@@ -4334,6 +4390,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const altKayitlar = normalSirali.filter(t => t.yon === 'alt');
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
                 const isBalenturAccount = isBalenturFirm(sel);
+                const jabir = isJabirFirm(sel);
                 return React.createElement(React.Fragment, null,
                     React.createElement("button", { onClick: () => { setDetayT(null); setSel(null); }, style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 12px', color: TX, fontWeight: 560, fontSize: 12, cursor: 'pointer', textAlign: 'left' } }, "\u2190 T\u00FCm Firmalar"),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -4360,7 +4417,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: net >= 0 ? G : R, marginBottom: 4, letterSpacing: 1, opacity: .85 } },
                             (net >= 0 ? '▲ ' : '▼ ') + (net >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
                         React.createElement("div", { style: { fontSize: 26, fontWeight: 640, color: net >= 0 ? G : R, letterSpacing: 0, lineHeight: 1.1, textShadow: net >= 0 ? '0 1px 0 rgba(255,255,255,.5)' : '0 1px 0 rgba(255,255,255,.5)' } },
-                            (net >= 0 ? '+' : '−') + fr(Math.abs(net)) + " ₺")),
+                            jabir
+                                ? (net >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(net))
+                                : (net >= 0 ? '+' : '−') + fr(Math.abs(net)) + " ₺"),
+                        jabir && React.createElement("div", { style: { fontSize: 12, fontWeight: 560, color: net >= 0 ? G : R, opacity: .8, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
+                            '(' + fmtTl(net) + ')')),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
@@ -4374,7 +4435,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, "+" + fr(al) + " ₺")),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, jabir ? '+' + fmtUsd(tlToUsdAmount(al)) : "+" + fr(al) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(al) + ')')),
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
                             style: {
@@ -4387,16 +4449,18 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ BORÇ"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, "−" + fr(ver) + " ₺"))),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, jabir ? '−' + fmtUsd(tlToUsdAmount(ver)) : "−" + fr(ver) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(ver) + ')'))),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 560, color: TX } }, "Ayl\u0131k"),
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
-                        [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8'],
-                        ['+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5'],
-                        ['−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7']
-                    ].map(([v, l, col, bg]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
+                        [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8', ''],
+                        [jabir ? '+' + fmtUsd(tlToUsdAmount(mAl)) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(mAl) + ')' : ''],
+                        [jabir ? '−' + fmtUsd(tlToUsdAmount(mVer)) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(mVer) + ')' : '']
+                    ].map(([v, l, col, bg, subtl]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 640, color: col } }, v),
+                        subtl && React.createElement("div", { style: { fontSize: 8, fontWeight: 540, color: col, opacity: .8, marginTop: 1 } }, subtl),
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 560, letterSpacing: .3 } }, l))))),
                     renderManualAdjustmentPanel(sel),
                     React.createElement("div", { style: { fontWeight: 560, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
@@ -4438,8 +4502,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     },
                         React.createElement("div", { className: "ko-account-firm-card-title" },
                             React.createElement("b", null, firm),
-                            React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
-                                (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
+                            isJabirFirm(firm)
+                                ? React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
+                                    (netVal >= 0 ? "+" : "−") + fmtUsd(tlToUsdAmount(netVal)),
+                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 500, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netVal) + ')'))
+                                : React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
+                                    (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
                 });
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement("div", { className: "ko-account-firm-cards" },
@@ -6917,9 +6985,11 @@ function App() {
         const dropoff = t.dropoff || '—';
         const pasName = (t.passengers && t.passengers[0] && t.passengers[0].name) || '';
         const showNoPayment = t.paymentCollect === 'no' && !t.paymentToMe;
+        const custDisp = transferCustomerDisplay(t);
         const headlineAmount = showNoPayment
             ? 'Ödeme yok'
-            : (t.paymentAmount ? (Number(t.paymentAmount).toLocaleString('tr-TR') + ' ' + payCurrency) : '—');
+            : (t.paymentAmount ? custDisp.main : '—');
+        const headlineSubTL = (!showNoPayment && custDisp.isForeign && custDisp.sub) ? ('(' + custDisp.sub + ')') : '';
         const typeClass = 't-' + (t.transferType || 'arrival');
         const currencySym = payCurrency === 'USD' ? '$' : payCurrency === 'EUR' ? '€' : payCurrency === 'KWD' ? 'KD' : '₺';
 
@@ -6963,7 +7033,10 @@ function App() {
                     /* Sağ: tutar + ödeme durumu */
                     React.createElement("div", { className: 'tcard-right' },
                         React.createElement("div", null,
-                            React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : ''), style: showNoPayment ? null : { color: G } }, headlineAmount),
+                            React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : ''), style: showNoPayment ? null : { color: G } },
+                                headlineAmount,
+                                headlineSubTL && React.createElement("span", { style: { fontSize: '0.62em', fontWeight: 500, color: '#6F7484', marginLeft: 4, fontVariantNumeric: 'tabular-nums' } }, headlineSubTL)
+                            ),
                             React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : 'müşteriden')
                         ),
                         React.createElement("div", {
