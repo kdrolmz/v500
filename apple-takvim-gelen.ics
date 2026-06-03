@@ -1983,23 +1983,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1780508292326_nhdlcm@olmeztur
-DTSTAMP:20260603T173800Z
-LAST-MODIFIED:20260603T173800Z
-SEQUENCE:1780508292
-DTSTART:20260603T192500
-DTEND:20260603T202500
-SUMMARY:19:25 · Sabiha Gökçen → Bursa  Vito
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Martin Nagy\nŞoför: Kadir Ölmez / +90 (543) 287 06 
- 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
- 6 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: PC302\nÖdeme
- : Müşteri ödemez | Araç: 6.750 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1780507233386_9jr9zt@olmeztur
 DTSTAMP:20260603T173800Z
 LAST-MODIFIED:20260603T172000Z
@@ -2029,6 +2012,23 @@ DESCRIPTION:Müşteri: Mike Fauser\nŞoför: Kadir Ölmez / +90 (543) 287 06
  87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
  6 LMZ 55\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: TK1710\nÖdeme: Mü
  şteri ödemez | Araç: 8.550 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1780508292326_nhdlcm@olmeztur
+DTSTAMP:20260603T173800Z
+LAST-MODIFIED:20260603T173800Z
+SEQUENCE:1780508328
+DTSTART:20260622T192500
+DTEND:20260622T202500
+SUMMARY:19:25 · Sabiha Gökçen → Bursa  Vito
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Martin Nagy\nŞoför: Kadir Ölmez / +90 (543) 287 06 
+ 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
+ 6 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: PC302\nÖdeme
+ : Müşteri ödemez | Araç: 6.750 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
