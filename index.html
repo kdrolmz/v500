@@ -173,6 +173,21 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-passenger-count,.ko-passenger-count-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:650}
 .ko-tour-commission-box{margin-top:8px}
 .ko-account-firm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important}
+.ko-account-split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
+.ko-account-firm-bucket{min-width:0;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.ko-account-firm-bucket.is-rec{border-color:rgba(79,107,69,.34);background:#F7FAF8}
+.ko-account-firm-bucket.is-pay{border-color:rgba(178,82,76,.30);background:#FFF8F7}
+.ko-account-firm-bucket-head{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border-bottom:1px solid rgba(60,60,67,.12)}
+.ko-account-firm-bucket-title{font-size:11px;font-weight:620;line-height:1.12;letter-spacing:.2px;text-transform:uppercase}
+.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#4F6B45}
+.ko-account-firm-bucket.is-pay .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-pay .ko-account-firm-bucket-total{color:#B0524C}
+.ko-account-firm-bucket-total{font-size:12px;font-weight:650;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.ko-account-firm-bucket-cards{display:flex;flex-direction:column;gap:6px;padding:7px}
+.ko-account-firm-bucket-empty{font-size:11px;font-weight:520;color:#8E8E93;padding:12px 8px;text-align:center}
+.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #4F6B45 !important;background:#fff !important}
+.ko-account-firm-card.is-pay{border-color:rgba(178,82,76,.28) !important;border-left:3px solid #B0524C !important;background:#fff !important}
+.ko-account-firm-bucket .ko-account-firm-card-title{flex-direction:column;align-items:stretch !important;gap:4px !important}
+.ko-account-firm-bucket .ko-account-firm-card-title span{align-self:flex-end;max-width:100%;white-space:normal !important;text-align:right}
 .ko-account-firm-card-title{display:flex;justify-content:space-between;gap:6px !important;align-items:center !important}
 .ko-account-firm-card-title b{font-size:12px !important;font-weight:540 !important;line-height:1.18 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .ko-account-firm-card-title span{font-size:11px !important;font-weight:560 !important;line-height:1.1 !important;white-space:nowrap !important}
@@ -4639,48 +4654,53 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                                 tip('Kopyaland\u0131!');
                             }, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 560, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCB Kendi\nHesab\u0131m")),
                     renderHesapDetayModal());
-            })()
-	            : (function() {
+	            })()
+		            : (function() {
 	                const firmSummaries = filtered.map(firm => {
 	                    const { ts } = hesapData(firm);
 	                    const openTs = ts.filter(t => !t.firmSettled);
 	                    const netVal = hesapOpenNet(openTs);
-	                    const netUsd = isJabirFirm(firm) ? accountUsdSummary(openTs).net : null;
-	                    const netUsdTl = isJabirFirm(firm) ? accountUsdTlSummary(openTs).net : null;
-	                    if (openTs.length === 0 || (isJabirFirm(firm) ? Math.round(Math.abs(netUsd)) === 0 : netVal === 0)) return null;
-                    return { firm, netVal, netUsd, netUsdTl };
-                }).filter(Boolean);
-                const totalAlacak = Math.round(firmSummaries.filter(x => x.netVal > 0).reduce((s, x) => s + x.netVal, 0));
-                const totalVerecek = Math.round(firmSummaries.filter(x => x.netVal < 0).reduce((s, x) => s + Math.abs(x.netVal), 0));
-	                const firmRows = firmSummaries.map(({ firm, netVal, netUsd, netUsdTl }) => {
-                    const rowSign = isJabirFirm(firm) ? netUsd : netVal;
+	                    const jabirFirm = isJabirFirm(firm);
+	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net : null;
+	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net : null;
+	                    const signVal = jabirFirm ? netUsd : netVal;
+	                    const totalVal = jabirFirm ? netUsdTl : netVal;
+	                    if (openTs.length === 0 || Math.round(Math.abs(signVal)) === 0) return null;
+                    return { firm, netVal, netUsd, netUsdTl, signVal, totalVal };
+                }).filter(Boolean).sort((a, b) => Math.abs(b.totalVal) - Math.abs(a.totalVal) || String(a.firm).localeCompare(String(b.firm), 'tr'));
+                const alacakSummaries = firmSummaries.filter(x => x.signVal > 0);
+                const verecekSummaries = firmSummaries.filter(x => x.signVal < 0);
+                const totalAlacak = Math.round(alacakSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
+                const totalVerecek = Math.round(verecekSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
+	                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal }) => {
+                    const isRec = signVal >= 0;
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
-                        className: "ko-account-firm-card",
+                        className: "ko-account-firm-card " + (isRec ? 'is-rec' : 'is-pay'),
                         onClick: () => setSel(firm)
                     },
                         React.createElement("div", { className: "ko-account-firm-card-title" },
                             React.createElement("b", null, firm),
                             isJabirFirm(firm)
-                                ? React.createElement("span", { className: rowSign >= 0 ? "is-pos" : "is-neg" },
+                                ? React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     signedUsdText(netUsd),
                                     React.createElement("span", { style: { fontSize: 9, fontWeight: 500, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netUsdTl) + ')'))
-                                : React.createElement("span", { className: rowSign >= 0 ? "is-pos" : "is-neg" },
+                                : React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
-                });
+                };
+                const renderFirmBucket = (kind, title, total, rows) => React.createElement("section", { className: "ko-account-firm-bucket is-" + kind },
+                    React.createElement("div", { className: "ko-account-firm-bucket-head" },
+                        React.createElement("div", { className: "ko-account-firm-bucket-title" }, title),
+                        React.createElement("div", { className: "ko-account-firm-bucket-total" }, (kind === 'rec' ? '+' : '−') + fr(total) + " ₺")),
+                    React.createElement("div", { className: "ko-account-firm-bucket-cards" },
+                        rows.length
+                            ? rows.map(renderFirmRow)
+                            : React.createElement("div", { className: "ko-account-firm-bucket-empty" }, "Yok")));
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                    React.createElement("div", { className: "ko-account-firm-cards" },
-                        firmRows.length
-                            ? firmRows
-                            : React.createElement("div", { className: "ko-account-empty-state" }, "Kayıt yok")),
-                    React.createElement("div", { className: "ko-account-overview-totals", style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-                        React.createElement("div", { className: "ko-account-overview-total is-pay", style: { minHeight: 48, background: '#FFF8F7', border: '1px solid rgba(178,82,76,.26)', borderRadius: 11, padding: '8px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' } },
-                            React.createElement("div", { style: { fontSize: 8.5, fontWeight: 640, color: R, letterSpacing: .4, marginBottom: 3, textTransform: 'uppercase' } }, "Ödemeler"),
-                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 650, color: R, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', lineHeight: 1.05 } }, "−" + fr(totalVerecek) + " ₺")),
-                        React.createElement("div", { className: "ko-account-overview-total is-rec", style: { minHeight: 48, background: '#F3FAF5', border: '1px solid rgba(79,107,69,.26)', borderRadius: 11, padding: '8px 10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', textAlign: 'right' } },
-                            React.createElement("div", { style: { fontSize: 8.5, fontWeight: 640, color: G, letterSpacing: .4, marginBottom: 3, textTransform: 'uppercase' } }, "Alacaklar"),
-                            React.createElement("div", { style: { fontSize: 14.5, fontWeight: 650, color: G, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', lineHeight: 1.05 } }, "+" + fr(totalAlacak) + " ₺"))));
+                    React.createElement("div", { className: "ko-account-split-grid" },
+                        renderFirmBucket('rec', 'Alacaklar', totalAlacak, alacakSummaries),
+                        renderFirmBucket('pay', 'Verecekler', totalVerecek, verecekSummaries)));
             })()
         )));
 }
