@@ -1385,21 +1385,40 @@ const transferCompleteness = t => {
     return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
         .reduce((s, v) => s + (String(v || '').trim() ? 1 : 0), 0);
 };
+/* İki kaydın hesap kapatma (settledFirms) bilgisini birleştirir.
+   Kazanan kayıt hangisi olursa olsun, her iki taraftaki kapatılmış firma
+   işaretleri korunur — böylece düzenleme/bulut senkronu eski (kapatılmamış)
+   bir kopyayı getirince kapattığınız kartlar TEKRAR AÇILMAZ. */
+const mergeSettledFirms = (a, b) => {
+    const sa = (a && a.settledFirms) || null;
+    const sb = (b && b.settledFirms) || null;
+    if (!sa && !sb) return undefined;
+    const out = { ...(sa || {}) };
+    if (sb) {
+        Object.keys(sb).forEach(k => {
+            /* true olan (kapalı) bilgi öncelikli — birinde kapalıysa kapalı kalır */
+            out[k] = !!out[k] || !!sb[k];
+        });
+    }
+    return out;
+};
 const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
     if (!a) return b;
     if (!b) return a;
+    const merged = mergeSettledFirms(a, b);
+    const withSettled = rec => (rec && merged ? { ...rec, settledFirms: merged } : rec);
     const as = transferStamp(a), bs = transferStamp(b);
-    if (bs !== as) return bs > as ? b : a;
+    if (bs !== as) return withSettled(bs > as ? b : a);
     /* BUG FIX: Zaman damgası eşitse, sonradan gelen kayıt (yüksek rank) kazanır.
        Önceden burada "daha dolu olan kazansın" mantığı vardı; bu, kullanıcı bir alanı
        (ör. işi yapan acenta) kasıtlı boşaltınca/değiştirince eski dolu hali geri getiriyordu.
        Sadece iki damga da 0 (hiç tarih yok) ise doluluğa bakarız. */
     if (as === 0 && bs === 0) {
         const ac = transferCompleteness(a), bc = transferCompleteness(b);
-        if (bc !== ac) return bc > ac ? b : a;
+        if (bc !== ac) return withSettled(bc > ac ? b : a);
     }
-    if (bRank !== aRank) return bRank >= aRank ? b : a;
-    return b;
+    if (bRank !== aRank) return withSettled(bRank >= aRank ? b : a);
+    return withSettled(b);
 };
 const dedupeTransfers = arr => {
     const byId = new Map();
@@ -1609,7 +1628,9 @@ const normalizeTransfer = t => {
         companyCollected,
         customerCollected: !!fixed.customerCollected,
         paymentStatus: fixed.paymentStatus || 'pending',
-        vehiclePaid: !!fixed.vehiclePaid
+        vehiclePaid: !!fixed.vehiclePaid,
+        /* Hesap kapatma işaretleri her zaman korunsun — asla düşmesin */
+        settledFirms: (fixed.settledFirms && typeof fixed.settledFirms === 'object') ? { ...fixed.settledFirms } : undefined
     };
 };
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -4192,6 +4213,36 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
     const hesapOpenRows = liste => (liste || []).filter(t => !t.firmSettled);
     const hesapOpenNet = liste => Math.round(hesapOpenRows(liste).reduce((s, t) => s + moneyValue(t.netOl), 0));
+    /* JABIR $ YUVARLAMA DÜZELTMESİ:
+       Her satırı ayrı ayrı dolara çevirip yuvarlayınca (round(a)+round(b)+...) toplam,
+       toplamı tek seferde yuvarlamaktan (round(a+b+...)) 1 dolar sapabiliyordu
+       (ör. üstte $790, satırlar toplamı $789). Burada "en büyük artık" (largest
+       remainder) yöntemiyle satır dolarlarını öyle dağıtıyoruz ki satırların
+       gösterilen dolar toplamı her zaman üstteki toplam dolara EŞİT olsun. */
+    const buildJabirUsdMap = liste => {
+        const map = {};
+        const rate = usdRateNow();
+        if (!(rate > 0)) return map;
+        const rows = (liste || []).filter(t => !t.firmSettled && t.kaynak !== 'manual');
+        if (!rows.length) return map;
+        const targetTotal = Math.round(hesapOpenNet(liste) / rate); // üstteki ile aynı
+        const exact = rows.map(t => moneyValue(t.netOl) / rate);
+        const floors = exact.map(v => Math.trunc(v)); // sıfıra doğru kırp
+        let baseSum = floors.reduce((s, v) => s + v, 0);
+        let diff = targetTotal - baseSum; // dağıtılacak ±1'ler
+        const order = exact
+            .map((v, i) => ({ i, frac: v - floors[i] }))
+            .sort((a, b) => Math.abs(b.frac) - Math.abs(a.frac));
+        const step = diff >= 0 ? 1 : -1;
+        let remaining = Math.abs(diff);
+        for (let k = 0; k < order.length && remaining > 0; k++) {
+            floors[order[k].i] += step;
+            remaining--;
+        }
+        rows.forEach((t, i) => { map[hesapRowUid(t, i)] = floors[i]; });
+        return map;
+    };
+    const hesapRowUid = (t, i) => String(t.id || '') + '|' + (t.kaynak || '') + '|' + (t.yon || '') + '|' + i;
     const hesapCustomerAmount = t => {
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
         return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
@@ -4200,8 +4251,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
         return moneyValue(t.driverPayment || 0);
     };
-    const renderHesapSheetRow = (t, idx, borderTone) => {
+    const renderHesapSheetRow = (t, idx, borderTone, jabirUsdMap) => {
         const netVal = Math.round(moneyValue(t.netOl));
+        const jabirRowUsd = (jabirUsdMap && Object.prototype.hasOwnProperty.call(jabirUsdMap, hesapRowUid(t, idx)))
+            ? jabirUsdMap[hesapRowUid(t, idx)]
+            : null;
         const pos = netVal >= 0;
         if (t.kaynak === 'manual') {
             const meta = accountAdjustmentTypeMeta(t.adjustmentType);
@@ -4287,7 +4341,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("small", null, driverText || carText)),
             (isJabirFirm(sel)
                 ? React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
-                    React.createElement("b", null, (netVal >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(netVal))),
+                    React.createElement("b", null, (netVal >= 0 ? '+' : '−') + '$' + Math.abs(jabirRowUsd != null ? jabirRowUsd : Math.round(tlToUsdAmount(netVal))).toLocaleString('tr-TR')),
                     React.createElement("small", null, '(' + fmtTl(netVal) + ')'))
                 : React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
                     React.createElement("b", null, hesapMoney(netVal)),
@@ -4400,7 +4454,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("div", { className: "ko-account-cell" }, "Araç"),
                             React.createElement("div", { className: "ko-account-cell" }, "Net"),
                             React.createElement("div", { className: "ko-account-cell" }, "Durum")),
-                        (liste || []).map((t, i) => renderHesapSheetRow(t, i, borderTone))))
+                        (() => {
+                            const jabirUsdMap = isJabirFirm(sel) ? buildJabirUsdMap(liste) : null;
+                            return (liste || []).map((t, i) => renderHesapSheetRow(t, i, borderTone, jabirUsdMap));
+                        })()))
                 : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok')));
     };
 
