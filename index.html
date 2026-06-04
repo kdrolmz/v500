@@ -1138,6 +1138,24 @@ const tlToUsdAmount = tl => {
 };
 const fmtUsd = n => '$' + Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fmtTl = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR') + '₺';
+const accountSettleKey = (firm, kind) => {
+    const base = firmSlug(firm || '');
+    const suffix = firmSlug(kind || '');
+    return base ? ('firm::' + base + (suffix ? '::' + suffix : '')) : '';
+};
+const accountSettleKeys = (firm, kind) => {
+    const raw = String(firm || '').trim();
+    const slug = firmSlug(raw);
+    const suffix = firmSlug(kind || '');
+    const keys = [accountSettleKey(raw, suffix), raw, slug];
+    if (suffix === 'alt') {
+        keys.push(raw + '_alt', slug + '_alt');
+    }
+    if (suffix === 'odelo') {
+        keys.push('Balentur_odelo', 'balentur_odelo');
+    }
+    return uniq(keys.filter(Boolean).map(String));
+};
 const accountAdjustmentDateKey = d => {
     const x = d instanceof Date ? d : new Date();
     return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
@@ -1385,40 +1403,21 @@ const transferCompleteness = t => {
     return [t.givenBy, t.assignedTo, t.pickup, t.dropoff, t.driverName, t.driverPhone, p.name, p.phone, passengerIdDisplay(p), t.paymentAmount, t.driverPayment, t.notes]
         .reduce((s, v) => s + (String(v || '').trim() ? 1 : 0), 0);
 };
-/* İki kaydın hesap kapatma (settledFirms) bilgisini birleştirir.
-   Kazanan kayıt hangisi olursa olsun, her iki taraftaki kapatılmış firma
-   işaretleri korunur — böylece düzenleme/bulut senkronu eski (kapatılmamış)
-   bir kopyayı getirince kapattığınız kartlar TEKRAR AÇILMAZ. */
-const mergeSettledFirms = (a, b) => {
-    const sa = (a && a.settledFirms) || null;
-    const sb = (b && b.settledFirms) || null;
-    if (!sa && !sb) return undefined;
-    const out = { ...(sa || {}) };
-    if (sb) {
-        Object.keys(sb).forEach(k => {
-            /* true olan (kapalı) bilgi öncelikli — birinde kapalıysa kapalı kalır */
-            out[k] = !!out[k] || !!sb[k];
-        });
-    }
-    return out;
-};
 const preferTransferRecord = (a, b, aRank = 0, bRank = 0) => {
     if (!a) return b;
     if (!b) return a;
-    const merged = mergeSettledFirms(a, b);
-    const withSettled = rec => (rec && merged ? { ...rec, settledFirms: merged } : rec);
     const as = transferStamp(a), bs = transferStamp(b);
-    if (bs !== as) return withSettled(bs > as ? b : a);
+    if (bs !== as) return bs > as ? b : a;
     /* BUG FIX: Zaman damgası eşitse, sonradan gelen kayıt (yüksek rank) kazanır.
        Önceden burada "daha dolu olan kazansın" mantığı vardı; bu, kullanıcı bir alanı
        (ör. işi yapan acenta) kasıtlı boşaltınca/değiştirince eski dolu hali geri getiriyordu.
        Sadece iki damga da 0 (hiç tarih yok) ise doluluğa bakarız. */
     if (as === 0 && bs === 0) {
         const ac = transferCompleteness(a), bc = transferCompleteness(b);
-        if (bc !== ac) return withSettled(bc > ac ? b : a);
+        if (bc !== ac) return bc > ac ? b : a;
     }
-    if (bRank !== aRank) return withSettled(bRank >= aRank ? b : a);
-    return withSettled(b);
+    if (bRank !== aRank) return bRank >= aRank ? b : a;
+    return b;
 };
 const dedupeTransfers = arr => {
     const byId = new Map();
@@ -1629,8 +1628,7 @@ const normalizeTransfer = t => {
         customerCollected: !!fixed.customerCollected,
         paymentStatus: fixed.paymentStatus || 'pending',
         vehiclePaid: !!fixed.vehiclePaid,
-        /* Hesap kapatma işaretleri her zaman korunsun — asla düşmesin */
-        settledFirms: (fixed.settledFirms && typeof fixed.settledFirms === 'object') ? { ...fixed.settledFirms } : undefined
+        settledFirms: (fixed.settledFirms && typeof fixed.settledFirms === 'object') ? { ...fixed.settledFirms } : {}
     };
 };
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -2078,6 +2076,78 @@ function remainingFromFirmDisplay(t) {
     const tl = Math.round(remainingFromFirmTRY(t));
     return { isForeign: true, main: currencySymbolFor(cur) + Math.abs(Math.round(raw)).toLocaleString('tr-TR'), sub: tl > 0 ? fr(tl) + '₺' : '' };
 }
+function accountUsdRateForRow(t) {
+    const pairs = [];
+    const addUsdPair = (raw, currency, tl) => {
+        const r = moneyValue(raw);
+        const l = moneyValue(tl);
+        if (String(currency || '').toUpperCase() === 'USD' && r > 0 && l > 0)
+            pairs.push({ raw: r, tl: l });
+    };
+    addUsdPair(t && t.paymentAmount, t && t.paymentCurrency, transferCustomerTRYValue(t));
+    addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, t && t.driverPayment);
+    addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, t && t.altAcentaUcreti);
+    addUsdPair(t && t.remainingAmount, t && t.remainingCurrency, (t && t.remainingTRY) || remainingFromFirmTRY(t));
+    const rawTotal = pairs.reduce((s, x) => s + x.raw, 0);
+    const tlTotal = pairs.reduce((s, x) => s + x.tl, 0);
+    if (rawTotal > 0 && tlTotal > 0)
+        return tlTotal / rawTotal;
+    return usdRateNow();
+}
+function accountRawUsdCollection(t) {
+    let usd = 0;
+    if (String((t && t.paymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.paymentAmount) > 0)
+        usd += moneyValue(t.paymentAmount);
+    if (t && t.partialFromFirm && String(t.remainingCurrency || '').toUpperCase() === 'USD' && moneyValue(t.remainingAmount) > 0)
+        usd += moneyValue(t.remainingAmount);
+    return usd;
+}
+function accountRowUsdAmount(t) {
+    const rawUsd = accountRawUsdCollection(t);
+    if (rawUsd > 0) {
+        if (t && t.yon === 'oVerdi')
+            return rawUsd;
+        if (t && t.yon === 'benVerdim')
+            return -rawUsd;
+        return moneyValue(t && t.netOl) < 0 ? -rawUsd : rawUsd;
+    }
+    const r = accountUsdRateForRow(t);
+    return r > 0 ? moneyValue(t && t.netOl) / r : 0;
+}
+function accountUsdSummary(liste) {
+    let al = 0, ver = 0;
+    (liste || []).forEach(t => {
+        if (t && t.firmSettled)
+            return;
+        const usd = accountRowUsdAmount(t);
+        if (usd > 0)
+            al += usd;
+        else
+            ver += Math.abs(usd);
+    });
+    return { al, ver, net: al - ver };
+}
+function accountRowUsdTlEquivalent(t) {
+    const usd = Math.abs(accountRowUsdAmount(t));
+    if (usd > 0 && accountRawUsdCollection(t) > 0)
+        return usd * accountUsdRateForRow(t);
+    return Math.abs(moneyValue(t && t.netOl));
+}
+function accountUsdTlSummary(liste) {
+    let al = 0, ver = 0;
+    (liste || []).forEach(t => {
+        if (t && t.firmSettled)
+            return;
+        const usd = accountRowUsdAmount(t);
+        const tl = accountRowUsdTlEquivalent(t);
+        if (usd > 0)
+            al += tl;
+        else
+            ver += tl;
+    });
+    return { al, ver, net: al - ver };
+}
+const signedUsdText = n => (moneyValue(n) >= 0 ? '+' : '−') + fmtUsd(n);
 function olmezKar(t) {
     if (!hasOlmezturSide(t))
         return 0;
@@ -3398,19 +3468,27 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     useEffect(() => {
         setOpenAdjustmentPanel(false);
     }, [sel]);
-    const togSettle = (id, firm, forceState) => sT(p => {
+    const togSettle = (id, firmKeys, forceState) => sT(p => {
         const now = new Date().toISOString();
-        const next = (p || []).map(x => {
-            if (x.id !== id || !firm)
+        const keys = uniq((Array.isArray(firmKeys) ? firmKeys : [firmKeys]).filter(Boolean).map(String));
+        if (!keys.length)
+            return p;
+        const next = dedupeTransfers((p || []).map(x => {
+            if (x.id !== id)
                 return x;
             const sf = { ...(x.settledFirms || {}) };
-            sf[firm] = typeof forceState === 'boolean' ? forceState : !sf[firm];
+            const current = keys.some(k => !!sf[k]);
+            const nextState = typeof forceState === 'boolean' ? forceState : !current;
+            keys.forEach(k => { sf[k] = nextState; });
             return { ...x, settledFirms: sf, updatedAt: now, clientUpdatedAt: now };
-        });
+        }));
         persistTransfersImmediately(next);
         return next;
     });
-    const isFirmSettled = (t, firm) => !!(t.settledFirms && t.settledFirms[firm]);
+    const isFirmSettled = (t, firm, kind) => {
+        const sf = (t && t.settledFirms) || {};
+        return accountSettleKeys(firm, kind).some(k => !!sf[k]);
+    };
     const normalizedAccountAdjustments = React.useMemo(() => (Array.isArray(accountAdjustments) ? accountAdjustments : []).map(normalizeAccountAdjustment).filter(x => x.firm), [accountAdjustments]);
     const firmalar = [...new Set([...T.map(t => t.givenBy), ...T.map(t => t.assignedTo), ...T.filter(t => t.altAcenta).map(t => t.altAcenta), ...normalizedAccountAdjustments.map(x => x.firm), ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
     const firmSearch = ara.trim();
@@ -3477,9 +3555,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         T.forEach(t => {
             const b = calcBal(t);
             if (b && b.firm === firm) {
+                const settleKeys = accountSettleKeys(firm);
                 const km = isFirmSettled(t, firm);
                 const extra = remainingFromFirmTRY(t);
-                const e = { ...t, netOl: b.netOl + extra, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra };
+                const e = { ...t, netOl: b.netOl + extra, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
                 detay.push(e);
                 if (!km) {
                     if (e.netOl > 0)
@@ -3490,8 +3569,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             }
             const ba = calcAltBal(t);
             if (ba && ba.firm === firm) {
-                const km = isFirmSettled(t, firm + '_alt');
-                const e = { ...t, netOl: ba.netOl, kaynak: 'alt', firmSettled: km, yon: 'alt' };
+                const settleKeys = accountSettleKeys(firm, 'alt');
+                const km = isFirmSettled(t, firm, 'alt');
+                const e = { ...t, netOl: ba.netOl, kaynak: 'alt', firmSettled: km, yon: 'alt', settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
                 detay.push(e);
                 if (!km) {
                     if (ba.netOl > 0)
@@ -3531,7 +3611,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             const b = balenturOdeloCalc(t);
             if (!b)
                 return;
-            const km = isFirmSettled(t, 'Balentur_odelo');
+            const km = isFirmSettled(t, 'Balentur', 'odelo');
+            const settleKeys = accountSettleKeys('Balentur', 'odelo');
             detay.push({
                 ...t,
                 netOl: b.netOl,
@@ -3539,7 +3620,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 balenturCost: b.balenturCost,
                 firmSettled: km,
                 kaynak: 'odelo',
-                settleFirmKey: 'Balentur_odelo',
+                settleFirmKey: settleKeys[0],
+                settleFirmKeys: settleKeys,
                 yon: b.yon
             });
         });
@@ -4115,11 +4197,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
 
     const renderHesapKart = t => {
-        const pos = t.netOl >= 0;
+        const rowUsd = accountRowUsdAmount(t);
+        const pos = isJabirFirm(sel) ? rowUsd >= 0 : t.netOl >= 0;
         const kar = transferNetAmount({ ...t });
         const kartKomisyonToplam = tourCommissionTotal(t);
         const kartKomisyonPay = tourCommissionShare(t);
-        const settleKey = t.settleFirmKey || (t.kaynak === 'alt' ? sel + '_alt' : sel);
+        const settleKeys = t.settleFirmKeys || accountSettleKeys(sel, t.kaynak === 'alt' ? 'alt' : (t.kaynak === 'odelo' ? 'odelo' : ''));
         const yonBilgi = t.kaynak === 'odelo'
             ? {
                 txt: t.yon === 'odeloBalentur' ? 'Odelo - Balentur yaptı' : 'Odelo - Ölmeztur yaptı',
@@ -4136,8 +4219,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             ((t.passengerCount || 0) > 0) && React.createElement("span", { style: { fontSize: 9, color: SB, background: '#F5F5F7', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👥 ' + t.passengerCount),
             React.createElement("span", { style: { fontSize: 9, color: NAV, fontWeight: 600 } }, 'Düzenle ›'));
         const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 7, flexShrink: 0 } },
-            React.createElement("div", { style: { fontSize: 15, fontWeight: 560, color: pos ? G : R, letterSpacing: 0, fontVariantNumeric: 'tabular-nums' } }, (pos ? '+' : '−') + fr(t.netOl) + '₺'),
-            React.createElement("button", { className: "ko-hesap-settle-toggle " + (t.firmSettled ? "is-settled" : "is-open"), "aria-label": t.firmSettled ? "Hesap kapandı" : "Hesap açık", onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKey, !t.firmSettled); }, style: { display: 'inline-flex', alignItems: 'center', gap: 6, background: t.firmSettled ? 'rgba(60,60,67,.10)' : 'rgba(178,96,92,.10)', border: '1px solid ' + (t.firmSettled ? 'rgba(60,60,67,.34)' : 'rgba(178,96,92,.34)'), borderRadius: 999, cursor: 'pointer', padding: '5px 8px', minHeight: 27, boxShadow: 'inset 0 1px 0 rgba(255,255,255,.82)' } },
+            React.createElement("div", { style: { fontSize: 15, fontWeight: 560, color: pos ? G : R, letterSpacing: 0, fontVariantNumeric: 'tabular-nums' } }, isJabirFirm(sel) ? signedUsdText(rowUsd) : (pos ? '+' : '−') + fr(t.netOl) + '₺'),
+            React.createElement("button", { className: "ko-hesap-settle-toggle " + (t.firmSettled ? "is-settled" : "is-open"), "aria-label": t.firmSettled ? "Hesap kapandı" : "Hesap açık", onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKeys, !t.firmSettled); }, style: { display: 'inline-flex', alignItems: 'center', gap: 6, background: t.firmSettled ? 'rgba(60,60,67,.10)' : 'rgba(178,96,92,.10)', border: '1px solid ' + (t.firmSettled ? 'rgba(60,60,67,.34)' : 'rgba(178,96,92,.34)'), borderRadius: 999, cursor: 'pointer', padding: '5px 8px', minHeight: 27, boxShadow: 'inset 0 1px 0 rgba(255,255,255,.82)' } },
                 React.createElement("div", { className: "ko-hesap-settle-dot", style: { width: 17, height: 17, borderRadius: 999, border: '1.5px solid ' + (t.firmSettled ? G : R), background: t.firmSettled ? G : 'rgba(255,255,255,.78)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 10, fontWeight: 560, lineHeight: 1 } }, "✓")),
                 React.createElement("span", { className: "ko-hesap-settle-text", style: { fontSize: 10.5, fontWeight: 560, color: t.firmSettled ? G : R, letterSpacing: .1 } }, t.firmSettled ? 'Kapandı' : 'Açık')));
         return React.createElement("div", {
@@ -4213,36 +4296,6 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
     const hesapOpenRows = liste => (liste || []).filter(t => !t.firmSettled);
     const hesapOpenNet = liste => Math.round(hesapOpenRows(liste).reduce((s, t) => s + moneyValue(t.netOl), 0));
-    /* JABIR $ YUVARLAMA DÜZELTMESİ:
-       Her satırı ayrı ayrı dolara çevirip yuvarlayınca (round(a)+round(b)+...) toplam,
-       toplamı tek seferde yuvarlamaktan (round(a+b+...)) 1 dolar sapabiliyordu
-       (ör. üstte $790, satırlar toplamı $789). Burada "en büyük artık" (largest
-       remainder) yöntemiyle satır dolarlarını öyle dağıtıyoruz ki satırların
-       gösterilen dolar toplamı her zaman üstteki toplam dolara EŞİT olsun. */
-    const buildJabirUsdMap = liste => {
-        const map = {};
-        const rate = usdRateNow();
-        if (!(rate > 0)) return map;
-        const rows = (liste || []).filter(t => !t.firmSettled && t.kaynak !== 'manual');
-        if (!rows.length) return map;
-        const targetTotal = Math.round(hesapOpenNet(liste) / rate); // üstteki ile aynı
-        const exact = rows.map(t => moneyValue(t.netOl) / rate);
-        const floors = exact.map(v => Math.trunc(v)); // sıfıra doğru kırp
-        let baseSum = floors.reduce((s, v) => s + v, 0);
-        let diff = targetTotal - baseSum; // dağıtılacak ±1'ler
-        const order = exact
-            .map((v, i) => ({ i, frac: v - floors[i] }))
-            .sort((a, b) => Math.abs(b.frac) - Math.abs(a.frac));
-        const step = diff >= 0 ? 1 : -1;
-        let remaining = Math.abs(diff);
-        for (let k = 0; k < order.length && remaining > 0; k++) {
-            floors[order[k].i] += step;
-            remaining--;
-        }
-        rows.forEach((t, i) => { map[hesapRowUid(t, i)] = floors[i]; });
-        return map;
-    };
-    const hesapRowUid = (t, i) => String(t.id || '') + '|' + (t.kaynak || '') + '|' + (t.yon || '') + '|' + i;
     const hesapCustomerAmount = t => {
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
         return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
@@ -4251,12 +4304,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
         return moneyValue(t.driverPayment || 0);
     };
-    const renderHesapSheetRow = (t, idx, borderTone, jabirUsdMap) => {
+    const renderHesapSheetRow = (t, idx, borderTone) => {
         const netVal = Math.round(moneyValue(t.netOl));
-        const jabirRowUsd = (jabirUsdMap && Object.prototype.hasOwnProperty.call(jabirUsdMap, hesapRowUid(t, idx)))
-            ? jabirUsdMap[hesapRowUid(t, idx)]
-            : null;
-        const pos = netVal >= 0;
+        const usdNet = accountRowUsdAmount(t);
+        const pos = isJabirFirm(sel) ? usdNet >= 0 : netVal >= 0;
         if (t.kaynak === 'manual') {
             const meta = accountAdjustmentTypeMeta(t.adjustmentType);
             const amount = Math.abs(moneyValue(t.adjustmentAmount || t.paymentAmount || t.netOl));
@@ -4282,8 +4333,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("b", null, "—"),
                     React.createElement("small", null, "Transfer yok")),
                 React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
-                    React.createElement("b", null, hesapMoney(netVal)),
-                    React.createElement("small", null, pos ? 'Artı bakiye' : 'Hesaptan düştü')),
+                    React.createElement("b", null, isJabirFirm(sel) ? signedUsdText(usdNet) : hesapMoney(netVal)),
+                    React.createElement("small", null, isJabirFirm(sel) ? '(' + fmtTl(accountRowUsdTlEquivalent(t)) + ')' : (pos ? 'Artı bakiye' : 'Hesaptan düştü'))),
                 React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
                     React.createElement("button", {
                         type: "button",
@@ -4296,7 +4347,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     }, "Sil"),
                     React.createElement("small", null, "Ödeme kaydı")));
         }
-        const settleKey = t.settleFirmKey || (t.kaynak === 'alt' ? sel + '_alt' : sel);
+        const settleKeys = t.settleFirmKeys || accountSettleKeys(sel, t.kaynak === 'alt' ? 'alt' : (t.kaynak === 'odelo' ? 'odelo' : ''));
         const routeText = [t.pickup, t.dropoff].filter(Boolean).join(' → ') || '—';
         const carText = t.vehicleType || t.vehicle || t.carType || t.driverVehicle || '—';
         const driverText = t.driverName || '';
@@ -4341,8 +4392,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("small", null, driverText || carText)),
             (isJabirFirm(sel)
                 ? React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
-                    React.createElement("b", null, (netVal >= 0 ? '+' : '−') + '$' + Math.abs(jabirRowUsd != null ? jabirRowUsd : Math.round(tlToUsdAmount(netVal))).toLocaleString('tr-TR')),
-                    React.createElement("small", null, '(' + fmtTl(netVal) + ')'))
+                    React.createElement("b", null, signedUsdText(usdNet)),
+                    React.createElement("small", null, '(' + fmtTl(accountRowUsdTlEquivalent(t)) + ')'))
                 : React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
                     React.createElement("b", null, hesapMoney(netVal)),
                     kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar)))),
@@ -4353,7 +4404,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     onPointerDown: e => e.stopPropagation(),
                     onClick: e => {
                         e.stopPropagation();
-                        togSettle(t.id, settleKey, !t.firmSettled);
+                        togSettle(t.id, settleKeys, !t.firmSettled);
                     }
                 }, t.firmSettled ? 'Kapandı' : 'Açık'),
                 React.createElement("small", null, "Düzenle")));
@@ -4414,6 +4465,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const isOlmezToAgency = firstIsOlmez && !secondIsOlmez;
         const isAgencyToOlmez = secondIsOlmez && !firstIsOlmez;
         const totalNet = hesapOpenNet(liste);
+        const totalUsd = accountUsdSummary(liste).net;
+        const totalUsdTl = accountUsdTlSummary(liste).net;
+        const displayNet = isJabirFirm(sel) ? totalUsd : totalNet;
         const tone = isOlmezToAgency
             ? {
                 bd: '#2F8F5B',
@@ -4437,10 +4491,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("div", { className: "ko-account-section-title" }, renderAccountTitle(baslik)),
                 React.createElement("div", { className: "ko-account-section-stats" },
                     isJabirFirm(sel)
-                        ? React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') },
-                            (totalNet >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(totalNet)),
-                            React.createElement("span", { style: { fontSize: 10, fontWeight: 540, opacity: .8, marginLeft: 4 } }, '(' + fmtTl(totalNet) + ')'))
-                        : React.createElement("b", { className: "ko-account-stat-total " + (totalNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(totalNet)),
+                        ? React.createElement("b", { className: "ko-account-stat-total " + (displayNet >= 0 ? 'is-pos' : 'is-neg') },
+                            signedUsdText(displayNet),
+                            React.createElement("span", { style: { fontSize: 10, fontWeight: 540, opacity: .8, marginLeft: 4 } }, '(' + fmtTl(totalUsdTl) + ')'))
+                        : React.createElement("b", { className: "ko-account-stat-total " + (displayNet >= 0 ? 'is-pos' : 'is-neg') }, hesapMoney(displayNet)),
                     React.createElement("span", { className: "ko-account-section-chevron", style: { fontSize: 12, fontWeight: 520, color: tone.accent } }, isOpen ? '▲' : '▼'))),
             isOpen && ((liste || []).length
                 ? React.createElement("div", { className: "ko-account-table-wrap" },
@@ -4454,10 +4508,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("div", { className: "ko-account-cell" }, "Araç"),
                             React.createElement("div", { className: "ko-account-cell" }, "Net"),
                             React.createElement("div", { className: "ko-account-cell" }, "Durum")),
-                        (() => {
-                            const jabirUsdMap = isJabirFirm(sel) ? buildJabirUsdMap(liste) : null;
-                            return (liste || []).map((t, i) => renderHesapSheetRow(t, i, borderTone, jabirUsdMap));
-                        })()))
+                        (liste || []).map((t, i) => renderHesapSheetRow(t, i, borderTone))))
                 : React.createElement("div", { className: "ko-account-empty-state" }, 'Kayıt yok')));
     };
 
@@ -4492,6 +4543,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
                 const isBalenturAccount = isBalenturFirm(sel);
                 const jabir = isJabirFirm(sel);
+                const usdTotals = jabir ? accountUsdSummary(ts) : null;
+                const monthUsdTotals = jabir ? accountUsdSummary(mts) : null;
+                const usdTlTotals = jabir ? accountUsdTlSummary(ts) : null;
+                const monthUsdTlTotals = jabir ? accountUsdTlSummary(mts) : null;
+                const displayNet = jabir ? usdTotals.net : net;
                 return React.createElement(React.Fragment, null,
                     React.createElement("button", { onClick: () => { setDetayT(null); setSel(null); }, style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 12px', color: TX, fontWeight: 560, fontSize: 12, cursor: 'pointer', textAlign: 'left' } }, "\u2190 T\u00FCm Firmalar"),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -4502,27 +4558,27 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", {
                         style: {
                             position: 'relative',
-                            background: net >= 0
+                            background: displayNet >= 0
                                 ? 'linear-gradient(135deg, #F2F2F7 0%, #F5F5F7 100%)'
                                 : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                            border: '1.5px solid ' + (net >= 0 ? '#D1D1D6' : '#FFC4C0'),
+                            border: '1.5px solid ' + (displayNet >= 0 ? '#D1D1D6' : '#FFC4C0'),
                             borderRadius: 14,
                             padding: '14px 16px',
                             textAlign: 'center',
-                            boxShadow: net >= 0
+                            boxShadow: displayNet >= 0
                                 ? '0 4px 14px rgba(18,108,55,.18), inset 0 1px 0 rgba(255,255,255,.6)'
                                 : '0 4px 14px rgba(79,107,69,.18), inset 0 1px 0 rgba(255,255,255,.6)',
                             overflow: 'hidden'
                         }
                     },
-                        React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: net >= 0 ? G : R, marginBottom: 4, letterSpacing: 1, opacity: .85 } },
-                            (net >= 0 ? '▲ ' : '▼ ') + (net >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
-                        React.createElement("div", { style: { fontSize: 26, fontWeight: 640, color: net >= 0 ? G : R, letterSpacing: 0, lineHeight: 1.1, textShadow: net >= 0 ? '0 1px 0 rgba(255,255,255,.5)' : '0 1px 0 rgba(255,255,255,.5)' } },
+                        React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: displayNet >= 0 ? G : R, marginBottom: 4, letterSpacing: 1, opacity: .85 } },
+                            (displayNet >= 0 ? '▲ ' : '▼ ') + (displayNet >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
+                        React.createElement("div", { style: { fontSize: 26, fontWeight: 640, color: displayNet >= 0 ? G : R, letterSpacing: 0, lineHeight: 1.1, textShadow: displayNet >= 0 ? '0 1px 0 rgba(255,255,255,.5)' : '0 1px 0 rgba(255,255,255,.5)' } },
                             jabir
-                                ? (net >= 0 ? '+' : '−') + fmtUsd(tlToUsdAmount(net))
-                                : (net >= 0 ? '+' : '−') + fr(Math.abs(net)) + " ₺"),
-                        jabir && React.createElement("div", { style: { fontSize: 12, fontWeight: 560, color: net >= 0 ? G : R, opacity: .8, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
-                            '(' + fmtTl(net) + ')')),
+                                ? signedUsdText(displayNet)
+                                : (displayNet >= 0 ? '+' : '−') + fr(Math.abs(displayNet)) + " ₺"),
+                        jabir && React.createElement("div", { style: { fontSize: 12, fontWeight: 560, color: displayNet >= 0 ? G : R, opacity: .8, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
+                            '(' + fmtTl(usdTlTotals.net) + ')')),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
@@ -4536,8 +4592,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, jabir ? '+' + fmtUsd(tlToUsdAmount(al)) : "+" + fr(al) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(al) + ')')),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, jabir ? '+' + fmtUsd(usdTotals.al) : "+" + fr(al) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(usdTlTotals.al) + ')')),
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
                             style: {
@@ -4550,15 +4606,15 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ BORÇ"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, jabir ? '−' + fmtUsd(tlToUsdAmount(ver)) : "−" + fr(ver) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(ver) + ')'))),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, jabir ? '−' + fmtUsd(usdTotals.ver) : "−" + fr(ver) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(usdTlTotals.ver) + ')'))),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 560, color: TX } }, "Ayl\u0131k"),
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
                         [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8', ''],
-                        [jabir ? '+' + fmtUsd(tlToUsdAmount(mAl)) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(mAl) + ')' : ''],
-                        [jabir ? '−' + fmtUsd(tlToUsdAmount(mVer)) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(mVer) + ')' : '']
+                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
+                        [jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : '']
                     ].map(([v, l, col, bg, subtl]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 640, color: col } }, v),
                         subtl && React.createElement("div", { style: { fontSize: 8, fontWeight: 540, color: col, opacity: .8, marginTop: 1 } }, subtl),
@@ -4589,12 +4645,15 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 	                    const { ts } = hesapData(firm);
 	                    const openTs = ts.filter(t => !t.firmSettled);
 	                    const netVal = hesapOpenNet(openTs);
-	                    if (openTs.length === 0 || netVal === 0) return null;
-                    return { firm, netVal };
+	                    const netUsd = isJabirFirm(firm) ? accountUsdSummary(openTs).net : null;
+	                    const netUsdTl = isJabirFirm(firm) ? accountUsdTlSummary(openTs).net : null;
+	                    if (openTs.length === 0 || (isJabirFirm(firm) ? Math.round(Math.abs(netUsd)) === 0 : netVal === 0)) return null;
+                    return { firm, netVal, netUsd, netUsdTl };
                 }).filter(Boolean);
                 const totalAlacak = Math.round(firmSummaries.filter(x => x.netVal > 0).reduce((s, x) => s + x.netVal, 0));
                 const totalVerecek = Math.round(firmSummaries.filter(x => x.netVal < 0).reduce((s, x) => s + Math.abs(x.netVal), 0));
-	                const firmRows = firmSummaries.map(({ firm, netVal }) => {
+	                const firmRows = firmSummaries.map(({ firm, netVal, netUsd, netUsdTl }) => {
+                    const rowSign = isJabirFirm(firm) ? netUsd : netVal;
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
@@ -4604,10 +4663,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { className: "ko-account-firm-card-title" },
                             React.createElement("b", null, firm),
                             isJabirFirm(firm)
-                                ? React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
-                                    (netVal >= 0 ? "+" : "−") + fmtUsd(tlToUsdAmount(netVal)),
-                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 500, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netVal) + ')'))
-                                : React.createElement("span", { className: netVal >= 0 ? "is-pos" : "is-neg" },
+                                ? React.createElement("span", { className: rowSign >= 0 ? "is-pos" : "is-neg" },
+                                    signedUsdText(netUsd),
+                                    React.createElement("span", { style: { fontSize: 9, fontWeight: 500, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netUsdTl) + ')'))
+                                : React.createElement("span", { className: rowSign >= 0 ? "is-pos" : "is-neg" },
                                     (netVal >= 0 ? "+" : "−") + fr(Math.abs(netVal)) + " ₺")));
                 });
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -5942,6 +6001,7 @@ function App() {
                 const sigParts = [
                     cleanTransfers.length,
                     cleanTransfers.reduce((s, x) => s + (Date.parse(x.updatedAt || x.clientUpdatedAt || x.createdAt || '') || 0), 0),
+                    cleanTransfers.reduce((s, x) => s + Object.keys((x && x.settledFirms) || {}).filter(k => x.settledFirms[k]).join(',').length, 0),
                     agencies.length, drivers.length, aracK.length, debts.length, accountAdjustments.length, todos.length, tkLedger.length,
                     /* BUG FIX: aracK + adj/db/tk/tl içeriği imzaya katılıyor — bir kayıt silinip başka biri
                        eklenince sayı sabit kalsa bile imza değişsin ve kayıt mutlaka diske/buluta yazılsın. */
