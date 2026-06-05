@@ -2020,15 +2020,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1780664880297_1abp8h@olmeztur
 DTSTAMP:20260605T130800Z
 LAST-MODIFIED:20260605T130800Z
-SEQUENCE:1780664880
+SEQUENCE:1780664893
 DTSTART:20260605T235900
 DTEND:20260606T005900
 SUMMARY:23:59 · Sabiha Gökçen → Bursa  Vito
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Betül Yılmaz\nŞoför: Kadir Ölmez / +90 (543) 287 06
-  87\nİşi veren: Dİğer Şirketler\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
- ç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: 
- Müşteri: 5.000 TRY | Araç: 5.000 ₺
+DESCRIPTION:Müşteri: Betül Yılmaz\nŞoför: Yasin Dilmenli / +90 (535) 573
+  87 42\nİşi veren: Dİğer Şirketler\nİşi yapan: Ölmeztur\nAlt acenta: -\n
+ Araç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdem
+ e: Müşteri: 5.000 TRY | Araç: 5.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
