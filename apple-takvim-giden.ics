@@ -1155,16 +1155,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1780575908591_cgrxl5@olmeztur
 DTSTAMP:20260605T130800Z
-LAST-MODIFIED:20260604T185500Z
-SEQUENCE:1780599334
+LAST-MODIFIED:20260605T130800Z
+SEQUENCE:1780664934
 DTSTART:20260605T133000
 DTEND:20260605T143000
 SUMMARY:13:30 · Bursa → Sabiha Gökçen  Vito
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Tamer Abdelrahman\nŞoför: -\nİşi veren: Salih Dada\
  nİşi yapan: Ölmeztur\nAlt acenta: İrfan Göyceli\nAraç: Vito\nGüzergah: B
- ursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 9.000 TRY | Araç: 5.500
-  ₺ | Alt acenta: 5.000 ₺
+ ursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 5.500 ₺ |
+  Alt acenta: 5.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
