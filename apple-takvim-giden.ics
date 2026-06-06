@@ -1207,14 +1207,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1780170329106_2imbpn@olmeztur
 DTSTAMP:20260606T103000Z
 LAST-MODIFIED:20260606T103000Z
-SEQUENCE:1780741802
+SEQUENCE:1780741822
 DTSTART:20260608T130000
 DTEND:20260608T140000
 SUMMARY:13:00 · Hasanağa → Mercure Sirkeci  Vito
 LOCATION:Hasanağa → Mercure Sirkeci
 DESCRIPTION:Müşteri: Maraheb Salem\nŞoför: Kadir Ölmez / +90 (543) 287 0
  6 87\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito /
-  16 LMZ 55\nGüzergah: Hasanağa → Mercure Sirkeci\nÖdeme: Müşteri ödemez
+  16 LMZ 55\nGüzergah: Hasanağa → Mercure Sirkeci\nÖdeme: Müşteri ödemez 
+ | Araç: 7.374 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
