@@ -2021,6 +2021,9 @@ function tourCommissionShare(t) {
 function transferPaymentComesToOlmeztur(t) {
     return !!(t && t.paymentToMe);
 }
+function transferNoCustomerPayment(t) {
+    return !!(t && String(t.paymentCollect || '') === 'no' && !t.paymentToMe);
+}
 function transferHasCustomerPayment(t) {
     return !!(t && (t.paymentToMe || t.paymentCollect === 'yes'));
 }
@@ -2044,6 +2047,20 @@ function transferCustomerTRYValue(t) {
     }
     return stored || raw;
 }
+function noCollectTRYValue(t) {
+    const raw = moneyValue(t && t.noCollectAmount);
+    if (raw <= 0)
+        return 0;
+    const currency = String((t && t.noCollectCurrency) || 'TRY').toUpperCase();
+    if (currency === 'TRY')
+        return raw;
+    const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+    const rate = currency === 'USD' ? (moneyValue(liveRates.USD) || 44.35)
+        : currency === 'EUR' ? (moneyValue(liveRates.EUR) || 51.50)
+            : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
+                : 0;
+    return rate > 0 ? raw * rate : 0;
+}
 function currencySymbolFor(code) {
     const c = String(code || 'TRY').toUpperCase();
     return c === 'USD' ? '$' : c === 'EUR' ? '€' : c === 'KWD' ? 'KD' : '₺';
@@ -2052,6 +2069,21 @@ function currencySymbolFor(code) {
    Döviz (USD/EUR/KWD) ise: ana metin döviz ("$100"), alt/parantez TL karşılığı ("4.435₺").
    TL ise: düz "100₺". */
 function transferCustomerDisplay(t) {
+    if (transferNoCustomerPayment(t)) {
+        const noRaw = moneyValue(t && t.noCollectAmount);
+        const noCur = String((t && t.noCollectCurrency) || 'TRY').toUpperCase();
+        if (!(noRaw > 0))
+            return { isForeign: false, currency: 'TRY', main: '—', sub: '' };
+        if (noCur === 'TRY')
+            return { isForeign: false, currency: 'TRY', main: fr(noRaw) + '₺', sub: '' };
+        const noTl = Math.round(noCollectTRYValue(t));
+        return {
+            isForeign: true,
+            currency: noCur,
+            main: currencySymbolFor(noCur) + Math.abs(Math.round(noRaw)).toLocaleString('tr-TR'),
+            sub: noTl > 0 ? fr(noTl) + '₺' : ''
+        };
+    }
     const currency = String((t && t.paymentCurrency) || 'TRY').toUpperCase();
     const raw = moneyValue(t && t.paymentAmount);
     if (currency === 'TRY' || raw <= 0) {
@@ -2114,23 +2146,37 @@ function accountUsdRateForRow(t) {
 }
 function accountRawUsdCollection(t) {
     let usd = 0;
-    if (String((t && t.paymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.paymentAmount) > 0)
+    if (!transferNoCustomerPayment(t) && String((t && t.paymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.paymentAmount) > 0)
         usd += moneyValue(t.paymentAmount);
     if (t && t.partialFromFirm && String(t.remainingCurrency || '').toUpperCase() === 'USD' && moneyValue(t.remainingAmount) > 0)
         usd += moneyValue(t.remainingAmount);
     return usd;
 }
-function accountRawUsdVehicleCost(t) {
+function accountRawUsdDriverFee(t) {
     let usd = 0;
     if (String((t && t.driverPaymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.driverPaymentRaw) > 0)
         usd += moneyValue(t.driverPaymentRaw);
+    return usd;
+}
+function accountRawUsdAltAcentaFee(t) {
+    let usd = 0;
     if (String((t && t.altAcentaCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.altAcentaRaw) > 0)
         usd += moneyValue(t.altAcentaRaw);
     return usd;
 }
+function accountRawUsdVehicleCost(t) {
+    return accountRawUsdDriverFee(t) + accountRawUsdAltAcentaFee(t);
+}
+function accountRawUsdFirmVehicleCost(t) {
+    const driverUsd = accountRawUsdDriverFee(t);
+    const altUsd = accountRawUsdAltAcentaFee(t);
+    if (transferNoCustomerPayment(t))
+        return driverUsd;
+    return driverUsd > 0 ? driverUsd : altUsd;
+}
 function accountRawUsdNet(t) {
     const collected = accountRawUsdCollection(t);
-    const vehicleCost = accountRawUsdVehicleCost(t);
+    const vehicleCost = accountRawUsdFirmVehicleCost(t);
     if (!(collected > 0) && !(vehicleCost > 0))
         return null;
     if (vehicleCost > 0) {
@@ -2355,8 +2401,8 @@ function formPreviewAmounts(t) {
     const assignedOl = isOlmezturParty(t && t.assignedTo);
     const agencyToOlmez = assignedOl && !!(t && t.givenBy) && !givenOl;
     const calcT = { ...t, givenBy: givenOl ? OL : t.givenBy, assignedTo: assignedOl ? OL : t.assignedTo };
-    const firmBal = noCustomerPayment ? null : calcBal(calcT);
-    const altBal = noCustomerPayment ? null : calcAltBal(calcT);
+    const firmBal = calcBal(calcT);
+    const altBal = calcAltBal(calcT);
     const odeloBal = balenturOdeloCalc(calcT);
     let olmezNet = noCustomerPayment ? 0 : olmezKar(calcT);
     if (agencyToOlmez && noCustomerPayment)
@@ -4338,10 +4384,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const hesapOpenNet = liste => Math.round(hesapOpenRows(liste).reduce((s, t) => s + moneyValue(t.netOl), 0));
     const hesapCustomerAmount = t => {
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
+        if (transferNoCustomerPayment(t)) return 0;
         return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
     };
     const hesapDriverAmount = t => {
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
+        if (t.kaynak === 'alt') return moneyValue(t.altAcentaUcreti || 0);
         return moneyValue(t.driverPayment || 0);
     };
     const renderHesapSheetRow = (t, idx, borderTone) => {
@@ -4421,15 +4469,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("small", null, routeText)),
             (() => {
                 const cd = (t.kaynak === 'odelo') ? { isForeign: false } : transferCustomerDisplay(t);
+                const customerLabel = transferNoCustomerPayment(t) ? 'Tahsilat yok' : 'Müşteri';
                 if (cd.isForeign) {
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                         React.createElement("b", null, cd.main),
-                        React.createElement("small", null, "Müşteri" + (cd.sub ? ' (' + cd.sub + ')' : '')),
+                        React.createElement("small", null, customerLabel + (cd.sub ? ' (' + cd.sub + ')' : '')),
                         jabirNetUnderCustomer);
                 }
                 return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                     React.createElement("b", null, hesapPlainMoney(hesapCustomerAmount(t))),
-                    React.createElement("small", null, "Müşteri"),
+                    React.createElement("small", null, customerLabel),
                     jabirNetUnderCustomer);
             })(),
             React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
