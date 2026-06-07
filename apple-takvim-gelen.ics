@@ -1712,8 +1712,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1778851792872_mkaasf@olmeztur
 DTSTAMP:20260607T173500Z
-LAST-MODIFIED:20260607T171100Z
-SEQUENCE:1780852303
+LAST-MODIFIED:20260607T173500Z
+SEQUENCE:1780853730
 DTSTART:20260521T115000
 DTEND:20260521T125000
 SUMMARY:11:50 · İST → Bursa  Vito
@@ -1721,7 +1721,7 @@ LOCATION:İstanbul Havalimanı → Bursa / Osmangazi
 DESCRIPTION:Müşteri: Naemah Tahir\nŞoför: Balentur\nİşi veren: Jabır\nİş
  i yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: İstanbul 
  Havalimanı → Bursa / Osmangazi\nUçuş: KU155\nNot: Takas\nÖdeme: Müşteri 
- ödemez | Alt acenta: 7.352 ₺
+ ödemez | Araç: 7.374 ₺ | Alt acenta: 7.352 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
