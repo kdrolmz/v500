@@ -317,6 +317,9 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-account-cell b{font-size:12px !important;font-weight:540 !important;color:#1C1C1E !important;line-height:1.16 !important}
 .ko-account-cell small{display:block;font-size:10.2px !important;font-weight:390 !important;color:#6F7484 !important;line-height:1.22 !important;margin-top:2px !important}
 .ko-account-net-cell b{font-weight:570 !important}
+.ko-account-cell small.ko-account-jabir-net-under{font-size:9.8px !important;font-weight:620 !important;line-height:1.08 !important;margin-top:2px !important;font-variant-numeric:tabular-nums !important;white-space:nowrap !important}
+.ko-account-cell small.ko-account-jabir-net-under.is-pos{color:#4F6B45 !important;-webkit-text-fill-color:#4F6B45 !important}
+.ko-account-cell small.ko-account-jabir-net-under.is-neg{color:#B0524C !important;-webkit-text-fill-color:#B0524C !important}
 .lg-arac-head-card{padding:12px !important}
 .lg-arac-head-row{margin-bottom:10px !important;gap:8px !important}
 .lg-arac-head-title{font-size:15px !important;font-weight:560 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;color:#1C1C1E !important}
@@ -2117,15 +2120,37 @@ function accountRawUsdCollection(t) {
         usd += moneyValue(t.remainingAmount);
     return usd;
 }
-function accountRowUsdAmount(t) {
-    const rawUsd = accountRawUsdCollection(t);
-    if (rawUsd > 0) {
+function accountRawUsdVehicleCost(t) {
+    let usd = 0;
+    if (String((t && t.driverPaymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.driverPaymentRaw) > 0)
+        usd += moneyValue(t.driverPaymentRaw);
+    if (String((t && t.altAcentaCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.altAcentaRaw) > 0)
+        usd += moneyValue(t.altAcentaRaw);
+    return usd;
+}
+function accountRawUsdNet(t) {
+    const collected = accountRawUsdCollection(t);
+    const vehicleCost = accountRawUsdVehicleCost(t);
+    if (!(collected > 0) && !(vehicleCost > 0))
+        return null;
+    if (vehicleCost > 0) {
         if (t && t.yon === 'oVerdi')
-            return rawUsd;
+            return vehicleCost - collected;
         if (t && t.yon === 'benVerdim')
-            return -rawUsd;
-        return moneyValue(t && t.netOl) < 0 ? -rawUsd : rawUsd;
+            return (t.paymentToMe ? 0 : collected) - vehicleCost;
+        const diff = collected - vehicleCost;
+        return moneyValue(t && t.netOl) < 0 ? -Math.abs(diff || vehicleCost || collected) : Math.abs(diff || collected || vehicleCost);
     }
+    if (t && t.yon === 'oVerdi')
+        return collected;
+    if (t && t.yon === 'benVerdim')
+        return -collected;
+    return moneyValue(t && t.netOl) < 0 ? -collected : collected;
+}
+function accountRowUsdAmount(t) {
+    const rawUsdNet = accountRawUsdNet(t);
+    if (rawUsdNet !== null)
+        return rawUsdNet;
     const r = accountUsdRateForRow(t);
     return r > 0 ? moneyValue(t && t.netOl) / r : 0;
 }
@@ -2144,7 +2169,7 @@ function accountUsdSummary(liste) {
 }
 function accountRowUsdTlEquivalent(t) {
     const usd = Math.abs(accountRowUsdAmount(t));
-    if (usd > 0 && accountRawUsdCollection(t) > 0)
+    if (usd > 0 && (accountRawUsdCollection(t) > 0 || accountRawUsdVehicleCost(t) > 0))
         return usd * accountUsdRateForRow(t);
     return Math.abs(moneyValue(t && t.netOl));
 }
@@ -4323,6 +4348,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const netVal = Math.round(moneyValue(t.netOl));
         const usdNet = accountRowUsdAmount(t);
         const pos = isJabirFirm(sel) ? usdNet >= 0 : netVal >= 0;
+        const jabirNetUnderCustomer = isJabirFirm(sel) && Math.round(Math.abs(usdNet)) > 0
+            ? React.createElement("small", { className: "ko-account-jabir-net-under " + (usdNet >= 0 ? 'is-pos' : 'is-neg') }, (usdNet >= 0 ? '+' : '−') + Math.abs(Math.round(moneyValue(usdNet))).toLocaleString('tr-TR'))
+            : null;
         if (t.kaynak === 'manual') {
             const meta = accountAdjustmentTypeMeta(t.adjustmentType);
             const amount = Math.abs(moneyValue(t.adjustmentAmount || t.paymentAmount || t.netOl));
@@ -4396,11 +4424,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 if (cd.isForeign) {
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                         React.createElement("b", null, cd.main),
-                        React.createElement("small", null, "Müşteri" + (cd.sub ? ' (' + cd.sub + ')' : '')));
+                        React.createElement("small", null, "Müşteri" + (cd.sub ? ' (' + cd.sub + ')' : '')),
+                        jabirNetUnderCustomer);
                 }
                 return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                     React.createElement("b", null, hesapPlainMoney(hesapCustomerAmount(t))),
-                    React.createElement("small", null, "Müşteri"));
+                    React.createElement("small", null, "Müşteri"),
+                    jabirNetUnderCustomer);
             })(),
             React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                 React.createElement("b", null, hesapPlainMoney(hesapDriverAmount(t))),
