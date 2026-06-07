@@ -1969,7 +1969,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1778946817659_y5id45@olmeztur
 DTSTAMP:20260607T171500Z
 LAST-MODIFIED:20260607T171500Z
-SEQUENCE:1780852509
+SEQUENCE:1780852525
 DTSTART:20260603T153000
 DTEND:20260603T163000
 SUMMARY:15:30 · İST → Bursa  Vito
@@ -1977,7 +1977,7 @@ LOCATION:İstanbul Havalimanı → Bursa / Nilüfer
 DESCRIPTION:Müşteri: MUNA JAFFAR\nŞoför: Recep Öter / 05466231172\nİşi v
  eren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: Recep Öter\nAraç: Vito / 1
  6 RZ 072\nGüzergah: İstanbul Havalimanı → Bursa / Nilüfer\nUçuş: QR239\n
- Ödeme: Müşteri ödemez | Alt acenta: 7.000 ₺
+ Ödeme: Müşteri ödemez | Araç: 7.374 ₺ | Alt acenta: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
