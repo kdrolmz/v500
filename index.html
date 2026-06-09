@@ -1062,7 +1062,7 @@ const BF = {
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
 };
 const STORAGE_KEY = 'tp10';
 const LEGACY_STORAGE_KEYS = ['tp9'];
@@ -6244,8 +6244,26 @@ function App() {
             tip('Tarih girin');
             return;
         }
+        const sameDayReturn = form.tripMode === 'sameday' || !!form.isReturn;
+        const datedReturn = form.tripMode === 'roundtrip' || !!form.hasReturn;
+        const wantsReturnTransfer = sameDayReturn || datedReturn;
+        const returnTimeValue = String(form.returnTime || '').trim();
+        if (!editId && wantsReturnTransfer && !returnTimeValue) {
+            releaseSubmitLock();
+            tip('Dönüş saati girin');
+            return;
+        }
+        if (!editId && datedReturn && !String(form.returnDate || '').trim()) {
+            releaseSubmitLock();
+            tip('Dönüş tarihi girin');
+            return;
+        }
         const cTRY = toTRY(form.paymentAmount, form.paymentCurrency);
         [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
+            if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
+                addAgencyContact(n, '');
+        });
+        [form.returnGivenBy, form.returnAssignedTo, form.returnAltAcenta].filter(Boolean).forEach(n => {
             if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
                 addAgencyContact(n, '');
         });
@@ -6253,6 +6271,40 @@ function App() {
             addDriverContact(form.driverName, form.driverPhone || '');
         const prev = editId ? T.find(x => x.id === editId) : null;
         const companyCollected = !!(form.companyCollected || form.settled || (prev && isCompanyCollected(prev)));
+        const returnTransferType = form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType);
+        const returnGivenBy = String(form.returnGivenBy || form.givenBy || '').trim();
+        const returnAssignedTo = String(form.returnAssignedTo || form.assignedTo || '').trim();
+        const returnAltAcenta = String(form.returnAltAcenta || '').trim();
+        const buildReturnTransfer = (outBase, retId, dateValue, linkedId) => ({
+            ...outBase,
+            id: retId,
+            editRootId: retId,
+            date: dateValue || outBase.date,
+            time: returnTimeValue,
+            pickup: form.dropoff,
+            dropoff: form.pickup,
+            transferType: returnTransferType,
+            givenBy: returnGivenBy,
+            assignedTo: returnAssignedTo,
+            altAcenta: returnAltAcenta,
+            altAcentaUcreti: returnAltAcenta ? outBase.altAcentaUcreti : '',
+            altAcentaRaw: returnAltAcenta ? outBase.altAcentaRaw : '',
+            altAcentaCurrency: returnAltAcenta ? outBase.altAcentaCurrency : 'TRY',
+            tripMode: 'single',
+            isReturn: false,
+            hasReturn: false,
+            isRecurring: false,
+            returnTime: '',
+            returnDate: '',
+            returnGivenBy: '',
+            returnAssignedTo: '',
+            returnAltAcenta: '',
+            endDate: '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            clientUpdatedAt: new Date().toISOString(),
+            linkedTransferId: linkedId || outBase.id
+        });
         
         if (editId) {
             const nowIso = new Date().toISOString();
@@ -6279,34 +6331,17 @@ function App() {
                 const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
-                if (form.isReturn) {
+                if (sameDayReturn) {
                     const retId = Date.now().toString() + 'R_' + Math.random().toString(36).slice(2, 8);
-                    const retBase = { ...outBase, id: retId, editRootId: retId, time: form.returnTime || form.time, pickup: form.dropoff, dropoff: form.pickup, transferType: form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType) };
+                    const retBase = buildReturnTransfer(outBase, retId, dateStr, outId);
                     transfersToAdd.push(normalizeTransfer(retBase));
                 }
                 
                 // ═══ FARKLI TARİH DÖNÜŞ (yeni hasReturn sistemi) ═══
                 // Sadece ilk transferden sonra TEK kez ekle (tekrarlanan transferlerde tekrar ekleme)
-                if (form.hasReturn && form.returnDate && loopCount === 0) {
+                if (datedReturn && form.returnDate && loopCount === 0) {
                     const retId = Date.now().toString() + 'RD_' + Math.random().toString(36).slice(2, 8);
-                    // Otomatik tip ters çevir: arrival ↔ departure (diğerleri aynen kalır)
-                    const retType = form.transferType === 'arrival' ? 'departure' 
-                                  : form.transferType === 'departure' ? 'arrival' 
-                                  : form.transferType;
-                    const retBase = { 
-                        ...outBase, 
-                        id: retId, 
-                        editRootId: retId,
-                        date: form.returnDate,
-                        time: form.returnTime || form.time, 
-                        pickup: form.dropoff,    // Otomatik ters güzergah
-                        dropoff: form.pickup,    // Otomatik ters güzergah
-                        transferType: retType,
-                        // Yeni ID ile yeni createdAt
-                        createdAt: new Date().toISOString(),
-                        // Ana transfer ile ilişki kuralım
-                        linkedTransferId: outId
-                    };
+                    const retBase = buildReturnTransfer(outBase, retId, form.returnDate, outId);
                     transfersToAdd.push(normalizeTransfer(retBase));
                 }
                 
@@ -7813,6 +7848,26 @@ function App() {
         (T || []).forEach(t => put(t && t.driverName, t && t.driverPhone));
         return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
 	    }, [T, drivers]);
+    const renderReturnPartyFields = () => {
+        const returnGivenValue = form.returnGivenBy || form.givenBy || '';
+        const returnAssignedValue = form.returnAssignedTo || form.assignedTo || '';
+        return React.createElement("div", { style: { marginTop: 8, display: 'grid', gridTemplateColumns: '1fr', gap: 8 } },
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Dönüş İşi Veren"),
+                    React.createElement(SmartPick, { value: returnGivenValue, rows: formAgencyRows, onChange: v => sf({ returnGivenBy: v }), onSelect: a => sf({ returnGivenBy: a.name }), placeholder: "" })
+                ),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Dönüş İşi Yapan"),
+                    React.createElement(SmartPick, { value: returnAssignedValue, rows: formAgencyRows, onChange: v => sf({ returnAssignedTo: v }), onSelect: a => sf({ returnAssignedTo: a.name }), placeholder: "" })
+                )
+            ),
+            React.createElement("div", null,
+                React.createElement("span", { className: "lbl" }, "Dönüş Alt Acenta"),
+                React.createElement(SmartPick, { value: form.returnAltAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ returnAltAcenta: v }), onSelect: a => sf({ returnAltAcenta: a.name }), placeholder: "" })
+            )
+        );
+    };
     const saveFormAgencies = () => {
         [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
             if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
@@ -9002,6 +9057,7 @@ function App() {
                                 React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp" })
                             )
                         ),
+                        renderReturnPartyFields(),
                         (form.pickup || form.dropoff) && React.createElement("div", { style: { marginTop: 7, padding: '7px 10px', background: '#fff', borderRadius: 7, fontSize: 10.5, color: SB, lineHeight: 1.4, border: '1px dashed var(--brand-bd)' } },
                             React.createElement("span", { style: { fontWeight: 560, color: 'var(--brand)' } }, '\u21AA Ters g\u00FCzergah: '),
                             React.createElement("span", { style: { fontWeight: 600, color: TX } }, (form.dropoff || '\u2014') + ' \u2192 ' + (form.pickup || '\u2014'))
@@ -9012,7 +9068,8 @@ function App() {
                             React.createElement("span", { style: { fontSize: 13 } }, '\u21A9'),
                             React.createElement("span", { style: { fontSize: 11, fontWeight: 600, color: 'var(--brand)' } }, 'Ayn\u0131 G\u00FCn D\u00F6n\u00FC\u015F Saati')
                         ),
-                        React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp" })
+                        React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp" }),
+                        renderReturnPartyFields()
                     ),
                     form.tripMode === 'recurring' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
