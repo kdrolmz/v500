@@ -1221,23 +1221,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1781011931448_78wo6n@olmeztur
-DTSTAMP:20260609T133200Z
-LAST-MODIFIED:20260609T133200Z
-SEQUENCE:1781011931
-DTSTART:20260610T090000
-DTEND:20260610T100000
-SUMMARY:09:00 · Sabiha Gökçen → Bursa  Vito
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Adnan Albloushi\nŞoför: Kadir Ölmez / +90 (543) 287
-  06 87\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito
-  / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşteri
- : 155 USD | Araç: 6.455 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1780741744039_basa1w@olmeztur
 DTSTAMP:20260609T133200Z
 LAST-MODIFIED:20260606T102900Z
@@ -1250,6 +1233,23 @@ DESCRIPTION:Müşteri: Fatma Abbas\nŞoför: Kadir Ölmez / +90 (543) 287 06
  87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
  ito / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşt
  eri: 150 USD | Araç: 6.914 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1781011931448_78wo6n@olmeztur
+DTSTAMP:20260609T133200Z
+LAST-MODIFIED:20260609T133200Z
+SEQUENCE:1781011958
+DTSTART:20260610T125000
+DTEND:20260610T135000
+SUMMARY:12:50 · Sabiha Gökçen → Bursa  Vito
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Adnan Albloushi\nŞoför: Kadir Ölmez / +90 (543) 287
+  06 87\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito
+  / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖ
+ deme: Müşteri: 155 USD | Araç: 6.455 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
