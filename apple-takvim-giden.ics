@@ -1257,16 +1257,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1780508172281_hnpxx9@olmeztur
 DTSTAMP:20260609T135300Z
-LAST-MODIFIED:20260603T173600Z
-SEQUENCE:1780508172
+LAST-MODIFIED:20260609T135300Z
+SEQUENCE:1781013228
 DTSTART:20260610T160000
 DTEND:20260610T170000
 SUMMARY:16:00 · Odelo → Euro Desing Hotel Fatih  Vito
 LOCATION:Odelo → Euro Desing Hotel Fatih
 DESCRIPTION:Müşteri: Mike Fauser\nŞoför: Kadir Ölmez / +90 (543) 287 06 
- 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
- 6 LMZ 55\nGüzergah: Odelo → Euro Desing Hotel Fatih\nÖdeme: Müşteri: 8.5
- 50 TRY | Araç: 8.550 ₺
+ 87\nİşi veren: Odelo\nİşi yapan: Balentur\nAlt acenta: -\nAraç: Vito / 1
+ 6 LMZ 55\nGüzergah: Odelo → Euro Desing Hotel Fatih\nÖdeme: Müşteri ödem
+ ez
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
