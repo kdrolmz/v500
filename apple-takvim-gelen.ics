@@ -2072,7 +2072,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1780990764459_pccsd0@olmeztur
 DTSTAMP:20260609T082500Z
 LAST-MODIFIED:20260609T082500Z
-SEQUENCE:1780993513
+SEQUENCE:1780993523
 DTSTART:20260609T130500
 DTEND:20260609T140500
 SUMMARY:13:05 · İST → Rixos Tershane  Sprinter
@@ -2080,7 +2080,7 @@ LOCATION:İstanbul Havalimanı → Rixos Tershane
 DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Seyhmus / +90 542 527 34 47\nİş
  i veren: Ölmeztur\nİşi yapan: Fatih Erden\nAlt acenta: -\nAraç: Sprinter
   / 34 PIR 545\nGüzergah: İstanbul Havalimanı → Rixos Tershane\nUçuş: KU1
- 55\nÖdeme: Müşteri: 60 USD
+ 55\nÖdeme: Müşteri: 60 USD | Araç: 1.800 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
