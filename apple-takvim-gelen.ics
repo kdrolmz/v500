@@ -2173,16 +2173,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1781104687540_on84ub@olmeztur
 DTSTAMP:20260610T154400Z
-LAST-MODIFIED:20260610T151800Z
-SEQUENCE:1781104687
+LAST-MODIFIED:20260610T154400Z
+SEQUENCE:1781106289
 DTSTART:20260616T135000
 DTEND:20260616T145000
 SUMMARY:13:50 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Nawal Alruwaılı\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito
- \nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: Müşteri öde
- mez | Araç: 7.379 ₺
+ \nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: Müşteri: 17
+ 5 USD | Araç: 7.379 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
