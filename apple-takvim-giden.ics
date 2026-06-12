@@ -1308,7 +1308,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1780942275962_zva2ke@olmeztur
 DTSTAMP:20260612T175400Z
 LAST-MODIFIED:20260612T175400Z
-SEQUENCE:1781286871
+SEQUENCE:1781286894
 DTSTART:20260612T090000
 DTEND:20260612T100000
 SUMMARY:09:00 · Bursa → Sabiha Gökçen  Vito
@@ -1316,7 +1316,7 @@ LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Khaled almahını\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
  ito / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşt
- eri: 150 USD | Araç: 7.378 ₺
+ eri: 150 USD | Araç: 6.933 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
