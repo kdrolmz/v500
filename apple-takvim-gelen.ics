@@ -2208,15 +2208,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1781104687540_on84ub@olmeztur
 DTSTAMP:20260614T093600Z
 LAST-MODIFIED:20260614T093600Z
-SEQUENCE:1781429763
+SEQUENCE:1781429804
 DTSTART:20260616T135000
 DTEND:20260616T145000
 SUMMARY:13:50 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Nawal Alruwaılı\nŞoför: İrfan Göyceli / +90 530 304
-  48 66\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito
-  / 16 BIS 589\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme
- : Müşteri: 175 USD | Araç: 7.000 ₺
+  48 66\nİşi veren: Jabır\nİşi yapan: Ölmeztur\nAlt acenta: İrfan Göyceli
+ \nAraç: Vito / 16 BIS 589\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: 
+ KU155\nÖdeme: Müşteri: 175 USD | Araç: 7.405 ₺ | Alt acenta: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
