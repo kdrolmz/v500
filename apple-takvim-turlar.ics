@@ -419,14 +419,14 @@ BEGIN:VEVENT
 UID:ko-transfer-1781429531095_1hxfxb@olmeztur
 DTSTAMP:20260614T093200Z
 LAST-MODIFIED:20260614T093200Z
-SEQUENCE:1781429531
+SEQUENCE:1781429555
 DTSTART:20260612T120000
 DTEND:20260612T130000
 SUMMARY:12:00 · Sapanca Turu  Vito
 LOCATION:Rixos Tershane → Sapanca
 DESCRIPTION:Müşteri: Adel Alejmi\nŞoför: Dİğer Kaptanlar\nİşi veren: Ölm
- \nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: Rixos
-  Tershane → Sapanca\nÖdeme: Müşteri: 220 USD | Araç: 8.330 ₺
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Rixos Tershane → Sapanca\nÖdeme: Müşteri: 220 USD | Araç: 8.330 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
