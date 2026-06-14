@@ -191,6 +191,29 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-account-firm-card-title{display:flex;justify-content:space-between;gap:6px !important;align-items:center !important}
 .ko-account-firm-card-title b{font-size:12px !important;font-weight:540 !important;line-height:1.18 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .ko-account-firm-card-title span{font-size:11px !important;font-weight:560 !important;line-height:1.1 !important;white-space:nowrap !important}
+.ko-account-balance-divider{display:flex;align-items:center;gap:8px;margin:2px 0 0;color:#8E8E93;font-size:9px;font-weight:620;letter-spacing:.8px;text-transform:uppercase}
+.ko-account-balance-divider:before,.ko-account-balance-divider:after{content:"";height:1px;background:#D1D1D6;flex:1}
+.ko-account-firm-card-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.ko-account-firm-card-copy small{font-size:9px;color:#8E8E93;font-weight:480;line-height:1.15}
+.ko-debt-form-row.is-primary{grid-template-columns:82px minmax(0,1fr) 82px 62px !important}
+.ko-debt-form-row.is-secondary{grid-template-columns:82px minmax(0,1fr) 76px !important}
+.ko-debt-card{position:relative}
+.ko-debt-card-head{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center}
+.ko-debt-check{width:28px;height:28px;border-radius:50%;border:1.5px solid #D1D1D6;background:#fff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;padding:0}
+.ko-debt-check.is-done{background:#4F6B45;border-color:#4F6B45}
+.ko-debt-main{min-width:0;background:transparent;border:0;padding:0;text-align:left;cursor:pointer;color:inherit}
+.ko-debt-main-title{font-size:13px;font-weight:600;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ko-debt-main-sub{font-size:10px;color:#6F7484;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ko-debt-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ko-debt-amount b{display:block;font-size:13px}
+.ko-debt-amount small{display:block;font-size:9px;color:#6F7484;margin-top:2px}
+.ko-debt-detail{margin-top:10px;padding-top:10px;border-top:1px solid #E5E5EA;display:flex;flex-direction:column;gap:8px}
+.ko-debt-detail-grid{display:grid;grid-template-columns:1fr 74px;gap:7px}
+.ko-debt-action-grid{display:grid;grid-template-columns:90px 90px minmax(0,1fr);gap:7px}
+.ko-debt-movement{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:7px;align-items:center;padding:7px 8px;background:#F5F5F7;border-radius:9px;font-size:10px;color:#636366}
+.ko-debt-movement b{font-size:10.5px}
+.ko-debt-card-actions{display:grid;grid-template-columns:1fr auto;gap:7px}
+@media(max-width:700px){.ko-debt-form-row.is-primary{grid-template-columns:72px minmax(0,1fr) 76px 58px !important}.ko-debt-detail-grid,.ko-debt-action-grid{grid-template-columns:1fr 68px}.ko-debt-action-grid input:last-of-type{grid-column:1/-1}.ko-debt-action-grid button{grid-column:1/-1}.ko-debt-movement{grid-template-columns:56px minmax(0,1fr) auto}}
 .ko-hesap-month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .ko-hesap-green-frame,.ko-hesap-month-stat{border:1px solid rgba(60,60,67,.32) !important;border-radius:12px !important;background:#fff !important;padding:10px !important}
 .ko-account-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;border-bottom:1px solid var(--line);padding:10px 11px !important}
@@ -3542,7 +3565,145 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 tip('Aylık araç raporu kopyalandı');
             }, className: "ko-arac-report-btn", style: { width: '100%', background: '#fff', color: NAV, border: '1px solid ' + BOR, borderRadius: 13, padding: 12, fontWeight: 520, cursor: 'pointer' } }, "Aylık raporu kopyala"));
 }
-function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments }) {
+
+function debtCurrencyCode(d) {
+    const c = String((d && d.currency) || 'TRY').toUpperCase();
+    return c === 'USD' || c === 'EUR' ? c : 'TRY';
+}
+function debtMovementRows(d) {
+    return Array.isArray(d && d.movements) ? d.movements : [];
+}
+function debtTotalAmount(d) {
+    return moneyValue(d && d.total) + debtMovementRows(d).filter(m => m.kind === 'increase').reduce((s, m) => s + moneyValue(m.amount), 0);
+}
+function debtPaidAmount(d) {
+    return moneyValue(d && d.paid) + debtMovementRows(d).filter(m => m.kind === 'payment').reduce((s, m) => s + moneyValue(m.amount), 0);
+}
+function debtRemainingAmount(d) {
+    return Math.max(0, debtTotalAmount(d) - debtPaidAmount(d));
+}
+function debtAmountToTRY(amount, currency, rates) {
+    const cur = String(currency || 'TRY').toUpperCase();
+    const n = moneyValue(amount);
+    if (cur === 'USD') return n * (moneyValue(rates && rates.USD) || 44.35);
+    if (cur === 'EUR') return n * (moneyValue(rates && rates.EUR) || 51.50);
+    return n;
+}
+function debtRemainingTRY(d, rates) {
+    return debtAmountToTRY(debtRemainingAmount(d), debtCurrencyCode(d), rates);
+}
+function debtNativeText(d, amount, signed) {
+    const cur = debtCurrencyCode(d);
+    const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : '₺';
+    const prefix = signed ? (d.type === 'borc' ? '−' : '+') : '';
+    return prefix + sym + fr(amount);
+}
+function accountActivityFirmNames(T, adjustments) {
+    const names = [];
+    (Array.isArray(T) ? T : []).forEach(t => {
+        [t && t.givenBy, t && t.assignedTo, t && t.altAcenta].filter(Boolean).forEach(x => names.push(String(x).trim()));
+    });
+    (Array.isArray(adjustments) ? adjustments : []).forEach(a => {
+        const name = String(a && a.firm || '').trim();
+        if (name) names.push(name);
+    });
+    const seen = new Set();
+    return names.filter(name => name && name !== OL && name !== 'Odelo').filter(name => {
+        const key = nm(name);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+function DebtAccountCard({ d, setDebts, rates, tip, embedded }) {
+    const [open, setOpen] = useState(false);
+    const [edit, setEdit] = useState({ name: d.name || '', currency: debtCurrencyCode(d), note: d.note || '' });
+    const [action, setAction] = useState({ kind: 'payment', amount: '', note: '', date: new Date().toISOString().slice(0, 10) });
+    useEffect(() => {
+        setEdit({ name: d.name || '', currency: debtCurrencyCode(d), note: d.note || '' });
+    }, [d.name, d.currency, d.note]);
+    const isBorc = d.type === 'borc';
+    const accent = isBorc ? R : G;
+    const remaining = debtRemainingAmount(d);
+    const remainingTRY = debtRemainingTRY(d, rates);
+    const isDone = remaining <= 0;
+    const update = patch => setDebts(p => (Array.isArray(p) ? p : []).map(x => x.id === d.id ? { ...x, ...patch, updatedAt: new Date().toISOString() } : x));
+    const addMovement = (kind, amount, note, date) => {
+        const value = Math.min(kind === 'payment' ? remaining : Number.POSITIVE_INFINITY, moneyValue(amount));
+        if (!(value > 0)) {
+            tip && tip('Tutar girin');
+            return;
+        }
+        const movement = { id: Date.now().toString(), kind, amount: value, note: String(note || '').trim(), date: date || new Date().toISOString().slice(0, 10) };
+        update({ movements: [...debtMovementRows(d), movement] });
+        setAction(a => ({ ...a, amount: '', note: '' }));
+        tip && tip(kind === 'payment' ? (isBorc ? 'Ödeme düşüldü' : 'Tahsilat düşüldü') : (isBorc ? 'Borç eklendi' : 'Alacak eklendi'));
+    };
+    const settleFull = e => {
+        e.stopPropagation();
+        if (isDone) return;
+        addMovement('payment', remaining, 'Tek dokunuşla kapatıldı', new Date().toISOString().slice(0, 10));
+    };
+    const saveDetails = () => {
+        const name = String(edit.name || '').trim();
+        if (!name) {
+            tip && tip('İsim girin');
+            return;
+        }
+        update({ name, currency: edit.currency, note: String(edit.note || '').trim() });
+        tip && tip('Detaylar güncellendi');
+    };
+    const removeMovement = id => {
+        update({ movements: debtMovementRows(d).filter(m => m.id !== id) });
+        tip && tip('Hareket kaldırıldı');
+    };
+    const movements = debtMovementRows(d).slice().reverse();
+    return React.createElement("div", {
+        className: "ko-debt-card" + (embedded ? " is-embedded" : ""),
+        style: { borderLeft: '4px solid ' + accent, opacity: isDone ? .78 : 1 }
+    },
+        React.createElement("div", { className: "ko-debt-card-head" },
+            React.createElement("button", { type: "button", className: "ko-debt-check" + (isDone ? " is-done" : ""), onClick: settleFull, title: isDone ? "Hesap kapalı" : (isBorc ? "Kalan borcu ödendi yap" : "Kalan alacağı tahsil edildi yap"), "aria-label": isDone ? "Hesap kapalı" : "Kalanı kapat" }, isDone ? "✓" : ""),
+            React.createElement("button", { type: "button", className: "ko-debt-main", onClick: () => setOpen(v => !v) },
+                React.createElement("div", { className: "ko-debt-main-title" }, d.name),
+                React.createElement("div", { className: "ko-debt-main-sub" }, (d.note || (isBorc ? 'Borç kaydı' : 'Alacak kaydı')) + ' · ' + (open ? 'Detayı kapat' : 'Detayı aç'))),
+            React.createElement("div", { className: "ko-debt-amount" },
+                React.createElement("b", { style: { color: isDone ? G : accent } }, isDone ? 'Kapandı' : debtNativeText(d, remaining, true)),
+                debtCurrencyCode(d) !== 'TRY' && React.createElement("small", null, '(≈ ' + fr(remainingTRY) + '₺)'))),
+        open && React.createElement("div", { className: "ko-debt-detail" },
+            React.createElement("div", { className: "ko-debt-detail-grid" },
+                React.createElement("input", { className: "inp", value: edit.name, onChange: e => setEdit(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma" }),
+                React.createElement("select", { className: "inp", value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) },
+                    React.createElement("option", { value: "TRY" }, "TL"),
+                    React.createElement("option", { value: "USD" }, "USD"),
+                    React.createElement("option", { value: "EUR" }, "EUR"))),
+            React.createElement("textarea", { className: "inp", value: edit.note, onChange: e => setEdit(p => ({ ...p, note: e.target.value })), placeholder: "Detay / açıklama", rows: 2, style: { resize: 'vertical' } }),
+            React.createElement("button", { type: "button", onClick: saveDetails, style: { minHeight: 34, border: 'none', borderRadius: 9, background: NAV, color: '#fff', fontWeight: 560, cursor: 'pointer' } }, "Detayları Kaydet"),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 } },
+                [['Toplam', debtTotalAmount(d)], [isBorc ? 'Ödenen' : 'Alınan', debtPaidAmount(d)], ['Kalan', remaining]].map(([label, value]) => React.createElement("div", { key: label, style: { padding: 8, borderRadius: 9, background: '#F5F5F7', textAlign: 'center' } },
+                    React.createElement("div", { style: { fontSize: 9, color: SB } }, label),
+                    React.createElement("div", { style: { fontSize: 11.5, fontWeight: 620, color: label === 'Kalan' ? accent : TX, marginTop: 2 } }, debtNativeText(d, value, false))))),
+            React.createElement("div", { className: "ko-debt-action-grid" },
+                React.createElement("select", { className: "inp", value: action.kind, onChange: e => setAction(p => ({ ...p, kind: e.target.value })) },
+                    React.createElement("option", { value: "payment" }, isBorc ? "Ödeme" : "Tahsilat"),
+                    React.createElement("option", { value: "increase" }, isBorc ? "Borç ekle" : "Alacak ekle")),
+                React.createElement("input", { className: "inp", type: "number", inputMode: "decimal", value: action.amount, onChange: e => setAction(p => ({ ...p, amount: e.target.value })), placeholder: debtCurrencyCode(d) }),
+                React.createElement("input", { className: "inp", value: action.note, onChange: e => setAction(p => ({ ...p, note: e.target.value })), placeholder: "Hareket açıklaması" }),
+                React.createElement("input", { className: "inp", type: "date", value: action.date, onChange: e => setAction(p => ({ ...p, date: e.target.value })) }),
+                React.createElement("button", { type: "button", onClick: () => addMovement(action.kind, action.amount, action.note, action.date), style: { border: 'none', borderRadius: 9, background: accent, color: '#fff', fontWeight: 560, cursor: 'pointer', minHeight: 34 } }, "Hareketi İşle")),
+            movements.length > 0 && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+                movements.map(m => React.createElement("div", { key: m.id, className: "ko-debt-movement" },
+                    React.createElement("span", null, m.date ? new Date(m.date + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }) : '—'),
+                    React.createElement("span", null, m.note || (m.kind === 'payment' ? (isBorc ? 'Ödeme' : 'Tahsilat') : (isBorc ? 'Borç eklendi' : 'Alacak eklendi'))),
+                    React.createElement("span", { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                        React.createElement("b", { style: { color: m.kind === 'payment' ? G : accent } }, (m.kind === 'payment' ? '−' : '+') + debtNativeText(d, m.amount, false)),
+                        React.createElement("button", { type: "button", onClick: () => removeMovement(m.id), style: { border: 0, background: 'transparent', color: R, cursor: 'pointer', padding: 2 } }, "×"))))),
+            React.createElement("div", { className: "ko-debt-card-actions" },
+                React.createElement("div", { style: { fontSize: 9.5, color: SB, alignSelf: 'center' } }, debtCurrencyCode(d) !== 'TRY' ? ('Güncel kurla kalan ≈ ' + fr(remainingTRY) + '₺') : 'Tutar TL olarak tutuluyor'),
+                React.createElement("button", { type: "button", onClick: () => { if (window.confirm(d.name + ' kaydı silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id)); }, style: { border: '1px solid #FFC4C0', background: '#FFF0EF', color: R, borderRadius: 8, padding: '6px 9px', cursor: 'pointer', fontSize: 10, fontWeight: 560 } }, "Sil"))));
+}
+
+function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates }) {
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
@@ -3576,7 +3737,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return accountSettleKeys(firm, kind).some(k => !!sf[k]);
     };
     const normalizedAccountAdjustments = React.useMemo(() => (Array.isArray(accountAdjustments) ? accountAdjustments : []).map(normalizeAccountAdjustment).filter(x => x.firm), [accountAdjustments]);
-    const firmalar = [...new Set([...T.map(t => t.givenBy), ...T.map(t => t.assignedTo), ...T.filter(t => t.altAcenta).map(t => t.altAcenta), ...normalizedAccountAdjustments.map(x => x.firm), ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
+    const normalizedDebts = React.useMemo(() => Array.isArray(debts) ? debts : [], [debts]);
+    const activeFirmNames = React.useMemo(() => accountActivityFirmNames(T, normalizedAccountAdjustments), [T, normalizedAccountAdjustments]);
+    const activeFirmKeys = React.useMemo(() => new Set(activeFirmNames.map(nm)), [activeFirmNames]);
+    const isActiveFirm = firm => activeFirmKeys.has(nm(firm));
+    const firmDebtRows = firm => isActiveFirm(firm) ? normalizedDebts.filter(d => nm(d && d.name) === nm(firm)) : [];
+    const debtSummaryForFirm = firm => {
+        let al = 0, ver = 0;
+        firmDebtRows(firm).forEach(d => {
+            const value = debtRemainingTRY(d, rates);
+            if (d.type === 'borc') ver += value;
+            else al += value;
+        });
+        return { al, ver, net: al - ver };
+    };
+    const firmalar = [...new Set([...activeFirmNames, ...agencies])].filter(Boolean).filter(f => f !== OL).filter(f => f !== 'Odelo').sort();
     const firmSearch = ara.trim();
     const hasFirmSearch = !!firmSearch;
     const filtered = firmalar.filter(f => !hasFirmSearch || nm(f).includes(nm(firmSearch)));
@@ -3677,7 +3852,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             else
                 ver += Math.abs(e.netOl || 0);
         });
-        return { ts: detay, al, ver, net: al - ver };
+        const debtRows = firmDebtRows(firm);
+        debtRows.forEach(d => {
+            const value = debtRemainingTRY(d, rates);
+            if (d.type === 'borc') ver += value;
+            else al += value;
+        });
+        return { ts: detay, debtRows, al, ver, net: al - ver };
     };
     const hesapSum = liste => {
         let al = 0, ver = 0;
@@ -3721,11 +3902,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const regularTs = base.ts.filter(t => !isBalenturOdeloTransfer(t));
         const regular = hesapSum(regularTs);
         const odelo = balenturOdeloOzet();
+        const debt = debtSummaryForFirm(firm);
         return {
             ts: [...regularTs, ...odelo.ts],
-            al: regular.al + odelo.al,
-            ver: regular.ver + odelo.ver,
-            net: regular.net + odelo.net,
+            debtRows: base.debtRows,
+            al: regular.al + odelo.al + debt.al,
+            ver: regular.ver + odelo.ver + debt.ver,
+            net: regular.net + odelo.net + debt.net,
             regularTs,
             odelo
         };
@@ -4624,6 +4807,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             sel ? (function() {
                 const hData = hesapData(sel);
                 const { ts, al, ver, net } = hData;
+                const debtRows = hData.debtRows || [];
+                const debtAlTL = debtRows.filter(d => d.type !== 'borc').reduce((s, d) => s + debtRemainingTRY(d, rates), 0);
+                const debtVerTL = debtRows.filter(d => d.type === 'borc').reduce((s, d) => s + debtRemainingTRY(d, rates), 0);
+                const debtNetTL = debtAlTL - debtVerTL;
                 const mts = ts.filter(t => t.date && t.date.startsWith(ay));
                 const mtsOpen = hesapOpenRows(mts);
                 const mAl = Math.round(mtsOpen.filter(t => moneyValue(t.netOl) > 0).reduce((s, t) => s + moneyValue(t.netOl), 0));
@@ -4641,14 +4828,20 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const monthUsdTotals = jabir ? accountUsdSummary(mts) : null;
                 const usdTlTotals = jabir ? accountUsdTlSummary(ts) : null;
                 const monthUsdTlTotals = jabir ? accountUsdTlSummary(mts) : null;
-                const displayNet = jabir ? usdTotals.net : net;
+                const usdRate = moneyValue(rates && rates.USD) || 44.35;
+                const displayNet = jabir ? usdTotals.net + (debtNetTL / usdRate) : net;
+                const displayAl = jabir ? usdTotals.al + (debtAlTL / usdRate) : al;
+                const displayVer = jabir ? usdTotals.ver + (debtVerTL / usdRate) : ver;
+                const displayTlNet = jabir ? usdTlTotals.net + debtNetTL : net;
+                const displayTlAl = jabir ? usdTlTotals.al + debtAlTL : al;
+                const displayTlVer = jabir ? usdTlTotals.ver + debtVerTL : ver;
                 return React.createElement(React.Fragment, null,
                     React.createElement("button", { onClick: () => { setDetayT(null); setSel(null); }, style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 12px', color: TX, fontWeight: 560, fontSize: 12, cursor: 'pointer', textAlign: 'left' } }, "\u2190 T\u00FCm Firmalar"),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                         React.createElement("div", { style: { width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0 } }, "\uD83C\uDFE2"),
                         React.createElement("div", null,
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 } }, renderAgencyChip(sel, false)),
-                            React.createElement("div", { style: { fontSize: 10, color: SB } }, ts.length + " kay\u0131t"))),
+                            React.createElement("div", { style: { fontSize: 10, color: SB } }, (ts.length + debtRows.length) + " kayıt" + (debtRows.length ? " · " + debtRows.length + " ek hesap" : "")))),
                     React.createElement("div", {
                         style: {
                             position: 'relative',
@@ -4672,7 +4865,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                                 ? signedUsdText(displayNet)
                                 : (displayNet >= 0 ? '+' : '−') + fr(Math.abs(displayNet)) + " ₺"),
                         jabir && React.createElement("div", { style: { fontSize: 12, fontWeight: 560, color: displayNet >= 0 ? G : R, opacity: .8, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
-                            '(' + fmtTl(usdTlTotals.net) + ')')),
+                            '(' + fmtTl(displayTlNet) + ')')),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
@@ -4686,8 +4879,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, jabir ? '+' + fmtUsd(usdTotals.al) : "+" + fr(al) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(usdTlTotals.al) + ')')),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: G } }, jabir ? '+' + fmtUsd(displayAl) : "+" + fr(al) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(displayTlAl) + ')')),
                         React.createElement("div", {
                             className: "ko-hesap-green-frame",
                             style: {
@@ -4700,8 +4893,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ BORÇ"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, jabir ? '−' + fmtUsd(usdTotals.ver) : "−" + fr(ver) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(usdTlTotals.ver) + ')'))),
+                            React.createElement("div", { style: { fontSize: 16, fontWeight: 640, color: R } }, jabir ? '−' + fmtUsd(displayVer) : "−" + fr(ver) + " ₺"),
+                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(displayTlVer) + ')'))),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                         React.createElement("span", { style: { fontSize: 11, fontWeight: 560, color: TX } }, "Ayl\u0131k"),
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
@@ -4714,6 +4907,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         subtl && React.createElement("div", { style: { fontSize: 8, fontWeight: 540, color: col, opacity: .8, marginTop: 1 } }, subtl),
                         React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 560, letterSpacing: .3 } }, l))))),
                     renderManualAdjustmentPanel(sel),
+                    debtRows.length > 0 && React.createElement(React.Fragment, null,
+                        React.createElement("div", { className: "ko-account-balance-divider" }, "Birleşen Alacak / Borç"),
+                        React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
+                            debtRows.map(d => React.createElement(DebtAccountCard, { key: d.id, d: d, setDebts: setDebts, rates: rates, tip: tip, embedded: true })))),
                     React.createElement("div", { style: { fontWeight: 560, fontSize: 12, color: TX, marginTop: 4 } }, "Transferler"),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement(React.Fragment, null,
@@ -4736,22 +4933,25 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 	            })()
 		            : (function() {
 	                const firmSummaries = filtered.map(firm => {
-	                    const { ts } = hesapData(firm);
+	                    const { ts, debtRows = [] } = hesapData(firm);
 	                    const openTs = ts.filter(t => !t.firmSettled);
-	                    const netVal = hesapOpenNet(openTs);
+                        const openDebtRows = debtRows.filter(d => debtRemainingAmount(d) > 0);
+                        const debtNetTL = openDebtRows.reduce((s, d) => s + (d.type === 'borc' ? -1 : 1) * debtRemainingTRY(d, rates), 0);
+	                    const netVal = hesapOpenNet(openTs) + debtNetTL;
 	                    const jabirFirm = isJabirFirm(firm);
-	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net : null;
-	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net : null;
+                        const usdRate = moneyValue(rates && rates.USD) || 44.35;
+	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net + (debtNetTL / usdRate) : null;
+	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net + debtNetTL : null;
 	                    const signVal = jabirFirm ? netUsd : netVal;
 	                    const totalVal = jabirFirm ? netUsdTl : netVal;
-	                    if (openTs.length === 0 || Math.round(Math.abs(signVal)) === 0) return null;
-                    return { firm, netVal, netUsd, netUsdTl, signVal, totalVal };
+	                    if ((openTs.length === 0 && openDebtRows.length === 0) || Math.round(Math.abs(signVal)) === 0) return null;
+                    return { firm, netVal, netUsd, netUsdTl, signVal, totalVal, transferCount: openTs.length, debtCount: openDebtRows.length };
                 }).filter(Boolean).sort((a, b) => Math.abs(b.totalVal) - Math.abs(a.totalVal) || String(a.firm).localeCompare(String(b.firm), 'tr'));
                 const alacakSummaries = firmSummaries.filter(x => x.signVal > 0);
                 const verecekSummaries = firmSummaries.filter(x => x.signVal < 0);
                 const totalAlacak = Math.round(alacakSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
                 const totalVerecek = Math.round(verecekSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
-	                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal }) => {
+	                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount }) => {
                     const isRec = signVal >= 0;
                     return React.createElement("button", {
                         key: firm,
@@ -4760,7 +4960,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         onClick: () => setSel(firm)
                     },
                         React.createElement("div", { className: "ko-account-firm-card-title" },
-                            React.createElement("b", null, firm),
+                            React.createElement("div", { className: "ko-account-firm-card-copy" },
+                                React.createElement("b", null, firm),
+                                React.createElement("small", null, transferCount + " iş" + (debtCount ? " · " + debtCount + " ek hesap" : ""))),
                             isJabirFirm(firm)
                                 ? React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     signedUsdText(netUsd),
@@ -4777,20 +4979,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             ? rows.map(renderFirmRow)
                             : React.createElement("div", { className: "ko-account-firm-bucket-empty" }, "Yok")));
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                    React.createElement("div", { className: "ko-account-balance-divider" }, "Açık Firma Bakiyeleri"),
                     React.createElement("div", { className: "ko-account-split-grid" },
-                        renderFirmBucket('rec', 'Alacaklar', totalAlacak, alacakSummaries),
-                        renderFirmBucket('pay', 'Verecekler', totalVerecek, verecekSummaries)));
+                        renderFirmBucket('rec', 'Alacak', totalAlacak, alacakSummaries),
+                        renderFirmBucket('pay', 'Verecek', totalVerecek, verecekSummaries)));
             })()
         )));
 }
 
-function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip }) {
+function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments }) {
     const [openAg, setOpenAg] = useState(false);
     const [openDebt, setOpenDebt] = useState(false);
     const [openDebtGroups, setOpenDebtGroups] = useState({ borc: false, alacak: false });
     const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
     const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
-    const [newDebt, setNewDebt] = useState({ type: 'borc', name: '', total: '', paid: '', note: '' });
+    const [newDebt, setNewDebt] = useState({ type: 'borc', name: '', total: '', paid: '', currency: 'TRY', note: '' });
     const addAgency = () => {
         const name = (newAgency.name || '').trim(), phone = (newAgency.phone || '').trim();
         if (!name) return;
@@ -4811,81 +5014,15 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const total = moneyValue(newDebt.total);
         const paid = moneyValue(newDebt.paid);
         if (!name || !(total > 0)) return;
-        setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, note: (newDebt.note || '').trim() }, ...p]);
-        setNewDebt({ type: newDebt.type, name: '', total: '', paid: '', note: '' });
+        const now = new Date().toISOString();
+        setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, currency: newDebt.currency || 'TRY', note: (newDebt.note || '').trim(), movements: [], createdAt: now, updatedAt: now }, ...p]);
+        setNewDebt({ type: newDebt.type, name: '', total: '', paid: '', currency: newDebt.currency || 'TRY', note: '' });
         tip(newDebt.type === 'borc' ? 'Borç eklendi' : 'Alacak eklendi');
     };
-    const addToDebt = (id, kind) => {
-        const amt = moneyValue(prompt(kind, '0') || '0');
-        if (!(amt > 0)) return;
-        const note = (prompt('Açıklama', '') || '').trim();
-        setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, total: d.total + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
-        tip(kind + ' eklendi');
-    };
-    const addPayment = (id, kind) => {
-        const amt = moneyValue(prompt(kind, '0') || '0');
-        if (!(amt > 0)) return;
-        const note = (prompt('Açıklama', '') || '').trim();
-        setDebts(p => p.map(d => d.id !== id ? d : ({ ...d, paid: d.paid + amt, note: note ? (d.note ? d.note + ' | ' + note : note) : d.note })));
-        tip(kind + ' eklendi');
-    };
-    const renderDebt = d => {
-        const kalan = Math.max(0, moneyValue(d.total) - moneyValue(d.paid));
-        const isBorc = d.type === 'borc';
-        const accent = isBorc ? R : G;
-        const signedDebt = n => (isBorc ? '−' : '+') + fr(n || 0) + '₺';
-        const signedOpenDebt = n => n > 0 ? signedDebt(n) : '0₺';
-        const accentBgGrad = isBorc
-            ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)'
-            : 'linear-gradient(135deg, #F2F2F7 0%, #F5F5F7 100%)';
-        const accentBorder = isBorc ? '#FFC4C0' : '#D1D1D6';
-        return React.createElement("div", {
-            key: d.id,
-            className: "ko-debt-card",
-            style: {
-                border: '1px solid ' + BOR,
-                borderRadius: 13,
-                padding: 11,
-                background: '#fff',
-                boxShadow: '0 2px 6px rgba(0,0,0,.06)',
-                position: 'relative',
-                overflow: 'hidden'
-            }
-        },
-            /* sol kenar accent şerit */
-            React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: accent } }),
-            React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', paddingLeft: 6 } },
-                React.createElement("div", { style: { flex: 1 } },
-                    React.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: TX } }, d.name),
-                    React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3 } }, d.note || 'Açıklama yok')),
-                React.createElement("div", { style: { textAlign: 'right' } },
-                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 560, letterSpacing: .3 } }, 'TOPLAM'),
-                    React.createElement("div", { style: { fontWeight: 640, fontSize: 14, color: accent } }, signedDebt(d.total)))),
-            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 9, paddingLeft: 6 } },
-                React.createElement("div", { style: { background: 'linear-gradient(135deg,#F5F5F7,#E5E5EA)', border: '1px solid ' + BOR, borderRadius: 10, padding: 8, textAlign: 'center' } },
-                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 560 } }, isBorc ? 'Ödenen' : 'Tahsilat'),
-                    React.createElement("div", { style: { fontWeight: 640, fontSize: 13, color: accent } }, signedOpenDebt(d.paid || 0))),
-                React.createElement("div", {
-                    style: {
-                        background: kalan > 0 ? accentBgGrad : 'linear-gradient(135deg,#F2F2F7,#E5E5EA)',
-                        border: '1px solid ' + (kalan > 0 ? accentBorder : '#D1D1D6'),
-                        borderRadius: 10,
-                        padding: 8,
-                        textAlign: 'center'
-                    }
-                },
-                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 560 } }, 'Kalan'),
-                    React.createElement("div", { style: { fontWeight: 640, fontSize: 13, color: kalan > 0 ? accent : G } }, signedOpenDebt(kalan))),
-                React.createElement("div", { style: { background: 'linear-gradient(135deg,#F5F5F7,#E5E5EA)', border: '1px solid ' + BOR, borderRadius: 10, padding: 8, textAlign: 'center' } },
-                    React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 560 } }, 'Durum'),
-                    React.createElement("div", { style: { fontWeight: 640, fontSize: 12, color: kalan > 0 ? O : G } }, kalan > 0 ? 'Açık' : 'Kapalı'))),
-            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 8, paddingLeft: 6 } },
-                React.createElement("button", { onClick: () => addPayment(d.id, isBorc ? 'Ödeme' : 'Tahsilat'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Ödeme Ekle' : 'Tahsilat Ekle'),
-                React.createElement("button", { onClick: () => addToDebt(d.id, isBorc ? 'Borç' : 'Alacak'), style: { background: accent, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, isBorc ? 'Borç Ekle' : 'Alacak Ekle'),
-                React.createElement("button", { onClick: () => { if (window.confirm('Silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 0', fontWeight: 600, fontSize: 11, cursor: 'pointer' } }, 'Sil')));
-    };
-    const borclar = debts.filter(d => d.type === 'borc');
-    const alacaklar = debts.filter(d => d.type === 'alacak');
+    const mergedFirmKeys = React.useMemo(() => new Set(accountActivityFirmNames(T, accountAdjustments).map(nm)), [T, accountAdjustments]);
+    const standaloneDebts = (Array.isArray(debts) ? debts : []).filter(d => !mergedFirmKeys.has(nm(d && d.name)));
+    const borclar = standaloneDebts.filter(d => d.type === 'borc');
+    const alacaklar = standaloneDebts.filter(d => d.type === 'alacak');
     const debtGroupButton = (key, label, count, accent, isOpen) => React.createElement("button", {
         className: "ko-debt-group-toggle",
         onClick: () => setOpenDebtGroups(p => ({ ...p, [key]: !p[key] })),
@@ -4907,7 +5044,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         count > 0 && React.createElement("span", { style: { background: 'rgba(255,255,255,.82)', color: accent, border: '1px solid rgba(60,60,67,.16)', borderRadius: 999, padding: '2px 7px', fontSize: 10, fontWeight: 480 } }, count)
     );
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 } },
-	                React.createElement("div", { className: "card ko-contact-manager" },
+	                React.createElement("div", { className: "card ko-contact-manager", style: { order: 2 } },
             React.createElement("button", { className: "ko-contact-toggle", onClick: () => setOpenAg(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 600, color: TX, textAlign: 'left', cursor: 'pointer' } }, '🏢 Acenta / Kaptan ' + (openAg ? '−' : '+')),
             openAg && React.createElement("div", { className: "ko-contact-groups", style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
                 React.createElement("div", { className: "ko-contact-section ko-contact-agencies" },
@@ -4934,23 +5071,29 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                             React.createElement("div", { className: "ko-contact-phone", style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')),
                         React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Düzenle'),
                         React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Sil'))))))),
-        React.createElement("div", { className: "card ko-debt-manager" },
-            React.createElement("button", { className: "ko-debt-toggle", onClick: () => setOpenDebt(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 600, color: TX, textAlign: 'left', cursor: 'pointer' } }, '💼 Alacak / Borç ' + (openDebt ? '−' : '+')),
+        React.createElement("div", { className: "card ko-debt-manager", style: { order: 1, borderTop: '2px solid #D1D1D6' } },
+            React.createElement("button", { className: "ko-debt-toggle", onClick: () => setOpenDebt(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 600, color: TX, textAlign: 'left', cursor: 'pointer' } }, '💼 Alacak / Borç' + (standaloneDebts.length ? ' (' + standaloneDebts.length + ')' : '') + ' ' + (openDebt ? '−' : '+')),
             openDebt && React.createElement("div", { className: "ko-debt-body", style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
-                React.createElement("div", { className: "ko-debt-form-row", style: { display: 'grid', gridTemplateColumns: '110px 1fr 100px', gap: 8 } },
+                React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.4 } }, "Firma hesaplarında bulunan aynı isimler otomatik birleşir; burada yalnız bağımsız kayıtlar görünür."),
+                React.createElement("div", { className: "ko-debt-form-row is-primary", style: { display: 'grid', gap: 8 } },
                     React.createElement("select", { value: newDebt.type, onChange: e => setNewDebt(p => ({ ...p, type: e.target.value })), className: "inp" }, React.createElement("option", { value: 'borc' }, 'Borç'), React.createElement("option", { value: 'alacak' }, 'Alacak')),
                     React.createElement("input", { value: newDebt.name, onChange: e => setNewDebt(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma", className: "inp" }),
-                    React.createElement("input", { type: "number", value: newDebt.total, onChange: e => setNewDebt(p => ({ ...p, total: e.target.value })), placeholder: "Tutar", className: "inp" })),
-                React.createElement("div", { className: "ko-debt-form-row", style: { display: 'grid', gridTemplateColumns: '110px 1fr 100px', gap: 8 } },
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: newDebt.total, onChange: e => setNewDebt(p => ({ ...p, total: e.target.value })), placeholder: "Tutar", className: "inp" }),
+                    React.createElement("select", { value: newDebt.currency, onChange: e => setNewDebt(p => ({ ...p, currency: e.target.value })), className: "inp" },
+                        React.createElement("option", { value: "TRY" }, "TL"),
+                        React.createElement("option", { value: "USD" }, "USD"),
+                        React.createElement("option", { value: "EUR" }, "EUR"))),
+                newDebt.total && newDebt.currency !== 'TRY' && React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'right', marginTop: -7 } }, "≈ " + fr(debtAmountToTRY(newDebt.total, newDebt.currency, rates)) + "₺"),
+                React.createElement("div", { className: "ko-debt-form-row is-secondary", style: { display: 'grid', gap: 8 } },
                     React.createElement("input", { type: "number", value: newDebt.paid, onChange: e => setNewDebt(p => ({ ...p, paid: e.target.value })), placeholder: newDebt.type === 'borc' ? "Ödenen" : "Tahsilat", className: "inp" }),
-                    React.createElement("input", { value: newDebt.note, onChange: e => setNewDebt(p => ({ ...p, note: e.target.value })), placeholder: "Küçük açıklama", className: "inp" }),
+                    React.createElement("input", { value: newDebt.note, onChange: e => setNewDebt(p => ({ ...p, note: e.target.value })), placeholder: "Detay / açıklama", className: "inp" }),
                     React.createElement("button", { onClick: saveDebt, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 600, cursor: 'pointer' } }, 'Kaydet')),
                 React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     debtGroupButton('borc', 'BORÇLAR', borclar.length, R, openDebtGroups.borc),
-                    openDebtGroups.borc && (borclar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, borclar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Borç kaydı yok'))),
+                    openDebtGroups.borc && (borclar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, borclar.map(d => React.createElement(DebtAccountCard, { key: d.id, d: d, setDebts: setDebts, rates: rates, tip: tip }))) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Borç kaydı yok'))),
                 React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     debtGroupButton('alacak', 'ALACAKLAR', alacaklar.length, G, openDebtGroups.alacak),
-                    openDebtGroups.alacak && (alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(renderDebt)) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok'))))));
+                    openDebtGroups.alacak && (alacaklar.length ? React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, alacaklar.map(d => React.createElement(DebtAccountCard, { key: d.id, d: d, setDebts: setDebts, rates: rates, tip: tip }))) : React.createElement("div", { style: { fontSize: 12, color: SB, padding: 10, background: INP, borderRadius: 9, textAlign: 'center', border: '1px dashed ' + BOR } }, 'Alacak kaydı yok'))))));
 }
 
 function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
@@ -9476,7 +9619,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 600, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 560, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 600, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#fff', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 600, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 560, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#fff', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 600, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments })),
             tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         /* ═══════════════════════════════════════════════════════════════
            🧭 ALT TAB BAR — Premium Kurumsal Navigasyon (EspressoLab tarzı)
