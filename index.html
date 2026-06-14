@@ -976,6 +976,268 @@ body :where(div,span,b,strong,small,label,button,input,select,textarea){font-wei
   -webkit-text-fill-color:#4A7256 !important;
 }
 
+/* Alacak / verecek: firma hesaplariyla ayni kart yapisi ve kompakt hareket detayi */
+.ko-debt-firm-card{
+  width:100% !important;
+  margin:0 !important;
+}
+.ko-debt-firm-card.is-selected{
+  outline:2px solid rgba(79,107,69,.22) !important;
+  outline-offset:1px !important;
+}
+.ko-debt-firm-card .ko-account-firm-card-copy b{
+  white-space:normal !important;
+  overflow:visible !important;
+  overflow-wrap:anywhere !important;
+  text-overflow:clip !important;
+}
+.ko-debt-firm-card .ko-debt-firm-tl{
+  display:inline !important;
+  margin-left:3px !important;
+  font-size:9px !important;
+  opacity:.75 !important;
+}
+.ko-debt-ledger{
+  border:1px solid #D9DDD7 !important;
+  border-left:4px solid var(--debt-accent,#4F6B45) !important;
+  border-radius:16px !important;
+  background:#FFFFFF !important;
+  padding:9px !important;
+  box-shadow:0 1px 2px rgba(37,40,35,.05) !important;
+  overflow:hidden !important;
+}
+.ko-debt-ledger-head{
+  display:grid !important;
+  grid-template-columns:28px minmax(0,1fr) auto 26px !important;
+  align-items:center !important;
+  gap:7px !important;
+  min-width:0 !important;
+}
+.ko-debt-ledger .ko-debt-check{
+  width:28px !important;
+  height:28px !important;
+  min-height:28px !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  font-size:13px !important;
+}
+.ko-debt-ledger-copy{min-width:0 !important}
+.ko-debt-ledger-name{
+  color:#252823 !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+  line-height:1.18 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+.ko-debt-ledger-meta{
+  margin-top:2px !important;
+  color:#8E8E93 !important;
+  font-size:9px !important;
+  line-height:1.15 !important;
+}
+.ko-debt-ledger-balance{
+  text-align:right !important;
+  white-space:nowrap !important;
+  font-variant-numeric:tabular-nums !important;
+}
+.ko-debt-ledger-balance b{
+  display:block !important;
+  color:var(--debt-accent,#4F6B45) !important;
+  font-size:12px !important;
+  font-weight:520 !important;
+}
+.ko-debt-ledger-balance small{
+  display:block !important;
+  margin-top:2px !important;
+  color:#8E8E93 !important;
+  font-size:8px !important;
+}
+.ko-debt-ledger-close{
+  width:26px !important;
+  height:26px !important;
+  min-height:26px !important;
+  padding:0 !important;
+  border:1px solid #D9DDD7 !important;
+  border-radius:8px !important;
+  background:#F7F7F4 !important;
+  color:#636366 !important;
+  font-size:14px !important;
+}
+.ko-debt-ledger-stats{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:5px !important;
+  margin-top:8px !important;
+}
+.ko-debt-ledger-stat{
+  min-width:0 !important;
+  padding:5px 6px !important;
+  border:1px solid #E5E5EA !important;
+  border-radius:9px !important;
+  background:#F7F7F4 !important;
+  text-align:center !important;
+}
+.ko-debt-ledger-stat small{
+  display:block !important;
+  color:#8E8E93 !important;
+  font-size:8px !important;
+}
+.ko-debt-ledger-stat b{
+  display:block !important;
+  margin-top:2px !important;
+  color:#252823 !important;
+  font-size:10px !important;
+  font-weight:500 !important;
+  white-space:nowrap !important;
+}
+.ko-debt-ledger-rows{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:5px !important;
+  margin-top:8px !important;
+}
+.ko-debt-ledger-row{
+  display:grid !important;
+  grid-template-columns:52px minmax(0,1fr) auto 18px !important;
+  align-items:center !important;
+  gap:7px !important;
+  min-height:38px !important;
+  padding:6px 7px !important;
+  border:1px solid #E5E5EA !important;
+  border-radius:11px !important;
+  background:#FFFFFF !important;
+}
+.ko-debt-ledger-date{
+  color:#8E8E93 !important;
+  font-size:8.5px !important;
+  line-height:1.12 !important;
+  white-space:nowrap !important;
+}
+.ko-debt-ledger-note{
+  min-width:0 !important;
+  color:#252823 !important;
+  font-size:10.5px !important;
+  line-height:1.18 !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+}
+.ko-debt-ledger-row-amount{
+  text-align:right !important;
+  white-space:nowrap !important;
+  font-variant-numeric:tabular-nums !important;
+}
+.ko-debt-ledger-row-amount b{
+  display:block !important;
+  font-size:10.5px !important;
+  font-weight:520 !important;
+}
+.ko-debt-ledger-row-amount small{
+  display:block !important;
+  margin-top:1px !important;
+  color:#8E8E93 !important;
+  font-size:7.5px !important;
+}
+.ko-debt-ledger-remove{
+  width:18px !important;
+  height:18px !important;
+  min-height:18px !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  color:#B0524C !important;
+  font-size:12px !important;
+}
+.ko-debt-ledger-more{
+  width:100% !important;
+  min-height:28px !important;
+  margin-top:5px !important;
+  padding:5px 8px !important;
+  border:1px solid #D9DDD7 !important;
+  border-radius:9px !important;
+  background:#F7F7F4 !important;
+  color:#636366 !important;
+  font-size:9px !important;
+}
+.ko-debt-ledger-actions{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  margin-top:8px !important;
+}
+.ko-debt-ledger-actions button{
+  min-height:30px !important;
+  padding:6px 9px !important;
+  border:1px solid #D9DDD7 !important;
+  border-radius:9px !important;
+  background:#FFFFFF !important;
+  color:#252823 !important;
+  font-size:9.5px !important;
+}
+.ko-debt-ledger-actions .is-primary{
+  border-color:var(--debt-accent,#4F6B45) !important;
+  background:var(--debt-accent,#4F6B45) !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+}
+.ko-debt-ledger-actions .is-delete{
+  margin-left:auto !important;
+  border-color:#E5C9C3 !important;
+  color:#B0524C !important;
+  -webkit-text-fill-color:#B0524C !important;
+}
+.ko-debt-ledger-form{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:6px !important;
+  margin-top:8px !important;
+  padding:7px !important;
+  border:1px solid #D9DDD7 !important;
+  border-radius:11px !important;
+  background:#F7F7F4 !important;
+}
+.ko-debt-ledger-form-top{
+  display:grid !important;
+  grid-template-columns:92px 92px minmax(120px,1fr) !important;
+  gap:6px !important;
+}
+.ko-debt-ledger-form-top.is-edit{
+  grid-template-columns:minmax(0,1fr) 82px !important;
+}
+.ko-debt-ledger-form-bottom{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:6px !important;
+}
+.ko-debt-ledger-form input,.ko-debt-ledger-form select{
+  min-height:32px !important;
+  padding:6px 7px !important;
+  border-radius:8px !important;
+  font-size:10.5px !important;
+}
+.ko-debt-ledger-form button{
+  min-height:32px !important;
+  padding:6px 10px !important;
+  border:0 !important;
+  border-radius:8px !important;
+  background:var(--debt-accent,#4F6B45) !important;
+  color:#FFFFFF !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  font-size:9.5px !important;
+}
+@media(max-width:700px){
+  .ko-debt-firm-card .ko-account-firm-card-title b{font-size:12px !important}
+  .ko-debt-firm-card .ko-account-firm-card-title>span{font-size:11px !important}
+  .ko-debt-ledger-head{grid-template-columns:28px minmax(0,1fr) auto 24px !important;gap:6px !important}
+  .ko-debt-ledger-row{grid-template-columns:43px minmax(0,1fr) auto 16px !important;gap:5px !important;padding:6px !important}
+  .ko-debt-ledger-date{font-size:8px !important}
+  .ko-debt-ledger-note{font-size:10px !important}
+  .ko-debt-ledger-row-amount b{font-size:10px !important}
+  .ko-debt-ledger-form-top{grid-template-columns:78px 72px minmax(0,1fr) !important}
+  .ko-debt-ledger-actions{gap:5px !important}
+  .ko-debt-ledger-actions button{padding:6px 7px !important;font-size:9px !important}
+}
+
 </style>
 </head>
 <body>
@@ -3617,7 +3879,7 @@ function debtNativeText(d, amount, signed) {
     const cur = debtCurrencyCode(d);
     const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : '₺';
     const prefix = signed ? (d.type === 'borc' ? '−' : '+') : '';
-    return prefix + sym + fr(amount);
+    return cur === 'TRY' ? prefix + fr(amount) + ' ₺' : prefix + sym + fr(amount);
 }
 function accountActivityFirmNames(T, adjustments) {
     const names = [];
@@ -3734,6 +3996,164 @@ function DebtAccountCard({ d, setDebts, rates, tip, embedded, forceOpen }) {
             React.createElement("div", { className: "ko-debt-card-actions" },
                 React.createElement("div", { style: { fontSize: 9.5, color: SB, alignSelf: 'center' } }, debtCurrencyCode(d) !== 'TRY' ? ('Güncel kurla kalan ≈ ' + fr(remainingTRY) + '₺') : 'Tutar TL olarak tutuluyor'),
                 React.createElement("button", { type: "button", onClick: () => { if (window.confirm(d.name + ' kaydı silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id)); }, style: { border: '1px solid #FFC4C0', background: '#FFF0EF', color: R, borderRadius: 8, padding: '6px 9px', cursor: 'pointer', fontSize: 10, fontWeight: 560 } }, "Sil"))));
+}
+
+function debtDateLabel(value) {
+    const raw = String(value || '').slice(0, 10);
+    if (!raw) return { short: '—', full: '' };
+    const date = new Date(raw + 'T00:00:00');
+    if (Number.isNaN(date.getTime())) return { short: raw, full: raw };
+    return {
+        short: date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }),
+        full: date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })
+    };
+}
+function DebtLedgerCard({ d, setDebts, rates, tip, onClose }) {
+    const [showAction, setShowAction] = useState(false);
+    const [showEdit, setShowEdit] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+    const [edit, setEdit] = useState({ name: d.name || '', currency: debtCurrencyCode(d), note: d.note || '' });
+    const [action, setAction] = useState({ kind: 'payment', amount: '', note: '', date: new Date().toISOString().slice(0, 10) });
+    useEffect(() => {
+        setEdit({ name: d.name || '', currency: debtCurrencyCode(d), note: d.note || '' });
+        setShowAction(false);
+        setShowEdit(false);
+        setShowAll(false);
+    }, [d.id]);
+    const isBorc = d.type === 'borc';
+    const accent = isBorc ? R : G;
+    const remaining = debtRemainingAmount(d);
+    const remainingTRY = debtRemainingTRY(d, rates);
+    const total = debtTotalAmount(d);
+    const paid = debtPaidAmount(d);
+    const isDone = remaining <= 0;
+    const update = patch => setDebts(p => (Array.isArray(p) ? p : []).map(x => x.id === d.id ? { ...x, ...patch, updatedAt: new Date().toISOString() } : x));
+    const addMovement = (kind, amount, note, date) => {
+        const value = Math.min(kind === 'payment' ? remaining : Number.POSITIVE_INFINITY, moneyValue(amount));
+        if (!(value > 0)) {
+            tip && tip('Tutar girin');
+            return;
+        }
+        const movement = {
+            id: Date.now().toString(),
+            kind,
+            amount: value,
+            note: String(note || '').trim(),
+            date: date || new Date().toISOString().slice(0, 10)
+        };
+        update({ movements: [...debtMovementRows(d), movement] });
+        setAction(a => ({ ...a, amount: '', note: '' }));
+        setShowAction(false);
+        tip && tip(kind === 'payment' ? (isBorc ? 'Ödeme düşüldü' : 'Tahsilat düşüldü') : (isBorc ? 'Borç eklendi' : 'Alacak eklendi'));
+    };
+    const settleFull = e => {
+        e.stopPropagation();
+        if (!isDone) addMovement('payment', remaining, 'Hesap kapatıldı', new Date().toISOString().slice(0, 10));
+    };
+    const saveDetails = () => {
+        const name = String(edit.name || '').trim();
+        if (!name) {
+            tip && tip('İsim girin');
+            return;
+        }
+        update({ name, currency: edit.currency, note: String(edit.note || '').trim() });
+        setShowEdit(false);
+        tip && tip('Detaylar güncellendi');
+    };
+    const removeMovement = id => {
+        update({ movements: debtMovementRows(d).filter(m => m.id !== id) });
+        tip && tip('Hareket kaldırıldı');
+    };
+    const entries = debtMovementRows(d).slice().reverse().map(m => ({
+        id: 'movement-' + m.id,
+        movementId: m.id,
+        kind: m.kind,
+        amount: moneyValue(m.amount),
+        note: m.note || (m.kind === 'payment' ? (isBorc ? 'Ödeme' : 'Tahsilat') : (isBorc ? 'Borç eklendi' : 'Alacak eklendi')),
+        date: m.date
+    }));
+    if (moneyValue(d.paid) > 0) entries.push({
+        id: 'opening-payment',
+        kind: 'payment',
+        amount: moneyValue(d.paid),
+        note: isBorc ? 'İlk ödeme' : 'İlk tahsilat',
+        date: d.createdAt || d.updatedAt
+    });
+    entries.push({
+        id: 'opening-balance',
+        kind: 'opening',
+        amount: moneyValue(d.total),
+        note: d.note || (isBorc ? 'Başlangıç borcu' : 'Başlangıç alacağı'),
+        date: d.createdAt || d.updatedAt
+    });
+    const visibleEntries = showAll ? entries : entries.slice(0, 3);
+    return React.createElement("div", { className: "ko-debt-ledger", style: { '--debt-accent': accent } },
+        React.createElement("div", { className: "ko-debt-ledger-head" },
+            React.createElement("button", {
+                type: "button",
+                className: "ko-debt-check" + (isDone ? " is-done" : ""),
+                onClick: settleFull,
+                title: isDone ? "Hesap kapalı" : (isBorc ? "Kalan borcu ödendi yap" : "Kalan alacağı tahsil edildi yap"),
+                "aria-label": isDone ? "Hesap kapalı" : "Kalanı kapat"
+            }, isDone ? "✓" : ""),
+            React.createElement("div", { className: "ko-debt-ledger-copy" },
+                React.createElement("div", { className: "ko-debt-ledger-name" }, d.name),
+                React.createElement("div", { className: "ko-debt-ledger-meta" }, entries.length + " hareket · " + (isBorc ? "Verecek" : "Alacak"))),
+            React.createElement("div", { className: "ko-debt-ledger-balance" },
+                React.createElement("b", null, isDone ? "Kapandı" : debtNativeText(d, remaining, true)),
+                !isDone && debtCurrencyCode(d) !== 'TRY' && React.createElement("small", null, "(≈ " + fr(remainingTRY) + "₺)")),
+            React.createElement("button", { type: "button", className: "ko-debt-ledger-close", onClick: onClose, "aria-label": "Detayı kapat" }, "×")),
+        React.createElement("div", { className: "ko-debt-ledger-stats" },
+            [[isBorc ? 'Toplam borç' : 'Toplam alacak', total], [isBorc ? 'Ödenen' : 'Alınan', paid], ['Kalan', remaining]].map(([label, value]) =>
+                React.createElement("div", { className: "ko-debt-ledger-stat", key: label },
+                    React.createElement("small", null, label),
+                    React.createElement("b", { style: label === 'Kalan' ? { color: accent } : null }, debtNativeText(d, value, false))))),
+        React.createElement("div", { className: "ko-debt-ledger-rows" },
+            visibleEntries.map(row => {
+                const date = debtDateLabel(row.date);
+                const payment = row.kind === 'payment';
+                const prefix = row.kind === 'opening' ? '' : (payment ? '−' : '+');
+                return React.createElement("div", { className: "ko-debt-ledger-row", key: row.id },
+                    React.createElement("div", { className: "ko-debt-ledger-date", title: date.full }, date.short),
+                    React.createElement("div", { className: "ko-debt-ledger-note" }, row.note),
+                    React.createElement("div", { className: "ko-debt-ledger-row-amount" },
+                        React.createElement("b", { style: { color: payment ? G : accent } }, prefix + debtNativeText(d, row.amount, false)),
+                        debtCurrencyCode(d) !== 'TRY' && React.createElement("small", null, "≈ " + fr(debtAmountToTRY(row.amount, debtCurrencyCode(d), rates)) + "₺")),
+                    row.movementId
+                        ? React.createElement("button", { type: "button", className: "ko-debt-ledger-remove", onClick: () => removeMovement(row.movementId), title: "Hareketi sil", "aria-label": "Hareketi sil" }, "×")
+                        : React.createElement("span", null));
+            })),
+        entries.length > 3 && React.createElement("button", { type: "button", className: "ko-debt-ledger-more", onClick: () => setShowAll(v => !v) }, showAll ? "Daha az göster" : "Tüm hareketleri göster (" + entries.length + ")"),
+        React.createElement("div", { className: "ko-debt-ledger-actions" },
+            React.createElement("button", { type: "button", className: "is-primary", onClick: () => { setShowAction(v => !v); setShowEdit(false); } }, showAction ? "Hareketi Kapat" : "+ Hareket"),
+            React.createElement("button", { type: "button", onClick: () => { setShowEdit(v => !v); setShowAction(false); } }, showEdit ? "Düzenlemeyi Kapat" : "Düzenle"),
+            React.createElement("button", {
+                type: "button",
+                className: "is-delete",
+                onClick: () => {
+                    if (window.confirm(d.name + ' kaydı silinsin mi?')) setDebts(p => p.filter(x => x.id !== d.id));
+                }
+            }, "Sil")),
+        showAction && React.createElement("div", { className: "ko-debt-ledger-form" },
+            React.createElement("div", { className: "ko-debt-ledger-form-top" },
+                React.createElement("select", { value: action.kind, onChange: e => setAction(p => ({ ...p, kind: e.target.value })) },
+                    React.createElement("option", { value: "payment" }, isBorc ? "Ödeme" : "Tahsilat"),
+                    React.createElement("option", { value: "increase" }, isBorc ? "Borç ekle" : "Alacak ekle")),
+                React.createElement("input", { type: "number", inputMode: "decimal", value: action.amount, onChange: e => setAction(p => ({ ...p, amount: e.target.value })), placeholder: debtCurrencyCode(d) }),
+                React.createElement("input", { type: "date", value: action.date, onChange: e => setAction(p => ({ ...p, date: e.target.value })) })),
+            React.createElement("div", { className: "ko-debt-ledger-form-bottom" },
+                React.createElement("input", { value: action.note, onChange: e => setAction(p => ({ ...p, note: e.target.value })), placeholder: "Örn. KDV ödemesi" }),
+                React.createElement("button", { type: "button", onClick: () => addMovement(action.kind, action.amount, action.note, action.date) }, "Kaydet"))),
+        showEdit && React.createElement("div", { className: "ko-debt-ledger-form" },
+            React.createElement("div", { className: "ko-debt-ledger-form-top is-edit" },
+                React.createElement("input", { value: edit.name, onChange: e => setEdit(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma" }),
+                React.createElement("select", { value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) },
+                    React.createElement("option", { value: "TRY" }, "TL"),
+                    React.createElement("option", { value: "USD" }, "USD"),
+                    React.createElement("option", { value: "EUR" }, "EUR"))),
+            React.createElement("div", { className: "ko-debt-ledger-form-bottom" },
+                React.createElement("input", { value: edit.note, onChange: e => setEdit(p => ({ ...p, note: e.target.value })), placeholder: "Ana açıklama" }),
+                React.createElement("button", { type: "button", onClick: saveDetails }, "Kaydet"))));
 }
 
 function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates }) {
@@ -5067,21 +5487,21 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
         const remainingTRY = debtRemainingTRY(d, rates);
         const isDone = remaining <= 0;
         const selected = String(d.id) === String(selectedDebtId);
+        const rowCount = 1 + debtMovementRows(d).length + (moneyValue(d.paid) > 0 ? 1 : 0);
         return React.createElement("button", {
             key: d.id,
             type: "button",
-            className: "ko-debt-summary-card is-" + kind + (selected ? " is-selected" : ""),
+            className: "ko-account-firm-card ko-debt-firm-card is-" + kind + (selected ? " is-selected" : ""),
             onClick: () => setSelectedDebtId(prev => String(prev) === String(d.id) ? null : d.id),
             "aria-expanded": selected
         },
-            React.createElement("div", { className: "ko-debt-summary-top" },
-                React.createElement("div", { className: "ko-debt-summary-name" }, d.name),
-                React.createElement("div", { className: "ko-debt-summary-amount", style: { color: isDone ? G : (kind === 'rec' ? G : R) } },
+            React.createElement("div", { className: "ko-account-firm-card-title" },
+                React.createElement("div", { className: "ko-account-firm-card-copy" },
+                    React.createElement("b", null, d.name),
+                    React.createElement("small", null, rowCount + " kayıt")),
+                React.createElement("span", { className: kind === 'rec' ? "is-pos" : "is-neg" },
                     isDone ? "Kapandı" : debtNativeText(d, remaining, true),
-                    !isDone && debtCurrencyCode(d) !== 'TRY' && React.createElement("span", { className: "ko-debt-summary-tl" }, "(≈ " + fr(remainingTRY) + "₺)"))),
-            React.createElement("div", { className: "ko-debt-summary-bottom" },
-                React.createElement("span", { className: "ko-debt-summary-note" }, d.note || (kind === 'rec' ? "Alacak kaydı" : "Verecek kaydı")),
-                React.createElement("span", { className: "ko-debt-summary-open" }, selected ? "Kapat ↑" : "Detay ›")));
+                    !isDone && debtCurrencyCode(d) !== 'TRY' && React.createElement("span", { className: "ko-debt-firm-tl" }, "(" + fr(remainingTRY) + " ₺)"))));
     };
     const renderDebtBucket = (kind, title, rows) => React.createElement("section", { className: "ko-account-firm-bucket is-" + kind },
         React.createElement("div", { className: "ko-account-firm-bucket-head" },
@@ -5146,7 +5566,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                 selectedDebt && React.createElement(React.Fragment, null,
                     React.createElement("div", { className: "ko-account-balance-divider" }, "Hesap Detayı"),
                     React.createElement("div", { className: "ko-debt-selected-detail" },
-                        React.createElement(DebtAccountCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, forceOpen: true }))))));
+                        React.createElement(DebtLedgerCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, onClose: () => setSelectedDebtId(null) }))))));
 }
 
 function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
