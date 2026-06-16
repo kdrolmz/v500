@@ -1358,16 +1358,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1780508406490_zmx22n@olmeztur
 DTSTAMP:20260616T135800Z
-LAST-MODIFIED:20260603T174000Z
-SEQUENCE:1780508406
+LAST-MODIFIED:20260616T135800Z
+SEQUENCE:1781618335
 DTSTART:20260625T090000
 DTEND:20260625T100000
 SUMMARY:09:00 · Bursa → Sabiha Gökçen  Vito
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Martin Nagy\nŞoför: Balentur\nİşi veren: Odelo\nİşi
-  yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: Bursa → Sa
- biha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 6.750 ₺ | Alt acen
- ta: 5.000 ₺
+DESCRIPTION:Müşteri: Martin Nagy\nŞoför: Kadir Ölmez / +90 (543) 287 06 
+ 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
+ 6 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri öde
+ mez | Araç: 6.750 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
