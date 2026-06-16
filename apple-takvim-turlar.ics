@@ -497,21 +497,4 @@ CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1778266646080_h9zvlh@olmeztur
-DTSTAMP:20260616T135800Z
-LAST-MODIFIED:20260625T000000Z
-SEQUENCE:1782345600
-DTSTART:20260625T090000
-DTEND:20260625T100000
-SUMMARY:09:00 · Düğün Arabası Turu  Vito
-LOCATION:Bursa → Düğün Arabası
-DESCRIPTION:Müşteri: Saatçi Hakan\nŞoför: Yasin Dilmenli / +90 (535) 573
-  87 42\nİşi veren: Yasin Dilmenli\nİşi yapan: Ölmeztur\nAlt acenta: -\nA
- raç: Vito / 16 LMZ 55\nGüzergah: Bursa → Düğün Arabası\nÖdeme: Müşteri: 
- 7.500 TRY | Araç: 7.500 ₺
-CATEGORIES:KÖ Turlar
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
 END:VCALENDAR
