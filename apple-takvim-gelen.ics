@@ -2378,8 +2378,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1779215905246_h3k64t@olmeztur
 DTSTAMP:20260623T152600Z
-LAST-MODIFIED:20260519T183800Z
-SEQUENCE:1779215905
+LAST-MODIFIED:20260623T152600Z
+SEQUENCE:1782228409
 DTSTART:20260623T130500
 DTEND:20260623T140500
 SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
@@ -2387,7 +2387,7 @@ LOCATION:Sabiha Gökçen Havalimanı (SAW) → Bursa Downtown A blok
 DESCRIPTION:Müşteri: Laila Alenezi ovaakça\nŞoför: Kadir Ölmez / +90 (54
  3) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: 
  -\nAraç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı (SAW) → Bu
- rsa Downtown A blok\nUçuş: KU157\nÖdeme: Müşteri: 160 USD | Araç: 6.816 
+ rsa Downtown A blok\nUçuş: KU157\nÖdeme: Müşteri: 160 USD | Araç: 6.480 
  ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
