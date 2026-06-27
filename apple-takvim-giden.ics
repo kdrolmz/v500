@@ -1562,16 +1562,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1781594402617RD_ppjpxe@olmeztur
 DTSTAMP:20260627T200200Z
-LAST-MODIFIED:20260616T072000Z
-SEQUENCE:1781594402
+LAST-MODIFIED:20260627T200200Z
+SEQUENCE:1782590578
 DTSTART:20260628T103000
 DTEND:20260628T113000
 SUMMARY:10:30 · Bursa → İST  Vito
 LOCATION:Bursa → İstanbul Havalimanı
-DESCRIPTION:Müşteri: Abdulrahman Alshaikh\nŞoför: Eren Çalışkan / +90 (5
- 36) 509 00 22\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta:
-  -\nAraç: Vito / 16 HB 595\nGüzergah: Bursa → İstanbul Havalimanı\nUçuş:
-  GF0043\nÖdeme: Müşteri: 220 USD | Araç: 9.256 ₺
+DESCRIPTION:Müşteri: Abdulrahman Alshaikh\nŞoför: Kadir Ölmez / +90 (543
+ ) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -
+ \nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa → İstanbul Havalimanı\nUçuş: G
+ F0043\nÖdeme: Müşteri: 220 USD | Araç: 9.256 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
