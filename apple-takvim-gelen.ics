@@ -2549,15 +2549,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1782592094077_838bry@olmeztur
 DTSTAMP:20260627T202800Z
 LAST-MODIFIED:20260627T202800Z
-SEQUENCE:1782592094
+SEQUENCE:1782592134
 DTSTART:20260627T125000
 DTEND:20260627T135000
 SUMMARY:12:50 · Sabiha Gökçen → Bursa  Sprinter
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
 DESCRIPTION:Müşteri: Anwar Almutairi\nŞoför: Yaşar Taşdemir / 0 (537) 56
- 3 78 19\nİşi veren: Salah\nİşi yapan: Taşdemir Tur\nAlt acenta: -\nAraç:
-  Sprinter\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖdem
- e: Müşteri ödemez | Araç: 7.927 ₺
+ 3 78 19\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tur
+ \nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU15
+ 7\nÖdeme: Müşteri ödemez | Araç: 7.927 ₺ | Alt acenta: 7.927 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
