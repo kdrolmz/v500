@@ -231,16 +231,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1782591653990_ac2gce@olmeztur
 DTSTAMP:20260628T183800Z
-LAST-MODIFIED:20260627T202000Z
-SEQUENCE:1782591653
+LAST-MODIFIED:20260628T183800Z
+SEQUENCE:1782671938
 DTSTART:20260628T180000
 DTEND:20260628T190000
 SUMMARY:18:00 · Gemlik → Bursa  Vito
 LOCATION:Gemlik → İnegöl-Bursa
 DESCRIPTION:Müşteri: Boncuk Hanım\nŞoför: Kadir Ölmez / +90 (543) 287 06
   87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito
-  / 16 LMZ 55\nGüzergah: Gemlik → İnegöl-Bursa\nÖdeme: Müşteri: 3.500 TRY
-  | Hesap bana geldi | Araç: 3.500 ₺
+  / 16 LMZ 55\nGüzergah: Gemlik → İnegöl-Bursa\nÖdeme: Müşteri: 4.000 TRY
+  | Hesap bana geldi | Araç: 4.000 ₺
 CATEGORIES:KÖ Kısa Pas
 STATUS:CONFIRMED
 TRANSP:OPAQUE
