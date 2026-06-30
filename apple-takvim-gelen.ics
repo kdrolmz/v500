@@ -2667,16 +2667,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1782759731384_uu857s@olmeztur
 DTSTAMP:20260630T140900Z
-LAST-MODIFIED:20260629T190200Z
-SEQUENCE:1782759731
+LAST-MODIFIED:20260630T140900Z
+SEQUENCE:1782828574
 DTSTART:20260630T115000
 DTEND:20260630T125000
 SUMMARY:11:50 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Bandar alawadhi\nŞoför: Balentur\nİşi veren: Salah\
  nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: İstanb
- ul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: Müşteri: 190 USD | Araç: 7.00
- 0 ₺ | Alt acenta: 6.000 ₺
+ ul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: Müşteri ödemez | Araç: 7.000 
+ ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
