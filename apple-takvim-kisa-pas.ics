@@ -213,8 +213,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1782591203077_l3o9lj@olmeztur
 DTSTAMP:20260702T110600Z
-LAST-MODIFIED:20260627T201500Z
-SEQUENCE:1782591354
+LAST-MODIFIED:20260629T115400Z
+SEQUENCE:1782734058
 DTSTART:20260628T093000
 DTEND:20260628T103000
 SUMMARY:09:30 · Çekirge-İnegöl → Gemlik  Vito
@@ -258,6 +258,40 @@ DESCRIPTION:Müşteri: Abby Li\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\n
  İşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LM
  Z 55\nGüzergah: Ramada Nilüfer → Odelo\nÖdeme: Müşteri: 1.100 TRY | Araç
  : 1.100 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1782767699753_ystb08@olmeztur
+DTSTAMP:20260702T110600Z
+LAST-MODIFIED:20260629T211400Z
+SEQUENCE:1782767699
+DTSTART:20260630T080000
+DTEND:20260630T090000
+SUMMARY:08:00 · Ramada Hotel → Odelo  Vito
+LOCATION:Ramada Hotel → Odelo
+DESCRIPTION:Müşteri: Abby Li\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\n
+ İşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LM
+ Z 55\nGüzergah: Ramada Hotel → Odelo\nÖdeme: Müşteri ödemez | Araç: 1.10
+ 0 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1782828810782_1ianpq@olmeztur
+DTSTAMP:20260702T110600Z
+LAST-MODIFIED:20260630T141300Z
+SEQUENCE:1782828810
+DTSTART:20260630T170000
+DTEND:20260630T180000
+SUMMARY:17:00 · Odelo → Ramada Nilüfer  Vito
+LOCATION:Odelo → Ramada Nilüfer
+DESCRIPTION:Müşteri: Abby li\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\n
+ İşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LM
+ Z 55\nGüzergah: Odelo → Ramada Nilüfer\nÖdeme: Müşteri ödemez | Araç: 1.
+ 100 ₺
 CATEGORIES:KÖ Kısa Pas
 STATUS:CONFIRMED
 TRANSP:OPAQUE
