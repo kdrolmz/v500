@@ -534,8 +534,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1781806581085_fgeral@olmeztur
 DTSTAMP:20260702T110600Z
-LAST-MODIFIED:20260621T151800Z
-SEQUENCE:1782055092
+LAST-MODIFIED:20260629T115400Z
+SEQUENCE:1782734066
 DTSTART:20260622T133000
 DTEND:20260622T143000
 SUMMARY:13:30 · İstanbul Turu  Vito
@@ -568,8 +568,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1782591585660_3nwvyc@olmeztur
 DTSTAMP:20260702T110600Z
-LAST-MODIFIED:20260628T183900Z
-SEQUENCE:1782671952
+LAST-MODIFIED:20260629T115400Z
+SEQUENCE:1782734058
 DTSTART:20260628T160000
 DTEND:20260628T170000
 SUMMARY:16:00 · Nefes-MisiKöyü-Yemek Turu  Vito
@@ -578,6 +578,57 @@ DESCRIPTION:Müşteri: Zainab Alansari\nŞoför: Kadir Elçiboğa / +90 (539)
  219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
  \nAraç: Vito\nGüzergah: Bursa Modern Cevizli Kule 2-B → Nefes-MisiKöyü-Y
  emek\nÖdeme: Araç: 4.663 ₺
+CATEGORIES:KÖ Turlar
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1782767788370_bug0p2@olmeztur
+DTSTAMP:20260702T110600Z
+LAST-MODIFIED:20260629T211600Z
+SEQUENCE:1782767788
+DTSTART:20260629T140000
+DTEND:20260629T150000
+SUMMARY:14:00 · Uludağ Tur Turu  Vito
+LOCATION:Bursa → Uludağ Tur
+DESCRIPTION:Müşteri: Ali al aseeei\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Uludağ Tur\nÖdeme: Müşteri: 120 USD
+  | Hesap bana geldi | Araç: 5.592 ₺
+CATEGORIES:KÖ Turlar
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1782759837266_ia9d36@olmeztur
+DTSTAMP:20260702T110600Z
+LAST-MODIFIED:20260629T190300Z
+SEQUENCE:1782759837
+DTSTART:20260630T140000
+DTEND:20260630T150000
+SUMMARY:14:00 · Bursa Turu  Vito
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Zainab alansari\nŞoför: Kadir Elçiboğa / +90 (539) 
+ 219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD | Ara
+ ç: 4.660 ₺
+CATEGORIES:KÖ Turlar
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1782990402115_p8uhpm@olmeztur
+DTSTAMP:20260702T110600Z
+LAST-MODIFIED:20260702T110600Z
+SEQUENCE:1782990402
+DTSTART:20260702T120000
+DTEND:20260702T130000
+SUMMARY:12:00 · Bursa Turu  Vito
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Zainab Alansari\nŞoför: Kadir Elçiboğa / +90 (539) 
+ 219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD | Ara
+ ç: 4.666 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
