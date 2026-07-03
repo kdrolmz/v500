@@ -1274,6 +1274,86 @@ body :where(div,span,b,strong,small,label,button,input,select,textarea){font-wei
 .ko-takas-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:8px;border:1px solid #E3EAF4;border-radius:11px;background:#FBFCFE}
 .ko-takas-row.is-settled{opacity:.55;background:#F2F5FA}
 
+
+/* ═══════════ PREMIUM NAVY v2 — beyaz yazı garantisi (WebKit text-fill dahil) ═══════════ */
+.ko-navy-hero,.ko-navy-panel{background:linear-gradient(135deg,#0B2142 0%,#12315E 55%,#1A4079 100%) !important;border:1px solid #0B2142 !important;box-shadow:0 12px 30px rgba(11,33,66,.28) !important}
+.ko-navy-hero *,.ko-navy-panel *{color:#FFFFFF;-webkit-text-fill-color:#FFFFFF}
+.ko-navy-panel input,.ko-navy-panel select,.ko-navy-panel textarea{background:#FFFFFF !important;color:#13233F !important;-webkit-text-fill-color:#13233F !important;border-color:rgba(255,255,255,.55) !important}
+.ko-navy-lbl{color:rgba(255,255,255,.80) !important;-webkit-text-fill-color:rgba(255,255,255,.80) !important}
+.ko-navy-panel option{color:#13233F}
+.ko-hero-btn{background:rgba(255,255,255,.14) !important;border:1px solid rgba(255,255,255,.30) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.ko-hero-rate{min-height:32px;border:1px solid rgba(255,255,255,.24) !important;border-radius:999px !important;background:rgba(255,255,255,.10) !important;display:flex;align-items:center;justify-content:center;gap:5px}
+.ko-ver-chip{display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:999px;background:rgba(217,190,124,.18);border:1px solid rgba(217,190,124,.55);color:#D9BE7C !important;-webkit-text-fill-color:#D9BE7C !important;font-size:9px;font-weight:700;letter-spacing:.6px}
+.lg-greeting-card::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,rgba(217,190,124,0),#D9BE7C 30%,#D9BE7C 70%,rgba(217,190,124,0))}
+/* Lacivert kutular: içindeki HER yazı beyaz (WebKit dahil) */
+.lg-period-card,.lg-period-card *,.lg-profit-card,.lg-profit-card *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.lg-period-card .lg-period-label,.lg-period-card .lg-period-sub,.lg-profit-card .lg-profit-label{color:rgba(255,255,255,.74) !important;-webkit-text-fill-color:rgba(255,255,255,.74) !important}
+.lg-period-card,.lg-profit-card{border-radius:20px !important;position:relative;overflow:hidden}
+.lg-period-card::before,.lg-profit-card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,rgba(217,190,124,0),rgba(217,190,124,.85),rgba(217,190,124,0))}
+.lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-weight:750 !important;font-size:16.5px !important}
+.date-hdr,.date-hdr *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.date-hdr .date-hdr-meta,.date-hdr small{color:rgba(255,255,255,.74) !important;-webkit-text-fill-color:rgba(255,255,255,.74) !important}
+.date-hdr{border-radius:16px !important}
+.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{border-radius:16px !important}
+.ko-contact-toggle,.ko-contact-toggle *,.ko-debt-toggle,.ko-debt-toggle *,.ko-firma-toggle,.ko-firma-toggle *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+/* SEÇİLİ / BASILI durumlar: lacivert zemin + beyaz yazı — okunmama sorunu biter */
+.lg-period-card.is-active,.lg-profit-card.is-active,.lg-choice.is-active,.lg-datebox.is-selected,.lg-arac-date-toggle.is-active,.tk-cell.tk-selected,.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.tab.is-active,.lg-month-day.is-selected,.ko-arac-day.is-selected,.ko-debt-summary-card.is-selected{background:linear-gradient(150deg,#0E2749 0%,#1A4079 100%) !important;border-color:#0E2749 !important;box-shadow:0 8px 20px rgba(14,39,73,.32) !important}
+.lg-period-card.is-active *,.lg-profit-card.is-active *,.lg-choice.is-active *,.lg-datebox.is-selected *,.lg-arac-date-toggle.is-active *,.tk-cell.tk-selected *,.ko-account-firm-card.is-selected *,.ko-debt-firm-card.is-selected *,.ko-takas-partner.is-selected *,.tab.is-active *,.lg-month-day.is-selected *,.ko-arac-day.is-selected *,.ko-debt-summary-card.is-selected *,.lg-choice.is-active,.lg-datebox.is-selected,.tab.is-active,.tk-cell.tk-selected,.lg-month-day.is-selected{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.lg-period-card.is-active{border-color:#C9A85C !important;box-shadow:0 0 0 1.5px #C9A85C,0 10px 22px rgba(14,39,73,.34) !important}
+.lg-profit-card.is-active{border-color:#C9A85C !important;box-shadow:0 0 0 1.5px #C9A85C,0 10px 22px rgba(14,39,73,.34) !important}
+/* Başlıklar: net lacivert, kalın, oval şerit */
+.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:750 !important;letter-spacing:.2px !important}
+.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:750 !important}
+.ko-account-firm-bucket-head{background:linear-gradient(135deg,#0E2749,#16355F) !important;border-radius:14px !important;padding:9px 12px !important}
+.ko-account-firm-bucket-head *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.ko-account-balance-divider{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:750 !important}
+/* Kart ovallik + yumuşak derinlik */
+.card,.tcard,.lg-upcoming-card,.lg-period-panel,.ko-account-sheet-section,.tk-card,.tk-panel,.tk-ledger,.ko-takas-card{border-radius:20px !important;box-shadow:0 2px 10px rgba(14,39,73,.06) !important;border-color:#D8E1EF !important}
+.ms,.ko-transfer-edit-sheet{border-radius:24px 24px 18px 18px !important;border-color:#D8E1EF !important}
+.ko-account-firm-card,.ko-debt-summary-card,.ko-takas-partner{border-radius:16px !important}
+input,select,textarea,.inp{border-radius:13px !important}
+.tab.is-active{border-radius:16px !important}
+.tab-fab,.tab-fab *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.toast,.toast *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.lg-badge{border-color:#0E2749 !important;color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:750 !important}
+/* ═══════════ iPHONE 16 PRO — tek ekran sıkı yerleşim (≤430px) ═══════════ */
+@media(max-width:430px){
+:root{--tabbar-h:60px}
+main.main-cont{padding:6px 8px calc(var(--tabbar-h) + var(--sa-b) + 8px) !important;padding-top:calc(var(--sa-t) + 4px) !important}
+.lg-home{gap:7px !important;min-height:0 !important}
+.lg-greeting-card{padding:11px 12px 10px !important}
+.lg-greeting-card .ko-hero-btn{width:32px !important;height:32px !important;min-height:32px !important}
+.ko-hero-rate{min-height:27px !important}
+.lg-period-row,.lg-profit-row{gap:6px !important}
+.lg-period-card{min-height:52px !important;padding:7px 8px !important}
+.lg-profit-card{min-height:56px !important;padding:8px !important}
+.lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-size:15px !important}
+.lg-profit-row{margin-bottom:8px !important}
+.lg-section-title{font-size:14px !important}
+.lg-month-day{min-height:35px !important;border-radius:9px !important}
+.date-hdr{padding:6px 9px !important;margin:5px 0 4px !important}
+.tcard{margin-bottom:6px !important}
+.tcard-header{padding:7px 8px !important}
+/* Yeni transfer: sıkı ama net form */
+.ko-new-form{gap:7px !important}
+.ms,.ko-transfer-edit-sheet{padding:12px !important}
+.lbl{margin-bottom:2px !important;font-size:9.5px !important}
+input,select,textarea,.inp{min-height:41px !important;padding:8px 10px !important;font-size:15px !important}
+textarea{min-height:52px !important}
+.ko-navy-panel{padding:9px !important;gap:6px !important}
+/* Hesap sekmesi kompakt */
+.ko-account-firm-card{min-height:44px !important;padding:6px 8px !important}
+.ko-account-firm-bucket-cards{gap:5px !important;padding:5px !important}
+.ko-account-firm-bucket-head{padding:7px 10px !important}
+.ko-debt-summary-card{min-height:44px !important;padding:7px 9px !important}
+.ko-takas-row{grid-template-columns:44px minmax(0,1fr) auto auto !important;gap:5px !important;padding:6px !important}
+/* Sekme çubuğu: kompakt ama parmakla rahat */
+.tabbar-inner{padding:3px 6px !important}
+.tab{gap:2px !important;font-size:9.5px !important;padding:4px 3px !important}
+.tab-icon{font-size:16px !important}
+.tab-fab{width:46px !important;height:46px !important;font-size:26px !important}
+}
+
 </style>
 </head>
 <body>
@@ -1406,6 +1486,7 @@ const BF = {
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
     status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single',
     isTakas: false, takasPartner: '', takasWho: 'benVerdim', takasPay: 'partner', takasMyCross: 'yok', takasTheirCross: 'yok', takasSettled: false,
+    isDugun: false, dugunKapora: '', dugunSettled: false,
 };
 const STORAGE_KEY = 'tp10';
 const LEGACY_STORAGE_KEYS = ['tp9'];
@@ -5498,6 +5579,38 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         )));
 }
 
+function DugunHesap({ T, sT, tip }) {
+    const [open, setOpen] = useState(false);
+    const rows = React.useMemo(() => (Array.isArray(T) ? T : [])
+        .filter(t => t && t.isDugun)
+        .map(t => {
+            const toplam = moneyValue(t.customerTRY) || moneyValue(t.paymentAmount);
+            const kapora = moneyValue(t.dugunKapora);
+            return { t, toplam, kapora, kalan: Math.max(0, Math.round(toplam - kapora)) };
+        })
+        .sort((a, b) => String(b.t.date || '').localeCompare(String(a.t.date || ''))), [T]);
+    const acik = rows.filter(r => !r.t.dugunSettled && r.kalan > 0);
+    const toplamKalan = acik.reduce((sum, r) => sum + r.kalan, 0);
+    const toggle = t => {
+        if (!sT) return;
+        sT(p => (Array.isArray(p) ? p : []).map(x => x.id === t.id ? { ...x, dugunSettled: !x.dugunSettled, customerCollected: !x.dugunSettled ? true : x.customerCollected, updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString() } : x));
+        tip && tip(t.dugunSettled ? 'Kalan tekrar a\u00E7\u0131ld\u0131' : 'D\u00FC\u011F\u00FCn \u00F6demesi tahsil edildi');
+    };
+    if (!rows.length) return null;
+    return React.createElement("div", { className: "card ko-takas-card", style: { order: 1 } },
+        React.createElement("button", { type: "button", className: "ko-firma-toggle", onClick: () => setOpen(v => !v), style: { width: '100%', borderRadius: 14, padding: '12px 14px', fontWeight: 700, textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+            React.createElement("span", null, '\uD83D\uDC70\uD83E\uDD35 D\u00FC\u011F\u00FCn Kaporalar\u0131 ' + (open ? '\u2212' : '+')),
+            toplamKalan > 0 && React.createElement("span", { style: { fontSize: 11.5, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, '+' + fr(toplamKalan) + '\u20BA kalan')),
+        open && React.createElement("div", { style: { marginTop: 11, display: 'flex', flexDirection: 'column', gap: 6 } },
+            rows.map(r => React.createElement("div", { key: r.t.id, className: "ko-takas-row" + (r.t.dugunSettled || r.kalan <= 0 ? " is-settled" : "") },
+                React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: SB, lineHeight: 1.3 } }, (r.t.date || '').slice(5), React.createElement("div", { style: { fontSize: 9 } }, r.t.time || '')),
+                React.createElement("div", { style: { minWidth: 0 } },
+                    React.createElement("div", { style: { fontSize: 11.5, fontWeight: 650, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, ((r.t.passengers && r.t.passengers[0] && r.t.passengers[0].name) || 'D\u00FC\u011F\u00FCn') + ' \u00B7 ' + (r.t.pickup || '?') + ' \u2192 ' + (r.t.dropoff || '?')),
+                    React.createElement("div", { style: { fontSize: 9.5, color: SB } }, 'Anla\u015F\u0131lan ' + fr(r.toplam) + '\u20BA \u00B7 Kapora ' + fr(r.kapora) + '\u20BA')),
+                React.createElement("div", { style: { fontSize: 12, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: r.t.dugunSettled || r.kalan <= 0 ? SB : G, textAlign: 'right' } }, (r.t.dugunSettled || r.kalan <= 0 ? 'Kapand\u0131' : '+' + fr(r.kalan) + '\u20BA')),
+                React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#C9D4E6' : NAV), background: r.t.dugunSettled ? '#F2F5FA' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 600, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil')))));
+}
+
 function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
     const [open, setOpen] = useState(false);
     const [selPartner, setSelPartner] = useState(null);
@@ -5555,6 +5668,18 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
             groups.length > 0 && React.createElement("span", { style: { fontSize: 11.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
                 (toplamNet > 0 ? '+' : (toplamNet < 0 ? '\u2212' : '')) + fr(toplamNet) + '\u20BA')),
         open && React.createElement("div", { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 } },
+            groups.length > 0 && (function(){
+                const alacakT = groups.reduce((sum, g) => sum + (g.openNet > 0 ? g.openNet : 0), 0);
+                const borcT = groups.reduce((sum, g) => sum + (g.openNet < 0 ? -g.openNet : 0), 0);
+                const acikIs = groups.reduce((sum, g) => sum + g.openCount, 0);
+                const stat = (lbl, val, clr) => React.createElement("div", { style: { textAlign: 'center', padding: '8px 4px' } },
+                    React.createElement("div", { style: { fontSize: 13.5, fontWeight: 800, color: clr, WebkitTextFillColor: clr, fontVariantNumeric: 'tabular-nums' } }, val),
+                    React.createElement("div", { style: { fontSize: 8.5, fontWeight: 600, color: 'rgba(255,255,255,.68)', WebkitTextFillColor: 'rgba(255,255,255,.68)', marginTop: 2, letterSpacing: '.4px', textTransform: 'uppercase' } }, lbl));
+                return React.createElement("div", { className: "ko-navy-panel", style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', borderRadius: 14, padding: '2px 4px' } },
+                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#8FE3B0'),
+                    stat('Bor\u00E7', '\u2212' + fr(borcT) + '\u20BA', '#FFB4AE'),
+                    stat('A\u00E7\u0131k \u0130\u015F', String(acikIs), '#D9BE7C'));
+            })(),
             React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '8px 10px', background: INP, border: '1px solid ' + BOR, borderRadius: 11 } },
                 React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.35 } },
                     React.createElement("b", { style: { color: TX } }, 'Ge\u00E7i\u015F \u00FCcretleri: '),
@@ -5577,7 +5702,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                                 React.createElement("div", { style: { fontSize: 12, fontWeight: 640, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, g.name),
                                 React.createElement("div", { style: { fontSize: 9.5, color: SB } }, g.rows.length + ' i\u015F \u00B7 ' + g.openCount + ' a\u00E7\u0131k')),
                             React.createElement("div", { style: { fontSize: 12.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: g.openNet > 0 ? G : (g.openNet < 0 ? R : SB), flex: 'none' } },
-                                g.openNet === 0 ? 'Fifty' : ((g.openNet > 0 ? '+' : '\u2212') + fr(g.openNet) + '\u20BA'))))),
+                                g.openNet === 0 ? 'Ba\u015Fa ba\u015F' : ((g.openNet > 0 ? '+' : '\u2212') + fr(g.openNet) + '\u20BA'))))),
                     sel && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2 } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
                             React.createElement("div", { style: { fontSize: 11.5, fontWeight: 700, color: NAV } }, sel.name + ' \u2014 detay'),
@@ -5659,6 +5784,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                 : React.createElement("div", { className: "ko-account-firm-bucket-empty" }, "Yok")));
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 } },
         React.createElement(TakasHesap, { T: T, sT: sT, crossRates: crossRates || DEFAULT_CROSS_RATES, setCrossRates: setCrossRates, tip: tip }),
+        React.createElement(DugunHesap, { T: T, sT: sT, tip: tip }),
 	                React.createElement("div", { className: "card ko-contact-manager", style: { order: 2 } },
             React.createElement("button", { className: "ko-contact-toggle", onClick: () => setOpenAg(v => !v), style: { width: '100%', background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 14px', fontWeight: 600, color: TX, textAlign: 'left', cursor: 'pointer' } }, '🏢 Acenta / Kaptan ' + (openAg ? '−' : '+')),
             openAg && React.createElement("div", { className: "ko-contact-groups", style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
@@ -7097,7 +7223,7 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.tripMode === 'takas', plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.tripMode === 'takas', isDugun: form.tripMode === 'dugun', plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
                 if (sameDayReturn) {
@@ -9255,21 +9381,23 @@ function App() {
                 };
 
                 return React.createElement("div", { className: "lg-home" },
-                    React.createElement("div", { className: "lg-glass-card lg-greeting-card", style: { flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: '14px 14px 12px', borderRadius: 18 } },
+                    React.createElement("div", { className: "lg-glass-card lg-greeting-card ko-navy-hero", style: { flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: '15px 15px 13px', borderRadius: 22, position: 'relative', overflow: 'hidden' } },
                         React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'start', gap: 12 } },
                             React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
-                                React.createElement("div", { style: { fontSize: 16.5, fontWeight: 620, color: '#4A7256', lineHeight: 1.12 } }, "Operasyon Sistemi"),
-                                React.createElement("div", { style: { fontSize: 11, fontWeight: 430, color: '#6A7068', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
+                                    React.createElement("span", { style: { fontSize: 17, fontWeight: 700, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', lineHeight: 1.12, letterSpacing: '.2px' } }, "Operasyon Sistemi"),
+                                    React.createElement("span", { className: "ko-ver-chip" }, "v27")),
+                                React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
-                                React.createElement("button", { className: "lg-backup-btn", onClick: () => setBkpM(true), title: "Yedekleme", "aria-label": "Yedekleme", style: { width: 34, height: 34, minHeight: 34, padding: 0, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: '#12315E', background: '#F7F7F4' } }, "⇩"),
-                                React.createElement("button", { className: "lg-refresh-btn", onClick: refreshRates, title: "Kurları yenile", "aria-label": "Kurları yenile", style: { width: 34, height: 34, minHeight: 34, padding: 0, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#12315E', background: '#F7F7F4' } }, "↻")
+                                React.createElement("button", { className: "lg-backup-btn ko-hero-btn", onClick: () => setBkpM(true), title: "Yedekleme", "aria-label": "Yedekleme", style: { width: 36, height: 36, minHeight: 36, padding: 0, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 } }, "⇩"),
+                                React.createElement("button", { className: "lg-refresh-btn ko-hero-btn", onClick: refreshRates, title: "Kurları yenile", "aria-label": "Kurları yenile", style: { width: 36, height: 36, minHeight: 36, padding: 0, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 } }, "↻")
                             )
                         ),
                         React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 6, marginTop: 11 } },
-                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, style: { minHeight: 30, border: '1px solid #D9DDD7', borderRadius: 12, background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 } },
-                                React.createElement("span", { style: { fontSize: 9.5, fontWeight: 520, color: '#6A7068' } }, code),
-                                React.createElement("span", { style: { fontSize: 11.5, fontWeight: 560, color: '#252823', fontVariantNumeric: 'tabular-nums' } }, rateValue(code))
+                            ['USD', 'EUR', 'KWD'].map(code => React.createElement("div", { key: code, className: "ko-hero-rate" },
+                                React.createElement("span", { style: { fontSize: 9.5, fontWeight: 600, color: '#D9BE7C', WebkitTextFillColor: '#D9BE7C' } }, code),
+                                React.createElement("span", { style: { fontSize: 11.5, fontWeight: 640, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', fontVariantNumeric: 'tabular-nums' } }, rateValue(code))
                             ))
                         )
                     ),
@@ -9775,7 +9903,8 @@ function App() {
                                     { id: 'roundtrip', n: 'Gidi\u015F-Geli\u015F', ico: '\uD83D\uDD04' },
                                     { id: 'sameday', n: 'Ayn\u0131 G\u00FCn D\u00F6n\u00FC\u015F', ico: '\u21A9' },
                                     { id: 'recurring', n: 'Herg\u00FCn Tekrarla', ico: '\uD83D\uDCC5' },
-                                    { id: 'takas', n: 'Takas \u0130\u015F', ico: '\uD83D\uDD01' }
+                                    { id: 'takas', n: 'Takas \u0130\u015F', ico: '\uD83D\uDD01' },
+                                    { id: 'dugun', n: 'D\u00FC\u011F\u00FCn', ico: '\uD83D\uDC70\uD83E\uDD35' }
                                 ];
                                 const curMode = form.tripMode || 'single';
                                 const sel = MODES.find(m => m.id === curMode) || MODES[0];
@@ -9802,7 +9931,7 @@ function App() {
                                                 key: m.id,
                                                 type: "button",
                                                 className: "lg-choice" + (a ? " is-active ko-selected-gold" : ""),
-                                                onClick: () => { sf({ tripMode: m.id, hasReturn: m.id === 'roundtrip', isReturn: m.id === 'sameday', isRecurring: m.id === 'recurring', isTakas: m.id === 'takas' }); setExpandedT(p => ({ ...p, __newMode: false })); },
+                                                onClick: () => { sf({ tripMode: m.id, hasReturn: m.id === 'roundtrip', isReturn: m.id === 'sameday', isRecurring: m.id === 'recurring', isTakas: m.id === 'takas', isDugun: m.id === 'dugun' }); setExpandedT(p => ({ ...p, __newMode: false })); },
                                                 style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a ? 'var(--brand-soft)' : 'transparent', color: a ? 'var(--brand)' : TX, border: a ? '1px solid var(--brand-bd)' : '1px solid transparent', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: a ? 800 : 600, textAlign: 'left' }
                                             },
                                                 React.createElement("span", { style: { fontSize: 16, width: 22, textAlign: 'center' } }, m.ico),
@@ -9852,46 +9981,68 @@ function App() {
                         ),
                         React.createElement("input", { type: "date", value: form.endDate || '', onChange: e => sf({ endDate: e.target.value }), className: "inp", min: form.date })
                     ),
-                    form.tripMode === 'takas' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                            React.createElement("span", { style: { fontSize: 13 } }, '\uD83D\uDD01'),
-                            React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: 'var(--brand)' } }, 'Takas \u0130\u015F \u2014 firma ile i\u015F de\u011Fi\u015Fimi')),
+                    form.tripMode === 'takas' && React.createElement("div", { className: "ko-navy-panel", style: { borderRadius: 14, padding: 11, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
+                            React.createElement("span", { style: { fontSize: 15 } }, '\uD83D\uDD01'),
+                            React.createElement("span", { style: { fontSize: 12, fontWeight: 700, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', letterSpacing: '.2px' } }, 'Takas \u0130\u015F \u2014 Firma \u0130le \u0130\u015F De\u011Fi\u015Fimi')),
                         React.createElement("div", null,
-                            React.createElement("span", { className: "lbl" }, "\uD83E\uDD1D Takas Orta\u011F\u0131 (Firma)"),
+                            React.createElement("span", { className: "lbl ko-navy-lbl" }, "\uD83E\uDD1D Takas Orta\u011F\u0131 (Firma)"),
                             React.createElement("input", { value: form.takasPartner || '', onChange: e => sf({ takasPartner: e.target.value }), placeholder: "\u00D6rn: Ahser Turizm", className: "inp", list: "ko-takas-agency-list" }),
                             React.createElement("datalist", { id: "ko-takas-agency-list" }, agencies.filter(a => a !== OL).map(a => React.createElement("option", { key: a, value: a })))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                             React.createElement("div", null,
-                                React.createElement("span", { className: "lbl" }, "\u0130\u015Fi kim verdi?"),
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\u0130\u015Fi kim verdi?"),
                                 React.createElement("select", { value: form.takasWho || 'benVerdim', onChange: e => sf({ takasWho: e.target.value }), className: "inp" },
                                     React.createElement("option", { value: "benVerdim" }, "Ben ona verdim (benim m\u00FC\u015Fterim)"),
                                     React.createElement("option", { value: "oVerdi" }, "O bana verdi (onun m\u00FC\u015Fterisi)"))),
                             React.createElement("div", null,
-                                React.createElement("span", { className: "lbl" }, "\u00D6demeyi kim ald\u0131?"),
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\u00D6demeyi kim ald\u0131?"),
                                 React.createElement("select", { value: form.takasPay || 'partner', onChange: e => sf({ takasPay: e.target.value }), className: "inp" },
                                     React.createElement("option", { value: "partner" }, "Takas orta\u011F\u0131 ald\u0131"),
                                     React.createElement("option", { value: "ben" }, "Ben ald\u0131m"),
                                     React.createElement("option", { value: "yok" }, "\u00D6deme al\u0131nmad\u0131")))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
                             React.createElement("div", null,
-                                React.createElement("span", { className: "lbl" }, "\uD83D\uDE90 Benim ge\u00E7i\u015Fim"),
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\uD83D\uDE90 Benim ge\u00E7i\u015Fim"),
                                 React.createElement("select", { value: form.takasMyCross || 'yok', onChange: e => sf({ takasMyCross: e.target.value }), className: "inp" },
                                     React.createElement("option", { value: "yok" }, "Ge\u00E7i\u015F yok"),
                                     React.createElement("option", { value: "kopru" }, "K\u00F6pr\u00FC (" + fr(crossRates.kopru) + "\u20BA)"),
                                     React.createElement("option", { value: "feribot" }, "Feribot (" + fr(crossRates.feribot) + "\u20BA)"))),
                             React.createElement("div", null,
-                                React.createElement("span", { className: "lbl" }, "\u26F4 Onun ge\u00E7i\u015Fi"),
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\u26F4 Onun ge\u00E7i\u015Fi"),
                                 React.createElement("select", { value: form.takasTheirCross || 'yok', onChange: e => sf({ takasTheirCross: e.target.value }), className: "inp" },
                                     React.createElement("option", { value: "yok" }, "Ge\u00E7i\u015F yok"),
                                     React.createElement("option", { value: "kopru" }, "K\u00F6pr\u00FC (" + fr(crossRates.kopru) + "\u20BA)"),
                                     React.createElement("option", { value: "feribot" }, "Feribot (" + fr(crossRates.feribot) + "\u20BA)")))),
                         (function(){
                             const preview = takasJobNetTRY({ ...form, isTakas: true, customerTRY: toTRY(form.paymentAmount, form.paymentCurrency) }, crossRates);
-                            return React.createElement("div", { style: { padding: '7px 10px', background: '#fff', borderRadius: 7, fontSize: 10.5, color: SB, border: '1px dashed var(--brand-bd)', lineHeight: 1.45 } },
-                                React.createElement("span", { style: { fontWeight: 600, color: 'var(--brand)' } }, 'Takas bakiyesi: '),
-                                React.createElement("span", { style: { fontWeight: 700, color: preview > 0 ? G : (preview < 0 ? R : TX) } },
+                            return React.createElement("div", { style: { padding: '8px 11px', background: 'rgba(255,255,255,.10)', borderRadius: 10, fontSize: 10.5, color: 'rgba(255,255,255,.85)', WebkitTextFillColor: 'rgba(255,255,255,.85)', border: '1px solid rgba(255,255,255,.22)', lineHeight: 1.45 } },
+                                React.createElement("span", { style: { fontWeight: 700, color: '#D9BE7C', WebkitTextFillColor: '#D9BE7C' } }, 'Takas bakiyesi: '),
+                                React.createElement("span", { style: { fontWeight: 700, color: preview > 0 ? '#8FE3B0' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#8FE3B0' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
                                     preview === 0 ? 'Ba\u015Fa ba\u015F (\u00F6deme g\u00F6nderilmez)' : ((preview > 0 ? '+' : '\u2212') + fr(preview) + '\u20BA ' + (preview > 0 ? (form.takasPartner || 'Ortak') + ' bana g\u00F6nderecek' : 'ben ' + (form.takasPartner || 'orta\u011Fa') + ' g\u00F6nderece\u011Fim'))),
-                                React.createElement("div", { style: { marginTop: 3, fontSize: 9.5 } }, 'Ge\u00E7i\u015F fark\u0131 dahil \u00B7 Hesap > Takas Hesaplar\u0131 b\u00F6l\u00FCm\u00FCnde birikir'));
+                                React.createElement("div", { style: { marginTop: 3, fontSize: 9.5, color: 'rgba(255,255,255,.65)', WebkitTextFillColor: 'rgba(255,255,255,.65)' } }, 'Ge\u00E7i\u015F fark\u0131 dahil \u00B7 Hesap > Takas Hesaplar\u0131 b\u00F6l\u00FCm\u00FCnde birikir'));
+                        })()
+                    ),
+                    
+                    form.tripMode === 'dugun' && React.createElement("div", { className: "ko-navy-panel", style: { borderRadius: 14, padding: 11, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
+                            React.createElement("span", { style: { fontSize: 16 } }, '\uD83D\uDC70\uD83E\uDD35'),
+                            React.createElement("span", { style: { fontSize: 12, fontWeight: 700, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', letterSpacing: '.2px' } }, 'D\u00FC\u011F\u00FCn Transferi')),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                            React.createElement("div", null,
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\uD83D\uDC8D Anla\u015F\u0131lan Toplam (\u20BA)"),
+                                React.createElement("input", { type: "number", inputMode: "decimal", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value, paymentCurrency: 'TRY' }), placeholder: "10000", className: "inp" })),
+                            React.createElement("div", null,
+                                React.createElement("span", { className: "lbl ko-navy-lbl" }, "\uD83D\uDCB5 Al\u0131nan Kapora (\u20BA)"),
+                                React.createElement("input", { type: "number", inputMode: "decimal", value: form.dugunKapora || '', onChange: e => sf({ dugunKapora: e.target.value }), placeholder: "2000", className: "inp" }))),
+                        (function(){
+                            const toplam = moneyValue(form.paymentAmount);
+                            const kapora = moneyValue(form.dugunKapora);
+                            const kalan = Math.max(0, Math.round(toplam - kapora));
+                            if (!(toplam > 0)) return React.createElement("div", { style: { fontSize: 10, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)' } }, 'Anla\u015F\u0131lan tutar\u0131 gir \u2014 kalan otomatik hesaplan\u0131r ve Hesap sekmesinde alacak olarak g\u00F6r\u00FCn\u00FCr.');
+                            return React.createElement("div", { style: { padding: '8px 11px', background: 'rgba(255,255,255,.10)', border: '1px solid rgba(255,255,255,.22)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+                                React.createElement("span", { style: { fontSize: 10.5, color: 'rgba(255,255,255,.78)', WebkitTextFillColor: 'rgba(255,255,255,.78)' } }, 'Kapora sonras\u0131 kalan'),
+                                React.createElement("span", { style: { fontSize: 14, fontWeight: 800, color: '#D9BE7C', WebkitTextFillColor: '#D9BE7C', fontVariantNumeric: 'tabular-nums' } }, '+' + fr(kalan) + '\u20BA alacak'));
                         })()
                     ),
                     
