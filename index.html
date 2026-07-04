@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Ölmez Nude Navy v43</title>
+<title>KÖ Transfer Takip - Ölmez Glass v45</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,7 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE3EA;--line-2:#CFD6E1;--ink:#242E40;--ink-2:#333F58;--ink-3:#6B7488;--muted:#6B7488;--accent:#3E4C68;--accent-2:#3E4C68;--accent-soft:#ECEFF5;--brand:#3E4C68;--brand-2:#3E4C68;--brand-soft:#ECEFF5;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
+:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE3EA;--line-2:#CFD6E1;--ink:#242E40;--ink-2:#2A3550;--ink-3:#6B7488;--muted:#6B7488;--accent:#37445F;--accent-2:#37445F;--accent-soft:#ECEFF5;--brand:#37445F;--brand-2:#37445F;--brand-soft:#ECEFF5;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg) !important;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
 #root{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg)}
@@ -176,12 +176,12 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-account-firm-bucket.is-pay{border-color:rgba(178,82,76,.30)}
 .ko-account-firm-bucket-head{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border-bottom:1px solid rgba(60,60,67,.12)}
 .ko-account-firm-bucket-title,.x-none{font-size:11px;font-weight:620;line-height:1.12;letter-spacing:.2px;text-transform:uppercase}
-.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#3E4C68}
+.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#37445F}
 .ko-account-firm-bucket.is-pay .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-pay .ko-account-firm-bucket-total{color:#C05F5F}
 .ko-account-firm-bucket-total{font-size:12px;font-weight:650;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .ko-account-firm-bucket-cards{display:flex;flex-direction:column;gap:6px;padding:7px}
 .ko-account-firm-bucket-empty{font-size:11px;font-weight:520;padding:12px 8px;text-align:center}
-.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #3E4C68 !important;background:#fff !important}
+.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #37445F !important;background:#fff !important}
 .ko-account-firm-card.is-pay{border-color:rgba(178,82,76,.28) !important;border-left:3px solid #C05F5F !important;background:#fff !important}
 .ko-account-firm-bucket .ko-account-firm-card-title{flex-direction:column;align-items:stretch !important;gap:4px !important}
 .ko-account-firm-bucket .ko-account-firm-card-title span{align-self:flex-end;max-width:100%;white-space:normal !important;text-align:right}
@@ -197,7 +197,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-debt-card{position:relative}
 .ko-debt-card-head{display:grid;grid-template-columns:30px minmax(0,1fr) auto 28px;gap:7px;align-items:center}
 .ko-debt-check{width:28px;height:28px;border-radius:50%;background:#fff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;padding:0}
-.ko-debt-check.is-done{background:#3E4C68;border-color:#3E4C68}
+.ko-debt-check.is-done{background:#37445F;border-color:#37445F}
 .ko-debt-main{min-width:0;background:transparent;border:0;padding:0;text-align:left;cursor:pointer;color:inherit}
 .ko-debt-main-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ko-debt-main-sub{font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -219,7 +219,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-debt-split-grid{margin-top:2px}
 .ko-debt-split-grid .ko-account-firm-bucket-cards{gap:7px}
 .ko-debt-summary-card{width:100%;min-height:52px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);color:var(--ink);text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid #3E4C68}
+.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid #37445F}
 .ko-debt-summary-card.is-pay{border-color:rgba(178,82,76,.28);border-left:3px solid #C05F5F}
 .ko-debt-summary-card.is-selected{outline:2px solid rgba(28,28,30,.18);outline-offset:1px}
 .ko-debt-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;min-width:0}
@@ -382,25 +382,25 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
 /* Clean Apple visual layer - single source, business logic untouched */
-:root{--card:#FFFFFF !important;--accent:#3E4C68 !important;--accent-soft:#ECEFF5 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#C05F5F !important;--ok:#3E4C68 !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#C05F5F !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
+:root{--card:#FFFFFF !important;--accent:#37445F !important;--accent-soft:#ECEFF5 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#C05F5F !important;--ok:#37445F !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#C05F5F !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 .card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard{background:#FFFFFF !important;box-shadow:none !important}
 input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:#3E4C68 !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:#37445F !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
 .is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;box-shadow:none !important}
+.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;box-shadow:none !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important}
 .tcard-pill.tcard-pill-alt{font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{border-color:rgba(47,101,167,.24) !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
 .tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{border-color:rgba(176,82,76,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.tcard-stripe{background:#3E4C68 !important}
+.tcard-stripe{background:#37445F !important}
 .tabbar{background:rgba(255,255,255,.98) !important;border-top:1px solid rgba(60,60,67,.18) !important;box-shadow:none !important}
 .tabbar-inner{background:transparent !important;height:74px !important;padding:6px 8px !important;box-shadow:none !important;border:0 !important}
 .tab{background:transparent !important;border-color:transparent !important;font-size:10px !important;font-weight:500 !important;border-radius:16px !important}
-.tab-fab{background:#3E4C68 !important;border-color:#3E4C68 !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
+.tab-fab{background:#37445F !important;border-color:#37445F !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
 .tab-badge{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-month-cal-card,.ko-real-cal-card{background:#FFFFFF !important;border-radius:24px !important;box-shadow:none !important;padding:13px !important;overflow:hidden !important}
 .lg-month-cal-head{padding:0 0 11px !important;margin-bottom:9px !important}
@@ -413,17 +413,17 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#3E4C68 !importa
 .lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(79,107,69,.40) !important}
 .lg-month-day>div:first-child,.ko-arac-day>div:first-child{width:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:3px !important;min-width:0 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13px !important;font-weight:600 !important;line-height:1 !important;text-align:center !important}
-.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 .lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{width:100% !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:flex-start !important;gap:2px !important;min-width:0 !important;overflow:hidden !important}
 .lg-month-day-count,.ko-arac-day-count{width:100% !important;display:block !important;min-width:0 !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:8px !important;font-weight:500 !important;line-height:1.08 !important;text-align:center !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .lg-month-selected-line{margin-top:10px !important;padding:10px 0 0 !important;display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
 .lg-month-selected-title{font-size:13px !important;font-weight:520 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
-.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;white-space:nowrap !important}
+.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;white-space:nowrap !important}
 .tk-cell{background:#FFFFFF !important;border-radius:12px !important;box-shadow:none !important;min-height:48px !important;padding:5px !important;gap:3px !important;overflow:hidden !important}
 .tk-cell-count{font-size:9.5px !important;font-weight:500 !important;line-height:1 !important}
-.tk-cell-dot{background:#3E4C68 !important}
+.tk-cell-dot{background:#37445F !important}
 .ko-arac-day-panel,.ko-arac-job-card,.ko-account-firm-card,.ko-debt-card,.ko-contact-card{border-radius:20px !important;background:#FFFFFF !important;box-shadow:none !important;overflow:hidden !important}
 .ko-account-section-head,.ko-debt-toggle,.ko-contact-toggle,.ko-firma-toggle{background:#FFFFFF !important;border-radius:18px !important;font-weight:520 !important;box-shadow:none !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
@@ -533,7 +533,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
   .tab-label{font-size:9.8px !important;text-overflow:clip !important}
 }
 .lg-home .lg-greeting-card{overflow:hidden !important}
-.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#3E4C68 !important}
+.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#37445F !important}
 .lg-home-transfer-list>div,.lg-today-list-standalone>div{contain:layout paint style}
 .view-arac .ko-arac-day.is-today{border-color:rgba(94,122,82,.58) !important}
 
@@ -542,14 +542,14 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-debt-firm-card.is-selected{outline:2px solid rgba(79,107,69,.22) !important;outline-offset:1px !important}
 .ko-debt-firm-card .ko-account-firm-card-copy b{white-space:normal !important;overflow:visible !important;overflow-wrap:anywhere !important;text-overflow:clip !important}
 .ko-debt-firm-card .ko-debt-firm-tl{display:inline !important;margin-left:3px !important;font-size:9px !important;opacity:.75 !important}
-.ko-debt-ledger{border-left:4px solid var(--debt-accent,#3E4C68) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
+.ko-debt-ledger{border-left:4px solid var(--debt-accent,#37445F) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
 .ko-debt-ledger-head{display:grid !important;grid-template-columns:28px minmax(0,1fr) auto 26px !important;align-items:center !important;gap:7px !important;min-width:0 !important}
 .ko-debt-ledger .ko-debt-check{width:28px !important;height:28px !important;min-height:28px !important;padding:0 !important;border-radius:50% !important;font-size:13px !important}
 .ko-debt-ledger-copy{min-width:0 !important}
 .ko-debt-ledger-name{font-size:12px !important;font-weight:500 !important;line-height:1.18 !important;white-space:normal !important;overflow-wrap:anywhere !important}
 .ko-debt-ledger-meta{margin-top:2px !important;font-size:9px !important;line-height:1.15 !important}
 .ko-debt-ledger-balance{text-align:right !important;white-space:nowrap !important;font-variant-numeric:tabular-nums !important}
-.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#3E4C68) !important;font-size:12px !important;font-weight:520 !important}
+.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#37445F) !important;font-size:12px !important;font-weight:520 !important}
 .ko-debt-ledger-balance small{display:block !important;margin-top:2px !important;font-size:8px !important}
 .ko-debt-ledger-close{width:26px !important;height:26px !important;min-height:26px !important;padding:0 !important;border-radius:8px !important;font-size:14px !important}
 .ko-debt-ledger-stats{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:5px !important;margin-top:8px !important}
@@ -567,14 +567,14 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-debt-ledger-more{width:100% !important;min-height:28px !important;margin-top:5px !important;padding:5px 8px !important;border-radius:9px !important;font-size:9px !important}
 .ko-debt-ledger-actions{display:flex !important;align-items:center !important;gap:6px !important;margin-top:8px !important}
 .ko-debt-ledger-actions button{min-height:30px !important;padding:6px 9px !important;border-radius:9px !important;background:#FFFFFF !important;font-size:9.5px !important}
-.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#3E4C68) !important;background:var(--debt-accent,#3E4C68) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#37445F) !important;background:var(--debt-accent,#37445F) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .ko-debt-ledger-actions .is-delete{margin-left:auto !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .ko-debt-ledger-form{display:flex !important;flex-direction:column !important;gap:6px !important;margin-top:8px !important;padding:7px !important;border-radius:11px !important}
 .ko-debt-ledger-form-top{display:grid !important;grid-template-columns:92px 92px minmax(120px,1fr) !important;gap:6px !important}
 .ko-debt-ledger-form-top.is-edit{grid-template-columns:minmax(0,1fr) 82px !important}
 .ko-debt-ledger-form-bottom{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;gap:6px !important}
 .ko-debt-ledger-form input,.ko-debt-ledger-form select{min-height:32px !important;padding:6px 7px !important;border-radius:8px !important;font-size:10.5px !important}
-.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#3E4C68) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
+.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#37445F) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
 @media(max-width:700px){
   .ko-debt-firm-card .ko-account-firm-card-title b{font-size:12px !important}
   .ko-debt-firm-card .ko-account-firm-card-title>span{font-size:11px !important}
@@ -594,19 +594,19 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  ÖLMEZTUR PREMIUM v29 — TEK YETKİLİ TEMA (lacivert · beyaz · altın) ║
    ╚══════════════════════════════════════════════════════════════════╝ */
-:root{--pnavy:#333F58;--pnavy2:#4A5977;--pnavy3:#566585;--pgold:#FFFFFF;--pink:#242E40;--pmut:#6B7488;--pline:#DFE3EA;--pgrad:#3E4C68}
+:root{--pnavy:#2A3550;--pnavy2:#42506E;--pnavy3:#4C5A7E;--pgold:#FFFFFF;--pink:#242E40;--pmut:#6B7488;--pline:#DFE3EA;--pgrad:linear-gradient(172deg,#53628A 0%,#3B4966 46%,#2A3550 100%)}
 html,body,main.main-cont{background:#F4F5F8 !important}
 /* ── Kartlar: beyaz, oval, yumuşak lacivert gölge ── */
 .card,.lg-glass-card,.lg-period-panel,.lg-upcoming-card,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card,.tcard{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:20px !important;box-shadow:0 2px 12px rgba(38,48,70,.07) !important;color:var(--pink) !important}
 .ms,.ko-transfer-edit-sheet{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:24px !important;box-shadow:0 18px 44px rgba(38,48,70,.22) !important}
 /* ── Tipografi: net, kaliteli ── */
-.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.tk-month-title,.tk-panel-date,.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title,.ko-account-balance-divider{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:480 !important;letter-spacing:.3px !important;font-size:14.5px !important}
+.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.tk-month-title,.tk-panel-date,.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title,.ko-account-balance-divider{color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:480 !important;letter-spacing:.3px !important;font-size:14.5px !important}
 .tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b,.ko-account-stat-total,.lg-month-selected-count,.ko-arac-day-netbox-value{color:#242E40 !important;-webkit-text-fill-color:#242E40 !important;font-weight:560 !important}
 .lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-panel-count,.lg-month-selected-kicker,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl{color:#6B7488 !important;-webkit-text-fill-color:#6B7488 !important;font-weight:430 !important}
 .lbl{font-weight:560 !important;letter-spacing:.3px !important;text-transform:uppercase !important;font-size:9.5px !important}
 b,strong{font-weight:560 !important}
 /* ── LACİVERT YÜZEYLER: içindeki HER yazı BEYAZ (WebKit dahil) ── */
-.lg-greeting-card,.ko-navy-hero,.ko-navy-panel,.lg-period-card,.lg-profit-card,.date-hdr,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.ko-account-firm-bucket-head,.toast,.tab-fab{background:var(--pgrad) !important;border:1px solid #333F58 !important;box-shadow:0 10px 26px rgba(38,48,70,.26) !important}
+.lg-greeting-card,.ko-navy-hero,.ko-navy-panel,.lg-period-card,.lg-profit-card,.date-hdr,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.ko-account-firm-bucket-head,.toast,.tab-fab{background:var(--pgrad) !important;border:1px solid #2A3550 !important;box-shadow:0 10px 26px rgba(38,48,70,.26) !important}
 .lg-greeting-card *,.ko-navy-hero *,.ko-navy-panel *,.lg-period-card *,.lg-profit-card *,.date-hdr *,.ko-contact-toggle *,.ko-debt-toggle *,.ko-firma-toggle *,.ko-account-firm-bucket-head *,.toast *,.tab-fab *,.lg-greeting-card,.date-hdr,.toast,.tab-fab{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-period-card .lg-period-label,.lg-period-card .lg-period-sub,.lg-profit-card .lg-profit-label,.date-hdr .date-hdr-meta,.date-hdr small{color:rgba(255,255,255,.78) !important;-webkit-text-fill-color:rgba(255,255,255,.78) !important;font-weight:460 !important}
 .lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value,.lg-profit-card .lg-profit-detail-value,.lg-profit-card .lg-profit-month-total{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:500 !important;letter-spacing:.2px !important;font-size:15.5px !important}
@@ -627,19 +627,15 @@ b,strong{font-weight:560 !important}
 .ko-hero-rate span:first-child{color:rgba(255,255,255,.7) !important;-webkit-text-fill-color:rgba(255,255,255,.7) !important}
 .ko-ver-chip{display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.5);color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9px;font-weight:620;letter-spacing:.7px}
 /* ── TAKVİMLER (Transferler + Araç + Takvim): net rakam, premium seçim ── */
-.lg-month-weekdays div,.tk-weekday{color:#9CA5B8 !important;-webkit-text-fill-color:#9CA5B8 !important;font-weight:540 !important;font-size:9.5px !important;letter-spacing:.6px !important;text-transform:uppercase !important}
-.lg-month-day,.ko-arac-day,.tk-cell{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:9px !important;box-shadow:0 1px 3px rgba(38,48,70,.05) !important}
-.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:460 !important;font-size:11px !important}
-.lg-month-day-count,.ko-arac-day-count,.tk-cell-count{color:#6B7488 !important;-webkit-text-fill-color:#6B7488 !important;font-weight:460 !important;font-size:9px !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important;font-weight:540 !important;font-size:9px !important}
+.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .lg-month-day.is-other,.ko-arac-day.is-other{opacity:.40 !important;background:#F4F5F8 !important}
 .lg-month-day.has-work,.ko-arac-day.has-work{background:#F0F2F7 !important;border-color:#C2CBD9 !important}
-.lg-month-day.has-work .lg-month-day-count,.ko-arac-day.has-work .ko-arac-day-count{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:500 !important}
+.lg-month-day.has-work .lg-month-day-count,.ko-arac-day.has-work .ko-arac-day-count{color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:500 !important}
 
-.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 /* SEÇİLİ GÜN → lacivert zemin, BEYAZ rakam ve yazılar, altın net */
-.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected{background:var(--pgrad) !important;border:1px solid #333F58 !important;box-shadow:0 8px 20px rgba(38,48,70,.32) !important}
+.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected{background:var(--pgrad) !important;border:1px solid #2A3550 !important;box-shadow:0 8px 20px rgba(38,48,70,.32) !important}
 .lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.ko-arac-day.is-selected *,.tk-cell.tk-selected *,.lg-datebox.is-selected *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-month-day.is-selected .lg-month-day-num,.lg-month-day.ko-selected-gold .lg-month-day-num,.ko-arac-day.is-selected .ko-arac-day-num,.tk-cell.tk-selected .tk-cell-num{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:500 !important}
 .lg-month-day.is-selected .lg-month-day-count,.lg-month-day.ko-selected-gold .lg-month-day-count,.ko-arac-day.is-selected .ko-arac-day-count,.tk-cell.tk-selected .tk-cell-count{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:8.5px !important;font-weight:460 !important;opacity:1 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;max-width:100% !important}
@@ -647,13 +643,13 @@ b,strong{font-weight:560 !important}
 .lg-month-day.is-selected .lg-month-day-net.is-neg,.ko-arac-day.is-selected .ko-arac-day-net.is-neg{color:#EFC0BC !important;-webkit-text-fill-color:#EFC0BC !important}
 .lg-month-day.is-selected .tk-cell-dot,.tk-cell.tk-selected .tk-cell-dot{background:#FFFFFF !important}
 /* Araç sekmesi ay/yıl/gün seçim düğmeleri */
-.view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active{background:var(--pgrad) !important;border-color:#333F58 !important;box-shadow:0 6px 16px rgba(38,48,70,.28) !important}
+.view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active{background:var(--pgrad) !important;border-color:#2A3550 !important;box-shadow:0 6px 16px rgba(38,48,70,.28) !important}
 .view-arac .lg-arac-month-toggle.is-active *,.view-arac .lg-arac-date-toggle.is-active *,.view-arac .lg-arac-year-toggle.is-active *,.view-arac .lg-arac-day-toggle.is-active *,.lg-arac-date-toggle.is-active *,.lg-arac-month-toggle.is-active *,.lg-arac-year-toggle.is-active *,.lg-arac-day-toggle.is-active *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 /* Mod menüsü ve diğer seçimler */
 .lg-choice{border-radius:13px !important;border-color:var(--pline) !important}
-.lg-choice.is-active,.ko-selected-gold.lg-choice{background:var(--pgrad) !important;border-color:#333F58 !important}
+.lg-choice.is-active,.ko-selected-gold.lg-choice{background:var(--pgrad) !important;border-color:#2A3550 !important}
 .lg-choice.is-active *,.lg-choice.is-active{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.ko-debt-summary-card.is-selected{background:var(--pgrad) !important;border-color:#333F58 !important;box-shadow:0 8px 20px rgba(38,48,70,.30) !important}
+.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.ko-debt-summary-card.is-selected{background:var(--pgrad) !important;border-color:#2A3550 !important;box-shadow:0 8px 20px rgba(38,48,70,.30) !important}
 .ko-account-firm-card.is-selected *,.ko-debt-firm-card.is-selected *,.ko-takas-partner.is-selected *,.ko-debt-summary-card.is-selected *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 /* ── ALT BAR: seçili sekme lacivert hap + net beyaz yazı ── */
 .tabbar{background:rgba(255,255,255,.92) !important;border-top:1px solid var(--pline) !important;backdrop-filter:blur(14px) !important;-webkit-backdrop-filter:blur(14px) !important}
@@ -661,24 +657,24 @@ b,strong{font-weight:560 !important}
 .tab{border-radius:14px !important}
 .tab .tab-icon,.tab .tab-label,.tab{color:#6B7488 !important;-webkit-text-fill-color:#6B7488 !important;font-weight:440 !important}
 .tab-label{font-size:10px !important;letter-spacing:.1px !important}
-.tab.is-active{background:var(--pgrad) !important;border:1px solid #333F58 !important;box-shadow:0 6px 14px rgba(38,48,70,.28) !important}
+.tab.is-active{background:var(--pgrad) !important;border:1px solid #2A3550 !important;box-shadow:0 6px 14px rgba(38,48,70,.28) !important}
 .tab.is-active .tab-icon,.tab.is-active .tab-label,.tab.is-active *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:470 !important}
 .tab-fab{border-radius:18px !important;box-shadow:0 10px 22px rgba(38,48,70,.38),0 0 0 2px rgba(255,255,255,.55) !important}
 /* ── Girdi & düğme ── */
 input,select,textarea,.inp{border:1px solid #CFD6E1 !important;border-radius:13px !important;color:#242E40 !important;-webkit-text-fill-color:#242E40 !important;font-weight:440 !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:#4A5977 !important;box-shadow:0 0 0 3px rgba(52,64,92,.14) !important}
-.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border:1px solid #CFD6E1 !important;border-radius:12px !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:520 !important}
-.ko-debt-new-btn{background:var(--pgrad) !important;color:#fff !important;-webkit-text-fill-color:#fff !important;border:1px solid #333F58 !important;border-radius:14px !important;font-weight:540 !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:#42506E !important;box-shadow:0 0 0 3px rgba(52,64,92,.14) !important}
+.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border:1px solid #CFD6E1 !important;border-radius:12px !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:520 !important}
+.ko-debt-new-btn{background:var(--pgrad) !important;color:#fff !important;-webkit-text-fill-color:#fff !important;border:1px solid #2A3550 !important;border-radius:14px !important;font-weight:540 !important}
 /* ── Durum çipleri: yumuşak premium ── */
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{border-radius:999px !important;font-weight:480 !important;font-size:9.6px !important;letter-spacing:.2px !important}
-.tcard-pill-status-tam,.lg-chip-status-tam{background:#F0F2F7 !important;border-color:#C2CBD9 !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.tcard-pill-status-tam,.lg-chip-status-tam{background:#F0F2F7 !important;border-color:#C2CBD9 !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{background:#FCF6E8 !important;border-color:#E3CD97 !important;color:#8A6A1E !important;-webkit-text-fill-color:#8A6A1E !important}
 .tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none,.tcard-paystatus.is-pending,.lg-chip-wait{background:#F7ECEC !important;border-color:#E3C2C2 !important;color:#B05555 !important;-webkit-text-fill-color:#B05555 !important}
 .tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{background:#E9F7F1 !important;border-color:#BCE3D2 !important;color:#0B7C55 !important;-webkit-text-fill-color:#0B7C55 !important}
 .tcard-pill.tcard-pill-alt{background:#FCF6E8 !important;border-color:#FFFFFF !important;color:#8A6A1E !important;-webkit-text-fill-color:#8A6A1E !important;font-weight:520 !important}
-.tcard-stripe{background:#3E4C68 !important;border-radius:999px !important}
+.tcard-stripe{background:#37445F !important;border-radius:999px !important}
 .tcard.t-tour .tcard-stripe{background:#FFFFFF !important}
-.lg-badge{border-color:#3E4C68 !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:520 !important}
+.lg-badge{border-color:#37445F !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:520 !important}
 /* ── Takas & Düğün kartları ── */
 .ko-takas-card{border:1px solid var(--pline) !important;border-radius:20px !important;background:#fff !important;box-shadow:0 2px 12px rgba(38,48,70,.07) !important;padding:12px !important}
 .ko-takas-partner{width:100%;text-align:left;border:1px solid var(--pline);border-radius:16px;background:#fff;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
@@ -698,19 +694,6 @@ main.main-cont{padding:6px 8px calc(var(--tabbar-h) + var(--sa-b) + 8px) !import
 .lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-size:15.5px !important}
 .lg-profit-row{margin-bottom:8px !important}
 .lg-section-title{font-size:14px !important}
-.lg-month-cal-card,.ko-real-cal-card{padding:8px !important}
-.lg-month-day,.ko-arac-day{min-height:34px !important;padding:2px !important;border-radius:8px !important}
-.tk-cell{min-height:34px !important;border-radius:8px !important}
-.lg-month-day-num{font-size:11px !important;line-height:1.1 !important}
-.ko-arac-day-num{font-size:9px !important;line-height:1.1 !important}
-.tk-cell-num{font-size:10px !important;line-height:1.1 !important}
-.lg-month-day-count,.tk-cell-count{font-size:7px !important;letter-spacing:0 !important}
-.ko-arac-day-count{font-size:6.3px !important;letter-spacing:0 !important}
-.lg-month-day-net{font-size:7px !important}
-.ko-arac-day-net{font-size:6.3px !important}
-.lg-month-weekdays div,.tk-weekday{font-size:7.5px !important}
-.lg-month-grid,.ko-arac-month-grid,.lg-month-weekdays,.tk-grid{gap:3px !important}
-.lg-month-day *,.ko-arac-day *{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;max-width:100% !important}
 .date-hdr{padding:6px 9px !important;margin:5px 0 4px !important}
 .tcard{margin-bottom:6px !important}
 .tcard-header{padding:8px 9px !important}
@@ -735,10 +718,10 @@ textarea{min-height:52px !important}
 /* ── v30 rötuşları: mini takvim ikonu, rehber başlıkları, ekstra ovallik ── */
 .lg-period-card .ko-minical{background:#FFFFFF !important;box-shadow:0 1px 4px rgba(38,48,70,.25) !important}
 .lg-period-card .ko-minical > div:first-child{background:#C05F5F !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:560 !important}
-.lg-period-card .ko-minical > div:last-child{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:560 !important}
+.lg-period-card .ko-minical > div:last-child{color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:560 !important}
 .lg-period-card.is-active .ko-minical{box-shadow:0 0 0 1.5px rgba(255,255,255,.9),0 1px 4px rgba(38,48,70,.3) !important}
 .ko-contact-section{background:#FFFFFF !important;border-radius:18px !important}
-.ko-contact-section-title{display:inline-flex !important;align-items:center !important;padding:5px 14px !important;border-radius:999px !important;background:#F0F2F7 !important;border:1px solid #CFD6E1 !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important;font-weight:540 !important;font-size:11px !important;letter-spacing:.4px !important}
+.ko-contact-section-title{display:inline-flex !important;align-items:center !important;padding:5px 14px !important;border-radius:999px !important;background:#F0F2F7 !important;border:1px solid #CFD6E1 !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important;font-weight:540 !important;font-size:11px !important;letter-spacing:.4px !important}
 .lg-month-selected-count,.ko-arac-day-netbox-label{color:#525C72 !important;-webkit-text-fill-color:#525C72 !important;font-weight:480 !important;font-size:10px !important}
 .ko-arac-day-netbox-value{font-size:15px !important}
 /* ekstra ovallik — premium hava */
@@ -748,7 +731,6 @@ textarea{min-height:52px !important}
 .lg-period-card,.lg-profit-card{border-radius:22px !important}
 .date-hdr{border-radius:18px !important}
 input,select,textarea,.inp{border-radius:14px !important}
-.lg-month-day,.ko-arac-day{border-radius:15px !important}
 .tab{border-radius:16px !important}
 .hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border-radius:13px !important}
 .ko-account-firm-card,.ko-debt-summary-card,.ko-takas-partner{border-radius:18px !important}
@@ -775,10 +757,10 @@ body{background:#F4F5F8 !important}
 
 /* ── v32: kaydet butonu beyaz yazı garantisi, placeholder, tip şeritleri ── */
 .ko-submit-btn,.ko-submit-btn *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.ko-submit-btn{font-weight:500 !important;letter-spacing:.4px !important;background:#3E4C68 !important;border-color:#333F58 !important}
+.ko-submit-btn{font-weight:500 !important;letter-spacing:.4px !important;background:#37445F !important;border-color:#2A3550 !important}
 input::placeholder,textarea::placeholder,.inp::placeholder{color:#9CA5B8 !important;-webkit-text-fill-color:#9CA5B8 !important;opacity:1 !important;font-weight:420 !important}
 .ko-contact-form input{background:#FFFFFF !important;color:#242E40 !important;-webkit-text-fill-color:#242E40 !important}
-.tcard.t-takas .tcard-stripe{background:#3E4C68 !important}
+.tcard.t-takas .tcard-stripe{background:#37445F !important}
 .tcard.t-dugun .tcard-stripe{background:linear-gradient(180deg,#B0527C,#E5BBD1) !important}
 
 
@@ -804,7 +786,7 @@ main.main-cont{height:auto !important;max-height:none !important;overflow:visibl
 
 /* ══ v38 TASARIM YENİLEME — segmentli kutular, yüzen dock, zaman rozeti ══ */
 /* 1) BUGÜN/AYLIK/YILLIK → tek lacivert şerit içinde segment; seçili segment fildişi */
-.lg-period-row{background:#3E4C68 !important;border:1px solid #333F58 !important;border-radius:22px !important;padding:5px !important;gap:4px !important;box-shadow:0 10px 26px rgba(38,48,70,.26) !important}
+.lg-period-row{background:#37445F !important;border:1px solid #2A3550 !important;border-radius:22px !important;padding:5px !important;gap:4px !important;box-shadow:0 10px 26px rgba(38,48,70,.26) !important}
 .lg-period-card{background:transparent !important;border:0 !important;box-shadow:none !important;border-radius:17px !important;min-height:56px !important}
 .lg-period-card::before{display:none !important}
 .lg-period-card.is-active{background:rgba(255,255,255,.13) !important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85) !important;border:0 !important}
@@ -814,10 +796,10 @@ main.main-cont{height:auto !important;max-height:none !important;overflow:visibl
 .lg-profit-card{border-left:4px solid rgba(255,255,255,.85) !important;border-radius:14px !important}
 .lg-profit-card::before{display:none !important}
 /* 3) Tarih başlıkları: dolgulu bar yerine zarif altın alt çizgili satır */
-.date-hdr{background:transparent !important;border:0 !important;border-bottom:0 !important;border-left:4px solid #3E4C68 !important;padding-left:10px !important;border-radius:0 !important;box-shadow:none !important;padding:6px 4px !important;margin:10px 2px 7px !important}
-.date-hdr,.date-hdr *{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.date-hdr{background:transparent !important;border:0 !important;border-bottom:0 !important;border-left:4px solid #37445F !important;padding-left:10px !important;border-radius:0 !important;box-shadow:none !important;padding:6px 4px !important;margin:10px 2px 7px !important}
+.date-hdr,.date-hdr *{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 .date-hdr .date-hdr-meta,.date-hdr small{color:#6B7488 !important;-webkit-text-fill-color:#6B7488 !important}
-.date-hdr button{background:#F3F5F9 !important;border:1px solid #C2CBD9 !important;color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.date-hdr button{background:#F3F5F9 !important;border:1px solid #C2CBD9 !important;color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 /* 4) Transfer kartları: renk şeridi yok, saat lacivert rozet */
 .tcard{border-radius:18px !important;border:1px solid #DFE3EA !important;box-shadow:0 3px 14px rgba(38,48,70,.07) !important}
 .tcard-stripe{display:block !important;border-radius:999px !important}
@@ -830,10 +812,10 @@ main.main-cont{height:auto !important;max-height:none !important;overflow:visibl
 main.main-cont{padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 18px) !important}
 /* 6) Bölüm başlıkları: altın işaretli, aralıklı kurumsal kicker */
 .lg-section-title{text-transform:uppercase !important;font-size:11.5px !important;letter-spacing:1.6px !important;color:#525C72 !important;-webkit-text-fill-color:#525C72 !important;display:flex !important;align-items:center !important;gap:8px !important}
-.lg-section-title::before{content:"" !important;display:inline-block !important;width:4px !important;height:13px !important;background:#3E4C68 !important;border-radius:2px !important}
+.lg-section-title::before{content:"" !important;display:inline-block !important;width:4px !important;height:13px !important;background:#37445F !important;border-radius:2px !important}
 /* 7) Takvim: seçili günde altın üst çizgi, bugünde ince altın halka */
 
-.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DFE3EA !important;box-shadow:inset 0 -3px 0 #3E4C68 !important}
+.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DFE3EA !important;box-shadow:inset 0 -3px 0 #37445F !important}
 /* 8) Sayfa üstü paneller: tutma çubuğu */
 .ms::before,.ko-transfer-edit-sheet::before{content:"" !important;display:block !important;width:44px !important;height:5px !important;border-radius:3px !important;background:#CFD6E1 !important;margin:0 auto 10px !important}
 /* 9) Karşılama kartı: altın yörünge halkası dokusu */
@@ -845,18 +827,15 @@ main.main-cont{padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 18px) !import
 main.main-cont{padding-top:0 !important}
 .lg-greeting-card{margin:0 -10px 0 !important;border-radius:0 0 30px 30px !important;padding-top:calc(var(--sa-t) + 16px) !important;border-left:0 !important;border-right:0 !important;border-top:0 !important}
 /* Takvim kartının haftagünü satırı lacivert şerit */
-.lg-month-weekdays,.tk-weekdays{background:#3E4C68 !important;border-radius:10px !important;padding:6px 0 !important;margin-bottom:6px !important}
-.lg-month-weekdays div,.tk-weekday{color:rgba(255,255,255,.85) !important;-webkit-text-fill-color:rgba(255,255,255,.85) !important}
 /* Hesap ALACAK/BORÇ başlıkları: dolgusuz, kalın lacivert çerçeveli (ters kontrast) */
-.ko-account-firm-bucket-head{background:#FFFFFF !important;border:2px solid #3E4C68 !important;box-shadow:none !important}
-.ko-account-firm-bucket-head,.ko-account-firm-bucket-head *{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.ko-account-firm-bucket-head{background:#FFFFFF !important;border:2px solid #37445F !important;box-shadow:none !important}
+.ko-account-firm-bucket-head,.ko-account-firm-bucket-head *{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
 /* Daha keskin kurumsal köşeler */
 .card,.tcard,.lg-upcoming-card,.lg-period-panel,.ko-account-sheet-section,.tk-card,.tk-panel,.tk-ledger,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card,.ko-takas-card{border-radius:14px !important}
 .ms,.ko-transfer-edit-sheet{border-radius:18px !important}
 .lg-period-row{border-radius:16px !important}
 .lg-period-card,.lg-period-card.is-active{border-radius:12px !important}
 input,select,textarea,.inp{border-radius:10px !important}
-.lg-month-day,.ko-arac-day,.tk-cell{border-radius:7px !important}
 .ko-account-firm-card,.ko-debt-summary-card,.ko-takas-partner{border-radius:12px !important}
 .tab,.tab.is-active{border-radius:14px !important}
 .tabbar{border-radius:20px !important}
@@ -864,7 +843,7 @@ input,select,textarea,.inp{border-radius:10px !important}
 .date-hdr{border-radius:0 !important}
 .ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{border-radius:12px !important}
 /* Bugün: tüm günlerle aynı, sadece altta lacivert çizgi (medya bloğu dahili garantisi) */
-@media(max-width:430px){.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DFE3EA !important;box-shadow:inset 0 -3px 0 #3E4C68 !important}}
+@media(max-width:430px){.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DFE3EA !important;box-shadow:inset 0 -3px 0 #37445F !important}}
 
 
 /* ══ v40: sabit üst bar · nude tip şeritleri · kibar hesap tipografisi ══ */
@@ -885,7 +864,20 @@ input,select,textarea,.inp{border-radius:10px !important}
 .ko-brand-logo{width:30px;height:22px;object-fit:contain;flex:none;display:block}
 /* Bugün hücresinde rakam ve yazılar normal koyu kalsın */
 .lg-month-day.is-today:not(.is-selected) *,.ko-arac-day.is-today:not(.is-selected) *{color:inherit}
-.lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num{color:#3E4C68 !important;-webkit-text-fill-color:#3E4C68 !important}
+.lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num{color:#37445F !important;-webkit-text-fill-color:#37445F !important}
+
+
+/* ══ v44 LIQUID GLASS — parlak cam, net, premium ══ */
+.lg-greeting-card,.lg-period-row,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.tab.is-active,.tab-fab,.ko-submit-btn,.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.date-hdr{position:relative}
+.lg-greeting-card,.lg-period-row,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.tab.is-active,.tab-fab,.ko-submit-btn,.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected{background:var(--pgrad) !important;border:1px solid rgba(255,255,255,.38) !important;box-shadow:inset 0 2px 1px rgba(255,255,255,.50),inset 0 0 0 1px rgba(255,255,255,.10),inset 0 -16px 26px rgba(8,14,30,.42),0 16px 34px rgba(24,33,54,.38),0 1px 0 rgba(255,255,255,.25) !important}
+.lg-greeting-card::after{content:"" !important;position:absolute !important;inset:0 !important;border-radius:inherit !important;background:radial-gradient(130% 70% at 50% -12%,rgba(255,255,255,.42),rgba(255,255,255,0) 58%),linear-gradient(178deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 40%) !important;pointer-events:none !important;height:auto !important;left:0 !important;right:0 !important;bottom:auto !important}
+.lg-period-row::before,.tab-fab::before,.ko-submit-btn::before{content:"";position:absolute;inset:1px;border-radius:inherit;background:radial-gradient(120% 80% at 50% -15%,rgba(255,255,255,.38),rgba(255,255,255,0) 60%);pointer-events:none}
+.lg-period-card.is-active{background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.12)) !important;box-shadow:inset 0 0 0 1.2px rgba(255,255,255,.95),inset 0 1.5px 0 rgba(255,255,255,.6),0 4px 12px rgba(10,16,32,.28) !important}
+.tabbar{background:linear-gradient(180deg,#FFFFFF 0%,#EFF2F8 100%) !important;box-shadow:inset 0 2px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(38,48,70,.06),0 -12px 30px rgba(24,33,54,.16) !important;position:fixed !important}
+body{overscroll-behavior-y:none !important}
+html{overscroll-behavior-y:none}
+.tab-icon svg{display:block}
+.tab-icon{font-size:0 !important;height:20px !important;display:flex !important;align-items:center !important;justify-content:center !important}
 
 </style>
 </head>
@@ -935,7 +927,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
-const NAV = '#3E4C68', NAV2 = '#4A5977', GOLD = 'rgba(255,255,255,.85)';
+const NAV = '#37445F', NAV2 = '#42506E', GOLD = 'rgba(255,255,255,.85)';
 const G = '#0E9F6E', O = '#3D5A8F', R = '#C05F5F', BR = '#CFD6E1';
 const TX = '#242E40', SB = '#6B7488', INP = '#F6F7FB', BOR = 'rgba(52,64,92,.20)';
 const TIPLER = [
@@ -1031,6 +1023,13 @@ const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getI
 const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
 const readDeletedAracIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_ARAC_IDS_KEY) || '[]'); } catch (e) { return []; } };
 const writeDeletedAracIds = ids => { try { localStorage.setItem(DELETED_ARAC_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))).slice(-4000))); } catch (e) { } };
+const KoSvg = (paths, vb) => React.createElement('svg', { width: 20, height: 20, viewBox: vb || '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }, paths.map((d, i) => React.createElement('path', { key: i, d: d })));
+const KO_ICONS = {
+    home: () => KoSvg(['M3 10.8 12 3.5l9 7.3', 'M5.4 9.4V20a1 1 0 0 0 1 1h11.2a1 1 0 0 0 1-1V9.4', 'M9.6 21v-5.6a1 1 0 0 1 1-1h2.8a1 1 0 0 1 1 1V21']),
+    list: () => KoSvg(['M8.5 6.5h11', 'M8.5 12h11', 'M8.5 17.5h11', 'M4.4 6.5h.01', 'M4.4 12h.01', 'M4.4 17.5h.01']),
+    hesap: () => KoSvg(['M3.5 8.2A2.2 2.2 0 0 1 5.7 6h12.6a2.2 2.2 0 0 1 2.2 2.2v8.6a2.2 2.2 0 0 1-2.2 2.2H5.7a2.2 2.2 0 0 1-2.2-2.2V8.2Z', 'M3.5 9.6h17', 'M16.4 14.4h.01']),
+    arac: () => KoSvg(['M3 16V9.2A2.2 2.2 0 0 1 5.2 7h9.1l4.4 3.6H20a1.5 1.5 0 0 1 1.5 1.5V16h-2', 'M3 16h3.2', 'M10.4 16h4.4', 'M8.1 18a1.9 1.9 0 1 0-3.8 0 1.9 1.9 0 0 0 3.8 0Z', 'M18.6 18a1.9 1.9 0 1 0-3.8 0 1.9 1.9 0 0 0 3.8 0Z', 'M13.5 7v3.6H21'])
+};
 const koTitleCaseTR = v => String(v || '').split(' ').map(w => w ? (w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1)) : w).join(' ');
 const addDeletedAracId = id => { if (!id) return; try { const cur = readDeletedAracIds(); cur.push(String(id)); writeDeletedAracIds(cur); } catch (e) { } };
 /* TAKAS: geçiş maliyeti ve iş başına net hesap (Ölmeztur açısından; + = ortak bana borçlu) */
@@ -3387,7 +3386,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "‹"),
                 React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 450, color: NAV } }),
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "›"),
-                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#ECEFF5', color: '#3E4C68', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#ECEFF5', color: '#37445F', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 450, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
@@ -3396,13 +3395,13 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 const active = d.key === selectedDay;
                 const isToday = d.key === todayKey;
                 const hasWork = d.count > 0 || d.gider > 0;
-                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#3E4C68' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#ECEFF5' : hasWork ? '#F4F5F8' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
+                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#37445F' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#ECEFF5' : hasWork ? '#F4F5F8' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
                         React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 450, color: TX, WebkitTextFillColor: TX } }, d.no),
                         false),
                     React.createElement("div", { className: "ko-arac-day-meta", style: { display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' } },
                         React.createElement("span", { className: "ko-arac-day-count", style: { width: '100%', borderRadius: 0, padding: 0, fontSize: 8, fontWeight: 450, background: 'transparent', color: hasWork ? '#1C1C1E' : SB, lineHeight: 1.08, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden' } }, d.count + ' iş'),
-                        hasWork && React.createElement("span", { className: "ko-arac-day-net" + (d.net < 0 ? " is-neg" : ""), style: { fontSize: 7.5, fontWeight: 430, color: d.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(d.net) + '₺')));
+                        hasWork && React.createElement("span", { className: "ko-arac-day-net" + (d.net < 0 ? " is-neg" : ""), style: { fontSize: 9, fontWeight: 450, color: d.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(d.net) + '₺')));
             }))),
         React.createElement("div", { className: "card ko-arac-day-panel", style: { border: '1px solid rgba(60,60,67,.16)', background: '#fff' } },
             React.createElement("div", { className: "ko-arac-day-panel-head", style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 } },
@@ -5147,25 +5146,26 @@ function DugunHesap({ T, sT, tip }) {
     return React.createElement("div", { className: "card ko-takas-card", style: { order: 1 } },
         React.createElement("button", { type: "button", className: "ko-firma-toggle", onClick: () => setOpen(v => !v), style: { width: '100%', borderRadius: 14, padding: '12px 14px', fontWeight: 470, textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
             React.createElement("span", null, '\uD83D\uDC70\uD83E\uDD35 D\u00FC\u011F\u00FCn ' + (open ? '\u2212' : '+')),
-            toplamKalan > 0 && React.createElement("span", { style: { fontSize: 11.5, fontWeight: 450, fontVariantNumeric: 'tabular-nums' } }, '+' + fr(toplamKalan) + '\u20BA kalan')),
+            toplamKalan > 0 && React.createElement("span", { style: { fontSize: 11.5, fontWeight: 500, fontVariantNumeric: 'tabular-nums' } }, '+' + fr(toplamKalan) + '\u20BA kalan')),
         open && React.createElement("div", { style: { marginTop: 11, display: 'flex', flexDirection: 'column', gap: 6 } },
-            rows.map(r => React.createElement("div", { key: r.t.id, className: "ko-takas-row" + (r.t.dugunSettled || r.kalan <= 0 ? " is-settled" : "") },
-                React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: SB, lineHeight: 1.3 } }, (r.t.date || '').slice(5), React.createElement("div", { style: { fontSize: 9 } }, r.t.time || '')),
-                React.createElement("div", { style: { minWidth: 0 } },
-                    React.createElement("div", { style: { fontSize: 11.5, fontWeight: 450, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, ((r.t.passengers && r.t.passengers[0] && r.t.passengers[0].name) || 'D\u00FC\u011F\u00FCn') + ' \u00B7 ' + (r.t.pickup || '?') + ' \u2192 ' + (r.t.dropoff || '?')),
-                    React.createElement("div", { style: { fontSize: 9.5, color: SB } }, 'Anla\u015F\u0131lan ' + fr(r.toplam) + '\u20BA \u00B7 Kapora \u2212' + fr(r.kapora) + '\u20BA \u00B7 M\u00FC\u015Fteriden kalan ' + fr(r.kalan) + '\u20BA (ara\u00E7 \u00FCcreti ayr\u0131)')),
-                React.createElement("div", { style: { fontSize: 12, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: r.t.dugunSettled || r.kalan <= 0 ? SB : G, textAlign: 'right' } }, (r.t.dugunSettled || r.kalan <= 0 ? 'Kapand\u0131' : '+' + fr(r.kalan) + '\u20BA')),
-                React.createElement("div", { style: { display: 'flex', gap: 4 } },
-                    React.createElement("button", { type: "button", onClick: () => (editId === r.t.id ? setEditId(null) : startEdit(r)), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, editId === r.t.id ? 'Kapat' : 'D\u00FCzenle'),
-                    React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#CFD6E1' : NAV), background: r.t.dugunSettled ? '#F6F7FB' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil'))),
-                editId === r.t.id && React.createElement("div", { style: { gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr 72px', gap: 6, paddingTop: 8, borderTop: '1px dashed ' + BOR, marginTop: 2 } },
+            rows.map(r => React.createElement(React.Fragment, { key: r.t.id },
+                React.createElement("div", { className: "ko-takas-row" + (r.t.dugunSettled || r.kalan <= 0 ? " is-settled" : "") },
+                    React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: SB, lineHeight: 1.3 } }, (r.t.date || '').slice(5), React.createElement("div", { style: { fontSize: 9 } }, r.t.time || '')),
+                    React.createElement("div", { style: { minWidth: 0 } },
+                        React.createElement("div", { style: { fontSize: 11.5, fontWeight: 470, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, ((r.t.passengers && r.t.passengers[0] && r.t.passengers[0].name) || 'D\u00FC\u011F\u00FCn') + ' \u00B7 ' + (r.t.pickup || '?') + ' \u2192 ' + (r.t.dropoff || '?')),
+                        React.createElement("div", { style: { fontSize: 9.5, color: SB } }, 'Anla\u015F\u0131lan ' + fr(r.toplam) + '\u20BA \u00B7 Kapora \u2212' + fr(r.kapora) + '\u20BA \u00B7 Kalan ' + fr(r.kalan) + '\u20BA (ara\u00E7 \u00FCcreti ayr\u0131)')),
+                    React.createElement("div", { style: { fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: r.t.dugunSettled || r.kalan <= 0 ? SB : G, textAlign: 'right' } }, (r.t.dugunSettled || r.kalan <= 0 ? 'Kapand\u0131' : '+' + fr(r.kalan) + '\u20BA')),
+                    React.createElement("div", { style: { display: 'flex', gap: 4 } },
+                        React.createElement("button", { type: "button", onClick: () => (editId === r.t.id ? setEditId(null) : startEdit(r)), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, editId === r.t.id ? 'Kapat' : 'D\u00FCzenle'),
+                        React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#CFD6E1' : NAV), background: r.t.dugunSettled ? '#F6F7FB' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil'))),
+                editId === r.t.id && React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 72px', gap: 6, padding: '8px 8px 2px', border: '1px dashed ' + BOR, borderRadius: 11, background: '#FBFCFE' } },
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "Anla\u015F\u0131lan (\u20BA)"),
                         React.createElement("input", { type: "number", inputMode: "decimal", value: eToplam, onChange: e => setEToplam(e.target.value), className: "inp" })),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "Kapora (\u20BA)"),
                         React.createElement("input", { type: "number", inputMode: "decimal", value: eKapora, onChange: e => setEKapora(e.target.value), className: "inp" })),
-                    React.createElement("button", { type: "button", onClick: saveEdit, style: { alignSelf: 'end', minHeight: 40, background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 470, cursor: 'pointer', fontSize: 12 } }, 'Kaydet')))));
+                    React.createElement("button", { type: "button", onClick: saveEdit, style: { alignSelf: 'end', minHeight: 40, background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 470, cursor: 'pointer', fontSize: 12 } }, 'Kaydet'))))));
 }
 
 function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
@@ -5187,9 +5187,10 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
         const map = new Map();
         jobs.forEach(t => {
             const key = nm(t.takasPartner);
-            if (!map.has(key)) map.set(key, { name: String(t.takasPartner).trim(), rows: [], openNet: 0, openCount: 0 });
+            if (!map.has(key)) map.set(key, { name: String(t.takasPartner).trim(), rows: [], openNet: 0, openCount: 0, given: 0, taken: 0 });
             const g = map.get(key);
             g.rows.push(t);
+            if ((t.takasWho || 'benVerdim') === 'benVerdim') g.given++; else g.taken++;
             if (!t.takasSettled) { g.openNet += takasJobNetTRY(t, crossRates); g.openCount++; }
         });
         map.forEach(g => g.rows.sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))));
@@ -5294,10 +5295,15 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                         },
                             React.createElement("div", { style: { minWidth: 0 } },
                                 React.createElement("div", { style: { fontSize: 12, fontWeight: 450, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, g.name),
-                                React.createElement("div", { style: { fontSize: 9.5, color: SB } }, g.rows.length + ' i\u015F \u00B7 ' + g.openCount + ' a\u00E7\u0131k')),
+                                React.createElement("div", { style: { fontSize: 9.5, color: SB } }, g.rows.length + ' i\u015F \u00B7 ' + g.openCount + ' a\u00E7\u0131k' + ((g.given - g.taken) !== 0 ? ' \u00B7 \uD83D\uDE90 ' + Math.abs(g.given - g.taken) + ' i\u015F ' + (g.given > g.taken ? 'alaca\u011F\u0131n var' : 'bor\u00E7lusun') : ''))),
                             React.createElement("div", { style: { fontSize: 12.5, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: g.openNet > 0 ? G : (g.openNet < 0 ? R : SB), flex: 'none' } },
                                 g.openNet === 0 ? 'Ba\u015Fa ba\u015F' : ((g.openNet > 0 ? '+' : '\u2212') + fr(g.openNet) + '\u20BA'))))),
                     sel && React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2 } },
+                        (sel.given - sel.taken) !== 0 && React.createElement("div", { style: { padding: '7px 10px', background: '#F0F2F7', border: '1px dashed ' + BOR, borderRadius: 10, fontSize: 10, color: TX, lineHeight: 1.45 } },
+                            '\uD83D\uDE90 \u0130\u015F dengesi: ' + (sel.given > sel.taken
+                                ? (sel.name + ' sana ' + (sel.given - sel.taken) + ' i\u015F verecek \u2014 o i\u015Fte \u00F6deme almazs\u0131n, sadece ge\u00E7i\u015F (k\u00F6pr\u00FC/feribot) fark\u0131 hesaplan\u0131r.')
+                                : ('Sen ' + sel.name + ' i\u00E7in ' + (sel.taken - sel.given) + ' i\u015F yapacaks\u0131n \u2014 \u00F6deme almazs\u0131n, sadece ge\u00E7i\u015F fark\u0131 hesaplan\u0131r.')),
+                            React.createElement("div", { style: { marginTop: 3, fontSize: 8.5, color: SB } }, 'Para bakiyesi kapansa da i\u015F dengesi a\u00E7\u0131k kal\u0131r; kar\u015F\u0131l\u0131k i\u015Fi \u201CTakas \u0130\u015F\u201D olarak girince e\u015Fitlenir.')),
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
                             React.createElement("div", { style: { fontSize: 11.5, fontWeight: 470, color: NAV } }, sel.name + ' \u2014 detay'),
                             React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: sel.openNet > 0 ? G : (sel.openNet < 0 ? R : SB) } },
@@ -5458,7 +5464,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         { id: 'arac', name: 'Araç', color: '#636366' },
         { id: 'kisisel', name: 'Kişisel', color: '#1C1C1E' },
         { id: 'saglik', name: 'Sağlık', color: '#1C1C1E' },
-        { id: 'acil', name: 'Acil', color: '#3E4C68' }
+        { id: 'acil', name: 'Acil', color: '#37445F' }
     ];
     const REPEAT_OPTIONS = [
         { id: 'none', name: 'Tek sefer' },
@@ -6088,7 +6094,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                     }, "▲ Alacak"),
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})),
-                        style: { background: ledgerForm.ltype === 'out' ? '#3E4C68' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#3E4C68' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
+                        style: { background: ledgerForm.ltype === 'out' ? '#37445F' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#37445F' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
                     }, "▼ Borç")
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
@@ -7848,7 +7854,7 @@ function App() {
                                 headlineSubTL && React.createElement("span", { style: { fontSize: '0.62em', fontWeight: 450, color: '#6F7484', marginLeft: 4, fontVariantNumeric: 'tabular-nums' } }, headlineSubTL)
                             ),
                             React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : (showNoPayment && noCollectRaw > 0 ? 'tahsilat yok' : 'müşteriden')),
-                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#3E4C68' } },
+                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#37445F' } },
                                 'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : ''))
                         ),
                         React.createElement("div", {
@@ -8005,12 +8011,12 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                     React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: '#9CA5B8', letterSpacing: '.01em' } }, label),
                     React.createElement("span", { style: { fontSize: 9, color: '#A39C90', transform: active ? 'rotate(180deg)' : 'none' } }, "▾")),
-                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#3E4C68' : '#C05F5F', lineHeight: 1.05 } }, fmtSigned(value)),
+                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#37445F' : '#C05F5F', lineHeight: 1.05 } }, fmtSigned(value)),
                 React.createElement("div", { style: { fontSize: 8.5, color: '#A39C90', marginTop: 1 } }, sub));
         };
         const detailRow = (label, value, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: strong ? '1px solid var(--line)' : 'none' } },
             React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#8A8378' } }, label),
-            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#3E4C68' : '#C05F5F' } }, fmtSigned(value)));
+            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#37445F' : '#C05F5F' } }, fmtSigned(value)));
         const det = selectedProfit === 'year' ? dy : (selectedProfit === 'month' ? dm : null);
         return React.createElement(React.Fragment, null,
             React.createElement("div", { className: "lg-section-row", style: { paddingTop: 2 } },
@@ -8028,7 +8034,7 @@ function App() {
                     det.months.filter(m => m.count > 0 || m.total !== 0).map(m => React.createElement("div", { key: m.key, style: { background: '#fff', borderRadius: 11, padding: '8px 10px', boxShadow: 'inset 0 0 0 1px #EFEAE2' } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                             React.createElement("div", { style: { fontSize: 11, fontWeight: 450, color: '#6B7488' } }, m.name),
-                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#3E4C68' : '#C05F5F' } }, fmtSigned(m.total))),
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#37445F' : '#C05F5F' } }, fmtSigned(m.total))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#8A8378' } },
                             React.createElement("div", null, "Ölmeztur ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.olmez))),
                             React.createElement("div", null, PLAKA + " ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.plate.net))))))) ));
@@ -8401,7 +8407,7 @@ function App() {
                         ),
                         React.createElement("div", { style: { color: SB, fontSize: 11 } }, rememberMe ? 'Oturum bu cihazda açık kalır' : 'Tarayıcı kapanınca tekrar giriş gerekir')
                     ),
-                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#3E4C68', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
+                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#37445F', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
                     React.createElement("button", { onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? '#AEAEB2' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#FFFFFF', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 450, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor' : 'Güvenli Giriş Yap'),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 } },
                         React.createElement("div", { style: { background: '#F4F5F8', border: '1px solid #D1D1D6', borderRadius: 14, padding: '10px 12px' } },
@@ -8785,7 +8791,7 @@ function App() {
                         ? { fg: '#4A5F78', bg: '#F0F2F7', bd: '#D8E0EA' }
                         : id === 'sedan'
                             ? { fg: '#6A5A3F', bg: '#F7F2EA', bd: '#E5D8C4' }
-                            : { fg: '#3E4C68', bg: '#ECEFF5', bd: '#D9E2D6' };
+                            : { fg: '#37445F', bg: '#ECEFF5', bd: '#D9E2D6' };
                     return { id, name, ...colors };
                 };
                 const homeVehicleIcon = (id, color) => React.createElement("svg", {
@@ -8854,7 +8860,7 @@ function App() {
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '49px minmax(0,1fr)', alignItems: 'stretch', gap: 8, minHeight: 68 } },
-                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#3E4C68', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#37445F', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 } },
                                     React.createElement("span", { style: { fontSize: 9, fontWeight: 470, padding: '1px 7px', minHeight: 17, borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
@@ -8872,8 +8878,8 @@ function App() {
                                 React.createElement("div", { style: { width: '100%', height: 1, margin: '2px 0 1px', background: 'rgba(60,60,67,.26)', boxShadow: '0 1px 0 rgba(255,255,255,.86)' } }),
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#6B7488', fontWeight: 450, lineHeight: 1.14 } },
                                     React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
-                                    altText && React.createElement("span", { style: { color: '#3E4C68', fontWeight: 450 } }, "→"),
-                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#3E4C68', fontWeight: 450 } }, altText)
+                                    altText && React.createElement("span", { style: { color: '#37445F', fontWeight: 450 } }, "→"),
+                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#37445F', fontWeight: 450 } }, altText)
                                 )
                             )
                         )
@@ -8981,7 +8987,7 @@ function App() {
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
                                     React.createElement("img", { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABGCAYAAAAzbZETAAAKQElEQVR42u2ce7BVVR3Hv+vcc7mX9xsCBMF4KIg8zSkyBkUMoxgnEVEayz8wNWumkTIR/7CoaSwfjM5o1igVlZQ5k01ZjQWDkDaaIEKhlaaIKSozCCiXe++nP+5vMT+2+9znvpx99KyZM2fvffbeZ63f+/ddv7Wkaqu2aqu2aqu2aqu2D2ILldRZICT6zrGTEKgyIHuCFyQV7LQ5hNCcxb1VBrSD6CGExhK/9ZFUL6lGUqOkwyGEQyW0pUZSU561I+SI8DWS8JILnCbpLEkzJJ0qaZyk4caEKO2Nkt6Q9B9JT0vaImlLCOGl1t5dZcDxUq1IHGCKpIslLZQ0XVJt4pG3JO2VtM+OkTRQ0jBJoyUNsPt2SPqZpHUhhFcdI5or1V90l9TH43nAr4HDHN+eA+4BLgWmAH1bc9LAKGAh8H3gWeA1YJ1p03v+94NK+EKMaIBpwG8SRD8M/AJYBPRs5R01QNG+CyXum2rM2A7cCQzpTiaYEBRL9Sc3Um8EXA284wh/FLgfOCP5TBxUIhRNG7xnTHC/9QduBLYAy0qEtplpdF6JX7TvscAmI3qzfT8GzEkQvaarBDKGFN35KOAHwHeBOu+H2mBqW4yPGj0UuARY1Na7y0X8jwKvGtGbjAGrY0dbMydZmAZ3vgRYC4zsCKGSZi/hx1aazwG4LDda4Yh/LnDImZx9wCcdgWpOQF+C689EM0tjkkxwEj0amAn0a+Wd/YBfuXHdnRvpdzb/bHOuTdbJF2NkAtSWsV/9gc8DQxOELxizvgEcARrMka8HbgAWA6daELHNEf+WZKBR9hgf+DDwpiP+C8ApXjvK3L964DygVxr2BIwHbk8EDNGENtjxAeCKPBE/mJ2sA55yUc4+YGK5iZ9C5N4mzYVE9OSPP2T+aqcRvtGNa365tLktFb/DOvmuScy8vBA/hQkDgBEphC8CPdz5DU4Lmm1c47orgOgK8T9mnTxi39flSkpKa0KxlfuutrH8D9jsGDEnT1FPwT5/c3H+prxJfgdM6RxgBnCFjeWPJvFDgLft2vm5YIAL8ZZaxxpNA6bkKjHpmB/7AvBPG89NiXtuteuX5ELAHBTwtJP+uypV+t3xQEsgYwDRwxh0ko3x+rKP0dn+c5yDOmjJTKgw6feZ+VQ7vtJpcnDjfRhYnScGrHfSv64igKr0cQwyyGJwmvBEDMjuq89LFNHXYv3Yzj5RMEPGPux04FsOpghlT67aKTXzE5Mptbnu+PG+KwrRZcB9wPD2BA5dYU6W9ip2YK679kgI4ahJVWOepT4WAQC3SRoqaUUI4TBQaGsuuStTnFk6xdiJGe7apkoIM0MIjYb3bJXUGEJYHokvqdZnwZWgxv8w89MATMpr7J+YG7jK0NnLXeTjfdp74Im8pe9xZqk/8LoxYC/QO28dj1m6HY8Efm+T95PTwkgDE8d31zgKXRlICAHreAzB+kmKkO4+SYe7aiMzNjfFEEJzCKEZ+KKkXZJelXRGCGGX9wWuNUkanNeIZ1FMTOx8okGzAI/nRfoT5maaTczvBy5OJl4lGPeJ7jKjhc4QP4TQBFwoaWAIYacbYKNJjCS9m4iOyiYo5mT7A7dL2iZpv6RJIYQNsXoiLdKx60jqqZYyx9yk57OBh1zlQrw+xGa+ALaUSwMSfSoYhLDfYJHlSQa1w8ddVao+qRzIYE+LdOakRAx1Fk0APHWiGZCcEDETucv6s97N+3ao3MUmYMrOgGj3f2TxcrK0MDJhq5v3rT8RTEgh/Fxgo/XjeWBBe6U+5d09gG+XFUpxxJ9lg/psSp1N0TEIKz85ubvyAKeRHjL+uCGTMQ9ZGWffOiH1UaCGAbeWNaBw9nSTTbCMSBLWMWCFw4IuSIutM4jjk7H6fEd4gB8CJ3VW6lP83W2dfU+W0j/HBvdvJ1UhpcOT3BzwmqwYEB2+O6+3WbeNjvCPAB/pCuFTBOpyYFXWgtQZBvzYMP7t7VDbOBf8RFdUt4S0jwG+ZqUhsT0OfNrdEwWkaJUOoQsMWAtcVBYNcATt4+o534yDSg7MdXqVMeBwR/GgSPSEeSvY+oH7gLcc4bcByxLVbDUuJJ4M9OokA6KPeRQYXRYfkOJ8Y5Z7kZe0FDM0zhFpbWvq66qPiykMnQhcDzyZqEh7xioUfK2OP54NnNnZ8pfosG0yaWPZAEXHgM+YRDfY9+5YrGoTLmlFrV8FHgDuisR1n2MVxin/OdYSpz8lCnkB/m51nHXe3DjGjwCWA7OygC6Ae4Fv5sH+f8rVQsb6zs3A2CTYZZ+kZhRbwVrqTVqvA/7s6mx822gOtzbxTh8GL7Wwc3QX/U4Ukv7ASw4JLYsGRMmaYOFns2NE9Ac3ARM6MLjhFq9/2TTkBdLbQfv9nBRmesLPMC1b4eGHDKR/FbC5u51vaCcTkPSEpDMNcCtKanZgXoOk7ZJ2SnpZLctGI9g3XNIgtaxgHCtplMHWpdpzkn4uaX0I4XknzceAtehkJd0oaaSkNSGE7VHqOwt/2/PBIPW9kpaEEP4QAchyZ8HnOulvdHU/R+l4Sz7zhmE1F/jyDucrvMTXWRj6JLAyi5g/RfrvdFhWroptr07Uxh81ZjTacYN9jlg19Dv2OZLChNeAX5rTHJZmZlIIf62VCD4Y/U9WBV8pEd/ssmW/7dCErZ2Q+gOWMN1i63gHpoR+tSmrG4eYn3kF2AEsTJtoyQhX6gHsAe4/UcQPHWVCtIXAXEnnS5otaYxaVqjXmT84IOl1SS9KekYtWwjsiCvWE0ytMR/TlNimYJakayRdqpbpzZtDCPe65zJZ8R79i03abFBLWc04SUeUx1X1JWL3YNUDgyxLrm0lwamzTzHl91HAl0zSAf7ro5uspdL6HWGLm3NpetrIFovtqRprgwBTLGnzix3+Aixui/EZoKrRrH49d0tLO2lDT7bFbnMtdxhkOFJvW1812ZK6VcBvEzWku2zJ6Pg0WKC7tBhYY///lbJlvBkDd6OAz9kGGxstatmbiIQarG70p4bpTEyDnruB8F7qB7i1vddWNPFbGXAv04ppwFnAdGNQr3ZqVMiQ8D6kXWDRTn5WtnSDOSq0hyiG7y8zO7wBWJqSE3SYGSVg7QnAT4zwu4EZ70vJTwG2Cm5vhYK7VrAlPg+mgG9LkpUIjqhFZ6ZqfMZcIko73bLb2L4X3/2+JX4nmLUgEQlh5S/fsenQPh183ynmXx5173sYmJkEG8vZ8lA2GFrws2Nbll0o6UpJ8yT5svCX1VLVtkMt+8O9YgmfLAEcaoDfNEsOT3PPPiDpjhDCX7NO5CqeAWlZdjQbkhZLOk/STEl9O/C6g5Iek/SQpN+FEPZ4ic/T5n153LYybffEkWrZNXGyjt85saekQ5LelrRH0r8kPStpdwjhQDLuLxukXEkMSNjngjq576d7PtebuFbE1sVGzOD6i/sOiXGgCtqaMq2sBId4dkkKq63aKiphKtjs1GJ3fSpwDTDY4z3Vln3UIZuPjW26XYvlf/dUs8buaf8HzgXlH0UsXfAAAAAASUVORK5CYII=", alt: "", className: "ko-brand-logo" }),
                                     React.createElement("span", { className: "ko-brand-serif" }, "\u00D6lmez Transfer"),
-                                    React.createElement("span", { className: "ko-ver-chip" }, "v43")),
+                                    React.createElement("span", { className: "ko-ver-chip" }, "v45")),
                                 React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.76)', WebkitTextFillColor: 'rgba(255,255,255,.76)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
@@ -9982,7 +9988,7 @@ function App() {
                             style: { fontSize: 11, padding: '6px 10px', background: '#F2F2F7', border: '1px solid #D1D1D6', color: '#636366', fontStyle: 'italic' }
                         })),
                     React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar", rows: 2, className: "inp", style: { resize: 'none' } })),
-                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: '#3E4C68', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #333F58', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(38,48,70,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
+                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: '#37445F', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #2A3550', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(38,48,70,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     /* Arama — tek başına üstte */
@@ -10044,22 +10050,22 @@ function App() {
         React.createElement("nav", { className: "tabbar" },
             React.createElement("div", { className: "tabbar-inner" },
                 React.createElement("button", { className: "tab" + (tab === 'home' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('home'); }, onClick: () => setTab('home') },
-                    React.createElement("div", { className: "tab-icon" }, "🏠"),
+                    React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.home)),
                     React.createElement("div", { className: "tab-label" }, "Ana Sayfa")
                 ),
                 React.createElement("button", { className: "tab" + (tab === 'list' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('list'); }, onClick: () => setTab('list') },
-                    React.createElement("div", { className: "tab-icon" }, "📋"),
+                    React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.list)),
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 /* FAB — +Yeni (ortada, premium) */
                 React.createElement("button", { className: "tab-fab", onPointerDown: (e) => { e.preventDefault(); openNewTransferForm(); }, onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
                     React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('hesap'); }, onClick: () => setTab('hesap') },
-                    React.createElement("div", { className: "tab-icon" }, "💰"),
+                    React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.hesap)),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
                 ),
                 React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onPointerDown: (e) => { e.preventDefault(); setTab('arac'); }, onClick: () => setTab('arac') },
-                    React.createElement("div", { className: "tab-icon" }, "🚐"),
+                    React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.arac)),
                     React.createElement("div", { className: "tab-label" }, "Araç")
                 )
             )
@@ -10103,7 +10109,7 @@ function App() {
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: '#9E7C2E', marginTop: 2 } }, 'BOŞ')
                         ),
                         React.createElement("div", { style: { textAlign: 'center' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#3E4C68', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
+                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#37445F', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: SB, marginTop: 2 } }, 'İPTAL')
                         )
                     ),
