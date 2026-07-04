@@ -2888,15 +2888,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1783097870328_a7sugb@olmeztur
 DTSTAMP:20260704T093400Z
 LAST-MODIFIED:20260704T093400Z
-SEQUENCE:1783157641
+SEQUENCE:1783157652
 DTSTART:20260712T090000
 DTEND:20260712T100000
 SUMMARY:09:00 · Bursa → Gelin Arabası  Vito
 LOCATION:Bursa → Gelin Arabası
 DESCRIPTION:Müşteri: Nazif Aşık\nŞoför: Kadir Ölmez / +90 (543) 287 06 8
  7\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito /
-  16 LMZ 55\nGüzergah: Bursa → Gelin Arabası\nÖdeme: Müşteri: 8.000 TRY |
-  Araç: 10.000 ₺
+  16 LMZ 55\nGüzergah: Bursa → Gelin Arabası\nÖdeme: Müşteri: 10.000 TRY 
+ | Araç: 10.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
