@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#F3F6FC">
+<meta name="theme-color" content="#F5F5F7">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Navy Premium v33</title>
+<title>KÖ Transfer Takip - Graphite Premium v35</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,7 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#D64949;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#D8E1EF;--line-2:#C7D3E8;--ink:#13233F;--ink-2:#2A3B5C;--ink-3:#5E6C86;--muted:#5E6C86;--accent:#12315E;--accent-2:#12315E;--accent-soft:#E8EEF8;--brand:#12315E;--brand-2:#0E2749;--brand-soft:#E8EEF8;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
+:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#D64949;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#E2E2E6;--line-2:#D6D6DB;--ink:#1D1D1F;--ink-2:#232327;--ink-3:#6E6E73;--muted:#6E6E73;--accent:#2B2B30;--accent-2:#2B2B30;--accent-soft:#EEEEF2;--brand:#2B2B30;--brand-2:#2B2B30;--brand-soft:#EEEEF2;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg) !important;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
 #root{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg)}
@@ -176,12 +176,12 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-account-firm-bucket.is-pay{border-color:rgba(178,82,76,.30)}
 .ko-account-firm-bucket-head{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border-bottom:1px solid rgba(60,60,67,.12)}
 .ko-account-firm-bucket-title,.x-none{font-size:11px;font-weight:620;line-height:1.12;letter-spacing:.2px;text-transform:uppercase}
-.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#12315E}
+.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#2B2B30}
 .ko-account-firm-bucket.is-pay .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-pay .ko-account-firm-bucket-total{color:#D64949}
 .ko-account-firm-bucket-total{font-size:12px;font-weight:650;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .ko-account-firm-bucket-cards{display:flex;flex-direction:column;gap:6px;padding:7px}
 .ko-account-firm-bucket-empty{font-size:11px;font-weight:520;padding:12px 8px;text-align:center}
-.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #12315E !important;background:#fff !important}
+.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #2B2B30 !important;background:#fff !important}
 .ko-account-firm-card.is-pay{border-color:rgba(178,82,76,.28) !important;border-left:3px solid #D64949 !important;background:#fff !important}
 .ko-account-firm-bucket .ko-account-firm-card-title{flex-direction:column;align-items:stretch !important;gap:4px !important}
 .ko-account-firm-bucket .ko-account-firm-card-title span{align-self:flex-end;max-width:100%;white-space:normal !important;text-align:right}
@@ -197,7 +197,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-debt-card{position:relative}
 .ko-debt-card-head{display:grid;grid-template-columns:30px minmax(0,1fr) auto 28px;gap:7px;align-items:center}
 .ko-debt-check{width:28px;height:28px;border-radius:50%;background:#fff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;padding:0}
-.ko-debt-check.is-done{background:#12315E;border-color:#12315E}
+.ko-debt-check.is-done{background:#2B2B30;border-color:#2B2B30}
 .ko-debt-main{min-width:0;background:transparent;border:0;padding:0;text-align:left;cursor:pointer;color:inherit}
 .ko-debt-main-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ko-debt-main-sub{font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -219,7 +219,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:14px 14px calc(var(--tabba
 .ko-debt-split-grid{margin-top:2px}
 .ko-debt-split-grid .ko-account-firm-bucket-cards{gap:7px}
 .ko-debt-summary-card{width:100%;min-height:52px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);color:var(--ink);text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid #12315E}
+.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid #2B2B30}
 .ko-debt-summary-card.is-pay{border-color:rgba(178,82,76,.28);border-left:3px solid #D64949}
 .ko-debt-summary-card.is-selected{outline:2px solid rgba(28,28,30,.18);outline-offset:1px}
 .ko-debt-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;min-width:0}
@@ -382,25 +382,25 @@ main.main-cont.view-home{padding-top:calc(var(--sa-t) + 14px) !important}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
 /* Clean Apple visual layer - single source, business logic untouched */
-:root{--card:#FFFFFF !important;--accent:#12315E !important;--accent-soft:#E8EEF8 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#D64949 !important;--ok:#12315E !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#D64949 !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
+:root{--card:#FFFFFF !important;--accent:#2B2B30 !important;--accent-soft:#EEEEF2 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#D64949 !important;--ok:#2B2B30 !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#D64949 !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 .card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard{background:#FFFFFF !important;box-shadow:none !important}
 input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:#12315E !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:#2B2B30 !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
 .is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#D64949 !important;-webkit-text-fill-color:#D64949 !important}
-.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#12315E !important;-webkit-text-fill-color:#12315E !important;box-shadow:none !important}
+.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;box-shadow:none !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important}
 .tcard-pill.tcard-pill-alt{font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{border-color:rgba(47,101,167,.24) !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
 .tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{border-color:rgba(176,82,76,.24) !important;color:#D64949 !important;-webkit-text-fill-color:#D64949 !important}
-.tcard-stripe{background:#12315E !important}
+.tcard-stripe{background:#2B2B30 !important}
 .tabbar{background:rgba(255,255,255,.98) !important;border-top:1px solid rgba(60,60,67,.18) !important;box-shadow:none !important}
 .tabbar-inner{background:transparent !important;height:74px !important;padding:6px 8px !important;box-shadow:none !important;border:0 !important}
 .tab{background:transparent !important;border-color:transparent !important;font-size:10px !important;font-weight:500 !important;border-radius:16px !important}
-.tab-fab{background:#12315E !important;border-color:#12315E !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
+.tab-fab{background:#2B2B30 !important;border-color:#2B2B30 !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
 .tab-badge{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-month-cal-card,.ko-real-cal-card{background:#FFFFFF !important;border-radius:24px !important;box-shadow:none !important;padding:13px !important;overflow:hidden !important}
 .lg-month-cal-head{padding:0 0 11px !important;margin-bottom:9px !important}
@@ -413,17 +413,17 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#12315E !importa
 .lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(79,107,69,.40) !important}
 .lg-month-day>div:first-child,.ko-arac-day>div:first-child{width:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:3px !important;min-width:0 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13px !important;font-weight:600 !important;line-height:1 !important;text-align:center !important}
-.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#12315E !important;-webkit-text-fill-color:#12315E !important}
+.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important}
 .lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{width:100% !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:flex-start !important;gap:2px !important;min-width:0 !important;overflow:hidden !important}
 .lg-month-day-count,.ko-arac-day-count{width:100% !important;display:block !important;min-width:0 !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:8px !important;font-weight:500 !important;line-height:1.08 !important;text-align:center !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#12315E !important;-webkit-text-fill-color:#12315E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#D64949 !important;-webkit-text-fill-color:#D64949 !important}
 .lg-month-selected-line{margin-top:10px !important;padding:10px 0 0 !important;display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
 .lg-month-selected-title{font-size:13px !important;font-weight:520 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
-.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#12315E !important;-webkit-text-fill-color:#12315E !important;white-space:nowrap !important}
+.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;white-space:nowrap !important}
 .tk-cell{background:#FFFFFF !important;border-radius:12px !important;box-shadow:none !important;min-height:48px !important;padding:5px !important;gap:3px !important;overflow:hidden !important}
 .tk-cell-count{font-size:9.5px !important;font-weight:500 !important;line-height:1 !important}
-.tk-cell-dot{background:#12315E !important}
+.tk-cell-dot{background:#2B2B30 !important}
 .ko-arac-day-panel,.ko-arac-job-card,.ko-account-firm-card,.ko-debt-card,.ko-contact-card{border-radius:20px !important;background:#FFFFFF !important;box-shadow:none !important;overflow:hidden !important}
 .ko-account-section-head,.ko-debt-toggle,.ko-contact-toggle,.ko-firma-toggle{background:#FFFFFF !important;border-radius:18px !important;font-weight:520 !important;box-shadow:none !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
@@ -533,7 +533,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
   .tab-label{font-size:9.8px !important;text-overflow:clip !important}
 }
 .lg-home .lg-greeting-card{overflow:hidden !important}
-.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#12315E !important}
+.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#2B2B30 !important}
 .lg-home-transfer-list>div,.lg-today-list-standalone>div{contain:layout paint style}
 .view-arac .ko-arac-day.is-today{border-color:rgba(94,122,82,.58) !important}
 
@@ -542,14 +542,14 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-debt-firm-card.is-selected{outline:2px solid rgba(79,107,69,.22) !important;outline-offset:1px !important}
 .ko-debt-firm-card .ko-account-firm-card-copy b{white-space:normal !important;overflow:visible !important;overflow-wrap:anywhere !important;text-overflow:clip !important}
 .ko-debt-firm-card .ko-debt-firm-tl{display:inline !important;margin-left:3px !important;font-size:9px !important;opacity:.75 !important}
-.ko-debt-ledger{border-left:4px solid var(--debt-accent,#12315E) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
+.ko-debt-ledger{border-left:4px solid var(--debt-accent,#2B2B30) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
 .ko-debt-ledger-head{display:grid !important;grid-template-columns:28px minmax(0,1fr) auto 26px !important;align-items:center !important;gap:7px !important;min-width:0 !important}
 .ko-debt-ledger .ko-debt-check{width:28px !important;height:28px !important;min-height:28px !important;padding:0 !important;border-radius:50% !important;font-size:13px !important}
 .ko-debt-ledger-copy{min-width:0 !important}
 .ko-debt-ledger-name{font-size:12px !important;font-weight:500 !important;line-height:1.18 !important;white-space:normal !important;overflow-wrap:anywhere !important}
 .ko-debt-ledger-meta{margin-top:2px !important;font-size:9px !important;line-height:1.15 !important}
 .ko-debt-ledger-balance{text-align:right !important;white-space:nowrap !important;font-variant-numeric:tabular-nums !important}
-.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#12315E) !important;font-size:12px !important;font-weight:520 !important}
+.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#2B2B30) !important;font-size:12px !important;font-weight:520 !important}
 .ko-debt-ledger-balance small{display:block !important;margin-top:2px !important;font-size:8px !important}
 .ko-debt-ledger-close{width:26px !important;height:26px !important;min-height:26px !important;padding:0 !important;border-radius:8px !important;font-size:14px !important}
 .ko-debt-ledger-stats{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:5px !important;margin-top:8px !important}
@@ -567,14 +567,14 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-debt-ledger-more{width:100% !important;min-height:28px !important;margin-top:5px !important;padding:5px 8px !important;border-radius:9px !important;font-size:9px !important}
 .ko-debt-ledger-actions{display:flex !important;align-items:center !important;gap:6px !important;margin-top:8px !important}
 .ko-debt-ledger-actions button{min-height:30px !important;padding:6px 9px !important;border-radius:9px !important;background:#FFFFFF !important;font-size:9.5px !important}
-.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#12315E) !important;background:var(--debt-accent,#12315E) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#2B2B30) !important;background:var(--debt-accent,#2B2B30) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .ko-debt-ledger-actions .is-delete{margin-left:auto !important;color:#D64949 !important;-webkit-text-fill-color:#D64949 !important}
 .ko-debt-ledger-form{display:flex !important;flex-direction:column !important;gap:6px !important;margin-top:8px !important;padding:7px !important;border-radius:11px !important}
 .ko-debt-ledger-form-top{display:grid !important;grid-template-columns:92px 92px minmax(120px,1fr) !important;gap:6px !important}
 .ko-debt-ledger-form-top.is-edit{grid-template-columns:minmax(0,1fr) 82px !important}
 .ko-debt-ledger-form-bottom{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;gap:6px !important}
 .ko-debt-ledger-form input,.ko-debt-ledger-form select{min-height:32px !important;padding:6px 7px !important;border-radius:8px !important;font-size:10.5px !important}
-.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#12315E) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
+.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#2B2B30) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
 @media(max-width:700px){
   .ko-debt-firm-card .ko-account-firm-card-title b{font-size:12px !important}
   .ko-debt-firm-card .ko-account-firm-card-title>span{font-size:11px !important}
@@ -594,31 +594,31 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  ÖLMEZTUR PREMIUM v29 — TEK YETKİLİ TEMA (lacivert · beyaz · altın) ║
    ╚══════════════════════════════════════════════════════════════════╝ */
-:root{--pnavy:#0B2142;--pnavy2:#16355F;--pnavy3:#1A4079;--pgold:#D9BE7C;--pink:#13233F;--pmut:#5E6C86;--pline:#D8E1EF;--pgrad:linear-gradient(135deg,#0B2142 0%,#12315E 55%,#1A4079 100%)}
-html,body,main.main-cont{background:#F3F6FC !important}
+:root{--pnavy:#232327;--pnavy2:#303036;--pnavy3:#3A3A40;--pgold:#D9BE7C;--pink:#1D1D1F;--pmut:#6E6E73;--pline:#E2E2E6;--pgrad:#2B2B30}
+html,body,main.main-cont{background:#F5F5F7 !important}
 /* ── Kartlar: beyaz, oval, yumuşak lacivert gölge ── */
-.card,.lg-glass-card,.lg-period-panel,.lg-upcoming-card,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card,.tcard{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:20px !important;box-shadow:0 2px 12px rgba(14,39,73,.07) !important;color:var(--pink) !important}
-.ms,.ko-transfer-edit-sheet{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:24px !important;box-shadow:0 18px 44px rgba(11,33,66,.22) !important}
+.card,.lg-glass-card,.lg-period-panel,.lg-upcoming-card,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card,.tcard{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:20px !important;box-shadow:0 2px 12px rgba(22,22,26,.07) !important;color:var(--pink) !important}
+.ms,.ko-transfer-edit-sheet{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:24px !important;box-shadow:0 18px 44px rgba(22,22,26,.22) !important}
 /* ── Tipografi: net, kaliteli ── */
-.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.tk-month-title,.tk-panel-date,.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title,.ko-account-balance-divider{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:480 !important;letter-spacing:.3px !important;font-size:14.5px !important}
-.tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b,.ko-account-stat-total,.lg-month-selected-count,.ko-arac-day-netbox-value{color:#13233F !important;-webkit-text-fill-color:#13233F !important;font-weight:560 !important}
-.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-panel-count,.lg-month-selected-kicker,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl{color:#5E6C86 !important;-webkit-text-fill-color:#5E6C86 !important;font-weight:430 !important}
+.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.tk-month-title,.tk-panel-date,.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title,.ko-account-balance-divider{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:480 !important;letter-spacing:.3px !important;font-size:14.5px !important}
+.tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b,.ko-account-stat-total,.lg-month-selected-count,.ko-arac-day-netbox-value{color:#1D1D1F !important;-webkit-text-fill-color:#1D1D1F !important;font-weight:560 !important}
+.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-panel-count,.lg-month-selected-kicker,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl{color:#6E6E73 !important;-webkit-text-fill-color:#6E6E73 !important;font-weight:430 !important}
 .lbl{font-weight:560 !important;letter-spacing:.3px !important;text-transform:uppercase !important;font-size:9.5px !important}
 b,strong{font-weight:560 !important}
 /* ── LACİVERT YÜZEYLER: içindeki HER yazı BEYAZ (WebKit dahil) ── */
-.lg-greeting-card,.ko-navy-hero,.ko-navy-panel,.lg-period-card,.lg-profit-card,.date-hdr,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.ko-account-firm-bucket-head,.toast,.tab-fab{background:var(--pgrad) !important;border:1px solid #0B2142 !important;box-shadow:0 10px 26px rgba(11,33,66,.26) !important}
+.lg-greeting-card,.ko-navy-hero,.ko-navy-panel,.lg-period-card,.lg-profit-card,.date-hdr,.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle,.ko-account-firm-bucket-head,.toast,.tab-fab{background:var(--pgrad) !important;border:1px solid #232327 !important;box-shadow:0 10px 26px rgba(22,22,26,.26) !important}
 .lg-greeting-card *,.ko-navy-hero *,.ko-navy-panel *,.lg-period-card *,.lg-profit-card *,.date-hdr *,.ko-contact-toggle *,.ko-debt-toggle *,.ko-firma-toggle *,.ko-account-firm-bucket-head *,.toast *,.tab-fab *,.lg-greeting-card,.date-hdr,.toast,.tab-fab{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-period-card .lg-period-label,.lg-period-card .lg-period-sub,.lg-profit-card .lg-profit-label,.date-hdr .date-hdr-meta,.date-hdr small{color:rgba(255,255,255,.74) !important;-webkit-text-fill-color:rgba(255,255,255,.74) !important;font-weight:460 !important}
 .lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value,.lg-profit-card .lg-profit-detail-value,.lg-profit-card .lg-profit-month-total{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:500 !important;letter-spacing:.2px !important;font-size:15.5px !important}
-.ko-navy-panel input,.ko-navy-panel select,.ko-navy-panel textarea{background:#FFFFFF !important;color:#13233F !important;-webkit-text-fill-color:#13233F !important;border-color:rgba(255,255,255,.6) !important}
-.ko-navy-panel option{color:#13233F}
+.ko-navy-panel input,.ko-navy-panel select,.ko-navy-panel textarea{background:#FFFFFF !important;color:#1D1D1F !important;-webkit-text-fill-color:#1D1D1F !important;border-color:rgba(255,255,255,.6) !important}
+.ko-navy-panel option{color:#1D1D1F}
 .ko-navy-lbl{color:rgba(255,255,255,.82) !important;-webkit-text-fill-color:rgba(255,255,255,.82) !important}
 .lg-greeting-card{border-radius:24px !important;position:relative;overflow:hidden}
-.lg-greeting-card::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,rgba(217,190,124,0),#D9BE7C 30%,#D9BE7C 70%,rgba(217,190,124,0))}
+.lg-greeting-card::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#D9BE7C,#D9BE7C 30%,#D9BE7C 70%,rgba(217,190,124,0))}
 .lg-period-card,.lg-profit-card{border-radius:20px !important;position:relative;overflow:hidden}
-.lg-period-card::before,.lg-profit-card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,rgba(217,190,124,0),rgba(217,190,124,.9),rgba(217,190,124,0))}
-.lg-period-card.is-active,.lg-profit-card.is-active{border-color:var(--pgold) !important;box-shadow:0 0 0 1.5px var(--pgold),0 12px 26px rgba(11,33,66,.32) !important}
-.date-hdr{border-radius:16px !important;box-shadow:0 5px 16px rgba(11,33,66,.20) !important}
+.lg-period-card::before,.lg-profit-card::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:#D9BE7C,rgba(217,190,124,.9),rgba(217,190,124,0))}
+.lg-period-card.is-active,.lg-profit-card.is-active{border-color:var(--pgold) !important;box-shadow:0 0 0 1.5px var(--pgold),0 12px 26px rgba(22,22,26,.32) !important}
+.date-hdr{border-radius:16px !important;box-shadow:0 5px 16px rgba(22,22,26,.20) !important}
 .date-hdr button{background:rgba(255,255,255,.14) !important;border:1px solid rgba(255,255,255,.28) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;border-radius:10px !important}
 .ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{border-radius:18px !important;font-weight:520 !important;letter-spacing:.2px !important}
 .ko-account-firm-bucket-head{border-radius:14px !important;padding:9px 12px !important}
@@ -627,19 +627,19 @@ b,strong{font-weight:560 !important}
 .ko-hero-rate span:first-child{color:#D9BE7C !important;-webkit-text-fill-color:#D9BE7C !important}
 .ko-ver-chip{display:inline-flex;align-items:center;height:18px;padding:0 8px;border-radius:999px;background:rgba(217,190,124,.18);border:1px solid rgba(217,190,124,.55);color:#D9BE7C !important;-webkit-text-fill-color:#D9BE7C !important;font-size:9px;font-weight:620;letter-spacing:.7px}
 /* ── TAKVİMLER (Transferler + Araç + Takvim): net rakam, premium seçim ── */
-.lg-month-weekdays div,.tk-weekday{color:#8492AB !important;-webkit-text-fill-color:#8492AB !important;font-weight:540 !important;font-size:9.5px !important;letter-spacing:.6px !important;text-transform:uppercase !important}
-.lg-month-day,.ko-arac-day,.tk-cell{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:14px !important;box-shadow:0 1px 4px rgba(14,39,73,.05) !important}
-.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:470 !important;font-size:12.5px !important}
-.lg-month-day-count,.ko-arac-day-count,.tk-cell-count{color:#5E6C86 !important;-webkit-text-fill-color:#5E6C86 !important;font-weight:460 !important;font-size:9px !important}
+.lg-month-weekdays div,.tk-weekday{color:#98989E !important;-webkit-text-fill-color:#98989E !important;font-weight:540 !important;font-size:9.5px !important;letter-spacing:.6px !important;text-transform:uppercase !important}
+.lg-month-day,.ko-arac-day,.tk-cell{background:#FFFFFF !important;border:1px solid var(--pline) !important;border-radius:11px !important;box-shadow:0 1px 4px rgba(22,22,26,.05) !important}
+.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:470 !important;font-size:12px !important}
+.lg-month-day-count,.ko-arac-day-count,.tk-cell-count{color:#6E6E73 !important;-webkit-text-fill-color:#6E6E73 !important;font-weight:460 !important;font-size:9px !important}
 .lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important;font-weight:540 !important;font-size:9px !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#D64949 !important;-webkit-text-fill-color:#D64949 !important}
-.lg-month-day.is-other,.ko-arac-day.is-other{opacity:.40 !important;background:#F3F6FC !important}
-.lg-month-day.has-work,.ko-arac-day.has-work{background:linear-gradient(180deg,#FFFFFF,#EDF3FC) !important;border-color:#B9CBE6 !important}
-.lg-month-day.has-work .lg-month-day-count,.ko-arac-day.has-work .ko-arac-day-count{color:#12315E !important;-webkit-text-fill-color:#12315E !important;font-weight:500 !important}
+.lg-month-day.is-other,.ko-arac-day.is-other{opacity:.40 !important;background:#F5F5F7 !important}
+.lg-month-day.has-work,.ko-arac-day.has-work{background:#F0F0F4 !important;border-color:#C7C7CE !important}
+.lg-month-day.has-work .lg-month-day-count,.ko-arac-day.has-work .ko-arac-day-count{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:500 !important}
 .lg-month-day.is-today,.ko-arac-day.is-today,.tk-cell.tk-today{border:2px solid var(--pgold) !important;background:#FFFDF6 !important}
-.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important}
+.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important}
 /* SEÇİLİ GÜN → lacivert zemin, BEYAZ rakam ve yazılar, altın net */
-.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected{background:var(--pgrad) !important;border:1px solid #0B2142 !important;box-shadow:0 8px 20px rgba(11,33,66,.32) !important}
+.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected{background:var(--pgrad) !important;border:1px solid #232327 !important;box-shadow:0 8px 20px rgba(22,22,26,.32) !important}
 .lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.ko-arac-day.is-selected *,.tk-cell.tk-selected *,.lg-datebox.is-selected *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-month-day.is-selected .lg-month-day-num,.lg-month-day.ko-selected-gold .lg-month-day-num,.ko-arac-day.is-selected .ko-arac-day-num,.tk-cell.tk-selected .tk-cell-num{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:500 !important}
 .lg-month-day.is-selected .lg-month-day-count,.lg-month-day.ko-selected-gold .lg-month-day-count,.ko-arac-day.is-selected .ko-arac-day-count,.tk-cell.tk-selected .tk-cell-count{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:10px !important;font-weight:480 !important;text-shadow:0 1px 2px rgba(0,0,0,.35) !important;opacity:1 !important;white-space:normal !important;overflow:visible !important}
@@ -647,43 +647,43 @@ b,strong{font-weight:560 !important}
 .lg-month-day.is-selected .lg-month-day-net.is-neg,.ko-arac-day.is-selected .ko-arac-day-net.is-neg{color:#FFB3AD !important;-webkit-text-fill-color:#FFB3AD !important}
 .lg-month-day.is-selected .tk-cell-dot,.tk-cell.tk-selected .tk-cell-dot{background:#D9BE7C !important}
 /* Araç sekmesi ay/yıl/gün seçim düğmeleri */
-.view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active{background:var(--pgrad) !important;border-color:#0B2142 !important;box-shadow:0 6px 16px rgba(11,33,66,.28) !important}
+.view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active{background:var(--pgrad) !important;border-color:#232327 !important;box-shadow:0 6px 16px rgba(22,22,26,.28) !important}
 .view-arac .lg-arac-month-toggle.is-active *,.view-arac .lg-arac-date-toggle.is-active *,.view-arac .lg-arac-year-toggle.is-active *,.view-arac .lg-arac-day-toggle.is-active *,.lg-arac-date-toggle.is-active *,.lg-arac-month-toggle.is-active *,.lg-arac-year-toggle.is-active *,.lg-arac-day-toggle.is-active *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 /* Mod menüsü ve diğer seçimler */
 .lg-choice{border-radius:13px !important;border-color:var(--pline) !important}
-.lg-choice.is-active,.ko-selected-gold.lg-choice{background:var(--pgrad) !important;border-color:#0B2142 !important}
+.lg-choice.is-active,.ko-selected-gold.lg-choice{background:var(--pgrad) !important;border-color:#232327 !important}
 .lg-choice.is-active *,.lg-choice.is-active{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.ko-debt-summary-card.is-selected{background:var(--pgrad) !important;border-color:#0B2142 !important;box-shadow:0 8px 20px rgba(11,33,66,.30) !important}
+.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.ko-debt-summary-card.is-selected{background:var(--pgrad) !important;border-color:#232327 !important;box-shadow:0 8px 20px rgba(22,22,26,.30) !important}
 .ko-account-firm-card.is-selected *,.ko-debt-firm-card.is-selected *,.ko-takas-partner.is-selected *,.ko-debt-summary-card.is-selected *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 /* ── ALT BAR: seçili sekme lacivert hap + net beyaz yazı ── */
 .tabbar{background:rgba(255,255,255,.92) !important;border-top:1px solid var(--pline) !important;backdrop-filter:blur(14px) !important;-webkit-backdrop-filter:blur(14px) !important}
 .tabbar-inner{background:transparent !important}
 .tab{border-radius:14px !important}
-.tab .tab-icon,.tab .tab-label,.tab{color:#5E6C86 !important;-webkit-text-fill-color:#5E6C86 !important;font-weight:440 !important}
+.tab .tab-icon,.tab .tab-label,.tab{color:#6E6E73 !important;-webkit-text-fill-color:#6E6E73 !important;font-weight:440 !important}
 .tab-label{font-size:10px !important;letter-spacing:.1px !important}
-.tab.is-active{background:var(--pgrad) !important;border:1px solid #0B2142 !important;box-shadow:0 6px 14px rgba(11,33,66,.28) !important}
+.tab.is-active{background:var(--pgrad) !important;border:1px solid #232327 !important;box-shadow:0 6px 14px rgba(22,22,26,.28) !important}
 .tab.is-active .tab-icon,.tab.is-active .tab-label,.tab.is-active *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:470 !important}
-.tab-fab{border-radius:18px !important;box-shadow:0 10px 22px rgba(11,33,66,.38),0 0 0 2px rgba(217,190,124,.55) !important}
+.tab-fab{border-radius:18px !important;box-shadow:0 10px 22px rgba(22,22,26,.38),0 0 0 2px rgba(217,190,124,.55) !important}
 /* ── Girdi & düğme ── */
-input,select,textarea,.inp{border:1px solid #C7D3E8 !important;border-radius:13px !important;color:#13233F !important;-webkit-text-fill-color:#13233F !important;font-weight:440 !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:#16355F !important;box-shadow:0 0 0 3px rgba(18,49,94,.14) !important}
-.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border:1px solid #C7D3E8 !important;border-radius:12px !important;color:#12315E !important;-webkit-text-fill-color:#12315E !important;font-weight:520 !important}
-.ko-debt-new-btn{background:var(--pgrad) !important;color:#fff !important;-webkit-text-fill-color:#fff !important;border:1px solid #0B2142 !important;border-radius:14px !important;font-weight:540 !important}
+input,select,textarea,.inp{border:1px solid #D6D6DB !important;border-radius:13px !important;color:#1D1D1F !important;-webkit-text-fill-color:#1D1D1F !important;font-weight:440 !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:#303036 !important;box-shadow:0 0 0 3px rgba(43,43,48,.14) !important}
+.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border:1px solid #D6D6DB !important;border-radius:12px !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:520 !important}
+.ko-debt-new-btn{background:var(--pgrad) !important;color:#fff !important;-webkit-text-fill-color:#fff !important;border:1px solid #232327 !important;border-radius:14px !important;font-weight:540 !important}
 /* ── Durum çipleri: yumuşak premium ── */
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{border-radius:999px !important;font-weight:480 !important;font-size:9.6px !important;letter-spacing:.2px !important}
-.tcard-pill-status-tam,.lg-chip-status-tam{background:#EAF0FA !important;border-color:#B9CBE6 !important;color:#12315E !important;-webkit-text-fill-color:#12315E !important}
+.tcard-pill-status-tam,.lg-chip-status-tam{background:#F0F0F4 !important;border-color:#C7C7CE !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{background:#FCF6E8 !important;border-color:#E3CD97 !important;color:#8A6A1E !important;-webkit-text-fill-color:#8A6A1E !important}
 .tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none,.tcard-paystatus.is-pending,.lg-chip-wait{background:#FCEEEE !important;border-color:#EFB9B9 !important;color:#C13A3A !important;-webkit-text-fill-color:#C13A3A !important}
 .tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{background:#E9F7F1 !important;border-color:#BCE3D2 !important;color:#0B7C55 !important;-webkit-text-fill-color:#0B7C55 !important}
 .tcard-pill.tcard-pill-alt{background:#FCF6E8 !important;border-color:#D9BE7C !important;color:#8A6A1E !important;-webkit-text-fill-color:#8A6A1E !important;font-weight:520 !important}
-.tcard-stripe{background:linear-gradient(180deg,#12315E,#1A4079) !important;border-radius:999px !important}
-.tcard.t-tour .tcard-stripe{background:linear-gradient(180deg,#C9A85C,#D9BE7C) !important}
-.lg-badge{border-color:#0E2749 !important;color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:520 !important}
+.tcard-stripe{background:#2B2B30 !important;border-radius:999px !important}
+.tcard.t-tour .tcard-stripe{background:#D9BE7C !important}
+.lg-badge{border-color:#2B2B30 !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:520 !important}
 /* ── Takas & Düğün kartları ── */
-.ko-takas-card{border:1px solid var(--pline) !important;border-radius:20px !important;background:#fff !important;box-shadow:0 2px 12px rgba(14,39,73,.07) !important;padding:12px !important}
+.ko-takas-card{border:1px solid var(--pline) !important;border-radius:20px !important;background:#fff !important;box-shadow:0 2px 12px rgba(22,22,26,.07) !important;padding:12px !important}
 .ko-takas-partner{width:100%;text-align:left;border:1px solid var(--pline);border-radius:16px;background:#fff;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
-.ko-takas-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:8px;border:1px solid #E3EAF4;border-radius:12px;background:#FBFCFE}
-.ko-takas-row.is-settled{opacity:.55;background:#F2F5FA}
+.ko-takas-row{display:grid;grid-template-columns:52px minmax(0,1fr) auto auto;gap:7px;align-items:center;padding:8px;border:1px solid #E8E8ED;border-radius:12px;background:#FBFBFD}
+.ko-takas-row.is-settled{opacity:.55;background:#F4F4F7}
 /* ── iPHONE 16 PRO (≤430px): tek ekran sıkı, net, parmak dostu ── */
 @media(max-width:430px){
 :root{--tabbar-h:60px}
@@ -698,11 +698,15 @@ main.main-cont{padding:6px 8px calc(var(--tabbar-h) + var(--sa-b) + 8px) !import
 .lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-size:15.5px !important}
 .lg-profit-row{margin-bottom:8px !important}
 .lg-section-title{font-size:14px !important}
-.lg-month-cal-card,.ko-real-cal-card{padding:9px !important}
-.lg-month-day,.ko-arac-day{min-height:56px !important;padding:5px 3px !important;border-radius:12px !important}
-.tk-cell{min-height:44px !important}
-.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13px !important}
-.lg-month-grid,.ko-arac-month-grid,.lg-month-weekdays{gap:4px !important}
+.lg-month-cal-card,.ko-real-cal-card{padding:8px !important}
+.lg-month-day,.ko-arac-day{min-height:40px !important;padding:3px 2px !important;border-radius:9px !important}
+.tk-cell{min-height:38px !important;border-radius:9px !important}
+.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:11px !important;line-height:1.1 !important}
+.lg-month-day-count,.ko-arac-day-count,.tk-cell-count{font-size:7.5px !important}
+.lg-month-day-net,.ko-arac-day-net{font-size:7.5px !important}
+.lg-month-weekdays div,.tk-weekday{font-size:8px !important}
+.lg-month-grid,.ko-arac-month-grid,.lg-month-weekdays,.tk-grid{gap:3px !important}
+.lg-month-day *,.ko-arac-day *{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;max-width:100% !important}
 .date-hdr{padding:6px 9px !important;margin:5px 0 4px !important}
 .tcard{margin-bottom:6px !important}
 .tcard-header{padding:8px 9px !important}
@@ -725,13 +729,13 @@ textarea{min-height:52px !important}
 }
 
 /* ── v30 rötuşları: mini takvim ikonu, rehber başlıkları, ekstra ovallik ── */
-.lg-period-card .ko-minical{background:#FFFFFF !important;box-shadow:0 1px 4px rgba(11,33,66,.25) !important}
+.lg-period-card .ko-minical{background:#FFFFFF !important;box-shadow:0 1px 4px rgba(22,22,26,.25) !important}
 .lg-period-card .ko-minical > div:first-child{background:#D64949 !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:560 !important}
-.lg-period-card .ko-minical > div:last-child{color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:560 !important}
-.lg-period-card.is-active .ko-minical{box-shadow:0 0 0 1.5px rgba(217,190,124,.8),0 1px 4px rgba(11,33,66,.3) !important}
+.lg-period-card .ko-minical > div:last-child{color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:560 !important}
+.lg-period-card.is-active .ko-minical{box-shadow:0 0 0 1.5px rgba(217,190,124,.8),0 1px 4px rgba(22,22,26,.3) !important}
 .ko-contact-section{background:#FFFFFF !important;border-radius:18px !important}
-.ko-contact-section-title{display:inline-flex !important;align-items:center !important;padding:5px 14px !important;border-radius:999px !important;background:#EAF0FA !important;border:1px solid #C7D5EC !important;color:#0E2749 !important;-webkit-text-fill-color:#0E2749 !important;font-weight:540 !important;font-size:11px !important;letter-spacing:.4px !important}
-.lg-month-selected-count,.ko-arac-day-netbox-label{color:#46536B !important;-webkit-text-fill-color:#46536B !important;font-weight:480 !important;font-size:10px !important}
+.ko-contact-section-title{display:inline-flex !important;align-items:center !important;padding:5px 14px !important;border-radius:999px !important;background:#F0F0F4 !important;border:1px solid #D6D6DB !important;color:#2B2B30 !important;-webkit-text-fill-color:#2B2B30 !important;font-weight:540 !important;font-size:11px !important;letter-spacing:.4px !important}
+.lg-month-selected-count,.ko-arac-day-netbox-label{color:#48484E !important;-webkit-text-fill-color:#48484E !important;font-weight:480 !important;font-size:10px !important}
 .ko-arac-day-netbox-value{font-size:15px !important}
 /* ekstra ovallik — premium hava */
 .card,.tcard,.lg-upcoming-card,.lg-period-panel,.ko-account-sheet-section,.tk-card,.tk-panel,.tk-ledger,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card,.ko-takas-card{border-radius:22px !important}
@@ -744,7 +748,7 @@ input,select,textarea,.inp{border-radius:14px !important}
 .tab{border-radius:16px !important}
 .hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{border-radius:13px !important}
 .ko-account-firm-card,.ko-debt-summary-card,.ko-takas-partner{border-radius:18px !important}
-body{background:linear-gradient(180deg,#F3F6FC 0%,#EDF2FA 100%) fixed !important}
+body{background:#F5F5F7 !important}
 
 
 /* ── v31: hero ikonları BEYAZ + görünürlük garantileri + ince tipografi ── */
@@ -753,12 +757,12 @@ body{background:linear-gradient(180deg,#F3F6FC 0%,#EDF2FA 100%) fixed !important
 .ko-arac-day.is-selected .ko-arac-day-net,.ko-arac-day.is-selected .ko-arac-day-net *{color:#8FE8B8 !important;-webkit-text-fill-color:#8FE8B8 !important}
 .ko-arac-day.is-selected .ko-arac-day-net.is-neg{color:#FFB3AD !important;-webkit-text-fill-color:#FFB3AD !important}
 .ko-account-firm-bucket-head,.ko-account-firm-bucket-head *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.ko-debt-summary-card{background:#FFFFFF !important;border:1px solid #D8E1EF !important}
-.ko-debt-summary-card b,.ko-debt-summary-card span,.ko-debt-summary-card small,.ko-debt-summary-card div{color:#13233F;-webkit-text-fill-color:#13233F}
+.ko-debt-summary-card{background:#FFFFFF !important;border:1px solid #E2E2E6 !important}
+.ko-debt-summary-card b,.ko-debt-summary-card span,.ko-debt-summary-card small,.ko-debt-summary-card div{color:#1D1D1F;-webkit-text-fill-color:#1D1D1F}
 .ko-account-firm-card:not(.is-selected),.ko-debt-firm-card:not(.is-selected){background:#FFFFFF !important}
-.ko-account-firm-card:not(.is-selected) b{color:#13233F !important;-webkit-text-fill-color:#13233F !important}
-.ko-account-firm-card:not(.is-selected) small{color:#5E6C86 !important;-webkit-text-fill-color:#5E6C86 !important}
-.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{font-weight:470 !important;font-size:12.5px !important}
+.ko-account-firm-card:not(.is-selected) b{color:#1D1D1F !important;-webkit-text-fill-color:#1D1D1F !important}
+.ko-account-firm-card:not(.is-selected) small{color:#6E6E73 !important;-webkit-text-fill-color:#6E6E73 !important}
+.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{font-weight:470 !important;font-size:12px !important}
 .tcard-time-big{font-size:14px !important}
 .lg-section-title{font-size:14px !important}
 .date-hdr,.date-hdr *{font-weight:470 !important}
@@ -767,11 +771,30 @@ body{background:linear-gradient(180deg,#F3F6FC 0%,#EDF2FA 100%) fixed !important
 
 /* ── v32: kaydet butonu beyaz yazı garantisi, placeholder, tip şeritleri ── */
 .ko-submit-btn,.ko-submit-btn *{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.ko-submit-btn{font-weight:500 !important;letter-spacing:.4px !important;background:linear-gradient(135deg,#0B2142,#1A4079) !important;border-color:#0B2142 !important}
-input::placeholder,textarea::placeholder,.inp::placeholder{color:#8492AB !important;-webkit-text-fill-color:#8492AB !important;opacity:1 !important;font-weight:420 !important}
-.ko-contact-form input{background:#FFFFFF !important;color:#13233F !important;-webkit-text-fill-color:#13233F !important}
-.tcard.t-takas .tcard-stripe{background:linear-gradient(180deg,#12315E,#1A4079) !important}
+.ko-submit-btn{font-weight:500 !important;letter-spacing:.4px !important;background:#2B2B30 !important;border-color:#232327 !important}
+input::placeholder,textarea::placeholder,.inp::placeholder{color:#98989E !important;-webkit-text-fill-color:#98989E !important;opacity:1 !important;font-weight:420 !important}
+.ko-contact-form input{background:#FFFFFF !important;color:#1D1D1F !important;-webkit-text-fill-color:#1D1D1F !important}
+.tcard.t-takas .tcard-stripe{background:#2B2B30 !important}
 .tcard.t-dugun .tcard-stripe{background:linear-gradient(180deg,#B0527C,#E5BBD1) !important}
+
+
+/* ── v34: Natural Titanium + 16 Pro tam ekran kilidi ── */
+@media(max-width:430px){
+html,body{overflow:hidden !important;height:100% !important}
+main.main-cont{height:100dvh !important;max-height:100dvh !important;overflow:hidden !important;display:flex !important;flex-direction:column !important}
+main.main-cont > *{min-height:0}
+.lg-home{flex:1 1 auto !important;min-height:0 !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;gap:6px !important}
+.lg-home-transfer-list,.lg-today-list-standalone{flex:1 1 auto !important;min-height:0 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;padding-bottom:6px !important}
+.view-transfers,.view-arac,.view-hesap,.view-takvim{flex:1 1 auto !important;min-height:0 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important}
+.lg-greeting-card{padding:9px 11px 8px !important;border-radius:20px !important}
+.lg-period-card{min-height:46px !important;border-radius:16px !important}
+.lg-profit-card{min-height:50px !important;border-radius:16px !important}
+.lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-size:14px !important}
+.lg-section-title{font-size:12.5px !important;margin:1px 0 !important}
+.lg-profit-row{margin-bottom:4px !important}
+.ko-hero-rate{min-height:24px !important}
+.lg-greeting-card .ko-hero-btn{width:29px !important;height:29px !important;min-height:29px !important}
+}
 
 </style>
 </head>
@@ -821,16 +844,16 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
-const NAV = '#0E2749', NAV2 = '#16355F', GOLD = '#C9A85C';
-const G = '#0E9F6E', O = '#3D5A8F', R = '#D64949', BR = '#C9D4E6';
-const TX = '#13233F', SB = '#5C6B84', INP = '#F2F5FA', BOR = 'rgba(18,49,94,.20)';
+const NAV = '#2B2B30', NAV2 = '#303036', GOLD = '#C9A85C';
+const G = '#0E9F6E', O = '#3D5A8F', R = '#D64949', BR = '#D6D6DB';
+const TX = '#1D1D1F', SB = '#6E6E73', INP = '#F4F4F7', BOR = 'rgba(43,43,48,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#5E6C86', bg: '#EEF2F8', b: '#C7D3E8' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#6E6E73', bg: '#F2F2F6', b: '#D6D6DB' },
     { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#0E9F6E', bg: '#E9F7F1', b: '#BCE3D2' },
     { id: 'tour', n: 'Tur', ico: '🏔️', c: '#8A6A1E', bg: '#FCF6E8', b: '#E3CD97' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#16355F', bg: '#E8EEF8', b: '#B9CBE6' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#46536B', bg: '#EEF2F8', b: '#C7D3E8' },
-    { id: 'takas', n: 'Takas İş', ico: '🔁', c: '#12315E', bg: '#E8EEF8', b: '#B9CBE6' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#303036', bg: '#EEEEF2', b: '#C7C7CE' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#48484E', bg: '#F2F2F6', b: '#D6D6DB' },
+    { id: 'takas', n: 'Takas İş', ico: '🔁', c: '#2B2B30', bg: '#EEEEF2', b: '#C7C7CE' },
     { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: '#B0527C', bg: '#F9EDF4', b: '#E5BBD1' },
 ];
 const VEHS = [
@@ -3272,7 +3295,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "‹"),
                 React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 450, color: NAV } }),
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "›"),
-                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#E8EEF8', color: '#12315E', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#EEEEF2', color: '#2B2B30', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 450, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
@@ -3281,10 +3304,10 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 const active = d.key === selectedDay;
                 const isToday = d.key === todayKey;
                 const hasWork = d.count > 0 || d.gider > 0;
-                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#12315E' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#E8EEF8' : hasWork ? '#F5F5F7' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
+                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#2B2B30' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#EEEEF2' : hasWork ? '#F5F5F7' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
                         React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 450, color: TX, WebkitTextFillColor: TX } }, d.no),
-                        isToday && React.createElement("span", { style: { width: 7, height: 7, borderRadius: 99, background: active ? '#12315E' : G, flexShrink: 0 } })),
+                        isToday && React.createElement("span", { style: { width: 7, height: 7, borderRadius: 99, background: active ? '#2B2B30' : G, flexShrink: 0 } })),
                     React.createElement("div", { className: "ko-arac-day-meta", style: { display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' } },
                         React.createElement("span", { className: "ko-arac-day-count", style: { width: '100%', borderRadius: 0, padding: 0, fontSize: 8, fontWeight: 450, background: 'transparent', color: hasWork ? '#1C1C1E' : SB, lineHeight: 1.08, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden' } }, d.count + ' iş'),
                         hasWork && React.createElement("span", { className: "ko-arac-day-net" + (d.net < 0 ? " is-neg" : ""), style: { fontSize: 9, fontWeight: 450, color: d.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(d.net) + '₺')));
@@ -5029,7 +5052,7 @@ function DugunHesap({ T, sT, tip }) {
                     React.createElement("div", { style: { fontSize: 11.5, fontWeight: 450, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, ((r.t.passengers && r.t.passengers[0] && r.t.passengers[0].name) || 'D\u00FC\u011F\u00FCn') + ' \u00B7 ' + (r.t.pickup || '?') + ' \u2192 ' + (r.t.dropoff || '?')),
                     React.createElement("div", { style: { fontSize: 9.5, color: SB } }, 'Anla\u015F\u0131lan ' + fr(r.toplam) + '\u20BA \u00B7 Kapora ' + fr(r.kapora) + '\u20BA')),
                 React.createElement("div", { style: { fontSize: 12, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: r.t.dugunSettled || r.kalan <= 0 ? SB : G, textAlign: 'right' } }, (r.t.dugunSettled || r.kalan <= 0 ? 'Kapand\u0131' : '+' + fr(r.kalan) + '\u20BA')),
-                React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#C9D4E6' : NAV), background: r.t.dugunSettled ? '#F2F5FA' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil')))));
+                React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#D6D6DB' : NAV), background: r.t.dugunSettled ? '#F4F4F7' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil')))));
 }
 
 function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
@@ -5081,7 +5104,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                 React.createElement("div", { style: { fontSize: 9.5, color: SB, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, who + ' \u00B7 ' + pay + (cross.length ? ' \u00B7 ' + cross.join(', ') : ''))),
             React.createElement("div", { style: { fontSize: 12, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: net > 0 ? G : (net < 0 ? R : SB), textAlign: 'right' } },
                 (net > 0 ? '+' : (net < 0 ? '\u2212' : '')) + fr(net) + '\u20BA'),
-            React.createElement("button", { type: "button", onClick: () => toggleSettled(t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (t.takasSettled ? '#C9D4E6' : NAV), background: t.takasSettled ? '#F2F5FA' : NAV, color: t.takasSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, t.takasSettled ? 'A\u00E7' : 'Kapat'));
+            React.createElement("button", { type: "button", onClick: () => toggleSettled(t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (t.takasSettled ? '#D6D6DB' : NAV), background: t.takasSettled ? '#F4F4F7' : NAV, color: t.takasSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, t.takasSettled ? 'A\u00E7' : 'Kapat'));
     };
     return React.createElement("div", { className: "card ko-takas-card", style: { order: 1 } },
         React.createElement("button", { type: "button", className: "ko-firma-toggle", onClick: () => setOpen(v => !v), style: { width: '100%', borderRadius: 12, padding: '12px 14px', fontWeight: 450, textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
@@ -5285,7 +5308,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         { id: 'arac', name: 'Araç', color: '#636366' },
         { id: 'kisisel', name: 'Kişisel', color: '#1C1C1E' },
         { id: 'saglik', name: 'Sağlık', color: '#1C1C1E' },
-        { id: 'acil', name: 'Acil', color: '#12315E' }
+        { id: 'acil', name: 'Acil', color: '#2B2B30' }
     ];
     const REPEAT_OPTIONS = [
         { id: 'none', name: 'Tek sefer' },
@@ -5915,7 +5938,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                     }, "▲ Alacak"),
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})),
-                        style: { background: ledgerForm.ltype === 'out' ? 'linear-gradient(135deg,#12315E,#C92820)' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#12315E' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
+                        style: { background: ledgerForm.ltype === 'out' ? '#2B2B30' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#2B2B30' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
                     }, "▼ Borç")
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
@@ -7675,7 +7698,7 @@ function App() {
                                 headlineSubTL && React.createElement("span", { style: { fontSize: '0.62em', fontWeight: 450, color: '#6F7484', marginLeft: 4, fontVariantNumeric: 'tabular-nums' } }, headlineSubTL)
                             ),
                             React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : (showNoPayment && noCollectRaw > 0 ? 'tahsilat yok' : 'müşteriden')),
-                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#12315E' } },
+                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#2B2B30' } },
                                 'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : ''))
                         ),
                         React.createElement("div", {
@@ -7827,17 +7850,17 @@ function App() {
             const active = selectedProfit === scope;
             return React.createElement("button", {
                 onClick: () => setProfit(scope),
-                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? '#E8EEF8' : '#fff', border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
+                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? '#EEEEF2' : '#fff', border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
             },
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                    React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: '#8492AB', letterSpacing: '.01em' } }, label),
+                    React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: '#98989E', letterSpacing: '.01em' } }, label),
                     React.createElement("span", { style: { fontSize: 9, color: '#A39C90', transform: active ? 'rotate(180deg)' : 'none' } }, "▾")),
-                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#12315E' : '#D64949', lineHeight: 1.05 } }, fmtSigned(value)),
+                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#2B2B30' : '#D64949', lineHeight: 1.05 } }, fmtSigned(value)),
                 React.createElement("div", { style: { fontSize: 8.5, color: '#A39C90', marginTop: 1 } }, sub));
         };
         const detailRow = (label, value, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: strong ? '1px solid var(--line)' : 'none' } },
             React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#8A8378' } }, label),
-            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#12315E' : '#D64949' } }, fmtSigned(value)));
+            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#2B2B30' : '#D64949' } }, fmtSigned(value)));
         const det = selectedProfit === 'year' ? dy : (selectedProfit === 'month' ? dm : null);
         return React.createElement(React.Fragment, null,
             React.createElement("div", { className: "lg-section-row", style: { paddingTop: 2 } },
@@ -7851,11 +7874,11 @@ function App() {
                 detailRow(PLAKA + " Net (gider sonrası)", det.plate.net),
                 detailRow("Toplam Net Kar", det.total, true),
                 det.months && React.createElement("div", { style: { marginTop: 9, display: 'flex', flexDirection: 'column', gap: 6 } },
-                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 450, color: '#8492AB', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
+                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 450, color: '#98989E', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
                     det.months.filter(m => m.count > 0 || m.total !== 0).map(m => React.createElement("div", { key: m.key, style: { background: '#fff', borderRadius: 11, padding: '8px 10px', boxShadow: 'inset 0 0 0 1px #EFEAE2' } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                            React.createElement("div", { style: { fontSize: 11, fontWeight: 450, color: '#5E6C86' } }, m.name),
-                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#12315E' : '#D64949' } }, fmtSigned(m.total))),
+                            React.createElement("div", { style: { fontSize: 11, fontWeight: 450, color: '#6E6E73' } }, m.name),
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#2B2B30' : '#D64949' } }, fmtSigned(m.total))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#8A8378' } },
                             React.createElement("div", null, "Ölmeztur ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.olmez))),
                             React.createElement("div", null, PLAKA + " ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.plate.net))))))) ));
@@ -8014,7 +8037,7 @@ function App() {
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 } },
                             React.createElement("span", { className: "lg-month-day-num" }, rd.getDate()),
-                            isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#12315E', flexShrink: 0 } })),
+                            isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#2B2B30', flexShrink: 0 } })),
                         React.createElement("div", { className: "ko-arac-day-meta" },
                             React.createElement("span", { className: "lg-month-day-count" }, cnt > 0 ? cnt + ' transfer' : ''),
                             cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
@@ -8228,7 +8251,7 @@ function App() {
                         ),
                         React.createElement("div", { style: { color: SB, fontSize: 11 } }, rememberMe ? 'Oturum bu cihazda açık kalır' : 'Tarayıcı kapanınca tekrar giriş gerekir')
                     ),
-                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#12315E', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
+                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#2B2B30', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
                     React.createElement("button", { onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? '#AEAEB2' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#fff', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 450, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor' : 'Güvenli Giriş Yap'),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 } },
                         React.createElement("div", { style: { background: '#F5F5F7', border: '1px solid #D1D1D6', borderRadius: 14, padding: '10px 12px' } },
@@ -8612,7 +8635,7 @@ function App() {
                         ? { fg: '#4A5F78', bg: '#EEF2F7', bd: '#D8E0EA' }
                         : id === 'sedan'
                             ? { fg: '#6A5A3F', bg: '#F7F2EA', bd: '#E5D8C4' }
-                            : { fg: '#12315E', bg: '#E8EEF8', bd: '#D9E2D6' };
+                            : { fg: '#2B2B30', bg: '#EEEEF2', bd: '#D9E2D6' };
                     return { id, name, ...colors };
                 };
                 const homeVehicleIcon = (id, color) => React.createElement("svg", {
@@ -8681,26 +8704,26 @@ function App() {
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '49px minmax(0,1fr)', alignItems: 'stretch', gap: 8, minHeight: 68 } },
-                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#12315E', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#2B2B30', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 } },
                                     React.createElement("span", { style: { fontSize: 9, fontWeight: 470, padding: '1px 7px', minHeight: 17, borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
-                                    flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 450, color: '#8492AB', marginLeft: 'auto', flexShrink: 0 } }, flight)
+                                    flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 450, color: '#98989E', marginLeft: 'auto', flexShrink: 0 } }, flight)
                                 ),
-                                React.createElement("div", { style: { fontSize: 12, fontWeight: 440, color: '#13233F', letterSpacing: '.1px', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.2, padding: '1px 0 2px' } }, routeText),
+                                React.createElement("div", { style: { fontSize: 12, fontWeight: 440, color: '#1D1D1F', letterSpacing: '.1px', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.2, padding: '1px 0 2px' } }, routeText),
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
                                     React.createElement("button", {
                                         onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
                                         style: { fontSize: 8.6, fontWeight: 450, padding: '1px 7px', borderRadius: 999, border: '1px solid rgba(60,60,67,.12)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
                                     }, payText),
-                                    React.createElement("span", { style: { fontSize: 9.2, color: '#5E6C86', fontWeight: 450, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
+                                    React.createElement("span", { style: { fontSize: 9.2, color: '#6E6E73', fontWeight: 450, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
                                 ),
                                 React.createElement("div", { style: { width: '100%', height: 1, margin: '2px 0 1px', background: 'rgba(60,60,67,.26)', boxShadow: '0 1px 0 rgba(255,255,255,.86)' } }),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#5E6C86', fontWeight: 450, lineHeight: 1.14 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#6E6E73', fontWeight: 450, lineHeight: 1.14 } },
                                     React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
-                                    altText && React.createElement("span", { style: { color: '#12315E', fontWeight: 450 } }, "→"),
-                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#12315E', fontWeight: 450 } }, altText)
+                                    altText && React.createElement("span", { style: { color: '#2B2B30', fontWeight: 450 } }, "→"),
+                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#2B2B30', fontWeight: 450 } }, altText)
                                 )
                             )
                         )
@@ -8807,7 +8830,7 @@ function App() {
                             React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
                                     React.createElement("span", { style: { fontSize: 17, fontWeight: 470, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', lineHeight: 1.12, letterSpacing: '.2px' } }, "Operasyon Sistemi"),
-                                    React.createElement("span", { className: "ko-ver-chip" }, "v33")),
+                                    React.createElement("span", { className: "ko-ver-chip" }, "v35")),
                                 React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
@@ -9808,7 +9831,7 @@ function App() {
                             style: { fontSize: 11, padding: '6px 10px', background: '#F2F2F7', border: '1px solid #D1D1D6', color: '#636366', fontStyle: 'italic' }
                         })),
                     React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar", rows: 2, className: "inp", style: { resize: 'none' } })),
-                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: 'linear-gradient(135deg,#0B2142,#1A4079)', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #0B2142', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(11,33,66,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
+                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: '#2B2B30', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #232327', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(22,22,26,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     /* Arama — tek başına üstte */
@@ -9929,7 +9952,7 @@ function App() {
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: '#9E7C2E', marginTop: 2 } }, 'BOŞ')
                         ),
                         React.createElement("div", { style: { textAlign: 'center' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#12315E', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
+                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#2B2B30', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: SB, marginTop: 2 } }, 'İPTAL')
                         )
                     ),
