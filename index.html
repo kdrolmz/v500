@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Ölmez Kurumsal v39</title>
+<title>KÖ Transfer Takip - Ölmez Kurumsal v40</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -701,7 +701,9 @@ main.main-cont{padding:6px 8px calc(var(--tabbar-h) + var(--sa-b) + 8px) !import
 .lg-month-cal-card,.ko-real-cal-card{padding:8px !important}
 .lg-month-day,.ko-arac-day{min-height:34px !important;padding:2px !important;border-radius:8px !important}
 .tk-cell{min-height:34px !important;border-radius:8px !important}
-.lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:10px !important;line-height:1.1 !important}
+.lg-month-day-num{font-size:11px !important;line-height:1.1 !important}
+.ko-arac-day-num{font-size:9.5px !important;line-height:1.1 !important}
+.tk-cell-num{font-size:10px !important;line-height:1.1 !important}
 .lg-month-day-count,.ko-arac-day-count,.tk-cell-count{font-size:6.8px !important;letter-spacing:0 !important}
 .lg-month-day-net,.ko-arac-day-net{font-size:6.8px !important}
 .lg-month-weekdays div,.tk-weekday{font-size:7.5px !important}
@@ -803,9 +805,9 @@ main.main-cont{height:auto !important;max-height:none !important;overflow:visibl
 .lg-period-row{background:#122142 !important;border:1px solid #0C1830 !important;border-radius:22px !important;padding:5px !important;gap:4px !important;box-shadow:0 10px 26px rgba(12,24,48,.26) !important}
 .lg-period-card{background:transparent !important;border:0 !important;box-shadow:none !important;border-radius:17px !important;min-height:56px !important}
 .lg-period-card::before{display:none !important}
-.lg-period-card.is-active{background:#FFFFFF !important;box-shadow:0 3px 10px rgba(12,24,48,.35) !important;border:0 !important}
-.lg-period-card.is-active *,.lg-period-card.is-active .lg-period-value{color:#122142 !important;-webkit-text-fill-color:#122142 !important}
-.lg-period-card.is-active .lg-period-label,.lg-period-card.is-active .lg-period-sub{color:#46536E !important;-webkit-text-fill-color:#46536E !important}
+.lg-period-card.is-active{background:rgba(255,255,255,.13) !important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.85) !important;border:0 !important}
+.lg-period-card.is-active *,.lg-period-card.is-active .lg-period-value{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.lg-period-card.is-active .lg-period-label,.lg-period-card.is-active .lg-period-sub{color:rgba(255,255,255,.75) !important;-webkit-text-fill-color:rgba(255,255,255,.75) !important}
 /* 2) Kâr kutuları: sol altın ray + büyük değer */
 .lg-profit-card{border-left:4px solid rgba(255,255,255,.85) !important;border-radius:14px !important}
 .lg-profit-card::before{display:none !important}
@@ -816,8 +818,8 @@ main.main-cont{height:auto !important;max-height:none !important;overflow:visibl
 .date-hdr button{background:#F2F4F9 !important;border:1px solid #BCC8DC !important;color:#122142 !important;-webkit-text-fill-color:#122142 !important}
 /* 4) Transfer kartları: renk şeridi yok, saat lacivert rozet */
 .tcard{border-radius:18px !important;border:1px solid #DEE1E9 !important;box-shadow:0 3px 14px rgba(12,24,48,.07) !important}
-.tcard-stripe{display:none !important}
-.tcard-time-big{background:#122142 !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;border-radius:11px !important;padding:5px 9px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;font-size:13px !important;line-height:1 !important}
+.tcard-stripe{display:block !important;border-radius:999px !important}
+.tcard-time-big{background:transparent !important;color:#152037 !important;-webkit-text-fill-color:#152037 !important;border-radius:0 !important;padding:0 !important;display:block !important;font-size:14.5px !important;line-height:1.15 !important}
 /* 5) Alt bar: kenarlardan kopuk YÜZEN DOCK */
 .tabbar{left:10px !important;right:10px !important;bottom:calc(var(--sa-b) + 8px) !important;border:1px solid #DEE1E9 !important;border-radius:26px !important;box-shadow:0 14px 34px rgba(12,24,48,.18) !important;background:rgba(255,255,255,.96) !important;padding-bottom:0 !important}
 .tabbar-inner{padding:6px 8px !important}
@@ -829,7 +831,7 @@ main.main-cont{padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 26px) !import
 .lg-section-title::before{content:"" !important;display:inline-block !important;width:4px !important;height:13px !important;background:#122142 !important;border-radius:2px !important}
 /* 7) Takvim: seçili günde altın üst çizgi, bugünde ince altın halka */
 
-.lg-month-day.is-today,.ko-arac-day.is-today,.tk-cell.tk-today{background:#FFFFFF !important;border:1px solid #DEE1E9 !important;box-shadow:inset 0 -3px 0 #122142 !important}
+.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DEE1E9 !important;box-shadow:inset 0 -3px 0 #122142 !important}
 /* 8) Sayfa üstü paneller: tutma çubuğu */
 .ms::before,.ko-transfer-edit-sheet::before{content:"" !important;display:block !important;width:44px !important;height:5px !important;border-radius:3px !important;background:#CBD3E2 !important;margin:0 auto 10px !important}
 /* 9) Karşılama kartı: altın yörünge halkası dokusu */
@@ -860,7 +862,34 @@ input,select,textarea,.inp{border-radius:10px !important}
 .date-hdr{border-radius:0 !important}
 .ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{border-radius:12px !important}
 /* Bugün: tüm günlerle aynı, sadece altta lacivert çizgi (medya bloğu dahili garantisi) */
-@media(max-width:430px){.lg-month-day.is-today,.ko-arac-day.is-today,.tk-cell.tk-today{background:#FFFFFF !important;border:1px solid #DEE1E9 !important;box-shadow:inset 0 -3px 0 #122142 !important}}
+@media(max-width:430px){.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected),.tk-cell.tk-today:not(.tk-selected){background:#FFFFFF !important;border:1px solid #DEE1E9 !important;box-shadow:inset 0 -3px 0 #122142 !important}}
+
+
+/* ══ v40: sabit üst bar · nude tip şeritleri · kibar hesap tipografisi ══ */
+.lg-greeting-card{position:sticky !important;top:0 !important;z-index:60 !important}
+.tabbar{z-index:70 !important}
+/* Transfer kartı sol şeritleri nude tip renkleri */
+.tcard.t-arrival .tcard-stripe{background:#3E7C5B !important}
+.tcard.t-departure .tcard-stripe{background:#2E4670 !important}
+.tcard.t-tour .tcard-stripe{background:#96762A !important}
+.tcard.t-shortpass .tcard-stripe{background:#6C5A92 !important}
+.tcard.t-intercity .tcard-stripe{background:#4E5D72 !important}
+.tcard.t-takas .tcard-stripe{background:#5F6672 !important}
+.tcard.t-dugun .tcard-stripe{background:#B05C82 !important}
+/* Hesap: tüm başlıklar 'Firma Hesapları' ile aynı ölçekte, ince ve kibar */
+.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.lg-month-selected-title,.tk-month-title,.tk-panel-date,.ko-debt-direct-title,.ko-contact-section-title,.ko-account-firm-bucket-title,.ko-account-balance-divider{font-size:13px !important;font-weight:450 !important;letter-spacing:.4px !important}
+.ko-account-balance-divider{font-size:11px !important;letter-spacing:.8px !important;text-transform:uppercase !important;color:#46536E !important;-webkit-text-fill-color:#46536E !important}
+.ko-account-firm-bucket-head{padding:7px 11px !important}
+.ko-account-firm-bucket-head *{font-size:11px !important;font-weight:460 !important;letter-spacing:.6px !important}
+.ko-contact-toggle,.ko-debt-toggle,.ko-firma-toggle{font-size:12px !important;font-weight:450 !important}
+.ko-account-firm-card b{font-size:12px !important;font-weight:460 !important}
+.ko-account-firm-card small,.ko-account-firm-card span{font-weight:430 !important}
+.ko-debt-summary-card b{font-size:11.5px !important;font-weight:460 !important}
+.lg-section-title{font-size:11px !important}
+.ko-brand-serif{font-family:Georgia,'Times New Roman',serif !important;font-size:17px !important;font-weight:500 !important;letter-spacing:2px !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;line-height:1.1 !important}
+/* Bugün hücresinde rakam ve yazılar normal koyu kalsın */
+.lg-month-day.is-today:not(.is-selected) *,.ko-arac-day.is-today:not(.is-selected) *{color:inherit}
+.lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num{color:#122142 !important;-webkit-text-fill-color:#122142 !important}
 
 </style>
 </head>
@@ -914,13 +943,13 @@ const NAV = '#122142', NAV2 = '#1A2C55', GOLD = 'rgba(255,255,255,.85)';
 const G = '#0E9F6E', O = '#3D5A8F', R = '#D64949', BR = '#CBD3E2';
 const TX = '#152037', SB = '#5E6982', INP = '#F5F6FA', BOR = 'rgba(18,33,66,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'takas', n: 'Takas İş', ico: '🔁', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
-    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: '#122142', bg: '#ECEFF6', b: '#BCC8DC' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#3E7C5B', bg: '#E9F3ED', b: '#BFDCCB' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: '#96762A', bg: '#F7F0DE', b: '#E0D2A8' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6C5A92', bg: '#EFEAF6', b: '#CFC2E3' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#4E5D72', bg: '#EDF0F4', b: '#C9D2DE' },
+    { id: 'takas', n: 'Takas İş', ico: '🔁', c: '#5F6672', bg: '#EFF0F2', b: '#CDD1D8' },
+    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: '#B05C82', bg: '#F8ECF1', b: '#E5C3D3' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -3373,7 +3402,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#122142' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#ECEFF6' : hasWork ? '#F7F6F2' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
                         React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 450, color: TX, WebkitTextFillColor: TX } }, d.no),
-                        isToday && React.createElement("span", { style: { width: 7, height: 7, borderRadius: 99, background: active ? '#122142' : G, flexShrink: 0 } })),
+                        false),
                     React.createElement("div", { className: "ko-arac-day-meta", style: { display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' } },
                         React.createElement("span", { className: "ko-arac-day-count", style: { width: '100%', borderRadius: 0, padding: 0, fontSize: 8, fontWeight: 450, background: 'transparent', color: hasWork ? '#1C1C1E' : SB, lineHeight: 1.08, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden' } }, d.count + ' iş'),
                         hasWork && React.createElement("span", { className: "ko-arac-day-net" + (d.net < 0 ? " is-neg" : ""), style: { fontSize: 9, fontWeight: 450, color: d.net >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, fn(d.net) + '₺')));
@@ -8103,7 +8132,7 @@ function App() {
                     },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 } },
                             React.createElement("span", { className: "lg-month-day-num" }, rd.getDate()),
-                            isToday && React.createElement("span", { style: { width: 6, height: 6, borderRadius: 99, background: '#122142', flexShrink: 0 } })),
+                            false),
                         React.createElement("div", { className: "ko-arac-day-meta" },
                             React.createElement("span", { className: "lg-month-day-count" }, cnt > 0 ? cnt + ' transfer' : ''),
                             cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '₺')));
@@ -8895,8 +8924,8 @@ function App() {
                         React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'start', gap: 12 } },
                             React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
-                                    React.createElement("span", { style: { fontSize: 17, fontWeight: 470, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', lineHeight: 1.12, letterSpacing: '.2px' } }, "Operasyon Sistemi"),
-                                    React.createElement("span", { className: "ko-ver-chip" }, "v39")),
+                                    React.createElement("span", { className: "ko-brand-serif" }, "\u00D6lmez Transfer"),
+                                    React.createElement("span", { className: "ko-ver-chip" }, "v40")),
                                 React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.76)', WebkitTextFillColor: 'rgba(255,255,255,.76)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
