@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Ölmez Nude Navy v42</title>
+<title>KÖ Transfer Takip - Ölmez Nude Navy v43</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -5117,6 +5117,17 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 
 function DugunHesap({ T, sT, tip }) {
     const [open, setOpen] = useState(false);
+    const [editId, setEditId] = useState(null);
+    const [eToplam, setEToplam] = useState('');
+    const [eKapora, setEKapora] = useState('');
+    const startEdit = r => { setEditId(r.t.id); setEToplam(String(r.toplam || '')); setEKapora(String(r.kapora || '')); };
+    const saveEdit = () => {
+        const toplam = moneyValue(eToplam), kapora = moneyValue(eKapora);
+        if (!(toplam > 0)) { tip && tip('Ge\u00E7erli tutar girin'); return; }
+        if (kapora > toplam) { tip && tip('Kapora toplam\u0131 a\u015Famaz'); return; }
+        sT && sT(p => (Array.isArray(p) ? p : []).map(x => x.id === editId ? { ...x, paymentAmount: String(Math.round(toplam)), paymentCurrency: 'TRY', customerTRY: Math.round(toplam), dugunKapora: String(Math.round(kapora)), updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString() } : x));
+        setEditId(null); tip && tip('D\u00FC\u011F\u00FCn g\u00FCncellendi');
+    };
     const rows = React.useMemo(() => (Array.isArray(T) ? T : [])
         .filter(t => t && t.isDugun)
         .map(t => {
@@ -5135,7 +5146,7 @@ function DugunHesap({ T, sT, tip }) {
     if (!rows.length) return null;
     return React.createElement("div", { className: "card ko-takas-card", style: { order: 1 } },
         React.createElement("button", { type: "button", className: "ko-firma-toggle", onClick: () => setOpen(v => !v), style: { width: '100%', borderRadius: 14, padding: '12px 14px', fontWeight: 470, textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
-            React.createElement("span", null, '\uD83D\uDC70\uD83E\uDD35 D\u00FC\u011F\u00FCn Kaporalar\u0131 ' + (open ? '\u2212' : '+')),
+            React.createElement("span", null, '\uD83D\uDC70\uD83E\uDD35 D\u00FC\u011F\u00FCn ' + (open ? '\u2212' : '+')),
             toplamKalan > 0 && React.createElement("span", { style: { fontSize: 11.5, fontWeight: 450, fontVariantNumeric: 'tabular-nums' } }, '+' + fr(toplamKalan) + '\u20BA kalan')),
         open && React.createElement("div", { style: { marginTop: 11, display: 'flex', flexDirection: 'column', gap: 6 } },
             rows.map(r => React.createElement("div", { key: r.t.id, className: "ko-takas-row" + (r.t.dugunSettled || r.kalan <= 0 ? " is-settled" : "") },
@@ -5144,11 +5155,29 @@ function DugunHesap({ T, sT, tip }) {
                     React.createElement("div", { style: { fontSize: 11.5, fontWeight: 450, color: TX, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, ((r.t.passengers && r.t.passengers[0] && r.t.passengers[0].name) || 'D\u00FC\u011F\u00FCn') + ' \u00B7 ' + (r.t.pickup || '?') + ' \u2192 ' + (r.t.dropoff || '?')),
                     React.createElement("div", { style: { fontSize: 9.5, color: SB } }, 'Anla\u015F\u0131lan ' + fr(r.toplam) + '\u20BA \u00B7 Kapora \u2212' + fr(r.kapora) + '\u20BA \u00B7 M\u00FC\u015Fteriden kalan ' + fr(r.kalan) + '\u20BA (ara\u00E7 \u00FCcreti ayr\u0131)')),
                 React.createElement("div", { style: { fontSize: 12, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: r.t.dugunSettled || r.kalan <= 0 ? SB : G, textAlign: 'right' } }, (r.t.dugunSettled || r.kalan <= 0 ? 'Kapand\u0131' : '+' + fr(r.kalan) + '\u20BA')),
-                React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#CFD6E1' : NAV), background: r.t.dugunSettled ? '#F6F7FB' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil')))));
+                React.createElement("div", { style: { display: 'flex', gap: 4 } },
+                    React.createElement("button", { type: "button", onClick: () => (editId === r.t.id ? setEditId(null) : startEdit(r)), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, editId === r.t.id ? 'Kapat' : 'D\u00FCzenle'),
+                    React.createElement("button", { type: "button", onClick: () => toggle(r.t), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + (r.t.dugunSettled ? '#CFD6E1' : NAV), background: r.t.dugunSettled ? '#F6F7FB' : NAV, color: r.t.dugunSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, r.t.dugunSettled ? 'A\u00E7' : 'Tahsil'))),
+                editId === r.t.id && React.createElement("div", { style: { gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr 72px', gap: 6, paddingTop: 8, borderTop: '1px dashed ' + BOR, marginTop: 2 } },
+                    React.createElement("div", null,
+                        React.createElement("span", { className: "lbl" }, "Anla\u015F\u0131lan (\u20BA)"),
+                        React.createElement("input", { type: "number", inputMode: "decimal", value: eToplam, onChange: e => setEToplam(e.target.value), className: "inp" })),
+                    React.createElement("div", null,
+                        React.createElement("span", { className: "lbl" }, "Kapora (\u20BA)"),
+                        React.createElement("input", { type: "number", inputMode: "decimal", value: eKapora, onChange: e => setEKapora(e.target.value), className: "inp" })),
+                    React.createElement("button", { type: "button", onClick: saveEdit, style: { alignSelf: 'end', minHeight: 40, background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 470, cursor: 'pointer', fontSize: 12 } }, 'Kaydet')))));
 }
 
 function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
     const [open, setOpen] = useState(false);
+    const [jEditId, setJEditId] = useState(null);
+    const [jVals, setJVals] = useState({});
+    const startJobEdit = t => { setJEditId(t.id); setJVals({ amt: String(moneyValue(t.customerTRY) || moneyValue(t.paymentAmount) || ''), who: t.takasWho || 'benVerdim', pay: t.takasPay || 'partner', my: t.takasMyCross || 'yok', their: t.takasTheirCross || 'yok' }); };
+    const saveJobEdit = () => {
+        const amt = moneyValue(jVals.amt);
+        sT && sT(p => (Array.isArray(p) ? p : []).map(x => x.id === jEditId ? { ...x, paymentAmount: String(Math.round(amt)), paymentCurrency: 'TRY', customerTRY: Math.round(amt), takasWho: jVals.who, takasPay: jVals.pay, takasMyCross: jVals.my, takasTheirCross: jVals.their, updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString() } : x));
+        setJEditId(null); tip && tip('Takas i\u015Fi g\u00FCncellendi');
+    };
     const [selPartner, setSelPartner] = useState(null);
     const [rateKopru, setRateKopru] = useState('');
     const [rateFeribot, setRateFeribot] = useState('');
@@ -5196,7 +5225,36 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                 React.createElement("div", { style: { fontSize: 9.5, color: SB, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, who + ' \u00B7 ' + pay + (cross.length ? ' \u00B7 ' + cross.join(', ') : ''))),
             React.createElement("div", { style: { fontSize: 12, fontWeight: 470, fontVariantNumeric: 'tabular-nums', color: net > 0 ? G : (net < 0 ? R : SB), textAlign: 'right' } },
                 (net > 0 ? '+' : (net < 0 ? '\u2212' : '')) + fr(net) + '\u20BA'),
-            React.createElement("button", { type: "button", onClick: () => toggleSettled(t), style: { minHeight: 26, padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (t.takasSettled ? '#CFD6E1' : NAV), background: t.takasSettled ? '#F6F7FB' : NAV, color: t.takasSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, t.takasSettled ? 'A\u00E7' : 'Kapat'));
+            React.createElement("div", { style: { display: 'flex', gap: 4 } },
+                React.createElement("button", { type: "button", onClick: () => (jEditId === t.id ? setJEditId(null) : startJobEdit(t)), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, jEditId === t.id ? 'Kapat' : 'D\u00FCzenle'),
+                React.createElement("button", { type: "button", onClick: () => toggleSettled(t), style: { minHeight: 26, padding: '4px 7px', borderRadius: 8, border: '1px solid ' + (t.takasSettled ? '#CFD6E1' : NAV), background: t.takasSettled ? '#F6F7FB' : NAV, color: t.takasSettled ? SB : '#fff', fontSize: 9.5, fontWeight: 450, cursor: 'pointer' } }, t.takasSettled ? 'A\u00E7' : 'Kapat')),
+            jEditId === t.id && React.createElement("div", { style: { gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, paddingTop: 8, borderTop: '1px dashed ' + BOR, marginTop: 2 } },
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Tutar (\u20BA)"),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: jVals.amt || '', onChange: e => setJVals(v => ({ ...v, amt: e.target.value })), className: "inp" })),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "\u0130\u015Fi kim verdi?"),
+                    React.createElement("select", { value: jVals.who, onChange: e => setJVals(v => ({ ...v, who: e.target.value })), className: "inp" },
+                        React.createElement("option", { value: "benVerdim" }, "Ben ona verdim"),
+                        React.createElement("option", { value: "oVerdi" }, "O bana verdi"))),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "\u00D6demeyi kim ald\u0131?"),
+                    React.createElement("select", { value: jVals.pay, onChange: e => setJVals(v => ({ ...v, pay: e.target.value })), className: "inp" },
+                        React.createElement("option", { value: "partner" }, "Takas orta\u011F\u0131 ald\u0131"),
+                        React.createElement("option", { value: "ben" }, "Ben ald\u0131m"),
+                        React.createElement("option", { value: "yok" }, "\u00D6deme al\u0131nmad\u0131"))),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Ge\u00E7i\u015Fler (ben / o)"),
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+                        React.createElement("select", { value: jVals.my, onChange: e => setJVals(v => ({ ...v, my: e.target.value })), className: "inp" },
+                            React.createElement("option", { value: "yok" }, "Yok"),
+                            React.createElement("option", { value: "kopru" }, "K\u00F6pr\u00FC"),
+                            React.createElement("option", { value: "feribot" }, "Feribot")),
+                        React.createElement("select", { value: jVals.their, onChange: e => setJVals(v => ({ ...v, their: e.target.value })), className: "inp" },
+                            React.createElement("option", { value: "yok" }, "Yok"),
+                            React.createElement("option", { value: "kopru" }, "K\u00F6pr\u00FC"),
+                            React.createElement("option", { value: "feribot" }, "Feribot")))),
+                React.createElement("button", { type: "button", onClick: saveJobEdit, style: { gridColumn: '1 / -1', minHeight: 40, background: NAV, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 470, cursor: 'pointer', fontSize: 12.5 } }, 'Kaydet')));
     };
     return React.createElement("div", { className: "card ko-takas-card", style: { order: 1 } },
         React.createElement("button", { type: "button", className: "ko-firma-toggle", onClick: () => setOpen(v => !v), style: { width: '100%', borderRadius: 12, padding: '12px 14px', fontWeight: 450, textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
@@ -8923,7 +8981,7 @@ function App() {
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
                                     React.createElement("img", { src: "data:image/png;base64,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", alt: "", className: "ko-brand-logo" }),
                                     React.createElement("span", { className: "ko-brand-serif" }, "\u00D6lmez Transfer"),
-                                    React.createElement("span", { className: "ko-ver-chip" }, "v42")),
+                                    React.createElement("span", { className: "ko-ver-chip" }, "v43")),
                                 React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.76)', WebkitTextFillColor: 'rgba(255,255,255,.76)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
