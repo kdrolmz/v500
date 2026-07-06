@@ -158,6 +158,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-smart-native-select{max-width:44%;min-width:120px}
 .ko-smart-icon-select{max-width:42px !important;min-width:42px !important;width:42px !important;flex:0 0 42px !important;padding:0 4px !important;text-align:center !important;text-align-last:center !important;font-size:16px !important;color:var(--muted) !important;background:#fff !important;border:1px solid var(--line-2) !important;border-radius:11px !important;cursor:pointer}
 .ko-smart-icon-select option{font-size:13px;color:var(--ink)}
+.ko-smart-menu-fixed{z-index:99999 !important;box-shadow:0 18px 44px rgba(16,20,31,.28) !important}
 .ko-smart-menu{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:9999;max-height:260px;overflow:auto;background:#fff;border:1px solid var(--line-2);border-radius:12px;box-shadow:0 14px 34px rgba(16,20,31,.22)}
 .ko-smart-wrap,.ko-party-alt-row,.ko-party-row{position:relative;z-index:5}
 .ko-smart-wrap:focus-within,.ko-party-alt-row:focus-within,.ko-party-row:focus-within{z-index:9998}
@@ -772,6 +773,13 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 /* Form açılır listeleri kırpılmasın */
 .ms,.ko-transfer-edit-sheet,.ko-navy-panel,.card{overflow:visible !important}
 .ms{overflow-y:auto !important}
+
+
+/* Açılır öneri listeleri hiçbir kart tarafından kırpılmasın */
+.ms,.ko-transfer-edit-sheet,.ko-navy-panel,.ko-party-row,.ko-party-alt-row,.ko-passenger-fields,.ko-money-row,.ko-smart-pick,.ko-smart-control{overflow:visible !important}
+.ms,.ko-transfer-edit-sheet,.ko-navy-panel{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;background:#FFFFFF !important}
+.ko-navy-panel{background:var(--gradHero,#243250) !important}
+.ko-navy-panel *{position:relative}
 
 </style>
 </head>
@@ -2642,13 +2650,30 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
         React.createElement("span", { className: "lbl" }, lbl),
         React.createElement("div", { style: { position: 'relative' } },
             React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir veya havaliman\u0131" }),
-            show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #F2F2F7', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
+            show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 99990, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #F2F2F7', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
                 React.createElement("span", { style: { fontSize: 14 } }, s.i),
                 React.createElement("span", null, s.n)))))))));
 }
 function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) {
     const [open, setOpen] = useState(false);
-    const __wrapCls = "ko-smart-wrap";
+    const __ctrlRef = React.useRef(null);
+    const [__pos, __setPos] = useState(null);
+    const __measure = () => {
+        try {
+            const el = __ctrlRef.current;
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            __setPos({ left: r.left, top: r.bottom + 4, width: r.width });
+        } catch (e) {}
+    };
+    React.useEffect(() => {
+        if (!open) return;
+        __measure();
+        const h = () => __measure();
+        window.addEventListener('scroll', h, true);
+        window.addEventListener('resize', h);
+        return () => { window.removeEventListener('scroll', h, true); window.removeEventListener('resize', h); };
+    }, [open]);
     const raw = String(value || '');
     const q = nm(raw).replace(/\s+/g, ' ').trim();
     const list = (rows || []).slice(0, 240).map(r => typeof r === 'string' ? { name: r, phone: '' } : { name: String((r && r.name) || '').trim(), phone: String((r && r.phone) || '').trim() }).filter(r => r.name);
@@ -2678,13 +2703,13 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
         setOpen(false);
     };
     return React.createElement("div", { className: "ko-smart-pick" },
-        React.createElement("div", { className: "ko-smart-control" },
-            React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); }, onFocus: () => setOpen(true), onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
+        React.createElement("div", { className: "ko-smart-control", ref: __ctrlRef },
+            React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); setTimeout(__measure, 0); }, onFocus: () => { setOpen(true); setTimeout(__measure, 0); }, onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
             React.createElement("select", { className: "inp ko-smart-native-select ko-smart-icon-select", value: "", onFocus: () => setOpen(false), onChange: e => { const ix = parseInt(e.target.value, 10); if (!isNaN(ix) && selectRows[ix]) pick(selectRows[ix]); }, "aria-label": "Kayıtlılardan seç", title: "Kayıtlılardan seç" },
                 React.createElement("option", { value: "" }, "▾"),
                 selectRows.map((r, i) => React.createElement("option", { key: nm(r.name) + '|' + r.phone + '|' + i, value: i }, r.name + (r.phone ? ' · ' + r.phone : ''))))),
-        open && (raw || '').trim().length > 0 && q.length < 2 && React.createElement("div", { className: "ko-smart-menu ko-smart-hint" }, "Sonuçlar için en az 2 harf yazın"),
-        open && q.length >= 2 && React.createElement("div", { className: "ko-smart-menu" },
+        open && (raw || '').trim().length > 0 && q.length < 2 && __pos && React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed ko-smart-hint", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } }, "Sonuçlar için en az 2 harf yazın"),
+        open && q.length >= 2 && __pos && React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } },
             ranked.length > 0 ? ranked.map(r => React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-option", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); } },
                 React.createElement("span", { className: "ko-smart-name" }, r.name),
                 r.phone && React.createElement("span", { className: "ko-smart-phone" }, r.phone)
@@ -2851,13 +2876,13 @@ function AracTab({ tip, aracK, setAracK }) {
             React.createElement("div", { style: { position: 'relative' } },
                 React.createElement("span", { className: "lbl" }, "\u0130\u015F Veren"),
                 React.createElement("input", { type: "text", value: sf.isVeren, onChange: e => { setSf(p => ({ ...p, isVeren: e.target.value })); setShowFL(true); }, onFocus: () => setShowFL(true), onBlur: () => setTimeout(() => setShowFL(false), 150), placeholder: "Firma", className: "inp" }),
-                showFL && firmaOner.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 2, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 10, boxShadow: '0 6px 20px rgba(0,0,0,.1)', maxHeight: 130, overflowY: 'auto' } }, firmaOner.map((f, i) => React.createElement("button", { key: i, onMouseDown: () => { setSf(p => ({ ...p, isVeren: f })); setShowFL(false); }, style: { width: '100%', padding: '8px 12px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid ' + BOR, cursor: 'pointer', color: TX, fontSize: '13px', fontWeight: 450 } },
+                showFL && firmaOner.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 99990, marginTop: 2, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 10, boxShadow: '0 6px 20px rgba(0,0,0,.1)', maxHeight: 130, overflowY: 'auto' } }, firmaOner.map((f, i) => React.createElement("button", { key: i, onMouseDown: () => { setSf(p => ({ ...p, isVeren: f })); setShowFL(false); }, style: { width: '100%', padding: '8px 12px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid ' + BOR, cursor: 'pointer', color: TX, fontSize: '13px', fontWeight: 450 } },
                     "\uD83C\uDFE2 ",
                     f))))),
             React.createElement("div", { style: { position: 'relative' } },
                 React.createElement("span", { className: "lbl" }, "👨🏻‍✈️ Kaptan"),
                 React.createElement("input", { type: "text", value: sf.sofor, onChange: e => { setSf(p => ({ ...p, sofor: e.target.value })); setShowSL(true); }, onFocus: () => setShowSL(true), onBlur: () => setTimeout(() => setShowSL(false), 150), placeholder: "Kaptan ad\u0131", className: "inp" }),
-                showSL && soforOner.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30, marginTop: 2, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 10, boxShadow: '0 6px 20px rgba(0,0,0,.1)', maxHeight: 130, overflowY: 'auto' } }, soforOner.map((s, i) => React.createElement("button", { key: i, onMouseDown: () => { setSf(p => ({ ...p, sofor: s })); setShowSL(false); }, style: { width: '100%', padding: '8px 12px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid ' + BOR, cursor: 'pointer', color: TX, fontSize: '13px', fontWeight: 450 } },
+                showSL && soforOner.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 99990, marginTop: 2, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 10, boxShadow: '0 6px 20px rgba(0,0,0,.1)', maxHeight: 130, overflowY: 'auto' } }, soforOner.map((s, i) => React.createElement("button", { key: i, onMouseDown: () => { setSf(p => ({ ...p, sofor: s })); setShowSL(false); }, style: { width: '100%', padding: '8px 12px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid ' + BOR, cursor: 'pointer', color: TX, fontSize: '13px', fontWeight: 450 } },
                     "👨🏻‍✈️ ",
                     s))))),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
