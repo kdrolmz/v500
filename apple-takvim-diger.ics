@@ -668,6 +668,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1783341732821_ix14y3@olmeztur
+DTSTAMP:20260706T140700Z
+LAST-MODIFIED:20260706T124200Z
+SEQUENCE:1783341732
+DTSTART:20260727T090000
+DTEND:20260727T100000
+SUMMARY:09:00 · Ankara Esenboğa → Jıca Türkiye Ofisi  Vito
+LOCATION:Ankara Esenboğa Havalimanı → Jıca Türkiye Ofisi
+DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\
+ nGüzergah: Ankara Esenboğa Havalimanı → Jıca Türkiye Ofisi\nÖdeme: Müşte
+ ri ödemez | Araç: 9.000 ₺
+CATEGORIES:KÖ VIP Tahsis
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1781287064165_sfaoir@olmeztur
 DTSTAMP:20260706T140700Z
 LAST-MODIFIED:20260612T175700Z
