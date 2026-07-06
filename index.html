@@ -781,6 +781,13 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .ko-navy-panel{background:var(--gradHero,#243250) !important}
 .ko-navy-panel *{position:relative}
 
+
+/* AÇILIR MENÜ GARANTİSİ: odaktaki form bloğu ve menüsü her şeyin üstünde */
+.card:focus-within,.ko-navy-panel:focus-within,.ms:focus-within > *{position:relative;z-index:9000}
+.ko-smart-menu-fixed{z-index:2147483000 !important}
+/* absolute açılır menüler (işi veren/şoför/şehir) parent'ı öne çeksin */
+[style*="zIndex: 99990"],[style*="z-index:99990"]{z-index:2147483000 !important}
+
 </style>
 </head>
 <body>
@@ -2708,13 +2715,13 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
             React.createElement("select", { className: "inp ko-smart-native-select ko-smart-icon-select", value: "", onFocus: () => setOpen(false), onChange: e => { const ix = parseInt(e.target.value, 10); if (!isNaN(ix) && selectRows[ix]) pick(selectRows[ix]); }, "aria-label": "Kayıtlılardan seç", title: "Kayıtlılardan seç" },
                 React.createElement("option", { value: "" }, "▾"),
                 selectRows.map((r, i) => React.createElement("option", { key: nm(r.name) + '|' + r.phone + '|' + i, value: i }, r.name + (r.phone ? ' · ' + r.phone : ''))))),
-        open && (raw || '').trim().length > 0 && q.length < 2 && __pos && React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed ko-smart-hint", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } }, "Sonuçlar için en az 2 harf yazın"),
-        open && q.length >= 2 && __pos && React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } },
+        open && (raw || '').trim().length > 0 && q.length < 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed ko-smart-hint", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } }, "Sonuçlar için en az 2 harf yazın"), document.body),
+        open && q.length >= 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } },
             ranked.length > 0 ? ranked.map(r => React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-option", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); } },
                 React.createElement("span", { className: "ko-smart-name" }, r.name),
                 r.phone && React.createElement("span", { className: "ko-smart-phone" }, r.phone)
             )) : React.createElement("div", { className: "ko-smart-empty" }, emptyText || "Eşleşme yok; yazdığınız isimle devam edebilirsiniz.")
-        )
+        ), document.body)
     );
 }
 function AracTab({ tip, aracK, setAracK }) {
