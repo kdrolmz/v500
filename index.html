@@ -2664,7 +2664,7 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
     return (React.createElement("div", null,
         React.createElement("span", { className: "lbl" }, lbl),
         React.createElement("div", { style: { position: 'relative' } },
-            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: onBlur, placeholder: "\u015Eehir veya havaliman\u0131" }),
+            React.createElement("input", { className: "inp", value: value, onChange: e => onChange(field, e.target.value), onFocus: onFocus, onBlur: (e) => { const tc = koTitleCaseTR(e.target.value); if (tc !== e.target.value) onChange(field, tc); if (onBlur) onBlur(e); }, placeholder: "\u015Eehir veya havaliman\u0131", autoCapitalize: "words" }),
             show && sugg.length > 0 && (React.createElement("div", { style: { position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 99990, marginTop: 3, background: '#fff', border: '1.5px solid ' + BOR, borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,.12)', maxHeight: 200, overflowY: 'auto' } }, sugg.map((s, i) => (React.createElement("button", { key: i, onMouseDown: () => onSel(field, s.n), style: { width: '100%', padding: '9px 13px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #F2F2F7', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', color: TX, fontSize: '13px' } },
                 React.createElement("span", { style: { fontSize: 14 } }, s.i),
                 React.createElement("span", null, s.n)))))))));
@@ -2719,7 +2719,7 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
     };
     return React.createElement("div", { className: "ko-smart-pick" },
         React.createElement("div", { className: "ko-smart-control", ref: __ctrlRef },
-            React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); setTimeout(__measure, 0); }, onFocus: () => { setOpen(true); setTimeout(__measure, 0); }, onBlur: () => setTimeout(() => setOpen(false), 140), placeholder: placeholder || "", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
+            React.createElement("input", { className: "inp ko-smart-input", value: raw, onChange: e => { onChange(e.target.value); setOpen(true); setTimeout(__measure, 0); }, onFocus: () => { setOpen(true); setTimeout(__measure, 0); }, onBlur: (e) => { const tc = koTitleCaseTR(e.target.value); if (tc && tc !== e.target.value && onChange) onChange(tc); setTimeout(() => setOpen(false), 140); }, placeholder: placeholder || "", autoComplete: "off", autoCorrect: "off", spellCheck: false, inputMode: "search", enterKeyHint: "done" }),
             React.createElement("select", { className: "inp ko-smart-native-select ko-smart-icon-select", value: "", onFocus: () => setOpen(false), onChange: e => { const ix = parseInt(e.target.value, 10); if (!isNaN(ix) && selectRows[ix]) pick(selectRows[ix]); }, "aria-label": "Kayıtlılardan seç", title: "Kayıtlılardan seç" },
                 React.createElement("option", { value: "" }, "▾"),
                 selectRows.map((r, i) => React.createElement("option", { key: nm(r.name) + '|' + r.phone + '|' + i, value: i }, r.name + (r.phone ? ' · ' + r.phone : ''))))),
@@ -6750,7 +6750,7 @@ function App() {
         
         if (editId) {
             const nowIso = new Date().toISOString();
-            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
             const t = normalizeTransfer(base);
             setT(p => {
                 const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
@@ -6770,7 +6770,7 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 
                 if (sameDayReturn) {
