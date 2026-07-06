@@ -1645,23 +1645,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1783341660024_6jq779@olmeztur
-DTSTAMP:20260706T124100Z
-LAST-MODIFIED:20260706T124100Z
-SEQUENCE:1783341660
-DTSTART:20260706T090000
-DTEND:20260706T100000
-SUMMARY:09:00 · Almira Hotel → İzmir  Vito
-LOCATION:Almira Hotel → İzmir
-DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: Kadir Ölmez / +90 (543) 287 0
- 6 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito 
- / 16 LMZ 55\nGüzergah: Almira Hotel → İzmir\nÖdeme: Müşteri ödemez | Ara
- ç: 9.000 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1783339367413_e2u9in@olmeztur
 DTSTAMP:20260706T124100Z
 LAST-MODIFIED:20260706T120300Z
@@ -1725,6 +1708,23 @@ DESCRIPTION:Müşteri: Hong Meng\nŞoför: Kadir Ölmez / +90 (543) 287 06 87
  \nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüze
  rgah: Bursa Ramada Nilüfer → İstanbul Havalimanı\nÖdeme: Müşteri ödemez 
  | Araç: 8.550 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783341660024_6jq779@olmeztur
+DTSTAMP:20260706T124100Z
+LAST-MODIFIED:20260706T124100Z
+SEQUENCE:1783341679
+DTSTART:20260722T090000
+DTEND:20260722T100000
+SUMMARY:09:00 · Almira Hotel → İzmir  Vito
+LOCATION:Almira Hotel → İzmir
+DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito 
+ / 16 LMZ 55\nGüzergah: Almira Hotel → İzmir\nÖdeme: Müşteri ödemez | Ara
+ ç: 9.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
