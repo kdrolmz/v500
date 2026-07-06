@@ -2061,6 +2061,14 @@ function remainingFromFirmDisplay(t) {
     const tl = Math.round(remainingFromFirmTRY(t));
     return { isForeign: true, main: currencySymbolFor(cur) + Math.abs(Math.round(raw)).toLocaleString('tr-TR'), sub: tl > 0 ? fr(tl) + '₺' : '' };
 }
+function remainingBelongsToFirmAccount(t, firm) {
+    if (!t || !t.partialFromFirm || !(moneyValue(t.remainingAmount) > 0))
+        return false;
+    const giver = String(t.givenBy || '').trim();
+    if (!giver || isOlmezturParty(giver) || !isOlmezturParty(t.assignedTo))
+        return false;
+    return !firm || firmSlug(giver) === firmSlug(firm);
+}
 function accountUsdRateForRow(t) {
     const pairs = [];
     const addUsdPair = (raw, currency, tl) => {
@@ -2072,7 +2080,8 @@ function accountUsdRateForRow(t) {
     addUsdPair(t && t.paymentAmount, t && t.paymentCurrency, transferCustomerTRYValue(t));
     addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, t && t.driverPayment);
     addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, t && t.altAcentaUcreti);
-    addUsdPair(t && t.remainingAmount, t && t.remainingCurrency, (t && t.remainingTRY) || remainingFromFirmTRY(t));
+    if (remainingBelongsToFirmAccount(t, t && t.givenBy))
+        addUsdPair(t && t.remainingAmount, t && t.remainingCurrency, (t && t.remainingTRY) || remainingFromFirmTRY(t));
     const rawTotal = pairs.reduce((s, x) => s + x.raw, 0);
     const tlTotal = pairs.reduce((s, x) => s + x.tl, 0);
     if (rawTotal > 0 && tlTotal > 0)
@@ -2083,7 +2092,7 @@ function accountRawUsdCollection(t) {
     let usd = 0;
     if (!transferNoCustomerPayment(t) && String((t && t.paymentCurrency) || '').toUpperCase() === 'USD' && moneyValue(t && t.paymentAmount) > 0)
         usd += moneyValue(t.paymentAmount);
-    if (t && t.partialFromFirm && String(t.remainingCurrency || '').toUpperCase() === 'USD' && moneyValue(t.remainingAmount) > 0)
+    if (remainingBelongsToFirmAccount(t, t && t.givenBy) && String(t.remainingCurrency || '').toUpperCase() === 'USD' && moneyValue(t.remainingAmount) > 0)
         usd += moneyValue(t.remainingAmount);
     return usd;
 }
@@ -2342,7 +2351,7 @@ function formPreviewAmounts(t) {
     let olmezNet = noCustomerPayment ? 0 : olmezKar(calcT);
     if (agencyToOlmez && noCustomerPayment)
         olmezNet = 0;
-    if (firmBal && t.partialFromFirm) {
+    if (firmBal && remainingBelongsToFirmAccount(calcT, firmBal.firm)) {
         const extra = remainingFromFirmTRY(t);
         if (extra)
             firmBal.netOl = firmBal.netOl + extra;
@@ -3920,7 +3929,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             if (b && b.firm === firm) {
                 const settleKeys = accountSettleKeys(firm);
                 const km = isFirmSettled(t, firm);
-                const extra = remainingFromFirmTRY(t);
+                const extra = remainingBelongsToFirmAccount(t, firm) ? remainingFromFirmTRY(t) : 0;
                 const e = { ...t, netOl: b.netOl + extra, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
                 detay.push(e);
                 if (!km) {
@@ -4480,7 +4489,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     ? ('Müşteri ödemez · Alınan: ' + detayT.noCollectAmount + ' ' + (detayT.noCollectCurrency || 'TRY'))
                     : 'Müşteri ödemez')
                 : (detayT.paymentAmount ? (detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY')) : 'Tutar yok'));
-        const remRow = (detayT.partialFromFirm && moneyValue(detayT.remainingAmount) > 0)
+        const remRow = (moneyValue(detayT.remainingTRY) > 0 || remainingBelongsToFirmAccount(detayT, sel))
             ? ['Kalan (iş verenden)', detayT.remainingAmount + ' ' + (detayT.remainingCurrency || 'TRY') + (String(detayT.remainingCurrency || 'TRY').toUpperCase() !== 'TRY' ? ' (≈' + fr(remainingFromFirmTRY(detayT)) + '₺)' : '')]
             : null;
         const yolcu = detayT.passengers && detayT.passengers.length ? detayT.passengers.map(p => p.name || p.fullName || '').filter(Boolean).join(', ') : ((detayT.passengerCount || 0) > 0 ? (detayT.passengerCount + ' kişi') : '');
