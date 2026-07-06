@@ -401,16 +401,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1782991200496_f6r8o1@olmeztur
 DTSTAMP:20260706T140700Z
-LAST-MODIFIED:20260704T184700Z
-SEQUENCE:1783190872
+LAST-MODIFIED:20260706T113200Z
+SEQUENCE:1783337570
 DTSTART:20260706T080000
 DTEND:20260706T090000
 SUMMARY:08:00 · Ramada Nilüfer → Odelo  Vito
 LOCATION:Ramada Nilüfer → Odelo
-DESCRIPTION:Müşteri:  Hong Meng ve Nancy Li\nŞoför: Kadir Ölmez / +90 (5
- 43) 287 06 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
- ç: Vito\nGüzergah: Ramada Nilüfer → Odelo\nÖdeme: Müşteri ödemez | Araç:
-  1.100 ₺
+DESCRIPTION:Müşteri: Hong Meng Ve Nancy Li\nŞoför: Kadir Ölmez / +90 (54
+ 3) 287 06 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: Balentu
+ r\nAraç: Vito\nGüzergah: Ramada Nilüfer → Odelo\nÖdeme: Müşteri: 1.100 T
+ RY | Araç: 1.100 ₺ | Alt acenta: 1.100 ₺
 CATEGORIES:KÖ Kısa Pas
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -418,16 +418,50 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783190925135_aqy0ku@olmeztur
 DTSTAMP:20260706T140700Z
-LAST-MODIFIED:20260704T184800Z
-SEQUENCE:1783190925
+LAST-MODIFIED:20260706T122800Z
+SEQUENCE:1783340886
 DTSTART:20260706T173000
 DTEND:20260706T183000
 SUMMARY:17:30 · Odelo → Ramada Nilüfer  Vito
 LOCATION:Odelo → Ramada Nilüfer
 DESCRIPTION:Müşteri: Hang Meng Nancy Li\nŞoför: Kadir Ölmez / +90 (543) 
- 287 06 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
- ito / 16 LMZ 55\nGüzergah: Odelo → Ramada Nilüfer\nÖdeme: Müşteri ödemez
-  | Araç: 1.100 ₺
+ 287 06 87\nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\n
+ Araç: Vito\nGüzergah: Odelo → Ramada Nilüfer\nÖdeme: Müşteri: 1.100 TRY 
+ | Araç: 1.100 ₺ | Alt acenta: 1.100 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783340631521_h5usyj@olmeztur
+DTSTAMP:20260706T140700Z
+LAST-MODIFIED:20260706T122300Z
+SEQUENCE:1783340631
+DTSTART:20260707T080000
+DTEND:20260707T090000
+SUMMARY:08:00 · Ramada Hotel → Odelo  Vito
+LOCATION:Ramada Hotel → Odelo
+DESCRIPTION:Müşteri: Hong Meng\nŞoför: Kadir Ölmez / +90 (543) 287 06 87
+ \nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 
+ LMZ 55\nGüzergah: Ramada Hotel → Odelo\nÖdeme: Müşteri ödemez | Araç: 1.
+ 100 ₺
+CATEGORIES:KÖ Kısa Pas
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783340715547_o34ou7@olmeztur
+DTSTAMP:20260706T140700Z
+LAST-MODIFIED:20260706T122500Z
+SEQUENCE:1783340715
+DTSTART:20260707T173000
+DTEND:20260707T183000
+SUMMARY:17:30 · Odelo → Ramada Nilüfer  Vito
+LOCATION:Odelo → Ramada Nilüfer
+DESCRIPTION:Müşteri: Heng Meng\nŞoför: Kadir Ölmez / +90 (543) 287 06 87
+ \nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 
+ LMZ 55\nGüzergah: Odelo → Ramada Nilüfer\nÖdeme: Müşteri ödemez | Araç: 
+ 1.100 ₺
 CATEGORIES:KÖ Kısa Pas
 STATUS:CONFIRMED
 TRANSP:OPAQUE
