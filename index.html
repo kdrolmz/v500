@@ -417,7 +417,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#22252E !importa
 .lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(79,107,69,.40) !important}
 .lg-month-day>div:first-child,.ko-arac-day>div:first-child{width:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:3px !important;min-width:0 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13px !important;font-weight:600 !important;line-height:1 !important;text-align:center !important}
-.lg-month-day.is-today .lg-month-day-num,.ko-arac-day.is-today .ko-arac-day-num,.tk-cell.tk-today .tk-cell-num{color:#22252E !important;-webkit-text-fill-color:#22252E !important}
+.lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num,.tk-cell.tk-today:not(.tk-selected) .tk-cell-num{color:var(--slate,#33405C) !important;-webkit-text-fill-color:var(--slate,#33405C) !important}
 .lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{width:100% !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:flex-start !important;gap:2px !important;min-width:0 !important;overflow:hidden !important}
 .lg-month-day-count,.ko-arac-day-count{width:100% !important;display:block !important;min-width:0 !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:8px !important;font-weight:500 !important;line-height:1.08 !important;text-align:center !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
 .lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#22252E !important;-webkit-text-fill-color:#22252E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
@@ -787,6 +787,23 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .ko-smart-menu-fixed{z-index:2147483000 !important}
 /* absolute açılır menüler (işi veren/şoför/şehir) parent'ı öne çeksin */
 [style*="zIndex: 99990"],[style*="z-index:99990"]{z-index:2147483000 !important}
+
+
+/* Seçili gün (bugün olsa bile) içindeki HER yazı beyaz — kesin */
+.lg-month-day.is-selected .lg-month-day-num,.lg-month-day.is-selected .lg-month-day-count,
+.ko-arac-day.is-selected .ko-arac-day-num,.ko-arac-day.is-selected .ko-arac-day-count,
+.tk-cell.tk-selected .tk-cell-num,.tk-cell.tk-selected .tk-cell-count,
+.lg-month-day.ko-selected-gold .lg-month-day-num{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+
+
+/* Ana sayfa: üst kartlar sabit, yalnızca bugünkü transfer listesi kayar */
+.main-cont.view-home{height:100dvh !important;max-height:100dvh !important;overflow:hidden !important;display:flex !important;flex-direction:column !important}
+.main-cont.view-home .lg-home{flex:1 1 auto !important;min-height:0 !important;height:auto !important;display:flex !important;flex-direction:column !important;overflow:hidden !important}
+.main-cont.view-home .lg-greeting-card,.main-cont.view-home .lg-period-row,.main-cont.view-home .lg-section-row,.main-cont.view-home .lg-today-title-row{flex:0 0 auto !important}
+.main-cont.view-home .lg-home-transfer-list,.main-cont.view-home .lg-today-list-standalone{flex:1 1 auto !important;min-height:0 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 14px) !important}
+@media(min-width:900px){
+.main-cont.view-home{max-width:1180px !important;margin:0 auto !important}
+}
 
 </style>
 </head>
