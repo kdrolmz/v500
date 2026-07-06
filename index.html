@@ -83,7 +83,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .tab-fab-plus{pointer-events:none;display:inline-block;line-height:1}
 .mo,.ko-transfer-edit-modal{position:fixed;inset:0;z-index:90;background:rgba(60,60,67,.42);display:flex;align-items:flex-end;justify-content:center;padding:12px}
 .ko-quick-edit-actions{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;z-index:5}
-.lg-home{display:flex;flex-direction:column;gap:10px !important;min-height:calc(100dvh - var(--tabbar-h) - var(--sa-b) - 24px) !important}
+.lg-home{display:flex;flex-direction:column;gap:10px !important}
 .ko-pwa-brand-row{display:flex;align-items:center;gap:10px}
 .ko-pwa-brand-logo{width:36px;height:36px;border-radius:10px;object-fit:contain;border:1px solid rgba(60,60,67,.20)}
 .ko-pwa-brand-title{font-size:21px;font-weight:720;color:var(--ink);line-height:1.08}
@@ -795,15 +795,6 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .tk-cell.tk-selected .tk-cell-num,.tk-cell.tk-selected .tk-cell-count,
 .lg-month-day.ko-selected-gold .lg-month-day-num{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 
-
-/* Ana sayfa: üst kartlar sabit, yalnızca bugünkü transfer listesi kayar */
-.main-cont.view-home{height:100dvh !important;max-height:100dvh !important;overflow:hidden !important;display:flex !important;flex-direction:column !important}
-.main-cont.view-home .lg-home{flex:1 1 auto !important;min-height:0 !important;height:auto !important;display:flex !important;flex-direction:column !important;overflow:hidden !important}
-.main-cont.view-home .lg-greeting-card,.main-cont.view-home .lg-period-row,.main-cont.view-home .lg-section-row,.main-cont.view-home .lg-today-title-row{flex:0 0 auto !important}
-.main-cont.view-home .lg-home-transfer-list,.main-cont.view-home .lg-today-list-standalone{flex:1 1 auto !important;min-height:0 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 14px) !important}
-@media(min-width:900px){
-.main-cont.view-home{max-width:1180px !important;margin:0 auto !important}
-}
 
 </style>
 </head>
