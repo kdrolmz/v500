@@ -152,12 +152,15 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .lg-choice{min-height:40px;border:1px solid var(--line-2) !important;border-radius:12px !important;background:#fff !important;padding:9px 10px !important;font-size:13px;font-weight:600;color:var(--ink) !important}
 .ko-party-row,.ko-party-alt-row,.ko-driver-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .ko-smart-pick{position:relative}
+.ko-smart-pick:focus-within{z-index:9998}
 .ko-smart-control,.tk-mini-actions{display:flex;gap:6px}
 .ko-smart-input{flex:1}
 .ko-smart-native-select{max-width:44%;min-width:120px}
 .ko-smart-icon-select{max-width:42px !important;min-width:42px !important;width:42px !important;flex:0 0 42px !important;padding:0 4px !important;text-align:center !important;text-align-last:center !important;font-size:16px !important;color:var(--muted) !important;background:#fff !important;border:1px solid var(--line-2) !important;border-radius:11px !important;cursor:pointer}
 .ko-smart-icon-select option{font-size:13px;color:var(--ink)}
-.ko-smart-menu{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:30;max-height:220px;overflow:auto;background:#fff;border:1px solid var(--line-2);border-radius:12px;box-shadow:0 10px 24px rgba(60,60,67,.12)}
+.ko-smart-menu{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:9999;max-height:260px;overflow:auto;background:#fff;border:1px solid var(--line-2);border-radius:12px;box-shadow:0 14px 34px rgba(16,20,31,.22)}
+.ko-smart-wrap,.ko-party-alt-row,.ko-party-row{position:relative;z-index:5}
+.ko-smart-wrap:focus-within,.ko-party-alt-row:focus-within,.ko-party-row:focus-within{z-index:9998}
 .ko-smart-option{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
 .ko-smart-name{font-size:13px;font-weight:620}
 .ko-passenger-list,.tk-panel-list{display:flex;flex-direction:column;gap:8px}
@@ -764,6 +767,11 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 /* iPhone üst güvenli alan: hero olmayan sekmelerde içerik çentiğin altından başlasın */
 .main-cont:not(.view-home){padding-top:calc(var(--sa-t) + 10px) !important}
 .main-cont.view-home > *:first-child{margin-top:0 !important}
+
+
+/* Form açılır listeleri kırpılmasın */
+.ms,.ko-transfer-edit-sheet,.ko-navy-panel,.card{overflow:visible !important}
+.ms{overflow-y:auto !important}
 
 </style>
 </head>
@@ -2640,6 +2648,7 @@ function LocIn({ lbl, field, value, sugg, show, onChange, onSel, onFocus, onBlur
 }
 function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) {
     const [open, setOpen] = useState(false);
+    const __wrapCls = "ko-smart-wrap";
     const raw = String(value || '');
     const q = nm(raw).replace(/\s+/g, ' ').trim();
     const list = (rows || []).slice(0, 240).map(r => typeof r === 'string' ? { name: r, phone: '' } : { name: String((r && r.name) || '').trim(), phone: String((r && r.phone) || '').trim() }).filter(r => r.name);
@@ -6644,6 +6653,12 @@ function App() {
             releaseSubmitLock();
             tip('Dönüş tarihi girin');
             return;
+        }
+        const __cur = String(form.paymentCurrency || 'TRY').toUpperCase();
+        const __amt = moneyValue(form.paymentAmount);
+        if (__cur !== 'TRY' && __amt > 0) {
+            const __r = __cur === 'USD' ? moneyValue(rates.USD) : __cur === 'EUR' ? moneyValue(rates.EUR) : __cur === 'KWD' ? moneyValue(rates.KWD) : 0;
+            if (!(__r > 0)) { releaseSubmitLock(); tip('Kur hen\u00FCz y\u00FCklenmedi \u2014 birka\u00E7 saniye sonra tekrar deneyin veya TL girin'); return; }
         }
         const cTRY = toTRY(form.paymentAmount, form.paymentCurrency);
         [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
