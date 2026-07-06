@@ -1630,8 +1630,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783098356081_a1bast@olmeztur
 DTSTAMP:20260706T140700Z
-LAST-MODIFIED:20260703T170500Z
-SEQUENCE:1783098356
+LAST-MODIFIED:20260706T123400Z
+SEQUENCE:1783341274
 DTSTART:20260704T093000
 DTEND:20260704T103000
 SUMMARY:09:30 · Bursa → Sabiha Gökçen  Vito
@@ -1640,6 +1640,23 @@ DESCRIPTION:Müşteri: Menayes Almenayes\nŞoför: Kadir Ölmez / +90 (543) 2
  87 06 87\nİşi veren: Muhammet s.\nİşi yapan: Ölmeztur\nAlt acenta: -\nAr
  aç: Vito / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme:
   Müşteri ödemez | Araç: 7.009 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783339367413_e2u9in@olmeztur
+DTSTAMP:20260706T140700Z
+LAST-MODIFIED:20260706T120300Z
+SEQUENCE:1783339383
+DTSTART:20260706T113000
+DTEND:20260706T123000
+SUMMARY:11:30 · Bursa → İstanbul  Vito
+LOCATION:Bursa → İstanbul
+DESCRIPTION:Müşteri: Norwan Johnson\nŞoför: Balentur\nİşi veren: Salih D
+ ada\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: Bu
+ rsa → İstanbul\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺ | Alt acenta: 6.50
+ 0 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -1691,6 +1708,23 @@ DESCRIPTION:Müşteri: Hong Meng\nŞoför: Kadir Ölmez / +90 (543) 287 06 87
  \nİşi veren: Odelo\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüze
  rgah: Bursa Ramada Nilüfer → İstanbul Havalimanı\nÖdeme: Müşteri ödemez 
  | Araç: 8.550 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783341660024_6jq779@olmeztur
+DTSTAMP:20260706T140700Z
+LAST-MODIFIED:20260706T124100Z
+SEQUENCE:1783341679
+DTSTART:20260722T090000
+DTEND:20260722T100000
+SUMMARY:09:00 · Almira Hotel → İzmir  Vito
+LOCATION:Almira Hotel → İzmir
+DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito 
+ / 16 LMZ 55\nGüzergah: Almira Hotel → İzmir\nÖdeme: Müşteri ödemez | Ara
+ ç: 9.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
