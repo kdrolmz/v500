@@ -993,7 +993,7 @@ const BF = {
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, ksTime: '', ksPickup: '', ksDropoff: '', ksTransferType: 'arrival', ksGivenBy: '', ksAssignedTo: '', ksAltAcenta: '', ksPaymentAmount: '', ksPaymentCurrency: 'TRY', ksPassengerName: '', ksBridgeTotal: '', ksBridgeSplit: true,
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, ksTime: '', ksPickup: '', ksDropoff: '', ksTransferType: 'arrival', ksGivenBy: '', ksAssignedTo: '', ksAltAcenta: '', ksPaymentAmount: '', ksPaymentCurrency: 'TRY', ksPassengerName: '', ksBridgeTotal: '', ksBridgeSplit: true, ksPaymentCollect: 'yes', ksPaymentToMe: false,
     isTakas: false, takasPartner: '', takasWho: 'benVerdim', takasPay: 'partner', takasMyCross: 'yok', takasTheirCross: 'yok', takasSettled: false,
     isDugun: false, dugunKapora: '', dugunSettled: false,
 };
@@ -6861,6 +6861,7 @@ function App() {
                         passengers: ksPax,
                         plate: form.plate, vehicleType: form.vehicleType,
                         paymentAmount: form.ksPaymentAmount, paymentCurrency: ksCur,
+                        paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
                         customerTRY: ksTRY,
                         routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
                         tripMode: 'single', isKarsilikli: true, linkedTransferId: outId,
@@ -9713,6 +9714,13 @@ function App() {
                                     React.createElement("span", { className: "lbl" }, "Para Birimi"),
                                     React.createElement("select", { value: form.ksPaymentCurrency || 'TRY', onChange: e => sf({ ksPaymentCurrency: e.target.value }), className: "inp" },
                                         ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
+                            React.createElement("div", { style: { marginBottom: 9 } },
+                                React.createElement("span", { className: "lbl" }, "\u00D6deme Durumu"),
+                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
+                                    [['yes', 'M\u00FC\u015Fteriden al', { ksPaymentCollect: 'yes', ksPaymentToMe: false }], ['me', '\u00D6lmeztur\u2019a/Havale', { ksPaymentCollect: 'yes', ksPaymentToMe: true }], ['no', 'Al\u0131nmayacak', { ksPaymentCollect: 'no', ksPaymentToMe: false }]].map(([id, lbl, patch]) => {
+                                        const active = id === 'me' ? !!form.ksPaymentToMe : (id === 'no' ? (form.ksPaymentCollect === 'no' && !form.ksPaymentToMe) : (form.ksPaymentCollect !== 'no' && !form.ksPaymentToMe));
+                                        return React.createElement("button", { key: id, type: "button", onClick: () => sf(patch), style: { padding: '8px 4px', borderRadius: 9, cursor: 'pointer', fontSize: 10, fontWeight: 600, border: active ? '1.5px solid var(--slate, #33405C)' : '1px solid var(--line)', background: active ? 'var(--gradSel, #243250)' : '#FBFAF8', color: active ? '#fff' : 'var(--body, #3A4152)', WebkitTextFillColor: active ? '#fff' : 'var(--body, #3A4152)' } }, lbl);
+                                    }))),
                             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 9 } },
                                 React.createElement("div", null,
                                     React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Veren"),
