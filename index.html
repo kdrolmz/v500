@@ -993,7 +993,7 @@ const BF = {
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, ksTime: '', ksPickup: '', ksDropoff: '', ksTransferType: 'arrival', ksGivenBy: '', ksAssignedTo: '', ksAltAcenta: '', ksPaymentAmount: '', ksPaymentCurrency: 'TRY', ksPassengerName: '', ksBridgeTotal: '', ksBridgeSplit: true, ksPaymentCollect: 'yes', ksPaymentToMe: false,
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, ksTime: '', ksPickup: '', ksDropoff: '', ksTransferType: 'arrival', ksGivenBy: '', ksAssignedTo: '', ksAltAcenta: '', ksPaymentAmount: '', ksPaymentCurrency: 'TRY', ksPassengerName: '', ksBridgeTotal: '', ksBridgeSplit: true, ksPaymentCollect: 'yes', ksPaymentToMe: false, ksDate: '', ksDriverPayment: '', ksDriverCurrency: 'TRY', ksAltUcret: '', ksAltCurrency: 'TRY',
     isTakas: false, takasPartner: '', takasWho: 'benVerdim', takasPay: 'partner', takasMyCross: 'yok', takasTheirCross: 'yok', takasSettled: false,
     isDugun: false, dugunKapora: '', dugunSettled: false,
 };
@@ -6857,7 +6857,7 @@ function App() {
                 const ksPax = form.ksPassengerName ? [{ ...emptyPassenger(), name: koTitleCaseTR(form.ksPassengerName) }] : [emptyPassenger()];
                 const ksBase = {
                     ...(linkExisting || BF),
-                    id: ksId, editRootId: (linkExisting && linkExisting.editRootId) || ksId, date: base.date,
+                    id: ksId, editRootId: (linkExisting && linkExisting.editRootId) || ksId, date: form.ksDate || (linkExisting && linkExisting.date) || base.date,
                     time: form.ksTime || (linkExisting && linkExisting.time) || form.time,
                     transferType: form.ksTransferType || (linkExisting && linkExisting.transferType) || 'arrival',
                     pickup: koTitleCaseTR(form.ksPickup) || (linkExisting && linkExisting.pickup) || '',
@@ -6869,12 +6869,23 @@ function App() {
                     paymentAmount: form.ksPaymentAmount || (linkExisting && linkExisting.paymentAmount) || '', paymentCurrency: ksCur,
                     paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
                     customerTRY: ksTRY,
+                    driverPayment: moneyValue(form.ksDriverPayment) > 0 ? Math.round(toTRY(form.ksDriverPayment, form.ksDriverCurrency || 'TRY')) : ((linkExisting && linkExisting.driverPayment) || ''),
+                    driverPaymentRaw: form.ksDriverPayment || (linkExisting && linkExisting.driverPaymentRaw) || '', driverPaymentCurrency: form.ksDriverCurrency || 'TRY',
+                    altAcentaUcreti: moneyValue(form.ksAltUcret) > 0 ? Math.round(toTRY(form.ksAltUcret, form.ksAltCurrency || 'TRY')) : ((linkExisting && linkExisting.altAcentaUcreti) || ''),
+                    altAcentaRaw: form.ksAltUcret || (linkExisting && linkExisting.altAcentaRaw) || '', altAcentaCurrency: form.ksAltCurrency || 'TRY',
                     routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
                     tripMode: 'single', isKarsilikli: true, linkedTransferId: editId,
                     createdAt: (linkExisting && linkExisting.createdAt) || nowIso2, updatedAt: nowIso2, clientUpdatedAt: nowIso2
                 };
-                ksBase.profit = olmezKar({ ...ksBase });
-                extraKs.push(normalizeTransfer(ksBase));
+                if (linkExisting) {
+                    // MEVCUT işi seçtik: orijinalini KORU, sadece bağ ekle (verilerini bozma)
+                    const merged = { ...linkExisting, isKarsilikli: true, linkedTransferId: editId, updatedAt: nowIso2, clientUpdatedAt: nowIso2 };
+                    ksBase.profit = olmezKar({ ...merged });
+                    extraKs.push(normalizeTransfer(merged));
+                } else {
+                    ksBase.profit = olmezKar({ ...ksBase });
+                    extraKs.push(normalizeTransfer(ksBase));
+                }
                 baseFixed = { ...base, isKarsilikli: true, linkedTransferId: ksId };
             }
             const t = normalizeTransfer(baseFixed);
@@ -6914,7 +6925,7 @@ function App() {
                     const ksTRY = ksAmt > 0 ? toTRY(form.ksPaymentAmount, ksCur) : 0;
                     const ksBase = {
                         ...BF,
-                        id: ksId, editRootId: ksId, date: dateStr,
+                        id: ksId, editRootId: ksId, date: form.ksDate || dateStr,
                         time: form.ksTime || form.time,
                         transferType: form.ksTransferType || 'arrival',
                         pickup: koTitleCaseTR(form.ksPickup), dropoff: koTitleCaseTR(form.ksDropoff),
@@ -6925,6 +6936,10 @@ function App() {
                         paymentAmount: form.ksPaymentAmount, paymentCurrency: ksCur,
                         paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
                         customerTRY: ksTRY,
+                        driverPayment: moneyValue(form.ksDriverPayment) > 0 ? Math.round(toTRY(form.ksDriverPayment, form.ksDriverCurrency || 'TRY')) : '',
+                        driverPaymentRaw: form.ksDriverPayment || '', driverPaymentCurrency: form.ksDriverCurrency || 'TRY',
+                        altAcentaUcreti: moneyValue(form.ksAltUcret) > 0 ? Math.round(toTRY(form.ksAltUcret, form.ksAltCurrency || 'TRY')) : '',
+                        altAcentaRaw: form.ksAltUcret || '', altAcentaCurrency: form.ksAltCurrency || 'TRY',
                         routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
                         tripMode: 'single', isKarsilikli: true, linkedTransferId: outId,
                         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString()
@@ -7969,8 +7984,7 @@ function App() {
                             const col = ksPairColor(t);
                             const kc = kp ? (getCollectionState(kp) === 'collected') : false;
                             return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (kp ? ksPairLabel(kp) : ksPairLabel(t))),
-                                kp && React.createElement("span", { style: { fontSize: 10, color: 'var(--mut, #7A7E88)', WebkitTextFillColor: 'var(--mut, #7A7E88)' } }, 'e\u015F: ' + (kp.time || '') + ' \u00B7 ' + (kc ? 'tahsil edildi' : 'bekliyor')));
+                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (kp ? ksPairLabel(kp) : ksPairLabel(t))));
                         })()
                     ),
                     /* Sağ: tutar + ödeme durumu */
@@ -9013,8 +9027,7 @@ function App() {
                                     const col = ksPairColor(t);
                                     const kc = ksPair ? (getCollectionState(ksPair) === 'collected') : false;
                                     return React.createElement("div", { style: { marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
-                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (ksPair ? ksPairLabel(ksPair) : ksPairLabel(t))),
-                                        ksPair && React.createElement("span", { style: { fontSize: 9.5, color: '#7A7E88', WebkitTextFillColor: '#7A7E88' } }, 'e\u015F: ' + (ksPair.time || '') + ' \u00B7 ' + (kc ? 'tahsil' : 'bekliyor')));
+                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (ksPair ? ksPairLabel(ksPair) : ksPairLabel(t))));
                                 })()
                             )
                         )
@@ -9789,6 +9802,25 @@ function App() {
                             React.createElement("div", { style: { marginBottom: 11 } },
                                 React.createElement("span", { className: "lbl" }, "Alt Acenta (opsiyonel)"),
                                 React.createElement("input", { type: "text", value: form.ksAltAcenta || '', onChange: e => sf({ ksAltAcenta: koTitleCaseLive(e.target.value) }), placeholder: "Alt acenta", className: "inp", autoCapitalize: "words" })),
+                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 9, marginBottom: 9 } },
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "lbl" }, "\uD83D\uDE97 Ara\u00E7 (\u015Fof\u00F6r) \u00D6demesi"),
+                                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksDriverPayment || '', onChange: e => sf({ ksDriverPayment: e.target.value }), placeholder: "0", className: "inp" })),
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "lbl" }, "Birim"),
+                                    React.createElement("select", { value: form.ksDriverCurrency || 'TRY', onChange: e => sf({ ksDriverCurrency: e.target.value }), className: "inp" },
+                                        ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
+                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 9, marginBottom: 9 } },
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "lbl" }, "\uD83E\uDD1D Alt Acentaya \u00D6denen (\u00FCcret)"),
+                                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksAltUcret || '', onChange: e => sf({ ksAltUcret: e.target.value }), placeholder: "0", className: "inp" })),
+                                React.createElement("div", null,
+                                    React.createElement("span", { className: "lbl" }, "Birim"),
+                                    React.createElement("select", { value: form.ksAltCurrency || 'TRY', onChange: e => sf({ ksAltCurrency: e.target.value }), className: "inp" },
+                                        ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
+                            React.createElement("div", { style: { marginBottom: 9 } },
+                                React.createElement("span", { className: "lbl" }, "\uD83D\uDCC5 Kar\u015F\u0131 Baca\u011F\u0131n Tarihi (bo\u015F = ayn\u0131 g\u00FCn)"),
+                                React.createElement("input", { type: "date", value: form.ksDate || '', onChange: e => sf({ ksDate: e.target.value }), className: "inp" })),
                             React.createElement("div", { style: { borderTop: '1px solid var(--line)', paddingTop: 11 } },
                                 React.createElement("span", { className: "lbl" }, "K\u00F6pr\u00FC/Anla\u015Fma Toplam\u0131 (\u20BA) \u2014 opsiyonel"),
                                 React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksBridgeTotal || '', onChange: e => sf({ ksBridgeTotal: e.target.value }), placeholder: "13500", className: "inp" }),
