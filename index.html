@@ -2238,13 +2238,6 @@ function olmezKar(t) {
        - veren (givenBy=OL, assignedTo=firma) → hakediş iş verenin (OL) → OL kârına EKLENİR
        - OL→OL veya dış→dış → hakediş OL'a → eklenir */
     if (alan) {
-        /* KARŞILIKLI KÖPRÜ MODELİ: iş karşılıklı VE işi verenden Ölmeztur'a ödeme geliyorsa,
-           para Ölmeztur'dan geçer → kâr = alınan - alt acenta - araç. Normal 'alan' işleri etkilenmez. */
-        if (t.isKarsilikli && c > 0) {
-            if (t.altAcenta && alt > 0)
-                return c - alt - d + com;
-            return c - d + com;
-        }
         if (t.altAcenta && alt > 0)
             return d - alt;
         return d + com;
@@ -2278,11 +2271,6 @@ function olmezPotentialKar(t) {
     const veren = givenOl && t.assignedTo && !assignedOl;
     /* HAKEDİŞ kuralı: alan durumda hakediş iş veren firmaya, OL'a değil. */
     if (alan) {
-        /* Karşılıklı köprü modeli: işi verenden Ölmeztur'a ödeme geliyorsa para OL'dan geçer */
-        if (t.isKarsilikli && c > 0) {
-            if (t.altAcenta && alt > 0) return c - alt - d + com;
-            return c - d + com;
-        }
         /* Başka firma verdi, biz yaptık — hakediş firmaya, OL'a kalmaz */
         if (t.altAcenta && alt > 0) return d - alt;
         return d + com;
@@ -2303,12 +2291,6 @@ function calcAltAcentaPaylasim(t) {
     const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
-    /* KARŞILIKLI KÖPRÜ: iş veren (Salah) → Ölmeztur → alt acenta (Balentur).
-       Salah 7000 verir (giver -7000), Balentur'a alt=6750 ödenir (alt +6750),
-       aradaki fark (250) Ölmeztur kârıdır (paylaşıma girmez). */
-    if (t.isKarsilikli && alan && c > 0) {
-        return { giverNetOl: -c, altNetOl: alt, komisyonPayi: 0, ksBridge: true };
-    }
     if (!alan || !yes || t.paymentToMe)
         return null;
     const musteriFarki = c - alt;
