@@ -6842,14 +6842,51 @@ function App() {
         if (editId) {
             const nowIso = new Date().toISOString();
             const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
-            const t = normalizeTransfer(base);
+            let baseFixed = base;
+            const extraKs = [];
+            // ═══ DÜZENLEMEDE KARŞILIKLI: ikinci bacağı oluştur/güncelle + bağla ═══
+            if (form.tripMode === 'karsilikli' && (moneyValue(form.ksPaymentAmount) > 0 || form.ksPickup || form.ksDropoff || form.ksAssignedTo || form.__ksLinkExisting)) {
+                const nowIso2 = new Date().toISOString();
+                const ksCur = String(form.ksPaymentCurrency || 'TRY').toUpperCase();
+                const ksTRY = moneyValue(form.ksPaymentAmount) > 0 ? toTRY(form.ksPaymentAmount, ksCur) : 0;
+                const bridge = moneyValue(form.ksBridgeTotal);
+                const split = form.ksBridgeSplit !== false;
+                // Eğer var olan bir işi bağlıyorsak onu güncelle, yoksa yeni oluştur
+                const linkExisting = form.__ksLinkExisting && (T || []).find(x => x && x.id === form.__ksLinkExisting);
+                const ksId = linkExisting ? form.__ksLinkExisting : (Date.now().toString() + 'KS_' + Math.random().toString(36).slice(2, 8));
+                const ksPax = form.ksPassengerName ? [{ ...emptyPassenger(), name: koTitleCaseTR(form.ksPassengerName) }] : [emptyPassenger()];
+                const ksBase = {
+                    ...(linkExisting || BF),
+                    id: ksId, editRootId: (linkExisting && linkExisting.editRootId) || ksId, date: base.date,
+                    time: form.ksTime || (linkExisting && linkExisting.time) || form.time,
+                    transferType: form.ksTransferType || (linkExisting && linkExisting.transferType) || 'arrival',
+                    pickup: koTitleCaseTR(form.ksPickup) || (linkExisting && linkExisting.pickup) || '',
+                    dropoff: koTitleCaseTR(form.ksDropoff) || (linkExisting && linkExisting.dropoff) || '',
+                    givenBy: koTitleCaseTR(form.ksGivenBy) || (linkExisting && linkExisting.givenBy) || '',
+                    assignedTo: koTitleCaseTR(form.ksAssignedTo) || (linkExisting && linkExisting.assignedTo) || '',
+                    altAcenta: koTitleCaseTR(form.ksAltAcenta) || (linkExisting && linkExisting.altAcenta) || '',
+                    passengers: ksPax, plate: form.plate, vehicleType: form.vehicleType,
+                    paymentAmount: form.ksPaymentAmount || (linkExisting && linkExisting.paymentAmount) || '', paymentCurrency: ksCur,
+                    paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
+                    customerTRY: ksTRY,
+                    routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
+                    tripMode: 'single', isKarsilikli: true, linkedTransferId: editId,
+                    createdAt: (linkExisting && linkExisting.createdAt) || nowIso2, updatedAt: nowIso2, clientUpdatedAt: nowIso2
+                };
+                ksBase.profit = olmezKar({ ...ksBase });
+                extraKs.push(normalizeTransfer(ksBase));
+                baseFixed = { ...base, isKarsilikli: true, linkedTransferId: ksId };
+            }
+            const t = normalizeTransfer(baseFixed);
             setT(p => {
-                const next = dedupeTransfers([...removeEditedTransferClones(p || [], editId, prev), t]);
+                let arr = removeEditedTransferClones(p || [], editId, prev);
+                if (extraKs.length) { const kid = extraKs[0].id; arr = arr.filter(x => x && x.id !== kid); }
+                const next = dedupeTransfers([...arr, t, ...extraKs]);
                 persistTransfersImmediately(next);
                 return next;
             });
             setEditId(null);
-            tip('Güncellendi');
+            tip(extraKs.length ? 'Güncellendi \u2014 karşılıklı bağlandı' : 'Güncellendi');
         } else {
             const transfersToAdd = [];
             let currentDate = new Date(form.date);
