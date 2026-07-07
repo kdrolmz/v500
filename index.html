@@ -1012,6 +1012,31 @@ const KO_ICONS = {
     hesap: () => KoSvg(['M3.5 8.2A2.2 2.2 0 0 1 5.7 6h12.6a2.2 2.2 0 0 1 2.2 2.2v8.6a2.2 2.2 0 0 1-2.2 2.2H5.7a2.2 2.2 0 0 1-2.2-2.2V8.2Z', 'M3.5 9.6h17', 'M16.4 14.4h.01']),
     arac: () => KoSvg(['M3 16V9.2A2.2 2.2 0 0 1 5.2 7h9.1l4.4 3.6H20a1.5 1.5 0 0 1 1.5 1.5V16h-2', 'M3 16h3.2', 'M10.4 16h4.4', 'M8.1 18a1.9 1.9 0 1 0-3.8 0 1.9 1.9 0 0 0 3.8 0Z', 'M18.6 18a1.9 1.9 0 1 0-3.8 0 1.9 1.9 0 0 0 3.8 0Z', 'M13.5 7v3.6H21'])
 };
+const KO_KS_COLORS = [
+    { bg: '#E7EDF7', bd: '#2B4A82', tx: '#294C86' },
+    { bg: '#E9F3ED', bd: '#2E7D5B', tx: '#1F6E48' },
+    { bg: '#F8F0DC', bd: '#B0842E', tx: '#8A6414' },
+    { bg: '#F0EAF8', bd: '#7A5CB0', tx: '#5B449A' },
+    { bg: '#FAEBF2', bd: '#C05C88', tx: '#A63F70' },
+    { bg: '#E9EEF4', bd: '#3A5570', tx: '#33475E' },
+    { bg: '#FCEBE6', bd: '#C25A3A', tx: '#A2472B' },
+    { bg: '#E6F2F4', bd: '#2E7A85', tx: '#1F6670' }
+];
+const ksPairColor = (t) => {
+    // id'lerin rastgele kuyruğunu (son '_' sonrası) al — ortak zaman öneki dağılımı bozuyor
+    const tail = (x) => { const str = String(x || ''); const u = str.lastIndexOf('_'); const ks = str.indexOf('KS_'); return (ks >= 0 ? str.slice(ks + 3) : (u >= 0 ? str.slice(u + 1) : str)); };
+    const a = tail((t && t.id) || ''); const b = tail((t && t.linkedTransferId) || '');
+    const pair = [a, b].sort().join('#');
+    let hh = 2166136261;
+    for (let i = 0; i < pair.length; i++) { hh ^= pair.charCodeAt(i); hh = Math.imul(hh, 16777619) >>> 0; }
+    // ekstra karıştırma
+    hh ^= hh >>> 13; hh = Math.imul(hh, 0x5bd1e995) >>> 0; hh ^= hh >>> 15; hh = hh >>> 0;
+    return KO_KS_COLORS[hh % KO_KS_COLORS.length];
+};
+const ksPairLabel = (t) => {
+    const short = (x) => String(x || '').trim().split(' ')[0] || '?';
+    return short(t && t.pickup) + '\u2013' + short(t && t.dropoff);
+};
 const koTitleCaseTR = v => String(v || '').replace(/\s+/g, ' ').trim().split(' ').map(w => w ? (w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')) : w).join(' ');
 const koTitleCaseLive = v => { const str = String(v || ''); return str.split(' ').map(w => w ? (w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')) : w).join(' '); };
 const addDeletedAracId = id => { if (!id) return; try { const cur = readDeletedAracIds(); cur.push(String(id)); writeDeletedAracIds(cur); } catch (e) { } };
@@ -7904,16 +7929,11 @@ function App() {
                     ,
                         t.isKarsilikli && (() => {
                             const kp = t.linkedTransferId ? (T || []).find(x => x && x.id === t.linkedTransferId) : null;
-                            if (!kp) return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)' } },
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.6, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 8px' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F'));
-                            const kt = TIPLER.find(tt => tt.id === kp.transferType) || TIPLER[0];
-                            const kc = getCollectionState(kp) === 'collected';
-                            return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' } },
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.6, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 8px', whiteSpace: 'nowrap' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131'),
-                                React.createElement("span", { style: { width: 3, alignSelf: 'stretch', minHeight: 16, borderRadius: 3, background: kt.c } }),
-                                React.createElement("span", { style: { fontWeight: 700, fontSize: 11.5, fontVariantNumeric: 'tabular-nums', color: '#1F2733', WebkitTextFillColor: '#1F2733', whiteSpace: 'nowrap' } }, kp.time || '--:--'),
-                                React.createElement("span", { style: { minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11, color: '#5F6B7A', WebkitTextFillColor: '#5F6B7A' } }, (kp.pickup || '?') + ' \u2192 ' + (kp.dropoff || '?')),
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.8, fontWeight: 700, padding: '2px 9px', borderRadius: 999, whiteSpace: 'nowrap', background: kc ? '#E4F3EB' : '#FAF2DF', border: '1px solid ' + (kc ? '#B4DBC5' : '#E7D3A0'), color: kc ? '#0B7C55' : '#8A6A1E', WebkitTextFillColor: kc ? '#0B7C55' : '#8A6A1E' } }, kc ? '\u2713 Tahsil edildi' : '\u25CB Bekliyor'));
+                            const col = ksPairColor(t);
+                            const kc = kp ? (getCollectionState(kp) === 'collected') : false;
+                            return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (kp ? ksPairLabel(kp) : ksPairLabel(t))),
+                                kp && React.createElement("span", { style: { fontSize: 10, color: 'var(--mut, #7A7E88)', WebkitTextFillColor: 'var(--mut, #7A7E88)' } }, 'e\u015F: ' + (kp.time || '') + ' \u00B7 ' + (kc ? 'tahsil edildi' : 'bekliyor')));
                         })()
                     ),
                     /* Sağ: tutar + ödeme durumu */
@@ -8953,16 +8973,11 @@ function App() {
                                     altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#22252E', fontWeight: 450 } }, altText)
                                 ),
                                 t.isKarsilikli && (() => {
-                                    const ksTip = ksPair ? (TIPLER.find(tt => tt.id === ksPair.transferType) || TIPLER[0]) : TIPLER[0];
-                                    const ksColl = ksPair ? (getCollectionState(ksPair) === 'collected') : false;
-                                    if (!ksPair) return React.createElement("div", { style: { marginTop: 6, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)' } },
-                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.4, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 7px' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F'));
-                                    return React.createElement("div", { style: { marginTop: 6, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)', display: 'flex', alignItems: 'center', gap: 7 } },
-                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.4, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 7px', whiteSpace: 'nowrap' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131'),
-                                        React.createElement("span", { style: { width: 3, alignSelf: 'stretch', minHeight: 15, borderRadius: 3, background: ksTip.c } }),
-                                        React.createElement("span", { style: { fontWeight: 700, fontSize: 11, fontVariantNumeric: 'tabular-nums', color: '#1F2733', WebkitTextFillColor: '#1F2733', whiteSpace: 'nowrap' } }, (ksPair.time || '--:--')),
-                                        React.createElement("span", { style: { minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10.5, color: '#5F6B7A', WebkitTextFillColor: '#5F6B7A' } }, homeTransferCardLoc(ksPair.pickup) + ' \u2192 ' + homeTransferCardLoc(ksPair.dropoff)),
-                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, marginLeft: 'auto', fontSize: 8.6, fontWeight: 700, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap', background: ksColl ? '#E4F3EB' : '#FAF2DF', border: '1px solid ' + (ksColl ? '#B4DBC5' : '#E7D3A0'), color: ksColl ? '#0B7C55' : '#8A6A1E', WebkitTextFillColor: ksColl ? '#0B7C55' : '#8A6A1E' } }, ksColl ? '\u2713 Tahsil edildi' : '\u25CB Bekliyor'));
+                                    const col = ksPairColor(t);
+                                    const kc = ksPair ? (getCollectionState(ksPair) === 'collected') : false;
+                                    return React.createElement("div", { style: { marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (ksPair ? ksPairLabel(ksPair) : ksPairLabel(t))),
+                                        ksPair && React.createElement("span", { style: { fontSize: 9.5, color: '#7A7E88', WebkitTextFillColor: '#7A7E88' } }, 'e\u015F: ' + (ksPair.time || '') + ' \u00B7 ' + (kc ? 'tahsil' : 'bekliyor')));
                                 })()
                             )
                         )
