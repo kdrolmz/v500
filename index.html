@@ -7902,9 +7902,10 @@ function App() {
                             '👤 ' + (pasName || 'Misafir') + ' · ' + (t.passengerCount || 1) + ' kişi'
                         )
                     ,
-                        (t.isKarsilikli && t.linkedTransferId) && (() => {
-                            const kp = (T || []).find(x => x && x.id === t.linkedTransferId);
-                            if (!kp) return null;
+                        t.isKarsilikli && (() => {
+                            const kp = t.linkedTransferId ? (T || []).find(x => x && x.id === t.linkedTransferId) : null;
+                            if (!kp) return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)' } },
+                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.6, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 8px' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F'));
                             const kt = TIPLER.find(tt => tt.id === kp.transferType) || TIPLER[0];
                             const kc = getCollectionState(kp) === 'collected';
                             return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' } },
@@ -8951,9 +8952,11 @@ function App() {
                                     altText && React.createElement("span", { style: { color: '#22252E', fontWeight: 450 } }, "→"),
                                     altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#22252E', fontWeight: 450 } }, altText)
                                 ),
-                                ksPair && (() => {
-                                    const ksTip = TIPLER.find(tt => tt.id === ksPair.transferType) || TIPLER[0];
-                                    const ksColl = getCollectionState(ksPair) === 'collected';
+                                t.isKarsilikli && (() => {
+                                    const ksTip = ksPair ? (TIPLER.find(tt => tt.id === ksPair.transferType) || TIPLER[0]) : TIPLER[0];
+                                    const ksColl = ksPair ? (getCollectionState(ksPair) === 'collected') : false;
+                                    if (!ksPair) return React.createElement("div", { style: { marginTop: 6, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)' } },
+                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.4, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 7px' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F'));
                                     return React.createElement("div", { style: { marginTop: 6, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.2)', display: 'flex', alignItems: 'center', gap: 7 } },
                                         React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 8.4, fontWeight: 700, letterSpacing: '.4px', textTransform: 'uppercase', color: '#33405C', WebkitTextFillColor: '#33405C', background: '#EDF0F6', border: '1px solid #C9D2E4', borderRadius: 6, padding: '2px 7px', whiteSpace: 'nowrap' } }, '\u21C4 Kar\u015F\u0131l\u0131kl\u0131'),
                                         React.createElement("span", { style: { width: 3, alignSelf: 'stretch', minHeight: 15, borderRadius: 3, background: ksTip.c } }),
@@ -9664,11 +9667,14 @@ function App() {
                             ksGivenBy: x.givenBy || '', ksAssignedTo: x.assignedTo || '', ksAltAcenta: x.altAcenta || '',
                             __ksLinkExisting: x.id
                         });
-                        return React.createElement("div", { style: { background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: 16, padding: 13, marginBottom: 8, boxShadow: '0 1px 3px rgba(20,26,38,.06)' } },
-                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 8, background: 'var(--gradSel, #243250)', color: '#fff', fontSize: 14 } }, '\u21C4'),
-                                React.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: 'var(--ink)' } }, 'Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F \u2014 Kar\u015F\u0131 Y\u00F6n')),
-                            React.createElement("div", { style: { fontSize: 10, color: 'var(--mut)', marginBottom: 11, lineHeight: 1.45 } }, 'Ayr\u0131 m\u00FC\u015Fteri, ayr\u0131 \u00F6deme, ayr\u0131 firma. Bu g\u00FCn\u00FCn i\u015Flerinden se\u00E7 ya da elle gir.'),
+                        const ksOpen = expandedT.__ksOpen !== false;
+                        return React.createElement("div", { style: { background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: 16, padding: ksOpen ? 13 : '11px 13px', marginBottom: 8, boxShadow: '0 1px 3px rgba(20,26,38,.06)' } },
+                            React.createElement("button", { type: "button", onClick: () => setExpandedT(p => ({ ...p, __ksOpen: p.__ksOpen === false })), style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginBottom: ksOpen ? 10 : 0 } },
+                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 8, background: 'var(--gradSel, #243250)', color: '#fff', fontSize: 14, flex: 'none' } }, '\u21C4'),
+                                React.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: 'var(--ink)', WebkitTextFillColor: 'var(--ink)', textAlign: 'left', flex: 1 } }, 'Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F \u2014 Kar\u015F\u0131 Y\u00F6n'),
+                                React.createElement("span", { style: { fontSize: 15, color: 'var(--mut)', WebkitTextFillColor: 'var(--mut)', transform: ksOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' } }, '\u25BE')),
+                            ksOpen && React.createElement("div", { style: { fontSize: 10, color: 'var(--mut)', marginBottom: 11, lineHeight: 1.45 } }, 'Ayr\u0131 m\u00FC\u015Fteri, ayr\u0131 \u00F6deme, ayr\u0131 firma. Bu g\u00FCn\u00FCn i\u015Flerinden se\u00E7 ya da elle gir.'),
+                            ksOpen && React.createElement(React.Fragment, null,
                             ksSameDay.length > 0 && React.createElement("div", { style: { marginBottom: 12 } },
                                 React.createElement("div", { style: { fontSize: 9, fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--slate, #33405C)', marginBottom: 6 } }, 'Bu G\u00FCn\u00FCn \u0130\u015Flerinden Se\u00E7'),
                                 React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -9736,7 +9742,7 @@ function App() {
                                 React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksBridgeTotal || '', onChange: e => sf({ ksBridgeTotal: e.target.value }), placeholder: "13500", className: "inp" }),
                                 React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, cursor: 'pointer' } },
                                     React.createElement("input", { type: "checkbox", checked: form.ksBridgeSplit !== false, onChange: e => sf({ ksBridgeSplit: e.target.checked }), style: { width: 17, height: 17 } }),
-                                    React.createElement("span", { style: { fontSize: 11, color: 'var(--body, #3A4152)' } }, 'Toplam\u0131 iki baca\u011Fa e\u015Fit b\u00F6l (' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA + ' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA)'))));
+                                    React.createElement("span", { style: { fontSize: 11, color: 'var(--body, #3A4152)' } }, 'Toplam\u0131 iki baca\u011Fa e\u015Fit b\u00F6l (' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA + ' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA)')))));
                     })(),
                     form.tripMode === 'recurring' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
