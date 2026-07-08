@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#EAECEF">
+<meta name="theme-color" content="#F4F6F2">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
@@ -596,17 +596,17 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 
 
 /* ╔════════════════════════════════════════════════════════════════════╗
-   ║  ÖLMEZ TRANSFER · MIDNIGHT INK & CHAMPAGNE · v54 · sinematik cam      ║
+   ║  ÖLMEZ TRANSFER · EMERALD NUDE & CHAMPAGNE · v54 · sinematik cam      ║
    ╚════════════════════════════════════════════════════════════════════╝ */
 :root{
-  --ink:#141A26;--ink2:#2A3242;--body:#3A4152;--mut:#6E7686;--faint:#9AA1B0;
-  --deep:#161C2B;--deep2:#20293C;--slate:#33405C;
-  --gradHero:linear-gradient(150deg,#243250 0%,#18202F 55%,#10141F 100%);
-  --gradSel:linear-gradient(155deg,#2C3B5A 0%,#1B2434 100%);
-  --champ:#E4C88A;--champ2:#C9A85C;--champSoft:rgba(228,200,138,.14);
-  --glass:rgba(255,255,255,.66);--glassHi:rgba(255,255,255,.9);
-  --line:rgba(20,26,38,.10);
-  --bg:#EAECEF;
+  --ink:#1E2C24;--ink2:#304036;--body:#455449;--mut:#77867C;--faint:#A3AFA6;
+  --deep:#223528;--deep2:#2C4234;--slate:#3E5A48;
+  --gradHero:linear-gradient(150deg,#3A5C48 0%,#2C4636 55%,#22382B 100%);
+  --gradSel:linear-gradient(155deg,#456850 0%,#2E4A3A 100%);
+  --champ:#E6CE96;--champ2:#CBAD6A;--champSoft:rgba(230,206,150,.14);
+  --glass:rgba(255,255,255,.68);--glassHi:rgba(255,255,255,.92);
+  --line:rgba(23,37,28,.10);
+  --bg:#F4F6F2;
   --ok:#0FA06A;--okBg:#E6F5EE;--okBd:#B6DEC8;
   --warn:#B07B1E;--warnBg:#FAF3E1;--warnBd:#E9D6A6;
   --bad:#C25E5E;--badBg:#FBEDED;--badBd:#E8C4C4;
@@ -615,13 +615,9 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 *{box-sizing:border-box}
 html,body{background:var(--bg) !important;-webkit-tap-highlight-color:transparent;overflow-x:hidden !important;width:100% !important;max-width:100vw !important}
 body{overscroll-behavior-y:none !important;letter-spacing:.1px;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
-/* SİNEMATİK ZEMİN — yumuşak spot ışıklar + ince grain hissi */
+/* ZEMİN — sade nude-beyaz, temiz kurumsal */
 main.main-cont{
-  background:
-    radial-gradient(92% 42% at 14% -8%,rgba(120,140,180,.30),rgba(120,140,180,0) 60%),
-    radial-gradient(80% 38% at 92% 2%,rgba(228,200,138,.14),rgba(228,200,138,0) 55%),
-    radial-gradient(120% 48% at 50% 114%,rgba(90,110,150,.16),rgba(90,110,150,0) 55%),
-    linear-gradient(180deg,#EEF0F3 0%,#E6E8EC 100%) !important;
+  background:linear-gradient(180deg,#FAFBF9 0%,#F2F4F0 100%) !important;
   background-attachment:fixed !important;padding-top:0 !important;
 }
 /* ── BUZLU CAM KARTLAR ── */
@@ -825,8 +821,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .tcard.t-takas .tcard-type,.tcard.t-takas .tcard-pill:first-child{background:#EEEFF2 !important;border-color:#CDD1D8 !important;color:#4A515E !important;-webkit-text-fill-color:#4A515E !important}
 
 
-/* Karşılıklı iş rozeti */
-.ko-ks-badge{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#3A5570;-webkit-text-fill-color:#3A5570;background:#EAEEF6;border:1px solid #C3CFE3;border-radius:5px;padding:1px 6px;margin-left:6px}
+
 
 
 
@@ -993,7 +988,7 @@ const BF = {
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, ksTime: '', ksPickup: '', ksDropoff: '', ksTransferType: 'arrival', ksGivenBy: '', ksAssignedTo: '', ksAltAcenta: '', ksPaymentAmount: '', ksPaymentCurrency: 'TRY', ksPassengerName: '', ksBridgeTotal: '', ksBridgeSplit: true, ksPaymentCollect: 'yes', ksPaymentToMe: false, ksDate: '', ksDriverPayment: '', ksDriverCurrency: 'TRY', ksAltUcret: '', ksAltCurrency: 'TRY',
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, __ksLinkExisting: '',
     isTakas: false, takasPartner: '', takasWho: 'benVerdim', takasPay: 'partner', takasMyCross: 'yok', takasTheirCross: 'yok', takasSettled: false,
     isDugun: false, dugunKapora: '', dugunSettled: false,
 };
@@ -6844,49 +6839,18 @@ function App() {
             const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
             let baseFixed = base;
             const extraKs = [];
-            // ═══ DÜZENLEMEDE KARŞILIKLI: ikinci bacağı oluştur/güncelle + bağla ═══
-            if (form.tripMode === 'karsilikli' && (moneyValue(form.ksPaymentAmount) > 0 || form.ksPickup || form.ksDropoff || form.ksAssignedTo || form.__ksLinkExisting)) {
+            // ═══ KARŞILIKLI: SADECE GÖRSEL EŞLEŞTİRME (hesap yok, ikinci bacak oluşturmaz) ═══
+            if (form.tripMode === 'karsilikli' && form.__ksLinkExisting) {
                 const nowIso2 = new Date().toISOString();
-                const ksCur = String(form.ksPaymentCurrency || 'TRY').toUpperCase();
-                const ksTRY = moneyValue(form.ksPaymentAmount) > 0 ? toTRY(form.ksPaymentAmount, ksCur) : 0;
-                const bridge = moneyValue(form.ksBridgeTotal);
-                const split = form.ksBridgeSplit !== false;
-                // Eğer var olan bir işi bağlıyorsak onu güncelle, yoksa yeni oluştur
-                const linkExisting = form.__ksLinkExisting && (T || []).find(x => x && x.id === form.__ksLinkExisting);
-                const ksId = linkExisting ? form.__ksLinkExisting : (Date.now().toString() + 'KS_' + Math.random().toString(36).slice(2, 8));
-                const ksPax = form.ksPassengerName ? [{ ...emptyPassenger(), name: koTitleCaseTR(form.ksPassengerName) }] : [emptyPassenger()];
-                const ksBase = {
-                    ...(linkExisting || BF),
-                    id: ksId, editRootId: (linkExisting && linkExisting.editRootId) || ksId, date: form.ksDate || (linkExisting && linkExisting.date) || base.date,
-                    time: form.ksTime || (linkExisting && linkExisting.time) || form.time,
-                    transferType: form.ksTransferType || (linkExisting && linkExisting.transferType) || 'arrival',
-                    pickup: koTitleCaseTR(form.ksPickup) || (linkExisting && linkExisting.pickup) || '',
-                    dropoff: koTitleCaseTR(form.ksDropoff) || (linkExisting && linkExisting.dropoff) || '',
-                    givenBy: koTitleCaseTR(form.ksGivenBy) || (linkExisting && linkExisting.givenBy) || '',
-                    assignedTo: koTitleCaseTR(form.ksAssignedTo) || (linkExisting && linkExisting.assignedTo) || '',
-                    altAcenta: koTitleCaseTR(form.ksAltAcenta) || (linkExisting && linkExisting.altAcenta) || '',
-                    passengers: ksPax, plate: form.plate, vehicleType: form.vehicleType,
-                    paymentAmount: form.ksPaymentAmount || (linkExisting && linkExisting.paymentAmount) || '', paymentCurrency: ksCur,
-                    paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
-                    customerTRY: ksTRY,
-                    driverPayment: moneyValue(form.ksDriverPayment) > 0 ? Math.round(toTRY(form.ksDriverPayment, form.ksDriverCurrency || 'TRY')) : ((linkExisting && linkExisting.driverPayment) || ''),
-                    driverPaymentRaw: form.ksDriverPayment || (linkExisting && linkExisting.driverPaymentRaw) || '', driverPaymentCurrency: form.ksDriverCurrency || 'TRY',
-                    altAcentaUcreti: moneyValue(form.ksAltUcret) > 0 ? Math.round(toTRY(form.ksAltUcret, form.ksAltCurrency || 'TRY')) : ((linkExisting && linkExisting.altAcentaUcreti) || ''),
-                    altAcentaRaw: form.ksAltUcret || (linkExisting && linkExisting.altAcentaRaw) || '', altAcentaCurrency: form.ksAltCurrency || 'TRY',
-                    routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
-                    tripMode: 'single', isKarsilikli: true, linkedTransferId: editId,
-                    createdAt: (linkExisting && linkExisting.createdAt) || nowIso2, updatedAt: nowIso2, clientUpdatedAt: nowIso2
-                };
-                if (linkExisting) {
-                    // MEVCUT işi seçtik: orijinalini KORU, sadece bağ ekle (verilerini bozma)
-                    const merged = { ...linkExisting, isKarsilikli: true, linkedTransferId: editId, updatedAt: nowIso2, clientUpdatedAt: nowIso2 };
-                    ksBase.profit = olmezKar({ ...merged });
-                    extraKs.push(normalizeTransfer(merged));
-                } else {
-                    ksBase.profit = olmezKar({ ...ksBase });
-                    extraKs.push(normalizeTransfer(ksBase));
+                const partner = (T || []).find(x => x && x.id === form.__ksLinkExisting);
+                if (partner) {
+                    // Seçilen işi OLDUĞU GİBİ koru, sadece bağ ekle
+                    extraKs.push(normalizeTransfer({ ...partner, isKarsilikli: true, linkedTransferId: editId, updatedAt: nowIso2, clientUpdatedAt: nowIso2 }));
+                    baseFixed = { ...base, isKarsilikli: true, linkedTransferId: partner.id };
                 }
-                baseFixed = { ...base, isKarsilikli: true, linkedTransferId: ksId };
+            } else if (form.tripMode !== 'karsilikli') {
+                // karşılıklı seçili değilse bu işin eski bağını temizle
+                if (base.isKarsilikli || base.linkedTransferId) baseFixed = { ...base, isKarsilikli: false, linkedTransferId: '' };
             }
             const t = normalizeTransfer(baseFixed);
             setT(p => {
@@ -6897,9 +6861,10 @@ function App() {
                 return next;
             });
             setEditId(null);
-            tip(extraKs.length ? 'Güncellendi \u2014 karşılıklı bağlandı' : 'Güncellendi');
+            tip(extraKs.length ? 'Güncellendi \u2014 karşılıklı eşleştirildi' : 'Güncellendi');
         } else {
             const transfersToAdd = [];
+            const extraLinks = [];
             let currentDate = new Date(form.date);
             let lastDate = form.isRecurring && form.endDate ? new Date(form.endDate) : new Date(form.date);
             if (Number.isNaN(lastDate.getTime())) lastDate = new Date(form.date);
@@ -6912,43 +6877,14 @@ function App() {
                 const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
                 transfersToAdd.push(normalizeTransfer(outBase));
 
-                // ═══ KARŞILIKLI İŞ: ikinci bacak ayrı transfer olarak, ks alanlarından ═══
-                if (form.tripMode === 'karsilikli' && loopCount === 0) {
-                    const ksId = Date.now().toString() + 'KS_' + Math.random().toString(36).slice(2, 8);
-                    const bridge = moneyValue(form.ksBridgeTotal);
-                    const split = form.ksBridgeSplit !== false;
-                    // köprü bölünüyorsa: ilk bacağa yarısı zaten olmalı; burada 2. bacağa yarısını driver ek notu olarak koymuyoruz,
-                    // köprü sadece bilgi/route amaçlı. Ödemeler ayrı (ks alanları).
-                    const ksPax = form.ksPassengerName ? [{ ...emptyPassenger(), name: koTitleCaseTR(form.ksPassengerName) }] : [emptyPassenger()];
-                    const ksCur = String(form.ksPaymentCurrency || 'TRY').toUpperCase();
-                    const ksAmt = moneyValue(form.ksPaymentAmount);
-                    const ksTRY = ksAmt > 0 ? toTRY(form.ksPaymentAmount, ksCur) : 0;
-                    const ksBase = {
-                        ...BF,
-                        id: ksId, editRootId: ksId, date: form.ksDate || dateStr,
-                        time: form.ksTime || form.time,
-                        transferType: form.ksTransferType || 'arrival',
-                        pickup: koTitleCaseTR(form.ksPickup), dropoff: koTitleCaseTR(form.ksDropoff),
-                        givenBy: koTitleCaseTR(form.ksGivenBy), assignedTo: koTitleCaseTR(form.ksAssignedTo),
-                        altAcenta: koTitleCaseTR(form.ksAltAcenta),
-                        passengers: ksPax,
-                        plate: form.plate, vehicleType: form.vehicleType,
-                        paymentAmount: form.ksPaymentAmount, paymentCurrency: ksCur,
-                        paymentCollect: form.ksPaymentCollect || 'yes', paymentToMe: !!form.ksPaymentToMe,
-                        customerTRY: ksTRY,
-                        driverPayment: moneyValue(form.ksDriverPayment) > 0 ? Math.round(toTRY(form.ksDriverPayment, form.ksDriverCurrency || 'TRY')) : '',
-                        driverPaymentRaw: form.ksDriverPayment || '', driverPaymentCurrency: form.ksDriverCurrency || 'TRY',
-                        altAcentaUcreti: moneyValue(form.ksAltUcret) > 0 ? Math.round(toTRY(form.ksAltUcret, form.ksAltCurrency || 'TRY')) : '',
-                        altAcentaRaw: form.ksAltUcret || '', altAcentaCurrency: form.ksAltCurrency || 'TRY',
-                        routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : String(Math.round(bridge))) : '',
-                        tripMode: 'single', isKarsilikli: true, linkedTransferId: outId,
-                        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString()
-                    };
-                    ksBase.customerTRY = ksTRY;
-                    ksBase.profit = olmezKar({ ...ksBase });
-                    // ilk bacağa da bağlantı ver
-                    transfersToAdd[transfersToAdd.length - 1] = normalizeTransfer({ ...outBase, isKarsilikli: true, linkedTransferId: ksId, routeBridge: bridge > 0 ? (split ? String(Math.round(bridge/2)) : form.routeBridge) : form.routeBridge });
-                    transfersToAdd.push(normalizeTransfer(ksBase));
+                // ═══ KARŞILIKLI: SADECE GÖRSEL EŞLEŞTİRME (yeni transfer + seçilen mevcut iş) ═══
+                if (form.tripMode === 'karsilikli' && loopCount === 0 && form.__ksLinkExisting) {
+                    const partner = (T || []).find(x => x && x.id === form.__ksLinkExisting);
+                    if (partner) {
+                        const nowIso3 = new Date().toISOString();
+                        transfersToAdd[transfersToAdd.length - 1] = normalizeTransfer({ ...outBase, isKarsilikli: true, linkedTransferId: partner.id });
+                        extraLinks.push(normalizeTransfer({ ...partner, isKarsilikli: true, linkedTransferId: outId, updatedAt: nowIso3, clientUpdatedAt: nowIso3 }));
+                    }
                 }
                 
                 if (sameDayReturn) {
@@ -6970,11 +6906,14 @@ function App() {
             }
             
             setT(p => {
-                const next = dedupeTransfers([...(p || []), ...transfersToAdd]);
+                let arr = p || [];
+                // eşleştirilen partner işin eski kopyasını çıkar, güncellenmişini ekle
+                if (extraLinks.length) { const ids = extraLinks.map(x => x.id); arr = arr.filter(x => x && !ids.includes(x.id)); }
+                const next = dedupeTransfers([...arr, ...transfersToAdd, ...extraLinks]);
                 persistTransfersImmediately(next);
                 return next;
             });
-            tip(transfersToAdd.length + ' Transfer Eklendi');
+            tip(transfersToAdd.length + ' Transfer Eklendi' + (extraLinks.length ? ' \u2014 karşılıklı eşleştirildi' : ''));
         }
         
         try { localStorage.removeItem('ko_transfer_draft_v1'); } catch (e) {}
@@ -9723,110 +9662,36 @@ function App() {
                         renderReturnPartyFields()
                     ),
                     form.tripMode === 'karsilikli' && (() => {
-                        const ksSameDay = (T || []).filter(x => x && x.date === form.date && !x.isKarsilikli).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-                        const fillFromExisting = (x) => sf({
-                            ksTime: x.time || '', ksTransferType: x.transferType || 'arrival',
-                            ksPickup: x.pickup || '', ksDropoff: x.dropoff || '',
-                            ksPassengerName: (x.passengers && x.passengers[0] && x.passengers[0].name) || '',
-                            ksPaymentAmount: x.paymentAmount || '', ksPaymentCurrency: x.paymentCurrency || 'TRY',
-                            ksGivenBy: x.givenBy || '', ksAssignedTo: x.assignedTo || '', ksAltAcenta: x.altAcenta || '',
-                            __ksLinkExisting: x.id
-                        });
-                        const ksOpen = expandedT.__ksOpen !== false;
-                        return React.createElement("div", { style: { background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: 16, padding: ksOpen ? 13 : '11px 13px', marginBottom: 8, boxShadow: '0 1px 3px rgba(20,26,38,.06)' } },
-                            React.createElement("button", { type: "button", onClick: () => setExpandedT(p => ({ ...p, __ksOpen: p.__ksOpen === false })), style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginBottom: ksOpen ? 10 : 0 } },
+                        const ksRefDate = form.date || '';
+                        const ksDayDiff = (d) => { if (!d || !ksRefDate) return 999; const a = new Date(d + 'T00:00'); const b = new Date(ksRefDate + 'T00:00'); return Math.round((a - b) / 86400000); };
+                        const ksSameDay = (T || []).filter(x => x && x.date && !x.isKarsilikli && x.id !== form.editRootId && Math.abs(ksDayDiff(x.date)) <= 3).sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')));
+                        const selId = form.__ksLinkExisting || '';
+                        return React.createElement("div", { style: { background: '#FFFFFF', border: '1px solid var(--line)', borderRadius: 16, padding: 13, marginBottom: 8, boxShadow: '0 1px 3px rgba(20,26,38,.06)' } },
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                                 React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 8, background: 'var(--gradSel, #243250)', color: '#fff', fontSize: 14, flex: 'none' } }, '\u21C4'),
-                                React.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: 'var(--ink)', WebkitTextFillColor: 'var(--ink)', textAlign: 'left', flex: 1 } }, 'Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F \u2014 Kar\u015F\u0131 Y\u00F6n'),
-                                React.createElement("span", { style: { fontSize: 15, color: 'var(--mut)', WebkitTextFillColor: 'var(--mut)', transform: ksOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' } }, '\u25BE')),
-                            ksOpen && React.createElement("div", { style: { fontSize: 10, color: 'var(--mut)', marginBottom: 11, lineHeight: 1.45 } }, 'Ayr\u0131 m\u00FC\u015Fteri, ayr\u0131 \u00F6deme, ayr\u0131 firma. Bu g\u00FCn\u00FCn i\u015Flerinden se\u00E7 ya da elle gir.'),
-                            ksOpen && React.createElement(React.Fragment, null,
-                            ksSameDay.length > 0 && React.createElement("div", { style: { marginBottom: 12 } },
-                                React.createElement("div", { style: { fontSize: 9, fontWeight: 700, letterSpacing: '.6px', textTransform: 'uppercase', color: 'var(--slate, #33405C)', marginBottom: 6 } }, 'Bu G\u00FCn\u00FCn \u0130\u015Flerinden Se\u00E7'),
-                                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                                React.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: 'var(--ink)', WebkitTextFillColor: 'var(--ink)' } }, 'Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F \u2014 E\u015Fle\u015Ftir')),
+                            React.createElement("div", { style: { fontSize: 10, color: 'var(--mut)', marginBottom: 11, lineHeight: 1.45 } }, 'Bu i\u015Fi yak\u0131n g\u00FCnlerdeki (bug\u00FCn/yar\u0131n) ba\u015Fka bir i\u015Fle e\u015Fle\u015Ftir. Sadece kartlarda ayn\u0131 renkle g\u00F6r\u00FCn\u00FCr. Hesaplar de\u011Fi\u015Fmez.'),
+                            ksSameDay.length === 0
+                                ? React.createElement("div", { style: { fontSize: 11, color: 'var(--faint)', textAlign: 'center', padding: '10px 0' } }, 'Yak\u0131n g\u00FCnlerde ba\u015Fka i\u015F yok. \u00D6nce di\u011Fer i\u015Fi kaydet, sonra buradan e\u015Fle\u015Ftir.')
+                                : React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
                                     ksSameDay.map(x => {
                                         const xt = TIPLER.find(tt => tt.id === x.transferType) || TIPLER[0];
-                                        const sel = form.__ksLinkExisting === x.id;
+                                        const sel = selId === x.id;
+                                        const nm = (x.passengers && x.passengers[0] && x.passengers[0].name) || '';
                                         return React.createElement("button", {
-                                            key: 'kssel_' + x.id, type: "button",
-                                            onClick: () => fillFromExisting(x),
-                                            style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 11, cursor: 'pointer', border: sel ? '1.5px solid var(--slate, #33405C)' : '1px solid var(--line)', background: sel ? 'var(--gradSel, #243250)' : '#FBFAF8', boxShadow: sel ? '0 4px 12px rgba(31,42,68,.22)' : 'none' } },
-                                            React.createElement("span", { style: { width: 4, alignSelf: 'stretch', borderRadius: 4, background: sel ? '#fff' : xt.c, minHeight: 30 } }),
-                                            React.createElement("span", { style: { fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: sel ? '#fff' : 'var(--ink)', WebkitTextFillColor: sel ? '#fff' : 'var(--ink)' } }, x.time || '--:--'),
+                                            key: 'kspick_' + x.id, type: "button",
+                                            onClick: () => sf({ __ksLinkExisting: sel ? '' : x.id }),
+                                            style: { display: 'flex', alignItems: 'center', gap: 9, width: '100%', textAlign: 'left', padding: '9px 11px', borderRadius: 12, cursor: 'pointer', border: sel ? '1.5px solid var(--slate, #33405C)' : '1px solid var(--line)', background: sel ? 'var(--gradSel, #243250)' : '#FBFAF8', boxShadow: sel ? '0 4px 12px rgba(31,42,68,.22)' : 'none' } },
+                                            React.createElement("span", { style: { width: 4, alignSelf: 'stretch', minHeight: 34, borderRadius: 4, background: sel ? '#fff' : xt.c } }),
+                                            React.createElement("span", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, flex: 'none', minWidth: 42 } },
+                                                React.createElement("span", { style: { fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: sel ? '#fff' : 'var(--ink)', WebkitTextFillColor: sel ? '#fff' : 'var(--ink)' } }, x.time || '--:--'),
+                                                (() => { const dd = ksDayDiff(x.date); const lbl = dd === 0 ? 'bug\u00FCn' : (dd === 1 ? 'yar\u0131n' : (dd === -1 ? 'd\u00FCn' : (dd > 0 ? '+' + dd + 'g' : dd + 'g'))); return React.createElement("span", { style: { fontSize: 8, fontWeight: 600, color: sel ? 'rgba(255,255,255,.7)' : 'var(--faint)', WebkitTextFillColor: sel ? 'rgba(255,255,255,.7)' : 'var(--faint)' } }, lbl); })()),
                                             React.createElement("span", { style: { minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 1, overflow: 'hidden' } },
-                                                React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 11.5, fontWeight: 500, color: sel ? 'rgba(255,255,255,.95)' : 'var(--ink, #1A1D24)', WebkitTextFillColor: sel ? 'rgba(255,255,255,.95)' : 'var(--ink, #1A1D24)' } }, (x.pickup || '?') + ' \u2192 ' + (x.dropoff || '?')),
-                                                (() => { const nm = (x.passengers && x.passengers[0] && x.passengers[0].name) || ''; const gv = x.givenBy || ''; const lbl = [nm, gv].filter(Boolean).join(' \u00B7 '); return lbl ? React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 9.5, fontWeight: 500, color: sel ? 'rgba(255,255,255,.72)' : 'var(--mut, #7A7E88)', WebkitTextFillColor: sel ? 'rgba(255,255,255,.72)' : 'var(--mut, #7A7E88)' } }, lbl) : null; })()),
-                                            React.createElement("span", { style: { fontSize: 9, fontWeight: 600, padding: '2px 7px', borderRadius: 6, background: sel ? 'rgba(255,255,255,.18)' : xt.bg, color: sel ? '#fff' : xt.c, WebkitTextFillColor: sel ? '#fff' : xt.c, whiteSpace: 'nowrap' } }, xt.n)
+                                                React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 500, color: sel ? 'rgba(255,255,255,.96)' : 'var(--ink)', WebkitTextFillColor: sel ? 'rgba(255,255,255,.96)' : 'var(--ink)' } }, (x.pickup || '?') + ' \u2192 ' + (x.dropoff || '?')),
+                                                nm && React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10, color: sel ? 'rgba(255,255,255,.72)' : 'var(--mut)', WebkitTextFillColor: sel ? 'rgba(255,255,255,.72)' : 'var(--mut)' } }, nm)),
+                                            sel && React.createElement("span", { style: { fontSize: 15, color: '#fff', WebkitTextFillColor: '#fff', flex: 'none' } }, '\u2713')
                                         );
-                                    })),
-                                React.createElement("div", { style: { textAlign: 'center', fontSize: 9.5, color: 'var(--faint)', margin: '9px 0 3px' } }, '\u2014 veya elle gir \u2014')),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Saat"),
-                                    React.createElement("input", { type: "time", value: form.ksTime || '', onChange: e => sf({ ksTime: e.target.value }), className: "inp" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Tip"),
-                                    React.createElement("select", { value: form.ksTransferType || 'arrival', onChange: e => sf({ ksTransferType: e.target.value }), className: "inp" },
-                                        TIPLER.filter(t => ['departure','arrival','tour','shortpass','intercity'].includes(t.id)).map(t => React.createElement("option", { key: t.id, value: t.id }, t.n))))),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Al\u0131\u015F"),
-                                    React.createElement("input", { type: "text", value: form.ksPickup || '', onChange: e => sf({ ksPickup: koTitleCaseLive(e.target.value) }), placeholder: "\u015Eehir/otel", className: "inp", autoCapitalize: "words" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "B\u0131rak\u0131\u015F"),
-                                    React.createElement("input", { type: "text", value: form.ksDropoff || '', onChange: e => sf({ ksDropoff: koTitleCaseLive(e.target.value) }), placeholder: "\u015Eehir/otel", className: "inp", autoCapitalize: "words" }))),
-                            React.createElement("div", { style: { marginBottom: 9 } },
-                                React.createElement("span", { className: "lbl" }, "M\u00FC\u015Fteri Ad\u0131"),
-                                React.createElement("input", { type: "text", value: form.ksPassengerName || '', onChange: e => sf({ ksPassengerName: koTitleCaseLive(e.target.value) }), placeholder: "Ad Soyad", className: "inp", autoCapitalize: "words" })),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "\u00D6deme"),
-                                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksPaymentAmount || '', onChange: e => sf({ ksPaymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Para Birimi"),
-                                    React.createElement("select", { value: form.ksPaymentCurrency || 'TRY', onChange: e => sf({ ksPaymentCurrency: e.target.value }), className: "inp" },
-                                        ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
-                            React.createElement("div", { style: { marginBottom: 9 } },
-                                React.createElement("span", { className: "lbl" }, "\u00D6deme Durumu"),
-                                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
-                                    [['yes', 'M\u00FC\u015Fteriden al', { ksPaymentCollect: 'yes', ksPaymentToMe: false }], ['me', '\u00D6lmeztur\u2019a/Havale', { ksPaymentCollect: 'yes', ksPaymentToMe: true }], ['no', 'Al\u0131nmayacak', { ksPaymentCollect: 'no', ksPaymentToMe: false }]].map(([id, lbl, patch]) => {
-                                        const active = id === 'me' ? !!form.ksPaymentToMe : (id === 'no' ? (form.ksPaymentCollect === 'no' && !form.ksPaymentToMe) : (form.ksPaymentCollect !== 'no' && !form.ksPaymentToMe));
-                                        return React.createElement("button", { key: id, type: "button", onClick: () => sf(patch), style: { padding: '8px 4px', borderRadius: 9, cursor: 'pointer', fontSize: 10, fontWeight: 600, border: active ? '1.5px solid var(--slate, #33405C)' : '1px solid var(--line)', background: active ? 'var(--gradSel, #243250)' : '#FBFAF8', color: active ? '#fff' : 'var(--body, #3A4152)', WebkitTextFillColor: active ? '#fff' : 'var(--body, #3A4152)' } }, lbl);
-                                    }))),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Veren"),
-                                    React.createElement("input", { type: "text", value: form.ksGivenBy || '', onChange: e => sf({ ksGivenBy: koTitleCaseLive(e.target.value) }), placeholder: "Firma", className: "inp", autoCapitalize: "words" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Yapan"),
-                                    React.createElement("input", { type: "text", value: form.ksAssignedTo || '', onChange: e => sf({ ksAssignedTo: koTitleCaseLive(e.target.value) }), placeholder: "16 LMZ 55 / Firma", className: "inp", autoCapitalize: "words" }))),
-                            React.createElement("div", { style: { marginBottom: 11 } },
-                                React.createElement("span", { className: "lbl" }, "Alt Acenta (opsiyonel)"),
-                                React.createElement("input", { type: "text", value: form.ksAltAcenta || '', onChange: e => sf({ ksAltAcenta: koTitleCaseLive(e.target.value) }), placeholder: "Alt acenta", className: "inp", autoCapitalize: "words" })),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "\uD83D\uDE97 Ara\u00E7 (\u015Fof\u00F6r) \u00D6demesi"),
-                                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksDriverPayment || '', onChange: e => sf({ ksDriverPayment: e.target.value }), placeholder: "0", className: "inp" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Birim"),
-                                    React.createElement("select", { value: form.ksDriverCurrency || 'TRY', onChange: e => sf({ ksDriverCurrency: e.target.value }), className: "inp" },
-                                        ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 9, marginBottom: 9 } },
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "\uD83E\uDD1D Alt Acentaya \u00D6denen (\u00FCcret)"),
-                                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksAltUcret || '', onChange: e => sf({ ksAltUcret: e.target.value }), placeholder: "0", className: "inp" })),
-                                React.createElement("div", null,
-                                    React.createElement("span", { className: "lbl" }, "Birim"),
-                                    React.createElement("select", { value: form.ksAltCurrency || 'TRY', onChange: e => sf({ ksAltCurrency: e.target.value }), className: "inp" },
-                                        ['TRY','USD','EUR','KWD'].map(c => React.createElement("option", { key: c, value: c }, c))))),
-                            React.createElement("div", { style: { marginBottom: 9 } },
-                                React.createElement("span", { className: "lbl" }, "\uD83D\uDCC5 Kar\u015F\u0131 Baca\u011F\u0131n Tarihi (bo\u015F = ayn\u0131 g\u00FCn)"),
-                                React.createElement("input", { type: "date", value: form.ksDate || '', onChange: e => sf({ ksDate: e.target.value }), className: "inp" })),
-                            React.createElement("div", { style: { borderTop: '1px solid var(--line)', paddingTop: 11 } },
-                                React.createElement("span", { className: "lbl" }, "K\u00F6pr\u00FC/Anla\u015Fma Toplam\u0131 (\u20BA) \u2014 opsiyonel"),
-                                React.createElement("input", { type: "number", inputMode: "decimal", value: form.ksBridgeTotal || '', onChange: e => sf({ ksBridgeTotal: e.target.value }), placeholder: "13500", className: "inp" }),
-                                React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 9, cursor: 'pointer' } },
-                                    React.createElement("input", { type: "checkbox", checked: form.ksBridgeSplit !== false, onChange: e => sf({ ksBridgeSplit: e.target.checked }), style: { width: 17, height: 17 } }),
-                                    React.createElement("span", { style: { fontSize: 11, color: 'var(--body, #3A4152)' } }, 'Toplam\u0131 iki baca\u011Fa e\u015Fit b\u00F6l (' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA + ' + (form.ksBridgeTotal ? Math.round(Number(form.ksBridgeTotal)/2).toLocaleString('tr-TR') : '0') + '\u20BA)')))));
+                                    })));
                     })(),
                     form.tripMode === 'recurring' && React.createElement("div", { style: { background: 'var(--brand-soft)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 } },
