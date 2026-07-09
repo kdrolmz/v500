@@ -1766,23 +1766,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1783540708920_vbdzme@olmeztur
-DTSTAMP:20260709T144400Z
-LAST-MODIFIED:20260708T201500Z
-SEQUENCE:1783541729
-DTSTART:20260709T093000
-DTEND:20260709T103000
-SUMMARY:09:30 · Bursa → İST  Vito
-LOCATION:Bursa → İstanbul Havalimanı
-DESCRIPTION:Müşteri: Fahad Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287
-  06 87\nİşi veren: Kadir Elçiboğa\nİşi yapan: Ölmeztur\nAlt acenta: -\nA
- raç: Vito / 16 LMZ 55\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müş
- teri: 200 USD | Araç: 7.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1783608256986_3fls29@olmeztur
 DTSTAMP:20260709T144400Z
 LAST-MODIFIED:20260709T144400Z
@@ -1795,6 +1778,23 @@ DESCRIPTION:Müşteri: Fahad Alsharqawi\nŞoför: Kadir Ölmez / +90 (543) 28
  7 06 87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vit
  o / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşter
  i: 150 USD | Araç: 6.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783540708920_vbdzme@olmeztur
+DTSTAMP:20260709T144400Z
+LAST-MODIFIED:20260709T144400Z
+SEQUENCE:1783608278
+DTSTART:20260709T093000
+DTEND:20260709T103000
+SUMMARY:09:30 · Bursa → İST  Vito
+LOCATION:Bursa → İstanbul Havalimanı
+DESCRIPTION:Müşteri: Fahad Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287
+  06 87\nİşi veren: Kadir Elçiboğa\nİşi yapan: Ölmeztur\nAlt acenta: Bale
+ ntur\nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa → İstanbul Havalimanı\nÖde
+ me: Müşteri: 200 USD | Araç: 6.500 ₺ | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
