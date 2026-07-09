@@ -1190,6 +1190,7 @@ const normalizeAccountAdjustment = raw => {
         date: String(x.date || accountAdjustmentDateKey(new Date())).slice(0, 10),
         time: String(x.time || accountAdjustmentTimeKey(new Date())).slice(0, 5),
         note: String(x.note || x.notes || '').trim(),
+        closed: !!x.closed,
         createdAt: x.createdAt || new Date().toISOString(),
         updatedAt: x.updatedAt || x.createdAt || new Date().toISOString()
     };
@@ -1205,7 +1206,7 @@ const accountAdjustmentToHesapRow = adj => {
         kaynak: 'manual',
         yon: 'manual',
         firm: a.firm,
-        firmSettled: false,
+        firmSettled: !!a.closed,
         date: a.date,
         time: a.time,
         pickup: meta.short,
@@ -3960,6 +3961,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         });
         tip && tip('Ödeme kaydı silindi');
     };
+    const toggleAccountAdjustmentSettled = (id, forceState) => {
+        if (!id || !setAccountAdjustments)
+            return;
+        setAccountAdjustments(p => {
+            const next = (Array.isArray(p) ? p : []).map(x => {
+                if (String(x && x.id) !== String(id))
+                    return x;
+                const nextClosed = typeof forceState === 'boolean' ? forceState : !x.closed;
+                return { ...x, closed: nextClosed, updatedAt: new Date().toISOString() };
+            });
+            persistAccountAdjustmentsImmediately(next);
+            return next;
+        });
+        tip && tip(forceState === false ? 'Kayıt açıldı' : forceState === true ? 'Kayıt kapatıldı' : 'Durum güncellendi');
+    };
     const ozet = firm => {
         let al = 0, ver = 0;
         const detay = [];
@@ -3997,10 +4013,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 return;
             const e = accountAdjustmentToHesapRow(adj);
             detay.push(e);
-            if (e.netOl > 0)
-                al += e.netOl;
-            else
-                ver += Math.abs(e.netOl || 0);
+            if (!e.firmSettled) {
+                if (e.netOl > 0)
+                    al += e.netOl;
+                else
+                    ver += Math.abs(e.netOl || 0);
+            }
         });
         const debtRows = firmDebtRows(firm);
         debtRows.forEach(d => {
@@ -4737,7 +4755,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             const amount = Math.abs(moneyValue(t.adjustmentAmount || t.paymentAmount || t.netOl));
             return React.createElement("div", {
                 key: (t.id || idx) + '-manual-' + (t.adjustmentId || ''),
-                className: "ko-account-row ko-account-transfer-row ko-account-manual-row ko-border-neutral is-open " + (pos ? 'is-positive' : 'is-negative')
+                className: "ko-account-row ko-account-transfer-row ko-account-manual-row ko-border-neutral " + (t.firmSettled ? 'is-closed' : 'is-open') + ' ' + (pos ? 'is-positive' : 'is-negative')
             },
                 React.createElement("div", { className: "ko-account-cell ko-account-date-cell" },
                     React.createElement("b", null, hesapDateShort(t.date)),
@@ -4760,15 +4778,24 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("b", null, isJabirFirm(sel) ? signedUsdText(usdNet) : hesapMoney(netVal)),
                     React.createElement("small", null, isJabirFirm(sel) ? '(' + fmtTl(accountRowUsdTlEquivalent(t)) + ')' : (pos ? 'Artı bakiye' : 'Hesaptan düştü'))),
                 React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
-                    React.createElement("button", {
-                        type: "button",
-                        className: "ko-account-settle-btn is-open",
-                        style: { color: R, borderColor: 'rgba(79,107,69,.28)', background: '#FFF8F7' },
-                        onClick: e => {
-                            e.stopPropagation();
-                            deleteAccountAdjustment(t.adjustmentId);
-                        }
-                    }, "Sil"),
+                    React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                        React.createElement("button", {
+                            type: "button",
+                            className: "ko-account-settle-btn " + (t.firmSettled ? 'is-settled' : 'is-open'),
+                            onClick: e => {
+                                e.stopPropagation();
+                                toggleAccountAdjustmentSettled(t.adjustmentId, !t.firmSettled);
+                            }
+                        }, t.firmSettled ? 'Kapandı' : 'Açık'),
+                        React.createElement("button", {
+                            type: "button",
+                            className: "ko-account-settle-btn is-open",
+                            style: { color: R, borderColor: 'rgba(79,107,69,.28)', background: '#FFF8F7' },
+                            onClick: e => {
+                                e.stopPropagation();
+                                deleteAccountAdjustment(t.adjustmentId);
+                            }
+                        }, "Sil")),
                     React.createElement("small", null, "Ödeme kaydı")));
         }
         const settleKeys = t.settleFirmKeys || accountSettleKeys(sel, t.kaynak === 'alt' ? 'alt' : (t.kaynak === 'odelo' ? 'odelo' : ''));
