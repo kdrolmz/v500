@@ -905,7 +905,7 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#22252E', NAV2 = '#22252E', GOLD = 'rgba(255,255,255,.85)';
-const G = '#6E8060', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
+const G = '#0E9F6E', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
 const TX = '#1F2733', SB = '#5F6B7A', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
@@ -988,7 +988,7 @@ const BF = {
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
-    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, __ksLinkExisting: '',
+    status: 'tam', notes: '', settled: false, customerCollected: false, companyCollected: false, vehiclePaid: false, useMaps: false, isReturn: false, returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY', isRecurring: false, endDate: '', hasReturn: false, returnDate: '', routeBridge: '', tripMode: 'single', isKarsilikli: false, __ksLinkExisting: '',
     isTakas: false, takasPartner: '', takasWho: 'benVerdim', takasPay: 'partner', takasMyCross: 'yok', takasTheirCross: 'yok', takasSettled: false,
     isDugun: false, dugunKapora: '', dugunSettled: false,
 };
@@ -5321,7 +5321,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                     React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, color: clr, WebkitTextFillColor: clr, fontVariantNumeric: 'tabular-nums' } }, val),
                     React.createElement("div", { style: { fontSize: 8.5, fontWeight: 450, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)', marginTop: 2, letterSpacing: '.4px', textTransform: 'uppercase' } }, lbl));
                 return React.createElement("div", { className: "ko-navy-panel", style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', borderRadius: 14, padding: '2px 4px' } },
-                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#AEBD9C'),
+                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#8FE3B0'),
                     stat('Bor\u00E7', '\u2212' + fr(borcT) + '\u20BA', '#FFB4AE'),
                     stat('A\u00E7\u0131k \u0130\u015F', String(acikIs), '#FFFFFF'));
             })(),
@@ -6879,7 +6879,17 @@ function App() {
         const returnGivenBy = String(form.returnGivenBy || form.givenBy || '').trim();
         const returnAssignedTo = String(form.returnAssignedTo || form.assignedTo || '').trim();
         const returnAltAcenta = String(form.returnAltAcenta || '').trim();
-        const buildReturnTransfer = (outBase, retId, dateValue, linkedId) => ({
+        const buildReturnTransfer = (outBase, retId, dateValue, linkedId) => {
+            const retHasAmount = String(form.returnPaymentAmount != null ? form.returnPaymentAmount : '').trim() !== '';
+            const retAmount = retHasAmount ? form.returnPaymentAmount : outBase.paymentAmount;
+            const retCurrency = retHasAmount ? (form.returnPaymentCurrency || 'TRY') : outBase.paymentCurrency;
+            const retCustomerTRY = retHasAmount ? toTRY(retAmount, retCurrency) : outBase.customerTRY;
+            const retHasDriver = String(form.returnDriverPayment != null ? form.returnDriverPayment : '').trim() !== '';
+            const retDriverCur = retHasDriver ? (form.returnDriverPaymentCurrency || 'TRY') : outBase.driverPaymentCurrency;
+            const retDriverRaw = retHasDriver ? form.returnDriverPayment : outBase.driverPaymentRaw;
+            const retDriverTRY = retHasDriver ? (retDriverCur === 'TRY' ? form.returnDriverPayment : Math.round(toTRY(form.returnDriverPayment, retDriverCur))) : outBase.driverPayment;
+            const retProfitBase = { ...outBase, givenBy: returnGivenBy, assignedTo: returnAssignedTo, altAcenta: returnAltAcenta, paymentAmount: retAmount, paymentCurrency: retCurrency, customerTRY: retCustomerTRY, driverPayment: retDriverTRY };
+            return ({
             ...outBase,
             id: retId,
             editRootId: retId,
@@ -6894,6 +6904,18 @@ function App() {
             altAcentaUcreti: returnAltAcenta ? outBase.altAcentaUcreti : '',
             altAcentaRaw: returnAltAcenta ? outBase.altAcentaRaw : '',
             altAcentaCurrency: returnAltAcenta ? outBase.altAcentaCurrency : 'TRY',
+            paymentAmount: retAmount,
+            paymentCurrency: retCurrency,
+            customerTRY: retCustomerTRY,
+            driverPayment: retDriverTRY,
+            driverPaymentRaw: retDriverRaw,
+            driverPaymentCurrency: retDriverCur,
+            profit: olmezKar(retProfitBase),
+            returnPaymentAmount: '',
+            returnPaymentCurrency: 'TRY',
+            returnDriverPayment: '',
+            returnDriverPaymentRaw: '',
+            returnDriverPaymentCurrency: 'TRY',
             tripMode: 'single',
             isReturn: false,
             hasReturn: false,
@@ -6908,7 +6930,7 @@ function App() {
             updatedAt: new Date().toISOString(),
             clientUpdatedAt: new Date().toISOString(),
             linkedTransferId: linkedId || outBase.id
-        });
+        }); };
         
         if (editId) {
             const nowIso = new Date().toISOString();
@@ -8520,6 +8542,34 @@ function App() {
             React.createElement("div", null,
                 React.createElement("span", { className: "lbl" }, "Dönüş Alt Acenta"),
                 React.createElement(SmartPick, { value: form.returnAltAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ returnAltAcenta: v }), onSelect: a => sf({ returnAltAcenta: a.name }), placeholder: "" })
+            ),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 96px', gap: 8 } },
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Dönüş Tutarı (boşsa gidişle aynı)"),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnPaymentAmount || '', onChange: e => sf({ returnPaymentAmount: e.target.value }), placeholder: form.paymentAmount ? ('Gidiş: ' + form.paymentAmount) : "Tutar", className: "inp" })
+                ),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Döviz"),
+                    React.createElement("select", { value: form.returnPaymentCurrency || 'TRY', onChange: e => sf({ returnPaymentCurrency: e.target.value }), className: "inp" },
+                        React.createElement("option", { value: "TRY" }, "TL"),
+                        React.createElement("option", { value: "USD" }, "USD"),
+                        React.createElement("option", { value: "EUR" }, "EUR"),
+                        React.createElement("option", { value: "KWD" }, "KWD"))
+                )
+            ),
+            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 96px', gap: 8 } },
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Dönüş Araç Ücreti (boşsa gidişle aynı)"),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnDriverPayment || '', onChange: e => sf({ returnDriverPayment: e.target.value }), placeholder: form.driverPayment ? ('Gidiş: ' + form.driverPayment) : "Araç ücreti", className: "inp" })
+                ),
+                React.createElement("div", null,
+                    React.createElement("span", { className: "lbl" }, "Döviz"),
+                    React.createElement("select", { value: form.returnDriverPaymentCurrency || 'TRY', onChange: e => sf({ returnDriverPaymentCurrency: e.target.value }), className: "inp" },
+                        React.createElement("option", { value: "TRY" }, "TL"),
+                        React.createElement("option", { value: "USD" }, "USD"),
+                        React.createElement("option", { value: "EUR" }, "EUR"),
+                        React.createElement("option", { value: "KWD" }, "KWD"))
+                )
             )
         );
     };
@@ -9813,7 +9863,7 @@ function App() {
                             const preview = takasJobNetTRY({ ...form, isTakas: true, customerTRY: toTRY(form.paymentAmount, form.paymentCurrency) }, crossRates);
                             return React.createElement("div", { style: { padding: '8px 11px', background: 'rgba(255,255,255,.10)', borderRadius: 10, fontSize: 10.5, color: 'rgba(255,255,255,.88)', WebkitTextFillColor: 'rgba(255,255,255,.88)', border: '1px solid rgba(255,255,255,.22)', lineHeight: 1.45 } },
                                 React.createElement("span", { style: { fontWeight: 470, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF' } }, 'Takas bakiyesi: '),
-                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
+                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#8FE3B0' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#8FE3B0' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
                                     preview === 0 ? 'Ba\u015Fa ba\u015F (\u00F6deme g\u00F6nderilmez)' : ((preview > 0 ? '+' : '\u2212') + fr(preview) + '\u20BA ' + (preview > 0 ? (form.takasPartner || 'Ortak') + ' bana g\u00F6nderecek' : 'ben ' + (form.takasPartner || 'orta\u011Fa') + ' g\u00F6nderece\u011Fim'))),
                                 React.createElement("div", { style: { marginTop: 3, fontSize: 9.5, color: 'rgba(255,255,255,.70)', WebkitTextFillColor: 'rgba(255,255,255,.70)' } }, 'Ge\u00E7i\u015F fark\u0131 dahil \u00B7 Hesap > Takas Hesaplar\u0131 b\u00F6l\u00FCm\u00FCnde birikir'));
                         })()
