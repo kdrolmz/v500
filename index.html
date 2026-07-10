@@ -19,7 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE4EB;--line-2:#D3DAE3;--ink:#1F2733;--ink-2:#222C3D;--ink-3:#5F6B7A;--muted:#5F6B7A;--accent:#22252E;--accent-2:#22252E;--accent-soft:#EDF1F6;--brand:#22252E;--brand-2:#22252E;--brand-soft:#EDF1F6;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
+:root{--green:#69707B;--green-2:#69707B;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE4EB;--line-2:#D3DAE3;--ink:#1F2733;--ink-2:#222C3D;--ink-3:#495663;--muted:#495663;--accent:#59616C;--accent-2:#59616C;--accent-soft:#EDF1F6;--brand:#59616C;--brand-2:#59616C;--brand-soft:#EDF1F6;--ok:#69707B;--ok-bg:#EDEFF2;--ok-bd:#CDD2D9;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;background:var(--bg) !important;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
 #root{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg)}
@@ -176,16 +176,16 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-account-firm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important}
 .ko-account-split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
 .ko-account-firm-bucket{min-width:0;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
-.ko-account-firm-bucket.is-rec{border-color:rgba(79,107,69,.34)}
+.ko-account-firm-bucket.is-rec{border-color:rgba(74,90,112,.34)}
 .ko-account-firm-bucket.is-pay{border-color:rgba(178,82,76,.30)}
 .ko-account-firm-bucket-head{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border-bottom:1px solid rgba(60,60,67,.12)}
 .ko-account-firm-bucket-title,.x-none{font-size:11px;font-weight:620;line-height:1.12;letter-spacing:.2px;text-transform:uppercase}
-.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#22252E}
+.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-total{color:#59616C}
 .ko-account-firm-bucket.is-pay .ko-account-firm-bucket-title,.ko-account-firm-bucket.is-pay .ko-account-firm-bucket-total{color:#C05F5F}
 .ko-account-firm-bucket-total{font-size:12px;font-weight:650;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .ko-account-firm-bucket-cards{display:flex;flex-direction:column;gap:6px;padding:7px}
 .ko-account-firm-bucket-empty{font-size:11px;font-weight:520;padding:12px 8px;text-align:center}
-.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid #22252E !important;background:#fff !important}
+.ko-account-firm-card.is-rec{border-color:rgba(74,90,112,.30) !important;border-left:3px solid #59616C !important;background:#fff !important}
 .ko-account-firm-card.is-pay{border-color:rgba(178,82,76,.28) !important;border-left:3px solid #C05F5F !important;background:#fff !important}
 .ko-account-firm-bucket .ko-account-firm-card-title{flex-direction:column;align-items:stretch !important;gap:4px !important}
 .ko-account-firm-bucket .ko-account-firm-card-title span{align-self:flex-end;max-width:100%;white-space:normal !important;text-align:right}
@@ -201,7 +201,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-debt-card{position:relative}
 .ko-debt-card-head{display:grid;grid-template-columns:30px minmax(0,1fr) auto 28px;gap:7px;align-items:center}
 .ko-debt-check{width:28px;height:28px;border-radius:50%;background:#fff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;padding:0}
-.ko-debt-check.is-done{background:#22252E;border-color:#22252E}
+.ko-debt-check.is-done{background:#59616C;border-color:#59616C}
 .ko-debt-main{min-width:0;background:transparent;border:0;padding:0;text-align:left;cursor:pointer;color:inherit}
 .ko-debt-main-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ko-debt-main-sub{font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -223,7 +223,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-debt-split-grid{margin-top:2px}
 .ko-debt-split-grid .ko-account-firm-bucket-cards{gap:7px}
 .ko-debt-summary-card{width:100%;min-height:52px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);color:var(--ink);text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid #22252E}
+.ko-debt-summary-card.is-rec{border-color:rgba(74,90,112,.30);border-left:3px solid #59616C}
 .ko-debt-summary-card.is-pay{border-color:rgba(178,82,76,.28);border-left:3px solid #C05F5F}
 .ko-debt-summary-card.is-selected{outline:2px solid rgba(28,28,30,.18);outline-offset:1px}
 .ko-debt-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;min-width:0}
@@ -333,8 +333,8 @@ main.main-cont.view-home{padding-top:0 !important}
 .tcard-pills{display:flex !important;flex-wrap:wrap !important;gap:4px !important;align-items:center !important;min-width:0 !important}
 .tcard-pill-alt{font-weight:600 !important}
 .tcard-paystatus.is-pending{border-color:rgba(178,96,92,.28) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
-.tcard-paystatus.is-paid{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
-.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.tcard-paystatus.is-paid{border-color:rgba(74,90,112,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.lg-chip-ok{border-color:rgba(74,90,112,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .lg-chip-status-tam{border-color:rgba(60,60,67,.28) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
 .lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
 .lg-chip-wait,.lg-chip-status-iptal{border-color:rgba(178,96,92,.30) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
@@ -363,7 +363,7 @@ main.main-cont.view-home{padding-top:0 !important}
 .ko-contact-card{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;align-items:start !important;background:#fff !important;min-width:0 !important;padding:7px !important;border-radius:12px !important;gap:5px !important;box-shadow:none !important;min-height:58px !important}
 .ko-contact-info{grid-column:1/-1 !important;min-width:0 !important}
 .ko-contact-name{white-space:normal !important;text-overflow:clip !important;overflow-wrap:anywhere !important;word-break:normal !important;font-size:10.6px !important;font-weight:480 !important;line-height:1.16 !important;max-height:2.35em !important;overflow:hidden !important}
-.ko-contact-phone{white-space:normal !important;text-overflow:clip !important;overflow-wrap:anywhere !important;font-size:9.8px !important;font-weight:380 !important;line-height:1.12 !important;max-height:2.25em !important;overflow:hidden !important;margin-top:2px !important}
+.ko-contact-phone{white-space:normal !important;text-overflow:clip !important;overflow-wrap:anywhere !important;font-size:9.8px !important;font-weight:405 !important;line-height:1.12 !important;max-height:2.25em !important;overflow:hidden !important;margin-top:2px !important}
 .ko-contact-card button{line-height:1.05 !important;min-height:23px !important;padding:3px 3px !important;border-radius:8px !important;font-size:0 !important;font-weight:500 !important}
 .ko-contact-card button:only-of-type{grid-column:1/-1 !important}
 .ko-debt-toggle{background:#fff !important;border-radius:13px !important;padding:10px 12px !important;font-size:12.2px !important;box-shadow:0 1px 3px rgba(60,60,67,.035) !important;font-weight:500 !important}
@@ -386,25 +386,25 @@ main.main-cont.view-home{padding-top:0 !important}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
 /* Clean Apple visual layer - single source, business logic untouched */
-:root{--card:#FFFFFF !important;--accent:#22252E !important;--accent-soft:#EDF1F6 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#C05F5F !important;--ok:#22252E !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#C05F5F !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
+:root{--card:#FFFFFF !important;--accent:#59616C !important;--accent-soft:#EDF1F6 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#69707B !important;--red:#C05F5F !important;--ok:#59616C !important;--ok-bd:rgba(74,90,112,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(74,90,112,.26) !important;--err:#C05F5F !important;--err-bd:rgba(74,90,112,.24) !important;--shadow:none !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 .card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard{background:#FFFFFF !important;box-shadow:none !important}
 input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:#22252E !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:#59616C !important;box-shadow:0 0 0 3px rgba(74,90,112,.12) !important}
 .is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#22252E !important;-webkit-text-fill-color:#22252E !important;box-shadow:none !important}
+.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#59616C !important;-webkit-text-fill-color:#59616C !important;box-shadow:none !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important}
 .tcard-pill.tcard-pill-alt{font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{border-color:rgba(47,101,167,.24) !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
-.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(74,90,112,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{border-color:rgba(176,82,76,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.tcard-stripe{background:#22252E !important}
+.tcard-stripe{background:#59616C !important}
 .tabbar{background:rgba(255,255,255,.98) !important;border-top:1px solid rgba(60,60,67,.18) !important;box-shadow:none !important}
 .tabbar-inner{background:transparent !important;height:74px !important;padding:6px 8px !important;box-shadow:none !important;border:0 !important}
 .tab{background:transparent !important;border-color:transparent !important;font-size:10px !important;font-weight:500 !important;border-radius:16px !important}
-.tab-fab{background:#22252E !important;border-color:#22252E !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
+.tab-fab{background:#59616C !important;border-color:#59616C !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:none !important}
 .tab-badge{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .lg-month-cal-card,.ko-real-cal-card{background:#FFFFFF !important;border-radius:24px !important;box-shadow:none !important;padding:13px !important;overflow:hidden !important}
 .lg-month-cal-head{padding:0 0 11px !important;margin-bottom:9px !important}
@@ -414,20 +414,20 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:#22252E !importa
 .lg-month-weekdays div{font-size:10px !important;font-weight:520 !important;text-align:center !important}
 .lg-month-day,.ko-arac-day{min-height:50px !important;aspect-ratio:auto !important;border-radius:12px !important;padding:6px 4px !important;background:#FFFFFF !important;box-shadow:none !important;display:grid !important;grid-template-rows:auto 1fr !important;align-items:start !important;justify-content:stretch !important;gap:4px !important;overflow:hidden !important;text-align:center !important;contain:layout paint style !important}
 .lg-month-day.is-other,.ko-arac-day.is-other{opacity:.36 !important}
-.lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(79,107,69,.40) !important}
+.lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(74,90,112,.40) !important}
 .lg-month-day>div:first-child,.ko-arac-day>div:first-child{width:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:3px !important;min-width:0 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13px !important;font-weight:600 !important;line-height:1 !important;text-align:center !important}
 .lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num,.tk-cell.tk-today:not(.tk-selected) .tk-cell-num{color:var(--slate,#33405C) !important;-webkit-text-fill-color:var(--slate,#33405C) !important}
 .lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{width:100% !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:flex-start !important;gap:2px !important;min-width:0 !important;overflow:hidden !important}
 .lg-month-day-count,.ko-arac-day-count{width:100% !important;display:block !important;min-width:0 !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:8px !important;font-weight:500 !important;line-height:1.08 !important;text-align:center !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#22252E !important;-webkit-text-fill-color:#22252E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;background:transparent !important;border:0 !important;font-size:7.4px !important;font-weight:520 !important;line-height:1.05 !important;text-align:center !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .lg-month-selected-line{margin-top:10px !important;padding:10px 0 0 !important;display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
 .lg-month-selected-title{font-size:13px !important;font-weight:520 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
-.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#22252E !important;-webkit-text-fill-color:#22252E !important;white-space:nowrap !important}
+.lg-month-selected-count{font-size:12px !important;font-weight:520 !important;color:#59616C !important;-webkit-text-fill-color:#59616C !important;white-space:nowrap !important}
 .tk-cell{background:#FFFFFF !important;border-radius:12px !important;box-shadow:none !important;min-height:48px !important;padding:5px !important;gap:3px !important;overflow:hidden !important}
 .tk-cell-count{font-size:9.5px !important;font-weight:500 !important;line-height:1 !important}
-.tk-cell-dot{background:#22252E !important}
+.tk-cell-dot{background:#59616C !important}
 .ko-arac-day-panel,.ko-arac-job-card,.ko-account-firm-card,.ko-debt-card,.ko-contact-card{border-radius:20px !important;background:#FFFFFF !important;box-shadow:none !important;overflow:hidden !important}
 .ko-account-section-head,.ko-debt-toggle,.ko-contact-toggle,.ko-firma-toggle{background:#FFFFFF !important;border-radius:18px !important;font-weight:520 !important;box-shadow:none !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
@@ -439,11 +439,11 @@ img,svg{content-visibility:auto}
 .tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.lg-period-value,.lg-profit-value,.lg-profit-detail-value,.lg-profit-month-total,.ko-account-stat-total,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b{font-weight:480 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-weight:470 !important}
 .lg-month-day-count,.ko-arac-day-count{font-weight:350 !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net,.tk-cell-count{font-weight:380 !important}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net,.tk-cell-count{font-weight:405 !important}
 .lg-month-selected-kicker{font-size:10.5px !important;font-weight:350 !important;text-transform:none !important}
 .lg-month-selected-title,.lg-month-selected-count{font-weight:390 !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight,.tab,.tab-label,.ko-arac-soft-btn,.lg-month-nav,.lg-month-today-btn,.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-account-settle-btn{font-weight:390 !important}
-.lg-month-weekdays div,.lbl,.lg-profit-label,.lg-period-label,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.date-hdr-meta,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label{font-weight:360 !important}
+.lg-month-weekdays div,.lbl,.lg-profit-label,.lg-period-label,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.date-hdr-meta,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label{font-weight:400 !important}
 @media(max-width:700px){
   main.main-cont{padding-left:11px !important;padding-right:11px !important}
   .lg-month-day,.ko-arac-day{min-height:49px !important;border-radius:11px !important;padding:6px 3px !important;gap:3px !important}
@@ -455,7 +455,7 @@ img,svg{content-visibility:auto}
 }
 
 /* CLEAN PREMIUM FIX - arka plan acik, kartlar nizami, mantik degismedi */
-:root{--card:#FFFFFF !important;--green:#0E9F6E !important;--green-2:#0E9F6E !important;--red:#C05F5F !important;--ok:#0E9F6E !important;--ok-bd:rgba(47,117,89,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:#C05F5F !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
+:root{--card:#FFFFFF !important;--green:#69707B !important;--green-2:#69707B !important;--red:#C05F5F !important;--ok:#69707B !important;--ok-bd:rgba(74,90,112,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:#C05F5F !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
 html,body,#root,.app-shell{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Arial,sans-serif !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 [style*="linear-gradient"]{background-image:none !important}
@@ -468,7 +468,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;box-shadow:none !important}
 .lg-greeting-title,.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.date-hdr-txt,.ko-pwa-brand-title,.tk-month-title,.tk-panel-date{font-weight:520 !important}
 .tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.lg-period-value,.lg-profit-value,.lg-profit-detail-value,.lg-profit-month-total,.ko-account-stat-total,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b{font-weight:500 !important}
-.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.lg-month-selected-kicker,.date-hdr-meta,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl,.lg-profit-label,.lg-period-label{font-weight:380 !important}
+.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.lg-month-selected-kicker,.date-hdr-meta,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl,.lg-profit-label,.lg-period-label{font-weight:405 !important}
 .is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .tcard{border-radius:18px !important;overflow:hidden !important;contain:layout paint style !important}
@@ -482,7 +482,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight{background:#FFFFFF !important;border-radius:999px !important;font-size:9.8px !important;font-weight:430 !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(158,124,46,.28) !important}
 .tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(47,117,89,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(74,90,112,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.lg-chip-wait{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .tabbar{background:#FFFFFF !important;box-shadow:none !important}
 .tabbar-inner{background:#FFFFFF !important;border:0 !important;box-shadow:none !important;height:74px !important}
@@ -511,7 +511,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-account-manual-panel .inp{min-height:38px !important;border-radius:10px !important;font-size:12px !important}
 .ko-account-manual-row{border-style:solid !important}
 .ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(47,117,89,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(74,90,112,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b,.ko-contact-name,.ko-contact-phone{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
 :where(.tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.lg-transfer-date,.lg-row,.ko-account-flow,.ko-account-cell small,.ko-arac-job-title,.ko-arac-job-sub,.ko-contact-name,.ko-contact-phone,.lg-month-selected-title,.lg-month-selected-count,.lg-month-day-count,.ko-arac-day-count,.lg-month-day-net,.ko-arac-day-net){text-overflow:clip !important}
 .tcard *,.lg-upcoming-card *,.ko-account-row *,.lg-month-day *,.ko-arac-day *{min-width:0 !important}
@@ -537,23 +537,23 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
   .tab-label{font-size:9.8px !important;text-overflow:clip !important}
 }
 .lg-home .lg-greeting-card{overflow:hidden !important}
-.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#22252E !important}
+.lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:#59616C !important}
 .lg-home-transfer-list>div,.lg-today-list-standalone>div{contain:layout paint style}
-.view-arac .ko-arac-day.is-today{border-color:rgba(94,122,82,.58) !important}
+.view-arac .ko-arac-day.is-today{border-color:rgba(74,90,112,.58) !important}
 
 /* Alacak / verecek: firma hesaplariyla ayni kart yapisi ve kompakt hareket detayi */
 .ko-debt-firm-card{width:100% !important;margin:0 !important}
-.ko-debt-firm-card.is-selected{outline:2px solid rgba(79,107,69,.22) !important;outline-offset:1px !important}
+.ko-debt-firm-card.is-selected{outline:2px solid rgba(74,90,112,.22) !important;outline-offset:1px !important}
 .ko-debt-firm-card .ko-account-firm-card-copy b{white-space:normal !important;overflow:visible !important;overflow-wrap:anywhere !important;text-overflow:clip !important}
 .ko-debt-firm-card .ko-debt-firm-tl{display:inline !important;margin-left:3px !important;font-size:9px !important;opacity:.75 !important}
-.ko-debt-ledger{border-left:4px solid var(--debt-accent,#22252E) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
+.ko-debt-ledger{border-left:4px solid var(--debt-accent,#59616C) !important;border-radius:16px !important;background:#FFFFFF !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
 .ko-debt-ledger-head{display:grid !important;grid-template-columns:28px minmax(0,1fr) auto 26px !important;align-items:center !important;gap:7px !important;min-width:0 !important}
 .ko-debt-ledger .ko-debt-check{width:28px !important;height:28px !important;min-height:28px !important;padding:0 !important;border-radius:50% !important;font-size:13px !important}
 .ko-debt-ledger-copy{min-width:0 !important}
 .ko-debt-ledger-name{font-size:12px !important;font-weight:500 !important;line-height:1.18 !important;white-space:normal !important;overflow-wrap:anywhere !important}
 .ko-debt-ledger-meta{margin-top:2px !important;font-size:9px !important;line-height:1.15 !important}
 .ko-debt-ledger-balance{text-align:right !important;white-space:nowrap !important;font-variant-numeric:tabular-nums !important}
-.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#22252E) !important;font-size:12px !important;font-weight:520 !important}
+.ko-debt-ledger-balance b{display:block !important;color:var(--debt-accent,#59616C) !important;font-size:12px !important;font-weight:520 !important}
 .ko-debt-ledger-balance small{display:block !important;margin-top:2px !important;font-size:8px !important}
 .ko-debt-ledger-close{width:26px !important;height:26px !important;min-height:26px !important;padding:0 !important;border-radius:8px !important;font-size:14px !important}
 .ko-debt-ledger-stats{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:5px !important;margin-top:8px !important}
@@ -571,14 +571,14 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-debt-ledger-more{width:100% !important;min-height:28px !important;margin-top:5px !important;padding:5px 8px !important;border-radius:9px !important;font-size:9px !important}
 .ko-debt-ledger-actions{display:flex !important;align-items:center !important;gap:6px !important;margin-top:8px !important}
 .ko-debt-ledger-actions button{min-height:30px !important;padding:6px 9px !important;border-radius:9px !important;background:#FFFFFF !important;font-size:9.5px !important}
-.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#22252E) !important;background:var(--debt-accent,#22252E) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
+.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,#59616C) !important;background:var(--debt-accent,#59616C) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
 .ko-debt-ledger-actions .is-delete{margin-left:auto !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .ko-debt-ledger-form{display:flex !important;flex-direction:column !important;gap:6px !important;margin-top:8px !important;padding:7px !important;border-radius:11px !important}
 .ko-debt-ledger-form-top{display:grid !important;grid-template-columns:92px 92px minmax(120px,1fr) !important;gap:6px !important}
 .ko-debt-ledger-form-top.is-edit{grid-template-columns:minmax(0,1fr) 82px !important}
 .ko-debt-ledger-form-bottom{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;gap:6px !important}
 .ko-debt-ledger-form input,.ko-debt-ledger-form select{min-height:32px !important;padding:6px 7px !important;border-radius:8px !important;font-size:10.5px !important}
-.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#22252E) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
+.ko-debt-ledger-form button{min-height:32px !important;padding:6px 10px !important;border:0 !important;border-radius:8px !important;background:var(--debt-accent,#59616C) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-size:9.5px !important}
 @media(max-width:700px){
   .ko-debt-firm-card .ko-account-firm-card-title b{font-size:12px !important}
   .ko-debt-firm-card .ko-account-firm-card-title>span{font-size:11px !important}
@@ -599,15 +599,15 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
    ║  ÖLMEZ TRANSFER · EMERALD NUDE & CHAMPAGNE · v54 · sinematik cam      ║
    ╚════════════════════════════════════════════════════════════════════╝ */
 :root{
-  --ink:#26332B;--ink2:#3A4A40;--body:#4F5D53;--mut:#828F86;--faint:#AEB9B1;
-  --deep:#3E5A48;--deep2:#4A6A55;--slate:#5A7A66;
-  --gradHero:linear-gradient(150deg,#5E8570 0%,#4E7160 55%,#436251 100%);
-  --gradSel:linear-gradient(155deg,#6B9078 0%,#4E7160 100%);
+  --ink:#59616C;--ink2:#69707B;--body:#69707B;--mut:#545E6A;--faint:#7B8591;
+  --deep:#69707B;--deep2:#69707B;--slate:#69707B;
+  --gradHero:linear-gradient(150deg,#69707B 0%,#69707B 55%,#69707B 100%);
+  --gradSel:linear-gradient(155deg,#6B7280 0%,#59616C 100%);
   --champ:#E6CE96;--champ2:#CBAD6A;--champSoft:rgba(230,206,150,.14);
   --glass:rgba(255,255,255,.68);--glassHi:rgba(255,255,255,.92);
-  --line:rgba(23,37,28,.10);
-  --bg:#F4F6F2;
-  --ok:#0FA06A;--okBg:#E6F5EE;--okBd:#B6DEC8;
+  --line:rgba(30,40,55,.10);
+  --bg:#F4F6F8;
+  --ok:#69707B;--okBg:#EFF1F4;--okBd:#EFF1F4;
   --warn:#B07B1E;--warnBg:#FAF3E1;--warnBd:#E9D6A6;
   --bad:#C25E5E;--badBg:#FBEDED;--badBd:#E8C4C4;
   --sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);
@@ -661,27 +661,27 @@ b,strong{font-weight:580 !important}
 .ko-navy-panel option{color:var(--ink)}
 .ko-navy-lbl{color:rgba(255,255,255,.8) !important;-webkit-text-fill-color:rgba(255,255,255,.8) !important}
 /* HERO — sinematik masthead + şampanya hairline + yörünge */
-.lg-greeting-card{position:sticky !important;top:0 !important;z-index:60 !important;margin:0 -14px 0 !important;border-radius:0 0 32px 32px !important;border-top:0 !important;padding:calc(var(--sa-t) + 17px) 17px 32px !important;box-shadow:inset 0 -1px 0 rgba(228,200,138,.42),inset 0 2px 1px rgba(255,255,255,.44),inset 0 -24px 36px rgba(4,7,14,.5),0 24px 54px rgba(16,20,31,.44) !important}
-.lg-greeting-card::before{content:"";position:absolute;right:-64px;top:-76px;width:224px;height:224px;border:1.5px solid rgba(228,200,138,.26);border-radius:50%;pointer-events:none;box-shadow:0 0 40px rgba(228,200,138,.1)}
+.lg-greeting-card{position:sticky !important;top:0 !important;z-index:60 !important;margin:0 -14px 0 !important;border-radius:0 0 32px 32px !important;border-top:0 !important;padding:calc(var(--sa-t) + 17px) 17px 32px !important;box-shadow:inset 0 -1px 0 rgba(140,160,190,.42),inset 0 2px 1px rgba(255,255,255,.44),inset 0 -24px 36px rgba(4,7,14,.5),0 24px 54px rgba(16,20,31,.44) !important}
+.lg-greeting-card::before{content:"";position:absolute;right:-64px;top:-76px;width:224px;height:224px;border:1.5px solid rgba(140,160,190,.26);border-radius:50%;pointer-events:none;box-shadow:0 0 40px rgba(140,160,190,.1)}
 .ko-brand-serif{font-family:"Georgia","Times New Roman",serif !important;font-size:18px !important;font-weight:500 !important;letter-spacing:1px !important;line-height:1.1 !important;text-shadow:0 1px 12px rgba(255,255,255,.2)}
 .ko-brand-logo{width:32px;height:24px;object-fit:contain;flex:none;display:block;filter:drop-shadow(0 1px 4px rgba(0,0,0,.4))}
 .lg-greeting-card .lg-date{text-transform:uppercase !important;letter-spacing:1.5px !important;font-size:9.5px !important;margin-top:4px !important}
 .ko-hero-btn,.lg-greeting-card .lg-backup-btn,.lg-greeting-card .lg-refresh-btn{background:rgba(255,255,255,.14) !important;border:1px solid rgba(255,255,255,.4) !important;color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.5) !important;position:relative;z-index:1;border-radius:13px !important}
 .ko-hero-rate{min-height:33px;border:1px solid rgba(255,255,255,.32) !important;border-radius:999px !important;background:rgba(255,255,255,.12) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.48) !important;display:flex;align-items:center;justify-content:center;gap:6px;position:relative;z-index:1}
 .ko-hero-rate span:first-child{color:var(--champ) !important;-webkit-text-fill-color:var(--champ) !important;font-weight:600 !important}
-.ko-ver-chip{display:inline-flex;align-items:center;height:19px;padding:0 9px;border-radius:999px;background:var(--champSoft);border:1px solid rgba(228,200,138,.5);color:var(--champ) !important;-webkit-text-fill-color:var(--champ) !important;font-size:9px;font-weight:600;letter-spacing:.8px;position:relative;z-index:1}
+.ko-ver-chip{display:inline-flex;align-items:center;height:19px;padding:0 9px;border-radius:999px;background:var(--champSoft);border:1px solid rgba(140,160,190,.5);color:var(--champ) !important;-webkit-text-fill-color:var(--champ) !important;font-size:9px;font-weight:600;letter-spacing:.8px;position:relative;z-index:1}
 /* MASTHEAD segment */
 .lg-period-row{margin:-17px 10px 0 !important;position:relative !important;z-index:61 !important;border-radius:20px !important;padding:5px !important}
 .lg-period-card{background:transparent !important;border:0 !important;box-shadow:none !important;border-radius:16px !important;position:relative;z-index:1}
-.lg-period-card.is-active{background:rgba(4,7,14,.4) !important;box-shadow:inset 0 2px 6px rgba(0,0,0,.36),inset 0 0 0 1.3px rgba(255,255,255,.5),inset 0 0 0 2.6px rgba(228,200,138,.42) !important}
+.lg-period-card.is-active{background:rgba(4,7,14,.4) !important;box-shadow:inset 0 2px 6px rgba(0,0,0,.36),inset 0 0 0 1.3px rgba(255,255,255,.5),inset 0 0 0 2.6px rgba(140,160,190,.42) !important}
 .lg-period-card .lg-period-value,.lg-profit-card .lg-profit-value{font-weight:600 !important;font-variant-numeric:tabular-nums;letter-spacing:-.4px;background:linear-gradient(180deg,#FFFFFF 32%,#CFCbBA 100%);-webkit-background-clip:text !important;background-clip:text !important;-webkit-text-fill-color:transparent !important}
 /* SEÇİLİ — koyu ink kubbe + şampanya kenar ışığı */
 .lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected,.lg-choice.is-active,.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.view-arac .lg-arac-month-toggle.is-active,.view-arac .lg-arac-date-toggle.is-active,.view-arac .lg-arac-year-toggle.is-active,.view-arac .lg-arac-day-toggle.is-active,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active{
   background:var(--gradSel) !important;border:1px solid rgba(255,255,255,.32) !important;
-  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.46),inset 0 -10px 16px rgba(4,7,14,.42),0 10px 24px rgba(16,20,31,.42),0 0 22px rgba(228,200,138,.24) !important;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.46),inset 0 -10px 16px rgba(4,7,14,.42),0 10px 24px rgba(16,20,31,.42),0 0 22px rgba(140,160,190,.24) !important;
 }
 .lg-month-day.is-selected *,.lg-month-day.ko-selected-gold *,.ko-arac-day.is-selected *,.tk-cell.tk-selected *,.lg-datebox.is-selected *,.lg-choice.is-active *,.ko-account-firm-card.is-selected *,.ko-debt-firm-card.is-selected *,.ko-takas-partner.is-selected *,.view-arac .lg-arac-month-toggle.is-active *,.view-arac .lg-arac-date-toggle.is-active *,.view-arac .lg-arac-year-toggle.is-active *,.view-arac .lg-arac-day-toggle.is-active *,.lg-arac-date-toggle.is-active *,.lg-arac-month-toggle.is-active *,.lg-arac-year-toggle.is-active *,.lg-arac-day-toggle.is-active *,.lg-choice.is-active,.lg-datebox.is-selected,.tk-cell.tk-selected{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important}
-.lg-month-day.is-selected .lg-month-day-net,.ko-arac-day.is-selected .ko-arac-day-net{color:#9FE8C2 !important;-webkit-text-fill-color:#9FE8C2 !important}
+.lg-month-day.is-selected .lg-month-day-net,.ko-arac-day.is-selected .ko-arac-day-net{color:#EFF1F4 !important;-webkit-text-fill-color:#EFF1F4 !important}
 .lg-month-day.is-selected .lg-month-day-net.is-neg,.ko-arac-day.is-selected .ko-arac-day-net.is-neg{color:#EFC0BC !important;-webkit-text-fill-color:#EFC0BC !important}
 .lg-month-day.is-selected .lg-month-day-count,.ko-arac-day.is-selected .ko-arac-day-count,.tk-cell.tk-selected .tk-cell-count{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;max-width:100% !important}
 /* TAKVİM */
@@ -696,21 +696,21 @@ b,strong{font-weight:580 !important}
 .lg-home-transfer-list,.lg-today-list-standalone{position:relative !important;padding-left:23px !important}
 .lg-home-transfer-list::before,.lg-today-list-standalone::before{content:"";position:absolute;left:7px;top:18px;bottom:18px;width:2px;border-radius:2px;background:linear-gradient(180deg,rgba(51,64,92,0),rgba(51,64,92,.3) 12%,rgba(51,64,92,.3) 88%,rgba(51,64,92,0))}
 .lg-home-transfer-list .tcard,.lg-today-list-standalone .tcard{position:relative !important;overflow:visible !important}
-.lg-home-transfer-list .tcard::before,.lg-today-list-standalone .tcard::before{content:"";position:absolute;left:-20px;top:27px;width:11px;height:11px;border-radius:99px;background:var(--gradSel);box-shadow:0 0 0 3px var(--bg),inset 0 1px 0 rgba(255,255,255,.5),0 0 12px rgba(228,200,138,.4)}
+.lg-home-transfer-list .tcard::before,.lg-today-list-standalone .tcard::before{content:"";position:absolute;left:-20px;top:27px;width:11px;height:11px;border-radius:99px;background:var(--gradSel);box-shadow:0 0 0 3px var(--bg),inset 0 1px 0 rgba(255,255,255,.5),0 0 12px rgba(140,160,190,.4)}
 .tcard{border-radius:22px !important}
 .tcard-time-big{font-size:16px !important;font-weight:580 !important;letter-spacing:.2px !important;font-variant-numeric:tabular-nums}
 .tcard-stripe{background:var(--gradSel) !important;border-radius:999px !important}
 /* ÇİPLER */
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{border-radius:999px !important;font-weight:540 !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7) !important;background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 60%)}
-.tcard-paystatus.is-paid,.lg-chip-ok{background-color:var(--okBg) !important;border-color:var(--okBd) !important;color:#0B7C55 !important;-webkit-text-fill-color:#0B7C55 !important}
+.tcard-paystatus.is-paid,.lg-chip-ok{background-color:var(--okBg) !important;border-color:var(--okBd) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-none,.tcard-paystatus.is-pending{background-color:var(--warnBg) !important;border-color:var(--warnBd) !important;color:var(--warn) !important;-webkit-text-fill-color:var(--warn) !important}
 /* DOCK */
 .tabbar{position:fixed !important;left:0 !important;right:0 !important;bottom:0 !important;border:0 !important;border-top:1px solid rgba(255,255,255,.85) !important;border-radius:24px 24px 0 0 !important;background:rgba(255,255,255,.66) !important;-webkit-backdrop-filter:blur(28px) saturate(1.7) !important;backdrop-filter:blur(28px) saturate(1.7) !important;box-shadow:inset 0 2px 0 rgba(255,255,255,.95),0 -16px 40px rgba(16,20,31,.2) !important;padding-bottom:var(--sa-b) !important;z-index:70 !important}
 .tab,.tab .tab-icon,.tab .tab-label{color:var(--mut) !important;-webkit-text-fill-color:var(--mut) !important;font-weight:490 !important}
 .tab{border-radius:16px !important}
-.tab.is-active{background:var(--gradSel) !important;border:1px solid rgba(255,255,255,.34) !important;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.48),inset 0 -8px 14px rgba(4,7,14,.4),0 8px 20px rgba(16,20,31,.42),0 0 18px rgba(228,200,138,.22) !important}
+.tab.is-active{background:var(--gradSel) !important;border:1px solid rgba(255,255,255,.34) !important;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.48),inset 0 -8px 14px rgba(4,7,14,.4),0 8px 20px rgba(16,20,31,.42),0 0 18px rgba(140,160,190,.22) !important}
 .tab.is-active *,.tab.is-active .tab-icon,.tab.is-active .tab-label{color:#FFFFFF !important;-webkit-text-fill-color:#FFFFFF !important;font-weight:540 !important}
-.tab-fab{border-radius:19px !important;transform:translateY(-17px) !important;box-shadow:inset 0 2px 1px rgba(255,255,255,.48),inset 0 -12px 18px rgba(4,7,14,.46),0 18px 32px rgba(16,20,31,.5),0 0 0 5px var(--bg),0 0 0 6px rgba(228,200,138,.32) !important}
+.tab-fab{border-radius:19px !important;transform:translateY(-17px) !important;box-shadow:inset 0 2px 1px rgba(255,255,255,.48),inset 0 -12px 18px rgba(4,7,14,.46),0 18px 32px rgba(16,20,31,.5),0 0 0 5px var(--bg),0 0 0 6px rgba(140,160,190,.32) !important}
 .tab-fab:active{transform:translateY(-14px) scale(.95) !important}
 .tab-icon{font-size:0 !important;height:21px !important;display:flex !important;align-items:center !important;justify-content:center !important}
 .tab-icon svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.12))}
@@ -803,7 +803,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 
 
 /* ── Transfer tip renkleri: belirgin sol şerit + net çip (kurumsal) ── */
-.tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:#2E7D5B !important}
+.tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:#69707B !important}
 .tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:#2B4A82 !important}
 .tcard.t-tour .tcard-stripe,.lg-home-transfer-list .tcard.t-tour .tcard-stripe{background:#B0842E !important}
 .tcard.t-shortpass .tcard-stripe,.lg-home-transfer-list .tcard.t-shortpass .tcard-stripe{background:#7A5CB0 !important}
@@ -812,7 +812,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .tcard.t-dugun .tcard-stripe,.lg-home-transfer-list .tcard.t-dugun .tcard-stripe{background:#C05C88 !important}
 .tcard-stripe{width:6px !important;min-width:6px !important}
 /* Çipler: tip rengiyle dolgulu, okunur */
-.tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:#E4F3EB !important;border-color:#B4DBC5 !important;color:#1F6E48 !important;-webkit-text-fill-color:#1F6E48 !important}
+.tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:#EFF1F4 !important;border-color:#EFF1F4 !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:#E7EDF7 !important;border-color:#BDCCE6 !important;color:#294C86 !important;-webkit-text-fill-color:#294C86 !important}
 .tcard.t-tour .tcard-type,.tcard.t-tour .tcard-pill:first-child{background:#F8F0DC !important;border-color:#E4D2A0 !important;color:#8A6414 !important;-webkit-text-fill-color:#8A6414 !important}
 .tcard.t-shortpass .tcard-type,.tcard.t-shortpass .tcard-pill:first-child{background:#F0EAF8 !important;border-color:#D2C4E8 !important;color:#5B449A !important;-webkit-text-fill-color:#5B449A !important}
@@ -904,12 +904,12 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
-const NAV = '#22252E', NAV2 = '#22252E', GOLD = 'rgba(255,255,255,.85)';
-const G = '#6E8060', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
-const TX = '#1F2733', SB = '#5F6B7A', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
+const NAV = '#59616C', NAV2 = '#59616C', GOLD = 'rgba(255,255,255,.85)';
+const G = '#0E9F6E', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3'; const GA = '#69707B';
+const TX = '#1F2733', SB = '#495663', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#3E7C5B', bg: '#E9F3ED', b: '#BFDCCB' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#69707B', bg: '#EDEFF2', b: '#CDD2D9' },
     { id: 'tour', n: 'Tur', ico: '🏔️', c: '#96762A', bg: '#F7F0DE', b: '#E0D2A8' },
     { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6C5A92', bg: '#EFEAF6', b: '#CFC2E3' },
     { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#4E5D72', bg: '#EDF0F4', b: '#C9D2DE' },
@@ -1009,13 +1009,13 @@ const KO_ICONS = {
 };
 const KO_KS_COLORS = [
     { bg: '#E7EDF7', bd: '#2B4A82', tx: '#294C86' },
-    { bg: '#E9F3ED', bd: '#2E7D5B', tx: '#1F6E48' },
+    { bg: '#EDEFF2', bd: '#69707B', tx: '#69707B' },
     { bg: '#F8F0DC', bd: '#B0842E', tx: '#8A6414' },
     { bg: '#F0EAF8', bd: '#7A5CB0', tx: '#5B449A' },
     { bg: '#FAEBF2', bd: '#C05C88', tx: '#A63F70' },
     { bg: '#E9EEF4', bd: '#3A5570', tx: '#33475E' },
     { bg: '#FCEBE6', bd: '#C25A3A', tx: '#A2472B' },
-    { bg: '#E6F2F4', bd: '#2E7A85', tx: '#1F6670' }
+    { bg: '#EFF1F4', bd: '#2E7A85', tx: '#1F6670' }
 ];
 const ksPairColor = (t) => {
     // id'lerin rastgele kuyruğunu (son '_' sonrası) al — ortak zaman öneki dağılımı bozuyor
@@ -1726,11 +1726,11 @@ async function downloadWorkbook(wb, filename) {
     return false;
 }
 const APPLE_CALENDAR_TYPES = [
-    { id: 'arrival', filename: 'apple-takvim-gelen.ics', name: 'KÖ Gelen Yolcu', color: '#5E8B6A' },
+    { id: 'arrival', filename: 'apple-takvim-gelen.ics', name: 'KÖ Gelen Yolcu', color: '#69707B' },
     { id: 'departure', filename: 'apple-takvim-giden.ics', name: 'KÖ Giden Yolcu', color: '#9C8C7A' },
     { id: 'tour', filename: 'apple-takvim-turlar.ics', name: 'KÖ Turlar', color: '#C99A4E' },
     { id: 'shortpass', filename: 'apple-takvim-kisa-pas.ics', name: 'KÖ Kısa Pas', color: '#8A6E92' },
-    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: '#9CAE8C' }
+    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: '#CDD2D9' }
 ];
 const GITHUB_CALENDAR_OWNER = 'kdrolmz';
 const GITHUB_CALENDAR_REPO = 'v500';
@@ -3098,7 +3098,7 @@ function AracTab({ tip, aracK, setAracK }) {
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
                                                     alignItems: 'center',
-                                                    boxShadow: sNet >= 0 ? '0 2px 6px rgba(60,60,67,.12)' : '0 2px 6px rgba(79,107,69,.14)'
+                                                    boxShadow: sNet >= 0 ? '0 2px 6px rgba(60,60,67,.12)' : '0 2px 6px rgba(74,90,112,.14)'
                                                 }
                                             },
                                                 React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 430 } }, "Net K\u00E2r"),
@@ -3410,7 +3410,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "‹"),
                 React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 450, color: NAV } }),
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: '#fff', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "›"),
-                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: '#EDF1F6', color: '#22252E', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(74,90,112,.34)', background: '#EDF1F6', color: '#59616C', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 9, fontWeight: 450, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
@@ -3419,7 +3419,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 const active = d.key === selectedDay;
                 const isToday = d.key === todayKey;
                 const hasWork = d.count > 0 || d.gider > 0;
-                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#22252E' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#EDF1F6' : hasWork ? '#F4F6F9' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
+                return React.createElement("button", { key: d.key, type: "button", className: "ko-arac-day" + (active ? " is-selected" : "") + (hasWork ? " has-work" : "") + (isToday ? " is-today" : ""), onClick: () => { setSelectedDay(d.key); setShowTripForm(false); setExpenseOpen(false); }, style: { minHeight: 50, borderRadius: 12, border: '1px solid ' + (active ? '#59616C' : hasWork ? 'rgba(60,60,67,.25)' : BOR), background: active ? '#EDF1F6' : hasWork ? '#F4F6F9' : '#fff', color: TX, padding: 5, cursor: 'pointer', display: 'grid', gridTemplateRows: 'auto 1fr', alignItems: 'start', justifyContent: 'stretch', gap: 4, boxShadow: 'none', opacity: 1 } },
                     React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 3 } },
                         React.createElement("span", { className: "ko-arac-day-num", style: { fontSize: 13, fontWeight: 450, color: TX, WebkitTextFillColor: TX } }, d.no),
                         false),
@@ -4456,7 +4456,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
     const accountTone = name => {
         const key = nm(name || '');
-        if (!key || key.includes('olmeztur')) return { bg: '#E7F2EE', fg: '#3F806D', bd: 'rgba(60,60,67,.34)', cls: 'ko-account-olmez' };
+        if (!key || key.includes('olmeztur')) return { bg: '#EFF1F4', fg: '#69707B', bd: 'rgba(60,60,67,.34)', cls: 'ko-account-olmez' };
         return { bg: '#F4F6F9', fg: '#636366', bd: 'rgba(60,60,67,.20)', cls: 'ko-account-agency' };
     };
     const renderAgencyChip = (name, compact) => {
@@ -4471,7 +4471,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 padding: 0,
                 borderRadius: 0,
                 background: 'transparent',
-                color: isOlmez ? '#2F765F' : '#636366',
+                color: isOlmez ? '#69707B' : '#636366',
                 border: 'none',
                 fontSize: compact ? 10 : 11.2,
                 fontWeight: isOlmez ? 620 : 540,
@@ -4600,7 +4600,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         gap: 10,
                         boxShadow: pos
                             ? '0 3px 10px rgba(60,60,67,.12), inset 0 1px 0 rgba(255,255,255,.5)'
-                            : '0 3px 10px rgba(79,107,69,.16), inset 0 1px 0 rgba(255,255,255,.5)'
+                            : '0 3px 10px rgba(74,90,112,.16), inset 0 1px 0 rgba(255,255,255,.5)'
                     }
                 },
                     React.createElement("div", null,
@@ -4678,7 +4678,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     ? 'inset 0 0 0 1px rgba(60,60,67,.06)'
                     : pos
                         ? '0 1px 4px rgba(60,60,67,.08)'
-                        : '0 1px 4px rgba(79,107,69,.10)'
+                        : '0 1px 4px rgba(74,90,112,.10)'
             }
         },
             React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 } },
@@ -4690,7 +4690,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { style: { fontSize: 11, color: SB } }, '→ ' + (t.dropoff || '—')),
                     badges,
                     React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
-                        kar !== 0 && React.createElement("div", { style: { background: 'rgba(30,122,69,.08)', borderRadius: 6, padding: '2px 7px' } },
+                        kar !== 0 && React.createElement("div", { style: { background: 'rgba(74,90,112,.08)', borderRadius: 6, padding: '2px 7px' } },
                             React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 450 } }, 'Kâr: ' + (kar >= 0 ? '+' : '−') + fr(kar) + '₺')),
                         kartKomisyonToplam > 0 && React.createElement("div", {
                             style: {
@@ -4790,7 +4790,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("button", {
                             type: "button",
                             className: "ko-account-settle-btn is-open",
-                            style: { color: R, borderColor: 'rgba(79,107,69,.28)', background: '#FFF8F7' },
+                            style: { color: R, borderColor: 'rgba(74,90,112,.28)', background: '#FFF8F7' },
                             onClick: e => {
                                 e.stopPropagation();
                                 deleteAccountAdjustment(t.adjustmentId);
@@ -4924,7 +4924,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const displayNet = isJabirFirm(sel) ? totalUsd : totalNet;
         const tone = isOlmezToAgency
             ? {
-                bd: '#2F8F5B',
+                bd: '#69707B',
                 accent: G
             }
             : isAgencyToOlmez
@@ -5030,8 +5030,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             padding: '14px 16px',
                             textAlign: 'center',
                             boxShadow: displayNet >= 0
-                                ? '0 4px 14px rgba(18,108,55,.18), inset 0 1px 0 rgba(255,255,255,.6)'
-                                : '0 4px 14px rgba(79,107,69,.18), inset 0 1px 0 rgba(255,255,255,.6)',
+                                ? '0 4px 14px rgba(74,90,112,.18), inset 0 1px 0 rgba(255,255,255,.6)'
+                                : '0 4px 14px rgba(74,90,112,.18), inset 0 1px 0 rgba(255,255,255,.6)',
                             overflow: 'hidden'
                         }
                     },
@@ -5077,7 +5077,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
                         [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8', ''],
-                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
+                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F0F3F7', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
                         [jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : '']
                     ].map(([v, l, col, bg, subtl]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 450, color: col } }, v),
@@ -5098,8 +5098,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             (isBalenturAccount || odeloKayitlar.length > 0) && renderHesapBolum('Odelo', odeloKayitlar, G))
                     ),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
-                        React.createElement("button", { onClick: () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCE4 \u015Eirkete\nKopyala"),
-                        React.createElement("button", { onClick: () => numbersExport(sel), style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCA Numbers\nA\u00E7"),
+                        React.createElement("button", { onClick: () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCE4 \u015Eirkete\nKopyala"),
+                        React.createElement("button", { onClick: () => numbersExport(sel), style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCA Numbers\nA\u00E7"),
                         React.createElement("button", { onClick: () => {
                                 const { ts: ts2, al: al2, ver: ver2, net: net2 } = hData;
                                 const rows2 = ts2.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => { const kar2 = transferNetAmount({ ...t }); return (i + 1) + '. ' + t.date + ' ' + t.time + ' | ' + (t.pickup || '\u2014') + ' \u2192 ' + (t.dropoff || '\u2014') + '\n   Ara\u00E7:' + fr(t.driverPayment) + '\u20BA K\u00E2r:' + (kar2 >= 0 ? '+' : '') + fr(kar2) + '\u20BA ' + (t.firmSettled ? '[KAPALI]' : '[A\u00C7IK]'); }).join('\n\n');
@@ -5321,7 +5321,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                     React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, color: clr, WebkitTextFillColor: clr, fontVariantNumeric: 'tabular-nums' } }, val),
                     React.createElement("div", { style: { fontSize: 8.5, fontWeight: 450, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)', marginTop: 2, letterSpacing: '.4px', textTransform: 'uppercase' } }, lbl));
                 return React.createElement("div", { className: "ko-navy-panel", style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', borderRadius: 14, padding: '2px 4px' } },
-                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#AEBD9C'),
+                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#AEB4BD'),
                     stat('Bor\u00E7', '\u2212' + fr(borcT) + '\u20BA', '#FFB4AE'),
                     stat('A\u00E7\u0131k \u0130\u015F', String(acikIs), '#FFFFFF'));
             })(),
@@ -5455,7 +5455,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("div", { className: "ko-contact-form", style: { display: 'flex', gap: 8, marginBottom: 8 } },
                         React.createElement("input", { value: newDriver.name, onChange: e => setNewDriver(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }),
                         React.createElement("input", { value: newDriver.phone, onChange: e => setNewDriver(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 120, flex: 'none' } }),
-                        React.createElement("button", { onClick: addDriver, style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, '+')),
+                        React.createElement("button", { onClick: addDriver, style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, '+')),
                     React.createElement("div", { className: "ko-contact-grid", style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, className: "ko-contact-card ko-contact-driver-card", style: { display: 'flex', gap: 8, alignItems: 'center', padding: 10, background: INP, borderRadius: 12, border: '1px solid ' + BOR } },
                         React.createElement("div", { className: "ko-contact-info", style: { flex: 1 } },
                             React.createElement("div", { className: "ko-contact-name", style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name),
@@ -5514,7 +5514,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         { id: 'arac', name: 'Araç', color: '#636366' },
         { id: 'kisisel', name: 'Kişisel', color: '#1C1C1E' },
         { id: 'saglik', name: 'Sağlık', color: '#1C1C1E' },
-        { id: 'acil', name: 'Acil', color: '#22252E' }
+        { id: 'acil', name: 'Acil', color: '#59616C' }
     ];
     const REPEAT_OPTIONS = [
         { id: 'none', name: 'Tek sefer' },
@@ -6144,7 +6144,7 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
                     }, "▲ Alacak"),
                     React.createElement("button", {
                         onClick: () => setLedgerForm(p => ({...p, ltype: 'out'})),
-                        style: { background: ledgerForm.ltype === 'out' ? '#22252E' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#22252E' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
+                        style: { background: ledgerForm.ltype === 'out' ? '#59616C' : 'var(--surface)', color: ledgerForm.ltype === 'out' ? '#fff' : 'var(--ink-2)', border: '1.5px solid ' + (ledgerForm.ltype === 'out' ? '#59616C' : 'var(--line)'), borderRadius: 11, padding: '12px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
                     }, "▼ Borç")
                 ),
                 React.createElement("div", { className: "tk-form-grp" },
@@ -7545,9 +7545,9 @@ function App() {
             type: "button",
             onClick: () => quickSet(patch),
             style: {
-                background: value ? 'rgba(84,132,103,.14)' : '#fff',
+                background: value ? 'rgba(74,90,112,.14)' : '#fff',
                 color: value ? G : SB,
-                border: '1px solid ' + (value ? '#9DB9A7' : BOR),
+                border: '1px solid ' + (value ? '#CDD2D9' : BOR),
                 borderRadius: 11,
                 padding: '9px 10px',
                 fontSize: 11,
@@ -7566,7 +7566,7 @@ function App() {
                         React.createElement("div", { style: { fontWeight: 850, fontSize: 16, color: TX, letterSpacing: 0 } }, "Transfer Düzenle"),
                         React.createElement("div", { style: { fontSize: 11, color: SB, marginTop: 3, lineHeight: 1.35 } }, "Sekme değişmeden aynı transfer kaydı güncellenir.")),
                     React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14, flexShrink: 0 } }, "✕")),
-                quickShowOlmezNet && React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#C8D8CC' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+                quickShowOlmezNet && React.createElement("div", { style: { background: previewNet >= 0 ? '#F1F5EF' : '#FFF0EF', border: '1px solid ' + (previewNet >= 0 ? '#EFF1F4' : '#E8BCB7'), borderRadius: 14, padding: '11px 12px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 470, textTransform: 'uppercase', letterSpacing: .4 } }, (q.date || 'Tarih yok') + ' · ' + (q.time || '--:--')),
                         React.createElement("div", { style: { fontSize: 12.5, color: TX, fontWeight: 470, marginTop: 3, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (q.pickup ? shortLoc(q.pickup) : 'Alış') + ' → ' + (q.dropoff ? shortLoc(q.dropoff) : 'Bırakış'))),
@@ -7587,7 +7587,7 @@ function App() {
                                 const dr = findQuickDriver(e.target.value);
                                 quickSet({ driverName: e.target.value, driverPhone: dr ? (dr.phone || '') : q.driverPhone });
                             }, placeholder: 'Kaptan adı' }),
-                        React.createElement("button", { type: "button", onClick: saveQuickDriver, title: "Kaptanı kaydet", style: { border: '1px solid rgba(60,60,67,.34)', borderRadius: 12, background: 'rgba(231,242,238,.78)', color: G, fontSize: 18, fontWeight: 450, cursor: 'pointer' } }, "+")
+                        React.createElement("button", { type: "button", onClick: saveQuickDriver, title: "Kaptanı kaydet", style: { border: '1px solid rgba(60,60,67,.34)', borderRadius: 12, background: 'rgba(236,240,245,.78)', color: G, fontSize: 18, fontWeight: 450, cursor: 'pointer' } }, "+")
                     )),
                     field('Kaptan Tel', input({ key: 'driverPhone_' + (q.driverPhone || ''), defaultValue: q.driverPhone || '', onBlur: e => quickInputSet({ driverPhone: e.target.value }), placeholder: 'Telefon', inputMode: 'tel', autoComplete: 'tel' })),
                     field('Plaka', input({ defaultValue: q.plate || '', onBlur: e => quickInputSet({ plate: e.target.value.toUpperCase() }), placeholder: '16 LMZ 55' })),
@@ -7619,7 +7619,7 @@ function App() {
                             minHeight: 43,
                             borderRadius: 12,
                             border: '1.2px solid ' + (q.paymentToMe ? 'rgba(60,60,67,.58)' : 'rgba(60,60,67,.18)'),
-                            background: q.paymentToMe ? 'linear-gradient(145deg,rgba(230,242,237,.96),rgba(255,255,255,.86))' : 'linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80))',
+                            background: q.paymentToMe ? 'linear-gradient(145deg,rgba(236,240,245,.96),rgba(255,255,255,.86))' : 'linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,255,255,.80))',
                             color: q.paymentToMe ? G : TX,
                             fontSize: 12,
                             fontWeight: 470,
@@ -7642,7 +7642,7 @@ function App() {
                 React.createElement("div", { className: "ko-quick-edit-actions", style: { display: 'grid', gridTemplateColumns: '86px 1fr 1.4fr', gap: 8, marginTop: 14 } },
                     React.createElement("button", { onClick: deleteQuickEditT, style: { background: '#FFF0EF', color: R, border: '1px solid #E8BCB7', borderRadius: 12, padding: '12px 8px', fontWeight: 470, fontSize: 12, cursor: 'pointer' } }, "Sil"),
                     React.createElement("button", { onClick: () => setQuickEditT(null), style: { background: INP, color: TX, border: '1px solid ' + BOR, borderRadius: 12, padding: '12px 8px', fontWeight: 470, fontSize: 12, cursor: 'pointer' } }, "Vazgeç"),
-                    React.createElement("button", { onClick: saveQuickEditT, style: { background: 'linear-gradient(135deg,' + G + ',#1C1C1E)', color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px 8px', fontWeight: 850, fontSize: 13, cursor: 'pointer', boxShadow: '0 8px 18px rgba(84,132,103,.22)' } }, "Kaydet"))));
+                    React.createElement("button", { onClick: saveQuickEditT, style: { background: 'linear-gradient(135deg,' + G + ',#1C1C1E)', color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px 8px', fontWeight: 850, fontSize: 13, cursor: 'pointer', boxShadow: '0 8px 18px rgba(74,90,112,.22)' } }, "Kaydet"))));
     };
     const plate16MonthBreakdown = monthKey => {
         const akm = aracK.filter(k => k.date && String(k.date).slice(0, 7) === monthKey);
@@ -8115,7 +8115,7 @@ function App() {
                                 headlineSubTL && React.createElement("span", { style: { fontSize: '0.62em', fontWeight: 450, color: '#6F7484', marginLeft: 4, fontVariantNumeric: 'tabular-nums' } }, headlineSubTL)
                             ),
                             React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : (showNoPayment && noCollectRaw > 0 ? 'tahsilat yok' : 'müşteriden')),
-                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#22252E' } },
+                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#59616C' } },
                                 'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : ''))
                         ),
                         React.createElement("div", {
@@ -8267,17 +8267,17 @@ function App() {
             const active = selectedProfit === scope;
             return React.createElement("button", {
                 onClick: () => setProfit(scope),
-                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? '#EDF1F6' : '#fff', border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
+                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? '#EDF1F6' : '#fff', border: '1px solid ' + (active ? 'rgba(74,90,112,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
             },
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                    React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: '#93A0B0', letterSpacing: '.01em' } }, label),
-                    React.createElement("span", { style: { fontSize: 9, color: '#A39C90', transform: active ? 'rotate(180deg)' : 'none' } }, "▾")),
-                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#22252E' : '#C05F5F', lineHeight: 1.05 } }, fmtSigned(value)),
-                React.createElement("div", { style: { fontSize: 8.5, color: '#A39C90', marginTop: 1 } }, sub));
+                    React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: '#67717F', letterSpacing: '.01em' } }, label),
+                    React.createElement("span", { style: { fontSize: 9, color: '#78716A', transform: active ? 'rotate(180deg)' : 'none' } }, "▾")),
+                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, marginTop: 2, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#0E9F6E' : '#C05F5F', lineHeight: 1.05 } }, fmtSigned(value)),
+                React.createElement("div", { style: { fontSize: 8.5, color: '#78716A', marginTop: 1 } }, sub));
         };
         const detailRow = (label, value, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: strong ? '1px solid var(--line)' : 'none' } },
-            React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#8A8378' } }, label),
-            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#22252E' : '#C05F5F' } }, fmtSigned(value)));
+            React.createElement("div", { style: { fontSize: strong ? 11.5 : 11, fontWeight: strong ? 560 : 450, color: strong ? '#2A2724' : '#655F57' } }, label),
+            React.createElement("div", { style: { fontSize: strong ? 13 : 12, fontWeight: strong ? 600 : 550, fontVariantNumeric: 'tabular-nums', color: value >= 0 ? '#0E9F6E' : '#C05F5F' } }, fmtSigned(value)));
         const det = selectedProfit === 'year' ? dy : (selectedProfit === 'month' ? dm : null);
         return React.createElement(React.Fragment, null,
             React.createElement("div", { className: "lg-section-row", style: { paddingTop: 2 } },
@@ -8291,12 +8291,12 @@ function App() {
                 detailRow(PLAKA + " Net (gider sonrası)", det.plate.net),
                 detailRow("Toplam Net Kar", det.total, true),
                 det.months && React.createElement("div", { style: { marginTop: 9, display: 'flex', flexDirection: 'column', gap: 6 } },
-                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 450, color: '#93A0B0', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
+                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 450, color: '#67717F', letterSpacing: '.02em', textTransform: 'uppercase' } }, "Ay Ay Dağılım"),
                     det.months.filter(m => m.count > 0 || m.total !== 0).map(m => React.createElement("div", { key: m.key, style: { background: '#fff', borderRadius: 11, padding: '8px 10px', boxShadow: 'inset 0 0 0 1px #EFEAE2' } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                            React.createElement("div", { style: { fontSize: 11, fontWeight: 450, color: '#5F6B7A' } }, m.name),
-                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#22252E' : '#C05F5F' } }, fmtSigned(m.total))),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#8A8378' } },
+                            React.createElement("div", { style: { fontSize: 11, fontWeight: 450, color: '#495663' } }, m.name),
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 450, fontVariantNumeric: 'tabular-nums', color: m.total >= 0 ? '#0E9F6E' : '#C05F5F' } }, fmtSigned(m.total))),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 8px', marginTop: 5, fontSize: 9.5, color: '#655F57' } },
                             React.createElement("div", null, "Ölmeztur ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.olmez))),
                             React.createElement("div", null, PLAKA + " ", React.createElement("strong", { style: { color: '#5E5A52' } }, fmtSigned(m.plate.net))))))) ));
     };
@@ -8696,7 +8696,7 @@ function App() {
                         ),
                         React.createElement("div", { style: { color: SB, fontSize: 11 } }, rememberMe ? 'Oturum bu cihazda açık kalır' : 'Tarayıcı kapanınca tekrar giriş gerekir')
                     ),
-                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#22252E', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
+                    authError ? React.createElement("div", { style: { background: '#FFF0EF', color: '#59616C', border: '1px solid #FFC4C0', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
                     React.createElement("button", { onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? '#AEAEB2' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#FFFFFF', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 450, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor' : 'Güvenli Giriş Yap'),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 14 } },
                         React.createElement("div", { style: { background: '#F4F6F9', border: '1px solid #D1D1D6', borderRadius: 14, padding: '10px 12px' } },
@@ -9080,7 +9080,7 @@ function App() {
                         ? { fg: '#4A5F78', bg: '#F0F3F8', bd: '#D8E0EA' }
                         : id === 'sedan'
                             ? { fg: '#6A5A3F', bg: '#F7F2EA', bd: '#E5D8C4' }
-                            : { fg: '#22252E', bg: '#EDF1F6', bd: '#D9E2D6' };
+                            : { fg: '#59616C', bg: '#EDF1F6', bd: '#EFF1F4' };
                     return { id, name, ...colors };
                 };
                 const homeVehicleIcon = (id, color) => React.createElement("svg", {
@@ -9141,8 +9141,8 @@ function App() {
                     const altText = t.altAcenta || '';
                     const payDone = collectionState === 'collected';
                     const payText = payDone ? 'Tahsil edildi' : 'Tahsilat bekliyor';
-                    const payBg = payDone ? '#E9F7F1' : '#FCF6E8';
-                    const payColor = payDone ? '#0B7C55' : '#8A6A1E';
+                    const payBg = payDone ? '#EDEFF2' : '#FCF6E8';
+                    const payColor = payDone ? '#69707B' : '#8A6A1E';
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
@@ -9150,12 +9150,12 @@ function App() {
                     },
                         React.createElement("div", { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: tip.c } }),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '49px minmax(0,1fr)', alignItems: 'stretch', gap: 8, minHeight: 68 } },
-                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#22252E', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
+                            React.createElement("div", { style: { minHeight: 68, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 7, borderRight: '1px solid rgba(60,60,67,.18)', fontSize: 14, fontWeight: 660, color: '#59616C', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
                             React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 } },
                                     React.createElement("span", { style: { fontSize: 9, fontWeight: 470, padding: '1px 7px', minHeight: 17, borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
-                                    flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 450, color: '#93A0B0', marginLeft: 'auto', flexShrink: 0 } }, flight)
+                                    flight && React.createElement("span", { style: { fontSize: 9, fontWeight: 450, color: '#67717F', marginLeft: 'auto', flexShrink: 0 } }, flight)
                                 ),
                                 React.createElement("div", { style: { fontSize: 12, fontWeight: 440, color: '#1F2733', letterSpacing: '.1px', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.2, padding: '1px 0 2px' } }, routeText),
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
@@ -9163,13 +9163,13 @@ function App() {
                                         onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
                                         style: { fontSize: 8.6, fontWeight: 450, padding: '1px 7px', borderRadius: 999, border: '1px solid rgba(60,60,67,.12)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
                                     }, payText),
-                                    React.createElement("span", { style: { fontSize: 9.2, color: '#5F6B7A', fontWeight: 450, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
+                                    React.createElement("span", { style: { fontSize: 9.2, color: '#495663', fontWeight: 450, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
                                 ),
                                 React.createElement("div", { style: { width: '100%', height: 1, margin: '2px 0 1px', background: 'rgba(60,60,67,.26)', boxShadow: '0 1px 0 rgba(255,255,255,.86)' } }),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#5F6B7A', fontWeight: 450, lineHeight: 1.14 } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', fontSize: 8.6, color: '#495663', fontWeight: 450, lineHeight: 1.14 } },
                                     React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
-                                    altText && React.createElement("span", { style: { color: '#22252E', fontWeight: 450 } }, "→"),
-                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#22252E', fontWeight: 450 } }, altText)
+                                    altText && React.createElement("span", { style: { color: '#59616C', fontWeight: 450 } }, "→"),
+                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: '#59616C', fontWeight: 450 } }, altText)
                                 ),
                                 t.isKarsilikli && (() => {
                                     const col = ksPairColor(t);
@@ -9747,7 +9747,7 @@ function App() {
             })(),
 
 	            tab === 'new' && (React.createElement("div", { className: "ko-new-form", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(60,60,67,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
+                editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(60,60,67,.28)', background: 'linear-gradient(145deg,rgba(236,240,245,.74),rgba(255,255,255,.92))' } },
                     React.createElement("div", { style: { minWidth: 0 } },
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 450, color: G } }, "Transfer düzenleniyor"),
                         React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? fullAirportLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? fullAirportLoc(form.dropoff) : 'Bırakış'))),
@@ -9946,7 +9946,7 @@ function App() {
                             const preview = takasJobNetTRY({ ...form, isTakas: true, customerTRY: toTRY(form.paymentAmount, form.paymentCurrency) }, crossRates);
                             return React.createElement("div", { style: { padding: '8px 11px', background: 'rgba(255,255,255,.10)', borderRadius: 10, fontSize: 10.5, color: 'rgba(255,255,255,.88)', WebkitTextFillColor: 'rgba(255,255,255,.88)', border: '1px solid rgba(255,255,255,.22)', lineHeight: 1.45 } },
                                 React.createElement("span", { style: { fontWeight: 470, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF' } }, 'Takas bakiyesi: '),
-                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
+                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#AEB4BD' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#AEB4BD' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
                                     preview === 0 ? 'Ba\u015Fa ba\u015F (\u00F6deme g\u00F6nderilmez)' : ((preview > 0 ? '+' : '\u2212') + fr(preview) + '\u20BA ' + (preview > 0 ? (form.takasPartner || 'Ortak') + ' bana g\u00F6nderecek' : 'ben ' + (form.takasPartner || 'orta\u011Fa') + ' g\u00F6nderece\u011Fim'))),
                                 React.createElement("div", { style: { marginTop: 3, fontSize: 9.5, color: 'rgba(255,255,255,.70)', WebkitTextFillColor: 'rgba(255,255,255,.70)' } }, 'Ge\u00E7i\u015F fark\u0131 dahil \u00B7 Hesap > Takas Hesaplar\u0131 b\u00F6l\u00FCm\u00FCnde birikir'));
                         })()
@@ -9988,7 +9988,7 @@ function App() {
                         React.createElement("button", { onClick: () => setAgIn(p => !p), className: "ko-party-add-btn", style: { background: agIn ? R : NAV, border: 'none', color: '#FFFFFF', borderRadius: 10, minHeight: 43, padding: '0 12px', fontWeight: 450, fontSize: 16, flexShrink: 0, alignSelf: 'flex-end', cursor: 'pointer' } }, agIn ? '✕' : '+')),
                     agIn && (React.createElement("div", { style: { display: 'flex', gap: 7, marginBottom: 8 } },
                         React.createElement("input", { type: "text", value: newAg, onChange: e => setNewAg(e.target.value), placeholder: "Yeni acenta", className: "inp", style: { flex: 1, width: 'auto' } }),
-                        React.createElement("button", { onClick: () => { addAg(newAg); setNewAg(''); setAgIn(false); }, style: { background: G, border: 'none', color: '#FFFFFF', borderRadius: 10, padding: '0 14px', fontWeight: 450, fontSize: 16, cursor: 'pointer' } }, "\u2713"))),
+                        React.createElement("button", { onClick: () => { addAg(newAg); setNewAg(''); setAgIn(false); }, style: { background: GA, border: 'none', color: '#FFFFFF', borderRadius: 10, padding: '0 14px', fontWeight: 450, fontSize: 16, cursor: 'pointer' } }, "\u2713"))),
                     /* Alt Acenta: kullanıcı tercihi - gizli, mini simge ile açılır */
                     (form.altAcenta || form.__showAltAcenta) ? React.createElement("div", { className: "ko-party-alt-row", style: { display: 'grid', gridTemplateColumns: form.altAcenta ? 'minmax(0,1fr) minmax(0,1fr) 36px' : 'minmax(0,1fr) 36px', gap: 7, alignItems: 'flex-end' } },
                         React.createElement("div", { style: { flex: 1 } },
@@ -10052,7 +10052,7 @@ function App() {
                                     setDrivers(p => [...p.filter(d => d.name !== nd.name), nd]);
                                     sf({ driverName: nd.name, driverPhone: nd.phone });
                                     setNewDr({ name: '', phone: '' });
-                                } setDrIn(false); }, style: { flex: 1, background: G, border: 'none', color: '#FFFFFF', borderRadius: 10, padding: 9, fontWeight: 470, cursor: 'pointer' } }, "\u2713 Kaydet & Se\u00E7"),
+                                } setDrIn(false); }, style: { flex: 1, background: GA, border: 'none', color: '#FFFFFF', borderRadius: 10, padding: 9, fontWeight: 470, cursor: 'pointer' } }, "\u2713 Kaydet & Se\u00E7"),
                             React.createElement("button", { onClick: () => { setDrIn(false); setNewDr({ name: '', phone: '' }); }, style: { background: INP, border: 'none', borderRadius: 10, padding: '0 12px', cursor: 'pointer', fontSize: 16 } }, "\u2715")))),
                     form.driverName && !drIn && (React.createElement("div", { style: { display: 'flex', gap: 6, marginTop: 7 } },
                         React.createElement("input", { type: "tel", value: form.driverPhone, onChange: e => sf({ driverPhone: e.target.value }), placeholder: "Telefon", className: "inp", style: { flex: 1, width: 'auto' } }),
@@ -10189,7 +10189,7 @@ function App() {
                                 React.createElement("input", { type: "text", inputMode: "decimal", value: form.paymentAmount, onChange: e => sf({ paymentAmount: e.target.value }), placeholder: "0", className: "inp" })),
                             React.createElement("div", { style: { width: 75 } },
                                 React.createElement("span", { className: "lbl" }, "D\u00F6viz"),
-                                React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 470, cursor: 'pointer', fontSize: 14, width: '100%' } },
+                                React.createElement("select", { value: form.paymentCurrency, onChange: e => sf({ paymentCurrency: e.target.value }), style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '9px 6px', fontWeight: 470, cursor: 'pointer', fontSize: 14, width: '100%' } },
                                     React.createElement("option", { value: "TRY" }, "\u20BA TRY"),
                                     React.createElement("option", { value: "USD" }, "$ USD"),
                                     React.createElement("option", { value: "EUR" }, "\u20AC EUR"),
@@ -10212,7 +10212,7 @@ function App() {
                                 background: formBalenturOdelo.netOl >= 0 ? 'linear-gradient(135deg, #F2F2F7 0%, #F4F6F9 100%)' : 'linear-gradient(135deg,#FFF0EF,#FFE2E0)',
                                 border: '1.5px solid ' + (formBalenturOdelo.netOl >= 0 ? '#D1D1D6' : '#FFC4C0'),
                                 marginBottom: 8,
-                                boxShadow: formBalenturOdelo.netOl >= 0 ? '0 2px 8px rgba(18,108,55,.14)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: formBalenturOdelo.netOl >= 0 ? '0 2px 8px rgba(74,90,112,.14)' : '0 2px 8px rgba(74,90,112,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, color: formBalenturOdelo.netOl >= 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -10228,7 +10228,7 @@ function App() {
                                 background: firmPreviewNet > 0 ? 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%)' : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
                                 border: '1.5px solid ' + (firmPreviewNet > 0 ? '#D1D1D6' : '#FFC4C0'),
                                 marginBottom: 8,
-                                boxShadow: firmPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: firmPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(74,90,112,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, color: firmPreviewNet > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -10244,7 +10244,7 @@ function App() {
                                 background: altPreviewNet > 0 ? 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%)' : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
                                 border: '1.5px solid ' + (altPreviewNet > 0 ? '#D1D1D6' : '#FFC4C0'),
                                 marginBottom: 8,
-                                boxShadow: altPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: altPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(74,90,112,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 9, color: altPreviewNet > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -10266,7 +10266,7 @@ function App() {
                                 boxShadow: fNet > 0
                                     ? '0 3px 10px rgba(60,60,67,.12)'
                                     : fNet < 0
-                                        ? '0 3px 10px rgba(79,107,69,.14)'
+                                        ? '0 3px 10px rgba(74,90,112,.14)'
                                         : 'none'
                             }
                         },
@@ -10317,7 +10317,7 @@ function App() {
                             style: { fontSize: 11, padding: '6px 10px', background: '#F2F2F7', border: '1px solid #D1D1D6', color: '#636366', fontStyle: 'italic' }
                         })),
                     React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar", rows: 2, className: "inp", style: { resize: 'none' } })),
-                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: '#22252E', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #222C3D', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(31,39,51,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
+                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: '#59616C', color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF', border: '1px solid #222C3D', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(31,39,51,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     /* Arama — tek başına üstte */
@@ -10368,9 +10368,9 @@ function App() {
             false && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card" },
                     React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX } }, "🏢 Acentalar"), React.createElement("button", { onClick: refreshRates, style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, "↻ Kur")),
-                    React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")),
+                    React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))),
-                React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
+                React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: GA, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
             tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
             tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         /* ═══════════════════════════════════════════════════════════════
@@ -10438,11 +10438,11 @@ function App() {
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: '#9E7C2E', marginTop: 2 } }, 'BOŞ')
                         ),
                         React.createElement("div", { style: { textAlign: 'center' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#22252E', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
+                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#59616C', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
                             React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: SB, marginTop: 2 } }, 'İPTAL')
                         )
                     ),
-                    React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: G, color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
+                    React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: GA, color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
                         "\uD83D\uDCC1 iCloud / Dosyalar'a Yedek \u0130ndir"),
                     React.createElement("div", { style: { background: '#fff', border: '1px solid #D1D1D6', borderRadius: 12, padding: 10, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8 } },
@@ -10457,7 +10457,7 @@ function App() {
                             if (!tk) return null;
                             const ok = tk.startsWith('github_pat_') || tk.startsWith('ghp_');
                             const tail = tk.length > 4 ? tk.slice(-4) : tk;
-                            return React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: ok ? G : R, lineHeight: 1.35, marginBottom: 7, padding: '6px 8px', borderRadius: 8, background: ok ? '#F0F8F4' : '#FFF1F0', border: '1px solid ' + (ok ? '#BFE3CF' : '#FFC4C0') } },
+                            return React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: ok ? G : R, lineHeight: 1.35, marginBottom: 7, padding: '6px 8px', borderRadius: 8, background: ok ? '#F0F8F4' : '#FFF1F0', border: '1px solid ' + (ok ? '#EFF1F4' : '#FFC4C0') } },
                                 ok ? ('✓ Token girildi · ' + tk.length + ' karakter · ...' + tail)
                                    : ('⚠ Bu metin token gibi görünmüyor (github_pat_ ile başlamalı). Uzunluk: ' + tk.length));
                         })(),
@@ -10471,7 +10471,7 @@ function App() {
                         "\uD83D\uDCCB Her \u015Eeyi Panoya Kopyala (",
                         T.length,
                         " transfer + giderler)"),
-                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F0F8F4', borderRadius: 8, border: '1px dashed #BFE3CF', lineHeight: 1.4 } },
+                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F0F8F4', borderRadius: 8, border: '1px dashed #EFF1F4', lineHeight: 1.4 } },
                         "Tek dokunu\u015Fla t\u00FCm veri kopyalan\u0131r: transferler, gelirler, giderler, ara\u00E7 i\u015Fleri, hesap kartlar\u0131, bor\u00E7lar ve ayarlar. Geri y\u00FCklerken hepsi tek seferde komple y\u00FCklenir."),
                     React.createElement("textarea", { readOnly: true, value: bkpPreview, placeholder: "Yedek durumu burada g\u00F6r\u00FCn\u00FCr", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #D1D1D6', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
                 React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
