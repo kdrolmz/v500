@@ -3091,16 +3091,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-rtsplit_1783669087652_f60y3l@olmeztur
 DTSTAMP:20260710T083300Z
-LAST-MODIFIED:20260710T080300Z
-SEQUENCE:1783670613
+LAST-MODIFIED:20260710T083300Z
+SEQUENCE:1783672416
 DTSTART:20260715T214500
 DTEND:20260715T224500
 SUMMARY:21:45 · Sabiha Gökçen → Bursa  Vito
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
 DESCRIPTION:Müşteri: Ayesh Alazmi\nŞoför: Burak Bozkuş\nİşi veren: Salah
  \nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Sabiha Gökçe
- n Havalimanı → Bursa\nÖdeme: Müşteri: 170 USD | Araç: 6.000 ₺ | Alt acen
- ta: 5.500 ₺
+ n Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç: 6.000 ₺ | Alt acenta
+ : 5.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
