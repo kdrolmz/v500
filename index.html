@@ -6261,6 +6261,7 @@ function App() {
     const [showSg, setShowSg] = useState({ pickup: false, dropoff: false });
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
+    const [paxModal, setPaxModal] = useState(null);
     const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
     const [rstTxt, setRstTxt] = useState('');
@@ -6883,6 +6884,29 @@ function App() {
     const uPax = (i, f, v) => { const p = [...form.passengers]; p[i] = { ...p[i], [f]: v }; sf({ passengers: p }); };
     const uPaxNameBlur = (i) => { const p = [...form.passengers]; if (p[i] && p[i].name) { p[i] = { ...p[i], name: koTitleCaseTR(p[i].name) }; sf({ passengers: p }); } };
     const uPaxId = (i, v) => { const p = [...form.passengers]; p[i] = { ...(p[i] || emptyPassenger()), ...splitPassengerId(v) }; sf({ passengers: p }); };
+    // --- Yolcu ekleme/düzenleme modalı (yan yana kart + küçük sayfa) ---
+    const paxReal = () => (form.passengers || []).filter(p => (p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))));
+    const openPaxModal = (idx) => {
+        if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR' }); return; }
+        const p = paxReal()[idx] || emptyPassenger();
+        setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR' });
+    };
+    const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
+    const savePaxModal = () => {
+        const m = paxModal; if (!m) return;
+        const nm = (m.name || '').trim();
+        if (!nm) { tip('Ad soyad gerekli'); return; }
+        const built = { ...emptyPassenger(), name: koTitleCaseTR(nm), phone: (m.phone || '').trim(), uyruk: m.uyruk || 'TR', ...splitPassengerId((m.id || '').trim()) };
+        const list = paxReal();
+        if (m.idx === -1) list.push(built); else list[m.idx] = { ...(list[m.idx] || {}), ...built };
+        sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
+        setPaxModal(null);
+    };
+    const delPax = (idx) => {
+        const list = paxReal().filter((_, i) => i !== idx);
+        sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
+    };
+    const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
     const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
         setAgencies(p => [...p, n.trim()]); };
     const addAgencyContact = (name, phone) => {
@@ -7379,39 +7403,65 @@ function App() {
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
-        const dtTr = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const dtEn = new Date(t.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         const name = (t.passengers && t.passengers[0] && t.passengers[0].name) ? t.passengers[0].name : (lang === 'ar' ? 'ضيفنا الكريم' : lang === 'en' ? 'Dear Guest' : 'Değerli Misafirimiz');
+        // Kurumsal transfer bilgileri — hepsi transfer verisinden (boşsa şirket varsayılanı)
+        const kaptan = (t.driverName || '').trim() || 'Kadir Ölmez';
+        const telefon = (t.driverPhone || '').trim() || '05432870687';
+        const plaka = (t.plate || '').trim() || '16 LMZ 55';
+        const dmyTr = t.date ? new Date(t.date).toLocaleDateString('tr-TR') : '';
+        const dmyEn = t.date ? new Date(t.date).toLocaleDateString('en-GB') : '';
+        const saat = t.time || '';
+        const rotaItem = (t.route && t.route !== 'free') ? ROTALAR.find(r => r.id === t.route) : null;
+        const guzergah = rotaItem ? rotaItem.n : (t.routeBridge || '');
+        const stops = (t.extraStops || []).filter(Boolean);
         if (lang === 'en') {
-            let msg = 'Dear ' + name + ',\n\nYour transfer reservation has been confirmed.\n\n';
-            msg += 'Date: ' + dtEn + '\n🕒 Time: ' + t.time + '\n';
-            if (t.flightCode) msg += '✈️ Flight: ' + t.flightCode + '\n';
-            msg += '📍 Pickup: ' + t.pickup + '\n';
-            (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Stop ' + (i + 1) + ': ' + s2 + '\n'; });
-            msg += '🎯 Drop-off: ' + t.dropoff + '\n';
-            if (t.driverName) msg += '👨🏻‍✈️ Captain: ' + t.driverName + (t.driverPhone ? '  📞 ' + t.driverPhone : '') + '\n';
-            msg += '\nHave a pleasant journey.';
+            let msg = '*Dear* ' + name + ',\n';
+            msg += 'Thank you for choosing us. Your reservation details are below:\n\n';
+            msg += '👨🏻‍✈️ *Captain      :* ' + kaptan + '\n';
+            msg += '📞 *Phone        :* ' + telefon + '\n';
+            msg += '🚘 *Plate        :* ' + plaka + '\n';
+            msg += '🗓️ *Date / Pickup time :* ' + (dmyEn + ' ' + saat).trim() + '\n';
+            if (t.flightCode) msg += '✈️ *Flight code  :* ' + t.flightCode + '\n';
+            msg += '📍 *Pickup       :* ' + (t.pickup || '') + '\n';
+            stops.forEach((s2, i) => { msg += '🛑 *Stop ' + (i + 1) + '       :* ' + s2 + '\n'; });
+            if (guzergah) msg += '🛣️ *Route        :* ' + guzergah + '\n';
+            msg += '🏁 *>> Drop-off  :* ' + (t.dropoff || '') + '\n\n';
+            msg += 'We wish you a pleasant and comfortable journey.\n';
+            msg += 'Best regards,\n';
+            msg += '*ÖLMEZTUR Turizm*';
             return msg.trim();
         }
         if (lang === 'ar') {
-            let msg = 'السيد/السيدة ' + name + '،\n\nتم تأكيد حجز خدمة النقل الخاصة بكم.\n\n';
-            msg += 'التاريخ: ' + dtEn + '\n🕒 الوقت: ' + t.time + '\n';
-            if (t.flightCode) msg += '✈️ رقم الرحلة: ' + t.flightCode + '\n';
-            msg += '📍 نقطة الانطلاق: ' + t.pickup + '\n';
-            (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 محطة ' + (i + 1) + ': ' + s2 + '\n'; });
-            msg += '🎯 نقطة الوصول: ' + t.dropoff + '\n';
-            if (t.driverName) msg += '👨🏻‍✈️ الكابتن: ' + t.driverName + (t.driverPhone ? '  📞 ' + t.driverPhone : '') + '\n';
-            msg += '\nنتمنى لكم رحلة طيبة.';
+            let msg = '*السيد/السيدة* ' + name + '،\n';
+            msg += 'نشكركم لاختياركم لنا. تفاصيل حجزكم موضحة أدناه:\n\n';
+            msg += '👨🏻‍✈️ *الكابتن       :* ' + kaptan + '\n';
+            msg += '📞 *الهاتف        :* ' + telefon + '\n';
+            msg += '🚘 *اللوحة        :* ' + plaka + '\n';
+            msg += '🗓️ *التاريخ / وقت الانطلاق :* ' + (dmyEn + ' ' + saat).trim() + '\n';
+            if (t.flightCode) msg += '✈️ *رقم الرحلة   :* ' + t.flightCode + '\n';
+            msg += '📍 *نقطة الانطلاق :* ' + (t.pickup || '') + '\n';
+            stops.forEach((s2, i) => { msg += '🛑 *محطة ' + (i + 1) + '      :* ' + s2 + '\n'; });
+            if (guzergah) msg += '🛣️ *المسار        :* ' + guzergah + '\n';
+            msg += '🏁 *>> نقطة الوصول :* ' + (t.dropoff || '') + '\n\n';
+            msg += 'نتمنى لكم رحلة ممتعة ومريحة.\n';
+            msg += 'مع خالص التقدير،\n';
+            msg += '*ÖLMEZTUR Turizm*';
             return msg.trim();
         }
-        let msg = 'Sayın ' + name + ',\n\nTransfer rezervasyonunuz oluşturulmuştur. Bilgileriniz aşağıdadır.\n\n';
-        msg += 'Tarih: ' + dtTr + '\n🕒 Saat: ' + t.time + '\n';
-        if (t.flightCode) msg += '✈️ Uçuş: ' + t.flightCode + '\n';
-        msg += '📍 Alış Noktası: ' + t.pickup + '\n';
-        (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Ara Durak ' + (i + 1) + ': ' + s2 + '\n'; });
-        msg += '🎯 Varış Noktası: ' + t.dropoff + '\n';
-        if (t.driverName) msg += '👨🏻‍✈️ Kaptan: ' + t.driverName + (t.driverPhone ? '  📞 ' + t.driverPhone : '') + '\n';
-        msg += '\nİyi yolculuklar.';
+        let msg = '*Sayın* ' + name + ',\n';
+        msg += 'Bizi tercih ettiğiniz için teşekkür ederiz. Rezervasyon detaylarınız aşağıda yer almaktadır:\n\n';
+        msg += '👨🏻‍✈️ *Kaptan       :* ' + kaptan + '\n';
+        msg += '📞 *Telefon      :* ' + telefon + '\n';
+        msg += '🚘 *Plaka        :* ' + plaka + '\n';
+        msg += '🗓️ *Tarih / Alış saati :* ' + (dmyTr + ' ' + saat).trim() + '\n';
+        if (t.flightCode) msg += '✈️ *Uçuş Kodu    :* ' + t.flightCode + '\n';
+        msg += '📍 *Alış yeri    :* ' + (t.pickup || '') + '\n';
+        stops.forEach((s2, i) => { msg += '🛑 *Ara Durak ' + (i + 1) + '  :* ' + s2 + '\n'; });
+        if (guzergah) msg += '🛣️ *Güzergah     :* ' + guzergah + '\n';
+        msg += '🏁 *>> Varış yeri :* ' + (t.dropoff || '') + '\n\n';
+        msg += 'Keyifli ve konforlu bir yolculuk geçirmenizi dileriz.\n';
+        msg += 'Saygılarımızla,\n';
+        msg += '*ÖLMEZTUR Turizm*';
         return msg.trim();
     };
     const brdMsg = t => {
@@ -10079,20 +10129,20 @@ function App() {
                 React.createElement("div", { className: "card ko-passenger-card" },
                     React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                         React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
-                        React.createElement("div", { className: "ko-passenger-stepper", style: { display: 'flex', alignItems: 'center', gap: 7, marginLeft: 'auto' } },
-                            React.createElement("button", { type: "button", onClick: () => uPC(form.passengerCount - 1), className: "ko-passenger-count-btn", style: { width: 30, height: 30, borderRadius: 15, background: INP, border: 'none', fontSize: 18, fontWeight: 450, cursor: 'pointer', color: NAV } }, "\u2212"),
-                            React.createElement("span", { className: "ko-passenger-count", style: { fontSize: 18, fontWeight: 450, color: NAV, minWidth: 26, textAlign: 'center' } }, form.passengerCount),
-                            React.createElement("button", { type: "button", onClick: () => uPC(form.passengerCount + 1), className: "ko-passenger-count-btn", style: { width: 30, height: 30, borderRadius: 15, background: NAV, border: 'none', fontSize: 18, fontWeight: 450, cursor: 'pointer', color: '#FFFFFF' } }, "+"))),
-                    React.createElement("div", { className: "ko-passenger-list", style: { display: 'flex', flexDirection: 'column', gap: 8 } }, form.passengers.map((p, i) => (React.createElement("div", { key: i, className: "ko-passenger-item", style: { background: INP, borderRadius: 10, padding: '9px 11px', border: '1px solid ' + BOR } },
-                        React.createElement("div", { className: "ko-passenger-index", style: { fontSize: 9.5, fontWeight: 540, color: SB, marginBottom: 6 } },
-                            "Yolcu ",
-                            i + 1),
-                        React.createElement("div", { className: "ko-passenger-fields" },
-                            React.createElement("input", { type: "text", value: p.name, onChange: e => uPax(i, 'name', e.target.value), onBlur: () => uPaxNameBlur(i), placeholder: "Ad Soyad", className: "inp ko-passenger-inp", autoComplete: "name", autoCapitalize: "words" }),
-                            React.createElement("input", { type: "tel", defaultValue: p.phone, onBlur: e => uPax(i, 'phone', e.target.value), placeholder: "Telefon", className: "inp ko-passenger-inp", autoComplete: "tel", inputMode: "tel" }),
-                            React.createElement("div", { className: "ko-passenger-id-combo" },
-                                React.createElement("input", { type: "text", defaultValue: passengerIdDisplay(p), onBlur: e => uPaxId(i, e.target.value), placeholder: "TC / Pasaport No", className: "inp ko-passenger-inp", inputMode: "text", autoCapitalize: "characters" })),
-                            React.createElement("select", { value: p.uyruk || 'TR', onChange: e => uPax(i, 'uyruk', e.target.value), className: "inp ko-passenger-inp ko-passenger-country" }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))))))))),
+                        React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle")),
+                    (function () {
+                        const list = paxReal();
+                        if (!list.length) return React.createElement("div", { style: { fontSize: 12, color: SB, textAlign: 'center', padding: '14px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR } }, "Hen\u00FCz yolcu eklenmedi. \u201C+ Yolcu Ekle\u201D ile ekleyin.");
+                        return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, list.map((p, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'stretch', gap: 8, background: INP, borderRadius: 10, padding: '9px 11px', border: '1px solid ' + BOR } },
+                            React.createElement("div", { style: { flex: 1, minWidth: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 12px' } },
+                                React.createElement("span", { style: { fontSize: 13, fontWeight: 500, color: TX } }, p.name || 'Misafir'),
+                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83E\uDEAA " + (passengerIdDisplay(p) || '\u2014')),
+                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83D\uDCDE " + (p.phone || '\u2014')),
+                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83C\uDF0D " + paxCountryName(p.uyruk))),
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 5, flex: 'none' } },
+                                React.createElement("button", { type: "button", onClick: () => openPaxModal(i), style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "D\u00FCzenle"),
+                                React.createElement("button", { type: "button", onClick: () => delPax(i), style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "Sil")))));
+                    })()),
 	                React.createElement("div", { className: "card ko-payment-card" },
                     React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf(v === 'no' ? { paymentCollect: v, paymentToMe: false, customerCollected: false } : { paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? '#fff' : SB, fontWeight: 470, cursor: 'pointer', fontSize: '13px' } }, l)))),
                   form.paymentCollect === 'yes' && (React.createElement("div", null,
@@ -10400,6 +10450,28 @@ function App() {
             )
         ),
         quickEditT && renderQuickEditModal(),
+        paxModal && (React.createElement("div", { className: "mo", onClick: () => setPaxModal(null) },
+            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
+                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
+                    React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, paxModal.idx === -1 ? "👤 Yeni Yolcu" : "👤 Yolcu Düzenle"),
+                    React.createElement("button", { onClick: () => setPaxModal(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Ad Soyad"),
+                        React.createElement("input", { type: "text", value: paxModal.name, onChange: e => setPaxField('name', e.target.value), placeholder: "Ad Soyad", className: "inp", autoComplete: "name", autoCapitalize: "words", style: { width: '100%' } })),
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Telefon"),
+                        React.createElement("input", { type: "tel", value: paxModal.phone, onChange: e => setPaxField('phone', e.target.value), placeholder: "Telefon", className: "inp", autoComplete: "tel", inputMode: "tel", style: { width: '100%' } })),
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "TC / Pasaport No"),
+                        React.createElement("input", { type: "text", value: paxModal.id, onChange: e => setPaxField('id', e.target.value), placeholder: "TC / Pasaport No", className: "inp", inputMode: "text", autoCapitalize: "characters", style: { width: '100%' } })),
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Uyruk / Ülke"),
+                        React.createElement("select", { value: paxModal.uyruk || 'TR', onChange: e => setPaxField('uyruk', e.target.value), className: "inp", style: { width: '100%' } }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))))),
+                React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 18 } },
+                    React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
+                    React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, "Kaydet"))))),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
