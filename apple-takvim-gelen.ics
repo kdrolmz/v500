@@ -3007,16 +3007,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1782412130561_e1gx1n@olmeztur
 DTSTAMP:20260710T192900Z
 LAST-MODIFIED:20260710T192900Z
-SEQUENCE:1783711753
+SEQUENCE:1783711777
 DTSTART:20260711T130500
 DTEND:20260711T140500
 SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Nadiah Alansari\nŞoför: Kadir Ölmez / +90 (543) 287
-  06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Balent
- ur\nAraç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\n
- Uçuş: KU157\nÖdeme: Müşteri: 160 USD | Araç: 6.500 ₺ | Alt acenta: 5.000
-  ₺
+DESCRIPTION:Müşteri: Nadiah Alansari\nŞoför: Balentur\nİşi veren: Trias 
+ Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah:
+  Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖdeme: Müşteri: 160 USD 
+ | Araç: 6.300 ₺ | Alt acenta: 5.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
