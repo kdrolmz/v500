@@ -19,7 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--green:#4F6377;--green-2:#4F6377;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE4EB;--line-2:#D3DAE3;--ink:#1F2733;--ink-2:#222C3D;--ink-3:#5F6B7A;--muted:#5F6B7A;--accent:#22252E;--accent-2:#22252E;--accent-soft:#EDF1F6;--brand:#22252E;--brand-2:#22252E;--brand-soft:#EDF1F6;--ok:#4F6377;--ok-bg:#ECF0F5;--ok-bd:#C2CFDD;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
+:root{--green:#0E9F6E;--green-2:#0E9F6E;--red:#C05F5F;--yellow:#8A6A1E;--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:#fff;--line:#DFE4EB;--line-2:#D3DAE3;--ink:#1F2733;--ink-2:#222C3D;--ink-3:#5F6B7A;--muted:#5F6B7A;--accent:#22252E;--accent-2:#22252E;--accent-soft:#EDF1F6;--brand:#22252E;--brand-2:#22252E;--brand-soft:#EDF1F6;--ok:#0E9F6E;--ok-bg:#E9F7F1;--ok-bd:#BCE3D2;--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;background:var(--bg) !important;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-0.01em}
 #root{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg)}
@@ -96,13 +96,13 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .lg-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px !important;margin-bottom:32px !important}
 .lg-period-value,.lg-profit-value,.lg-profit-detail-value{margin-top:3px;font-variant-numeric:tabular-nums;font-size:15px !important;font-weight:560 !important;line-height:1.05 !important;color:var(--ink) !important}
 .lg-profit-month-total{font-variant-numeric:tabular-nums;font-size:13.5px !important;font-weight:650 !important;line-height:1.1 !important}
-.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"]{color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"]{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none{color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .lg-today-list-standalone .tcard,.lg-home-transfer-list .tcard{background:#fff !important;border-color:var(--line-2) !important;box-shadow:0 1px 6px rgba(60,60,67,.055) !important}
 .lg-today-list-standalone .tcard-stripe,.lg-home-transfer-list .tcard-stripe{background:var(--brand) !important}
 .lg-today-list-standalone .tcard-agency,.lg-home-transfer-list .tcard-agency,.lg-today-list-standalone .tcard-time-big,.lg-home-transfer-list .tcard-time-big{color:var(--ink) !important}
 .lg-today-list-standalone .tcard-route,.lg-home-transfer-list .tcard-route,.lg-today-list-standalone .tcard-passenger,.lg-home-transfer-list .tcard-passenger{color:var(--muted) !important}
-.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos{color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg{color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
 .lg-section-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px !important}
 .lg-section-title{font-size:17px !important;font-weight:620 !important;color:var(--ink) !important}
@@ -293,7 +293,7 @@ main.main-cont.view-home{padding-top:0 !important}
 .lg-month-day.has-work,.ko-arac-day.has-work{border-color:rgba(60,60,67,.32) !important}
 .lg-month-day-num,.ko-arac-day-num{font-size:13px !important;font-weight:560 !important;line-height:1 !important}
 .lg-month-day-count,.ko-arac-day-count{font-size:9px !important;font-weight:470 !important;line-height:1.15 !important;text-align:left !important}
-.lg-month-day-net,.ko-arac-day-net{font-size:9.5px !important;font-weight:560 !important;font-variant-numeric:tabular-nums !important;line-height:1.05 !important;color:#4F6377 !important;white-space:nowrap !important}
+.lg-month-day-net,.ko-arac-day-net{font-size:9.5px !important;font-weight:560 !important;font-variant-numeric:tabular-nums !important;line-height:1.05 !important;color:#0E9F6E !important;white-space:nowrap !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .ko-arac-day-meta{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .ko-arac-job-card{border:1px solid rgba(207,216,227,.92);border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(60,60,67,.055)}
@@ -304,7 +304,7 @@ main.main-cont.view-home{padding-top:0 !important}
 .ko-arac-money-line{display:flex;justify-content:flex-end;gap:5px;align-items:baseline;font-variant-numeric:tabular-nums}
 .ko-arac-money-line span{font-size:9.2px;font-weight:430}
 .ko-arac-money-line b{font-size:12.5px;font-weight:560}
-.ko-arac-money-line.is-net b{color:#4F6377}
+.ko-arac-money-line.is-net b{color:#0E9F6E}
 .ko-arac-money-line.is-net.is-neg b{color:#C05F5F}
 .ko-arac-job-detail{padding:11px}
 .ko-arac-soft-btn{border-radius:11px !important;background:#fff !important;padding:9px 8px !important;font-size:11px !important;font-weight:520 !important}
@@ -333,8 +333,8 @@ main.main-cont.view-home{padding-top:0 !important}
 .tcard-pills{display:flex !important;flex-wrap:wrap !important;gap:4px !important;align-items:center !important;min-width:0 !important}
 .tcard-pill-alt{font-weight:600 !important}
 .tcard-paystatus.is-pending{border-color:rgba(178,96,92,.28) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
-.tcard-paystatus.is-paid{border-color:rgba(31,122,77,.28) !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
-.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.tcard-paystatus.is-paid{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
+.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .lg-chip-status-tam{border-color:rgba(60,60,67,.28) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
 .lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
 .lg-chip-wait,.lg-chip-status-iptal{border-color:rgba(178,96,92,.30) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
@@ -345,7 +345,7 @@ main.main-cont.view-home{padding-top:0 !important}
 .ko-account-cell small{display:block;font-size:10.2px !important;font-weight:390 !important;line-height:1.22 !important;margin-top:2px !important}
 .ko-account-net-cell b{font-weight:570 !important}
 .ko-account-cell small.ko-account-jabir-net-under{font-size:9.8px !important;font-weight:620 !important;line-height:1.08 !important;margin-top:2px !important;font-variant-numeric:tabular-nums !important;white-space:nowrap !important}
-.ko-account-cell small.ko-account-jabir-net-under.is-pos{color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.ko-account-cell small.ko-account-jabir-net-under.is-pos{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .ko-account-cell small.ko-account-jabir-net-under.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .lg-arac-head-card{padding:12px !important}
 .lg-arac-head-row{margin-bottom:10px !important;gap:8px !important}
@@ -386,19 +386,19 @@ main.main-cont.view-home{padding-top:0 !important}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
 /* Clean Apple visual layer - single source, business logic untouched */
-:root{--card:#FFFFFF !important;--accent:#22252E !important;--accent-soft:#EDF1F6 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#4F6377 !important;--red:#C05F5F !important;--ok:#22252E !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#C05F5F !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
+:root{--card:#FFFFFF !important;--accent:#22252E !important;--accent-soft:#EDF1F6 !important;--brand-bd:rgba(60,60,67,.18) !important;--green:#0E9F6E !important;--red:#C05F5F !important;--ok:#22252E !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:#C05F5F !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 .card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard{background:#FFFFFF !important;box-shadow:none !important}
 input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !important}
 input:focus,select:focus,textarea:focus,.inp:focus{border-color:#22252E !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
-.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:#FFFFFF !important;color:#22252E !important;-webkit-text-fill-color:#22252E !important;box-shadow:none !important}
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill{background:#FFFFFF !important}
 .tcard-pill.tcard-pill-alt{font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{border-color:rgba(47,101,167,.24) !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
-.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{border-color:rgba(176,82,76,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .tcard-stripe{background:#22252E !important}
 .tabbar{background:rgba(255,255,255,.98) !important;border-top:1px solid rgba(60,60,67,.18) !important;box-shadow:none !important}
@@ -455,7 +455,7 @@ img,svg{content-visibility:auto}
 }
 
 /* CLEAN PREMIUM FIX - arka plan acik, kartlar nizami, mantik degismedi */
-:root{--card:#FFFFFF !important;--green:#4F6377 !important;--green-2:#4F6377 !important;--red:#C05F5F !important;--ok:#4F6377 !important;--ok-bd:rgba(47,117,89,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:#C05F5F !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
+:root{--card:#FFFFFF !important;--green:#0E9F6E !important;--green-2:#0E9F6E !important;--red:#C05F5F !important;--ok:#0E9F6E !important;--ok-bd:rgba(47,117,89,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:#C05F5F !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
 html,body,#root,.app-shell{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Arial,sans-serif !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 [style*="linear-gradient"]{background-image:none !important}
@@ -469,7 +469,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .lg-greeting-title,.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.date-hdr-txt,.ko-pwa-brand-title,.tk-month-title,.tk-panel-date{font-weight:520 !important}
 .tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.lg-period-value,.lg-profit-value,.lg-profit-detail-value,.lg-profit-month-total,.ko-account-stat-total,.ko-account-cell b,.ko-account-firm-card-title b,.ko-arac-job-title,.ko-arac-money-line b{font-weight:500 !important}
 .lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time-type,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.lg-month-selected-kicker,.date-hdr-meta,.sub,.muted,.hint,.ko-account-cell,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.lg-flight,.tcard-pill-flight,.lbl,.lg-profit-label,.lg-period-label{font-weight:380 !important}
-.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .tcard{border-radius:18px !important;overflow:hidden !important;contain:layout paint style !important}
 .tcard-header{padding:11px !important}
@@ -482,7 +482,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight{background:#FFFFFF !important;border-radius:999px !important;font-size:9.8px !important;font-weight:430 !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(158,124,46,.28) !important}
 .tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(47,117,89,.24) !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(47,117,89,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-paystatus.is-pending,.lg-chip-wait{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .tabbar{background:#FFFFFF !important;box-shadow:none !important}
 .tabbar-inner{background:#FFFFFF !important;border:0 !important;box-shadow:none !important;height:74px !important}
@@ -499,7 +499,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:13.8px !important;font-weight:480 !important;line-height:1 !important;text-align:center !important}
 .lg-month-day .ko-arac-day-meta,.ko-arac-day .ko-arac-day-meta{width:100% !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:flex-start !important;gap:2px !important;min-width:0 !important;overflow:visible !important}
 .lg-month-day-count,.ko-arac-day-count{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;border:0 !important;background:transparent !important;font-size:8px !important;font-weight:390 !important;line-height:1.08 !important;text-align:center !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:normal !important}
-.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;border:0 !important;background:transparent !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important;font-size:7.8px !important;font-weight:400 !important;line-height:1.05 !important;text-align:center !important;white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
+.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net{display:block !important;width:100% !important;max-width:100% !important;padding:0 !important;border:0 !important;background:transparent !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important;font-size:7.8px !important;font-weight:400 !important;line-height:1.05 !important;text-align:center !important;white-space:nowrap !important;overflow:visible !important;text-overflow:clip !important;font-variant-numeric:tabular-nums !important}
 .lg-month-day-net.is-neg,.ko-arac-day-net.is-neg,.view-arac .ko-arac-day-net.is-neg{color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
 .lg-month-selected-line{margin-top:10px !important;padding:10px 0 0 !important;display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;align-items:center !important;gap:8px !important}
 .lg-month-selected-title,.lg-month-selected-count,.ko-arac-day-netbox-value{white-space:normal !important;overflow:visible !important;text-overflow:clip !important}
@@ -511,7 +511,7 @@ input,select,textarea,.inp{background:#FFFFFF !important;box-shadow:none !import
 .ko-account-manual-panel .inp{min-height:38px !important;border-radius:10px !important;font-size:12px !important}
 .ko-account-manual-row{border-style:solid !important}
 .ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{border-color:rgba(158,94,88,.24) !important;color:#C05F5F !important;-webkit-text-fill-color:#C05F5F !important}
-.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(47,117,89,.24) !important;color:#4F6377 !important;-webkit-text-fill-color:#4F6377 !important}
+.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(47,117,89,.24) !important;color:#0E9F6E !important;-webkit-text-fill-color:#0E9F6E !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b,.ko-contact-name,.ko-contact-phone{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
 :where(.tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.lg-transfer-date,.lg-row,.ko-account-flow,.ko-account-cell small,.ko-arac-job-title,.ko-arac-job-sub,.ko-contact-name,.ko-contact-phone,.lg-month-selected-title,.lg-month-selected-count,.lg-month-day-count,.ko-arac-day-count,.lg-month-day-net,.ko-arac-day-net){text-overflow:clip !important}
 .tcard *,.lg-upcoming-card *,.ko-account-row *,.lg-month-day *,.ko-arac-day *{min-width:0 !important}
@@ -905,11 +905,11 @@ function cloudSignedIn(){ return !!(cloudAuth && cloudAuth.currentUser); }
 const EMBEDDED_BACKUP = { "t": [], "v": 26, "date": null };
 const OL = 'Ölmeztur', PLAKA = '16 LMZ 55';
 const NAV = '#22252E', NAV2 = '#22252E', GOLD = 'rgba(255,255,255,.85)';
-const G = '#4F6377', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
+const G = '#6E8060', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
 const TX = '#1F2733', SB = '#5F6B7A', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
     { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#48596E', bg: '#ECF0F5', b: '#C2CFDD' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#3E7C5B', bg: '#E9F3ED', b: '#BFDCCB' },
     { id: 'tour', n: 'Tur', ico: '🏔️', c: '#96762A', bg: '#F7F0DE', b: '#E0D2A8' },
     { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6C5A92', bg: '#EFEAF6', b: '#CFC2E3' },
     { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: '#4E5D72', bg: '#EDF0F4', b: '#C9D2DE' },
@@ -1009,7 +1009,7 @@ const KO_ICONS = {
 };
 const KO_KS_COLORS = [
     { bg: '#E7EDF7', bd: '#2B4A82', tx: '#294C86' },
-    { bg: '#ECF0F5', bd: '#2E7D5B', tx: '#1F6E48' },
+    { bg: '#E9F3ED', bd: '#2E7D5B', tx: '#1F6E48' },
     { bg: '#F8F0DC', bd: '#B0842E', tx: '#8A6414' },
     { bg: '#F0EAF8', bd: '#7A5CB0', tx: '#5B449A' },
     { bg: '#FAEBF2', bd: '#C05C88', tx: '#A63F70' },
@@ -5077,7 +5077,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
                     React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
                         [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8', ''],
-                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F0F4F8', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
+                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
                         [jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : '']
                     ].map(([v, l, col, bg, subtl]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 450, color: col } }, v),
@@ -5321,7 +5321,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                     React.createElement("div", { style: { fontSize: 13.5, fontWeight: 450, color: clr, WebkitTextFillColor: clr, fontVariantNumeric: 'tabular-nums' } }, val),
                     React.createElement("div", { style: { fontSize: 8.5, fontWeight: 450, color: 'rgba(255,255,255,.72)', WebkitTextFillColor: 'rgba(255,255,255,.72)', marginTop: 2, letterSpacing: '.4px', textTransform: 'uppercase' } }, lbl));
                 return React.createElement("div", { className: "ko-navy-panel", style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', borderRadius: 14, padding: '2px 4px' } },
-                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#AEBECB'),
+                    stat('Alacak', '+' + fr(alacakT) + '\u20BA', '#AEBD9C'),
                     stat('Bor\u00E7', '\u2212' + fr(borcT) + '\u20BA', '#FFB4AE'),
                     stat('A\u00E7\u0131k \u0130\u015F', String(acikIs), '#FFFFFF'));
             })(),
@@ -9136,7 +9136,7 @@ function App() {
                     const altText = t.altAcenta || '';
                     const payDone = collectionState === 'collected';
                     const payText = payDone ? 'Tahsil edildi' : 'Tahsilat bekliyor';
-                    const payBg = payDone ? '#ECF0F5' : '#FCF6E8';
+                    const payBg = payDone ? '#E9F7F1' : '#FCF6E8';
                     const payColor = payDone ? '#0B7C55' : '#8A6A1E';
                     return React.createElement("div", {
                         key: t.id,
@@ -9941,7 +9941,7 @@ function App() {
                             const preview = takasJobNetTRY({ ...form, isTakas: true, customerTRY: toTRY(form.paymentAmount, form.paymentCurrency) }, crossRates);
                             return React.createElement("div", { style: { padding: '8px 11px', background: 'rgba(255,255,255,.10)', borderRadius: 10, fontSize: 10.5, color: 'rgba(255,255,255,.88)', WebkitTextFillColor: 'rgba(255,255,255,.88)', border: '1px solid rgba(255,255,255,.22)', lineHeight: 1.45 } },
                                 React.createElement("span", { style: { fontWeight: 470, color: '#FFFFFF', WebkitTextFillColor: '#FFFFFF' } }, 'Takas bakiyesi: '),
-                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#AEBECB' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#AEBECB' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
+                                React.createElement("span", { style: { fontWeight: 470, color: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF'), WebkitTextFillColor: preview > 0 ? '#AEBD9C' : (preview < 0 ? '#FFB4AE' : '#FFFFFF') } },
                                     preview === 0 ? 'Ba\u015Fa ba\u015F (\u00F6deme g\u00F6nderilmez)' : ((preview > 0 ? '+' : '\u2212') + fr(preview) + '\u20BA ' + (preview > 0 ? (form.takasPartner || 'Ortak') + ' bana g\u00F6nderecek' : 'ben ' + (form.takasPartner || 'orta\u011Fa') + ' g\u00F6nderece\u011Fim'))),
                                 React.createElement("div", { style: { marginTop: 3, fontSize: 9.5, color: 'rgba(255,255,255,.70)', WebkitTextFillColor: 'rgba(255,255,255,.70)' } }, 'Ge\u00E7i\u015F fark\u0131 dahil \u00B7 Hesap > Takas Hesaplar\u0131 b\u00F6l\u00FCm\u00FCnde birikir'));
                         })()
