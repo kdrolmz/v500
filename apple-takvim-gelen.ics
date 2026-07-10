@@ -3140,23 +3140,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1783663657769_n769xw@olmeztur
-DTSTAMP:20260710T193600Z
-LAST-MODIFIED:20260710T060700Z
-SEQUENCE:1783663657
-DTSTART:20260720T090000
-DTEND:20260720T100000
-SUMMARY:09:00 · Ankara → Bursa  Minibüs
-LOCATION:Koza Suite Ankara → Almira Hotel Bursa
-DESCRIPTION:Müşteri: Kaho Kadomo\nŞoför: Kadir Ölmez / +90 (543) 287 06 
- 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Minibüs
- \nGüzergah: Koza Suite Ankara → Almira Hotel Bursa\nÖdeme: Müşteri ödeme
- z | Araç: 11.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1783669240397_vhqbcg@olmeztur
 DTSTAMP:20260710T193600Z
 LAST-MODIFIED:20260710T074000Z
