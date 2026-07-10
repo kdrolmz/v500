@@ -6321,6 +6321,7 @@ function App() {
        PDF import 6600+ kayıt içeriyor; her transfer eklemede tekrar tarayamayız. */
     const pdfImportDoneRef = useRef(false);
     const dedupeDoneRef = useRef(false);
+    const rtSplitDoneRef = useRef(false);
     useEffect(() => {
         try { localStorage.setItem('ko_active_tab', tab); } catch (e) {}
     }, [tab]);
@@ -6574,7 +6575,7 @@ function App() {
                                state'iyle (liveStateRef) zenginleştir; böylece yeni eklenen asla uçmaz. */
                             const live = liveStateRef.current || {};
                             const localForMerge = { ...(localPayload || {}) };
-                            ['adj', 'ak', 'db', 'tk', 'tl'].forEach(function(k){
+                            ['t', 'adj', 'ak', 'db', 'tk', 'tl'].forEach(function(k){
                                 const liveArr = Array.isArray(live[k]) ? live[k] : null;
                                 const lsArr = Array.isArray(localForMerge[k]) ? localForMerge[k] : [];
                                 if (liveArr && liveArr.length >= lsArr.length) localForMerge[k] = liveArr;
@@ -6593,7 +6594,7 @@ function App() {
                                (kendi yazımızın echo'su) hiçbir şey yapma — döngüyü ve gereksiz re-render'ı keser.
                                BUG FIX: Araç kayıt (gider/sefer) sayısı da kontrol ediliyor; sadece 't' sayısına
                                bakmak gider eklemelerinin hydrate edilmeden atlanmasına yol açıyordu. */
-                            const localCount = ((localPayload && localPayload.t) || []).length;
+                            const localCount = ((Array.isArray(live.t) ? live.t : ((localPayload && localPayload.t) || []))).length;
                             const cloudCount = ((payload && payload.t) || []).length;
                             const mergedCount = ((mergedPayload && mergedPayload.t) || []).length;
                             /* Tüm liste tipleri için canlı state ile birleşmiş sonucu karşılaştır:
@@ -6676,6 +6677,63 @@ function App() {
             return dedupeTransfers([...next, ...toAdd]);
         });
     }, [storageReady]);
+    useEffect(() => {
+        if (!storageReady || rtSplitDoneRef.current) return;
+        if (!Array.isArray(T) || T.length === 0) return;
+        rtSplitDoneRef.current = true;
+        setT(prev => {
+            const list = Array.isArray(prev) ? prev : [];
+            const linkedParents = new Set(list.filter(x => x && x.linkedTransferId).map(x => String(x.linkedTransferId)));
+            const additions = [];
+            list.forEach(t => {
+                if (!t || t.isReturnLeg || t.linkedTransferId) return;
+                const wantsReturn = t.hasReturn || t.isReturn || t.tripMode === 'roundtrip' || t.tripMode === 'sameday';
+                if (!wantsReturn) return;
+                const rt = String(t.returnTime || '').trim();
+                if (!rt) return;
+                if (linkedParents.has(String(t.id))) return;
+                const retType = t.transferType === 'arrival' ? 'departure' : (t.transferType === 'departure' ? 'arrival' : t.transferType);
+                const retDate = (t.tripMode === 'roundtrip' && String(t.returnDate || '').trim()) ? t.returnDate : t.date;
+                const rGiven = String(t.returnGivenBy || t.givenBy || '').trim();
+                const rAssigned = String(t.returnAssignedTo || t.assignedTo || '').trim();
+                const rAlt = String(t.returnAltAcenta || '').trim();
+                const rHasAmt = String(t.returnPaymentAmount != null ? t.returnPaymentAmount : '').trim() !== '';
+                const rAmt = rHasAmt ? t.returnPaymentAmount : '';
+                const rCur = rHasAmt ? (t.returnPaymentCurrency || 'TRY') : (t.paymentCurrency || 'TRY');
+                const rCustomerTRY = rHasAmt ? toTRY(rAmt, rCur) : 0;
+                const rHasDrv = String(t.returnDriverPayment != null ? t.returnDriverPayment : '').trim() !== '';
+                const rDrvCur = rHasDrv ? (t.returnDriverPaymentCurrency || 'TRY') : 'TRY';
+                const rDrvRaw = rHasDrv ? t.returnDriverPayment : '';
+                const rDrvTRY = rHasDrv ? (rDrvCur === 'TRY' ? t.returnDriverPayment : Math.round(toTRY(t.returnDriverPayment, rDrvCur))) : '';
+                const nowIso = new Date().toISOString();
+                const retId = 'rtsplit_' + String(t.id);
+                additions.push(normalizeTransfer({ ...t, id: retId, editRootId: retId, date: retDate, time: rt,
+                    pickup: t.dropoff, dropoff: t.pickup, transferType: retType,
+                    givenBy: rGiven, assignedTo: rAssigned, altAcenta: rAlt,
+                    paymentAmount: rAmt, paymentCurrency: rCur, customerTRY: rCustomerTRY,
+                    driverPayment: rDrvTRY, driverPaymentRaw: rDrvRaw, driverPaymentCurrency: rDrvCur,
+                    profit: olmezKar({ ...t, givenBy: rGiven, assignedTo: rAssigned, altAcenta: rAlt, paymentAmount: rAmt, paymentCurrency: rCur, customerTRY: rCustomerTRY, driverPayment: rDrvTRY }),
+                    tripMode: 'single', isReturn: false, hasReturn: false, isReturnLeg: true, isRecurring: false, endDate: '',
+                    returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '',
+                    returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY',
+                    createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, linkedTransferId: String(t.id) }));
+            });
+            if (!additions.length) return prev;
+            const splitParentIds = new Set(additions.map(a => String(a.linkedTransferId)));
+            const nowIso2 = new Date().toISOString();
+            const cleaned = list.map(t => {
+                if (!t || !splitParentIds.has(String(t.id))) return t;
+                return normalizeTransfer({ ...t, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '',
+                    returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '',
+                    returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY',
+                    updatedAt: nowIso2, clientUpdatedAt: nowIso2 });
+            });
+            const next = dedupeTransfers([...cleaned, ...additions]);
+            try { console.log('[RT SPLIT] ' + additions.length + ' donus karti ayrildi'); } catch (e) {}
+            try { persistTransfersImmediately(next); } catch (e) {}
+            return next;
+        });
+    }, [storageReady, T]);
     useEffect(() => { if (!storageReady) return; try {
         /* PERF FIX: Tüm ağır iş (dedupeTransfers + JSON.stringify + localStorage + cloud) 
            setTimeout içine taşındı. Önceden dedupeTransfers ve snapshot oluşturma her render'da 
@@ -6881,13 +6939,13 @@ function App() {
         const returnAltAcenta = String(form.returnAltAcenta || '').trim();
         const buildReturnTransfer = (outBase, retId, dateValue, linkedId) => {
             const retHasAmount = String(form.returnPaymentAmount != null ? form.returnPaymentAmount : '').trim() !== '';
-            const retAmount = retHasAmount ? form.returnPaymentAmount : outBase.paymentAmount;
-            const retCurrency = retHasAmount ? (form.returnPaymentCurrency || 'TRY') : outBase.paymentCurrency;
-            const retCustomerTRY = retHasAmount ? toTRY(retAmount, retCurrency) : outBase.customerTRY;
+            const retAmount = retHasAmount ? form.returnPaymentAmount : '';
+            const retCurrency = retHasAmount ? (form.returnPaymentCurrency || 'TRY') : (outBase.paymentCurrency || 'TRY');
+            const retCustomerTRY = retHasAmount ? toTRY(retAmount, retCurrency) : 0;
             const retHasDriver = String(form.returnDriverPayment != null ? form.returnDriverPayment : '').trim() !== '';
-            const retDriverCur = retHasDriver ? (form.returnDriverPaymentCurrency || 'TRY') : outBase.driverPaymentCurrency;
-            const retDriverRaw = retHasDriver ? form.returnDriverPayment : outBase.driverPaymentRaw;
-            const retDriverTRY = retHasDriver ? (retDriverCur === 'TRY' ? form.returnDriverPayment : Math.round(toTRY(form.returnDriverPayment, retDriverCur))) : outBase.driverPayment;
+            const retDriverCur = retHasDriver ? (form.returnDriverPaymentCurrency || 'TRY') : 'TRY';
+            const retDriverRaw = retHasDriver ? form.returnDriverPayment : '';
+            const retDriverTRY = retHasDriver ? (retDriverCur === 'TRY' ? form.returnDriverPayment : Math.round(toTRY(form.returnDriverPayment, retDriverCur))) : '';
             const retProfitBase = { ...outBase, givenBy: returnGivenBy, assignedTo: returnAssignedTo, altAcenta: returnAltAcenta, paymentAmount: retAmount, paymentCurrency: retCurrency, customerTRY: retCustomerTRY, driverPayment: retDriverTRY };
             return ({
             ...outBase,
@@ -6973,7 +7031,7 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid };
+                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
                 transfersToAdd.push(normalizeTransfer(outBase));
 
                 // ═══ KARŞILIKLI: SADECE GÖRSEL EŞLEŞTİRME (yeni transfer + seçilen mevcut iş) ═══
@@ -8547,8 +8605,8 @@ function App() {
             ),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 96px', gap: 8 } },
                 React.createElement("div", null,
-                    React.createElement("span", { className: "lbl" }, "Dönüş Tutarı (boşsa gidişle aynı)"),
-                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnPaymentAmount || '', onChange: e => sf({ returnPaymentAmount: e.target.value }), placeholder: form.paymentAmount ? ('Gidiş: ' + form.paymentAmount) : "Tutar", className: "inp" })
+                    React.createElement("span", { className: "lbl" }, "Dönüş Tutarı (boş = 0)"),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnPaymentAmount || '', onChange: e => sf({ returnPaymentAmount: e.target.value }), placeholder: "0", className: "inp" })
                 ),
                 React.createElement("div", null,
                     React.createElement("span", { className: "lbl" }, "Döviz"),
@@ -8561,8 +8619,8 @@ function App() {
             ),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 96px', gap: 8 } },
                 React.createElement("div", null,
-                    React.createElement("span", { className: "lbl" }, "Dönüş Araç Ücreti (boşsa gidişle aynı)"),
-                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnDriverPayment || '', onChange: e => sf({ returnDriverPayment: e.target.value }), placeholder: form.driverPayment ? ('Gidiş: ' + form.driverPayment) : "Araç ücreti", className: "inp" })
+                    React.createElement("span", { className: "lbl" }, "Dönüş Araç Ücreti (boş = 0)"),
+                    React.createElement("input", { type: "number", inputMode: "decimal", value: form.returnDriverPayment || '', onChange: e => sf({ returnDriverPayment: e.target.value }), placeholder: "0", className: "inp" })
                 ),
                 React.createElement("div", null,
                     React.createElement("span", { className: "lbl" }, "Döviz"),
