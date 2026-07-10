@@ -7411,7 +7411,7 @@ function App() {
         const dmyTr = t.date ? new Date(t.date).toLocaleDateString('tr-TR') : '';
         const dmyEn = t.date ? new Date(t.date).toLocaleDateString('en-GB') : '';
         const saat = t.time || '';
-        const rotaItem = (t.route && t.route !== 'free') ? ROTALAR.find(r => r.id === t.route) : null;
+        const rotaItem = ROTALAR.find(r => r.id === (t.route || 'free'));
         const guzergah = rotaItem ? rotaItem.n : (t.routeBridge || '');
         const stops = (t.extraStops || []).filter(Boolean);
         if (lang === 'en') {
@@ -7427,8 +7427,7 @@ function App() {
             if (guzergah) msg += '🛣️ *Route        :* ' + guzergah + '\n';
             msg += '🏁 *>> Drop-off  :* ' + (t.dropoff || '') + '\n\n';
             msg += 'We wish you a pleasant and comfortable journey.\n';
-            msg += 'Best regards,\n';
-            msg += '*ÖLMEZTUR Turizm*';
+            msg += 'Best regards';
             return msg.trim();
         }
         if (lang === 'ar') {
@@ -7444,8 +7443,7 @@ function App() {
             if (guzergah) msg += '🛣️ *المسار        :* ' + guzergah + '\n';
             msg += '🏁 *>> نقطة الوصول :* ' + (t.dropoff || '') + '\n\n';
             msg += 'نتمنى لكم رحلة ممتعة ومريحة.\n';
-            msg += 'مع خالص التقدير،\n';
-            msg += '*ÖLMEZTUR Turizm*';
+            msg += 'مع خالص التقدير';
             return msg.trim();
         }
         let msg = '*Sayın* ' + name + ',\n';
@@ -7460,8 +7458,7 @@ function App() {
         if (guzergah) msg += '🛣️ *Güzergah     :* ' + guzergah + '\n';
         msg += '🏁 *>> Varış yeri :* ' + (t.dropoff || '') + '\n\n';
         msg += 'Keyifli ve konforlu bir yolculuk geçirmenizi dileriz.\n';
-        msg += 'Saygılarımızla,\n';
-        msg += '*ÖLMEZTUR Turizm*';
+        msg += 'Saygılarımızla';
         return msg.trim();
     };
     const brdMsg = t => {
