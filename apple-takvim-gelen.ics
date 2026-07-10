@@ -3023,16 +3023,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783712071445_kd4o0d@olmeztur
 DTSTAMP:20260710T193700Z
-LAST-MODIFIED:20260710T193400Z
-SEQUENCE:1783712071
+LAST-MODIFIED:20260710T193700Z
+SEQUENCE:1783712259
 DTSTART:20260711T131000
 DTEND:20260711T141000
 SUMMARY:13:10 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Eissa Alshaban\nŞoför: Abdullah Çimen / 05342449147
- \nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
- 16 CYM 47\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: Mü
- şteri: 200 USD | Araç: 8.000 ₺
+ \nİşi veren: Ölmeztur\nİşi yapan: Abdullah Çimen\nAlt acenta: -\nAraç: V
+ ito / 16 CYM 47\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖde
+ me: Müşteri: 200 USD | Araç: 8.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
