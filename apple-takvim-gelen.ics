@@ -3111,8 +3111,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783852083506_maty92@olmeztur
 DTSTAMP:20260712T140800Z
-LAST-MODIFIED:20260712T102800Z
-SEQUENCE:1783852083
+LAST-MODIFIED:20260712T140800Z
+SEQUENCE:1783865323
 DTSTART:20260713T130500
 DTEND:20260713T140500
 SUMMARY:13:05 · Sabiha Gökçen → Https://maps.app.goo.gl/7dy5za5q4p5awkqf
@@ -3121,9 +3121,10 @@ LOCATION:Sabiha Gökçen Havalimanı → Https://maps.app.goo.gl/7dy5za5q4p5a
  wkqf6?g_st=ic
 DESCRIPTION:Müşteri: Ruqayah Albusırı\, Salma Albusırı\, Qumasha Alsulaı
  man\, Soud Albasırı\, Shaıkha Alzaeıd\, Jayawardana Wedage\nŞoför: Balen
- tur\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nG
- üzergah: Sabiha Gökçen Havalimanı → Https://maps.app.goo.gl/7dy5za5q4p5a
- wkqf6?g_st=ic\nUçuş: KU157\nÖdeme: Müşteri: 170 USD | Araç: 6.500 ₺
+ tur\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tur\nAr
+ aç: Vito\nGüzergah: Sabiha Gökçen Havalimanı → Https://maps.app.goo.gl/7
+ dy5za5q4p5awkqf6?g_st=ic\nUçuş: KU157\nÖdeme: Müşteri: 170 USD | Araç: 6
+ .500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
