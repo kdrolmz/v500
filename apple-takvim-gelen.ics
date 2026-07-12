@@ -3072,23 +3072,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1783157312463_7msgdj@olmeztur
-DTSTAMP:20260712T101300Z
-LAST-MODIFIED:20260706T123500Z
-SEQUENCE:1783341307
-DTSTART:20260713T130000
-DTEND:20260713T140000
-SUMMARY:13:00 · Sabiha Gökçen → Bursa  Sprinter
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Mohammad Abdullah\nŞoför: Balentur\nİşi veren: Muha
- mmet s.\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: S
- abiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖdeme: Müşteri: 200 USD | 
- Hesap bana geldi | Araç: 7.725 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1783793659666_wo1h7n@olmeztur
 DTSTAMP:20260712T101300Z
 LAST-MODIFIED:20260712T100700Z
@@ -3103,6 +3086,23 @@ DESCRIPTION:Müşteri: Abdullah Khadada\, Nabılah Akbar\, Shahad Alsaffar\
  r\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: Sabiha Gökçen Havalimanı 
  → Bursa\nUçuş: KU157\nÖdeme: Müşteri ödemez | Araç: 7.050 ₺ | Alt acenta
  : 5.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1783157312463_7msgdj@olmeztur
+DTSTAMP:20260712T101300Z
+LAST-MODIFIED:20260712T101300Z
+SEQUENCE:1783851225
+DTSTART:20260713T130000
+DTEND:20260713T140000
+SUMMARY:13:00 · Sabiha Gökçen → Bursa  Sprinter
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Mohammad Abdullah\nŞoför: Balentur\nİşi veren: Muha
+ mmet s.\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüze
+ rgah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖdeme: Müşteri: 200
+  USD | Hesap bana geldi | Araç: 7.725 ₺ | Alt acenta: 5.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
