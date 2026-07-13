@@ -1886,7 +1886,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1783711849778_6dmbke@olmeztur
 DTSTAMP:20260713T144800Z
 LAST-MODIFIED:20260713T144800Z
-SEQUENCE:1783954118
+SEQUENCE:1783954137
 DTSTART:20260711T140000
 DTEND:20260711T150000
 SUMMARY:14:00 · Bursa → İST  Vito
@@ -1894,7 +1894,7 @@ LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Saeed Al Ajmi\nŞoför: Kadir Ölmez / +90 (543) 287 0
  6 87\nİşi veren: Kadir Elçiboğa\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
  ç: Vito / 16 LMZ 55\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşte
- ri: 6.000 TRY | Araç: 6.000 ₺
+ ri ödemez | Araç: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
