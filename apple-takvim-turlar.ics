@@ -686,8 +686,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783957533654_xx914j@olmeztur
 DTSTAMP:20260714T174400Z
-LAST-MODIFIED:20260714T161500Z
-SEQUENCE:1784045753
+LAST-MODIFIED:20260714T174400Z
+SEQUENCE:1784051088
 DTSTART:20260714T100000
 DTEND:20260714T110000
 SUMMARY:10:00 · Karadan Uludağ Tur Turu  Vito
@@ -695,8 +695,8 @@ LOCATION:Leluxe Hotel → Karadan Uludağ Tur
 DESCRIPTION:Müşteri: Mohammad Almutairi\, Maraheb Almutairi\, Fahad Almu
  tairi\, Taraf Almutairi\, Maryam Almutairi\, Farah Almutairi\nŞoför: -\n
  İşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt acenta: İbrahim Taz\nAr
- aç: Vito\nGüzergah: Leluxe Hotel → Karadan Uludağ Tur\nÖdeme: Müşteri: 2
- .500 TRY | Araç: 6.350 ₺ | Alt acenta: 5.641 ₺
+ aç: Vito\nGüzergah: Leluxe Hotel → Karadan Uludağ Tur\nÖdeme: Araç: 6.35
+ 0 ₺ | Alt acenta: 5.641 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
