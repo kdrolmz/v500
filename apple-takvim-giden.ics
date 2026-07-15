@@ -1902,8 +1902,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783851520706_irxxap@olmeztur
 DTSTAMP:20260715T170800Z
-LAST-MODIFIED:20260713T152100Z
-SEQUENCE:1783956101
+LAST-MODIFIED:20260713T171400Z
+SEQUENCE:1783962844
 DTSTART:20260713T090000
 DTEND:20260713T100000
 SUMMARY:09:00 · Https://maps.google.com/?q=40.222813 → Sabiha Gökçen  Vi
@@ -1913,7 +1913,7 @@ LOCATION:Https://maps.google.com/?q=40.222813\,28.966675 → Sabiha Gökçen
 DESCRIPTION:Müşteri: Al Sagbi Anoud\nŞoför: Mehmet Bilem / 05365805306\n
  İşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Mehmet Bilem\nAraç: V
  ito\nGüzergah: Https://maps.google.com/?q=40.222813\,28.966675 → Sabiha 
- Gökçen Havalimanı\nÖdeme: Müşteri: 7.000 TRY | Araç: 6.000 ₺ | Alt acent
+ Gökçen Havalimanı\nÖdeme: Müşteri: 7.000 TRY | Araç: 5.500 ₺ | Alt acent
  a: 5.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
@@ -1922,8 +1922,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783956908033_fusxah@olmeztur
 DTSTAMP:20260715T170800Z
-LAST-MODIFIED:20260713T153500Z
-SEQUENCE:1783956908
+LAST-MODIFIED:20260713T170800Z
+SEQUENCE:1783962490
 DTSTART:20260714T090000
 DTEND:20260714T100000
 SUMMARY:09:00 · Bursa → Sabiha Gökçen  Vito
@@ -1931,7 +1931,7 @@ LOCATION:Crowne Plaza Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Abdulaziz Sultan\, Maryam Sultan\nŞoför: Şenol Hemi
  tli / +90 (537) 475 41 83\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt ac
  enta: Şenol Hemitli\nAraç: Vito\nGüzergah: Crowne Plaza Bursa → Sabiha G
- ökçen Havalimanı\nÖdeme: Müşteri: 140 USD | Araç: 6.000 ₺ | Alt acenta: 
+ ökçen Havalimanı\nÖdeme: Müşteri: 140 USD | Araç: 5.500 ₺ | Alt acenta: 
  5.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
@@ -1957,16 +1957,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784044967382_4x3992@olmeztur
 DTSTAMP:20260715T170800Z
-LAST-MODIFIED:20260714T160200Z
-SEQUENCE:1784044967
+LAST-MODIFIED:20260715T091900Z
+SEQUENCE:1784107179
 DTSTART:20260715T050000
 DTEND:20260715T060000
 SUMMARY:05:00 · Bursa → İST  Vito
 LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Basama Aldihim\nŞoför: Kadir Elçiboğa / +90 (539) 2
  19 01 82\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Kadir Elçib
- oğa\nAraç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Araç: 6.5
- 00 ₺ | Alt acenta: 6.000 ₺
+ oğa\nAraç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri: 
+ 200 USD | Araç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
