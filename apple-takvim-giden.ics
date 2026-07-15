@@ -2091,6 +2091,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-rtsplit_1783712664128_a691yz@olmeztur
+DTSTAMP:20260715T172200Z
+LAST-MODIFIED:20260715T172200Z
+SEQUENCE:1784136160
+DTSTART:20260721T100000
+DTEND:20260721T110000
+SUMMARY:10:00 · Bursa → Sabiha Gökçen  Vito
+LOCATION:Bursa Güzelyalı → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Mr Maher Alradhwan\, Ms. Abeer Almuqled\nŞoför: Kad
+ ir Ölmez / +90 (543) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölme
+ ztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa Güzelyalı → Sabiha Gökç
+ en Havalimanı\nUçuş: KU157\nÖdeme: -
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1783341660024_6jq779@olmeztur
 DTSTAMP:20260715T172200Z
 LAST-MODIFIED:20260706T124100Z
