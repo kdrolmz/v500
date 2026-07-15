@@ -702,18 +702,18 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1784051072394_232ebe@olmeztur
+UID:ko-transfer-1784055940887_c3g6nr@olmeztur
 DTSTAMP:20260715T170800Z
-LAST-MODIFIED:20260714T174400Z
-SEQUENCE:1784051072
+LAST-MODIFIED:20260714T190500Z
+SEQUENCE:1784055940
 DTSTART:20260715T103000
 DTEND:20260715T113000
-SUMMARY:10:30 · Bursa Turu  Vito
-LOCATION:Holiday İnn Bursa → Bursa Tur
-DESCRIPTION:Müşteri: Khaled Alhashalı\nŞoför: Kadir Ölmez / +90 (543) 28
- 7 06 87\nİşi veren: Aziz Yapıtek\nİşi yapan: Ölmeztur\nAlt acenta: -\nAr
- aç: Vito\nGüzergah: Holiday İnn Bursa → Bursa Tur\nÖdeme: Müşteri ödemez
-  | Araç: 4.250 ₺
+SUMMARY:10:30 · Teleferik Tur Turu  Vito
+LOCATION:Holiday İnn Hotel → Teleferik Tur
+DESCRIPTION:Müşteri: Khaled Alhashali\nŞoför: Tugay\nİşi veren: Aziz Yap
+ ıtek\nİşi yapan: Ölmeztur\nAlt acenta: Tugay\nAraç: Vito\nGüzergah: Holi
+ day İnn Hotel → Teleferik Tur\nÖdeme: Müşteri ödemez | Araç: 4.250 ₺ | A
+ lt acenta: 4.231 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
