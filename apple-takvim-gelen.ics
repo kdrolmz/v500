@@ -3183,18 +3183,18 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783857046806_pgomfz@olmeztur
 DTSTAMP:20260715T170800Z
-LAST-MODIFIED:20260713T153300Z
-SEQUENCE:1783956795
+LAST-MODIFIED:20260714T165000Z
+SEQUENCE:1784047852
 DTSTART:20260714T135000
 DTEND:20260714T145000
 SUMMARY:13:50 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Holiday İnn Bursa
 DESCRIPTION:Müşteri: Eman Ahmed\, Khaled Alharashanı\, Meshari Alharasha
- nı\, Almahrah Alharshanı\, Shaımah Alharshanı\nŞoför: Kadir Ölmez / +90 
- (543) 287 06 87\nİşi veren: Aziz Yapıtek\nİşi yapan: Ölmeztur\nAlt acent
- a: Balentur\nAraç: Vito\nGüzergah: İstanbul Havalimanı → Holiday İnn Bur
- sa\nUçuş: KU155\nÖdeme: Müşteri: 200 USD | Araç: 8.450 ₺ | Alt acenta: 6
- .000 ₺
+ nı\, Almahrah Alharshanı\, Shaımah Alharshanı\nŞoför: Oğuz Bey / +905337
+ 770140\nİşi veren: Aziz Yapıtek\nİşi yapan: Ölmeztur\nAlt acenta: Balent
+ ur\nAraç: Vito / 16BLE19\nGüzergah: İstanbul Havalimanı → Holiday İnn Bu
+ rsa\nUçuş: KU155\nÖdeme: Müşteri ödemez | Araç: 8.450 ₺ | Alt acenta: 6.
+ 000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
