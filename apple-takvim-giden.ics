@@ -1957,16 +1957,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784044967382_4x3992@olmeztur
 DTSTAMP:20260715T091900Z
-LAST-MODIFIED:20260714T160200Z
-SEQUENCE:1784044967
+LAST-MODIFIED:20260715T091900Z
+SEQUENCE:1784107179
 DTSTART:20260715T050000
 DTEND:20260715T060000
 SUMMARY:05:00 · Bursa → İST  Vito
 LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Basama Aldihim\nŞoför: Kadir Elçiboğa / +90 (539) 2
  19 01 82\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Kadir Elçib
- oğa\nAraç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Araç: 6.5
- 00 ₺ | Alt acenta: 6.000 ₺
+ oğa\nAraç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri: 
+ 200 USD | Araç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
