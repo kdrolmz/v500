@@ -2081,8 +2081,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784217084706_z93v6e@olmeztur
 DTSTAMP:20260717T114000Z
-LAST-MODIFIED:20260716T155100Z
-SEQUENCE:1784217084
+LAST-MODIFIED:20260717T114000Z
+SEQUENCE:1784288425
 DTSTART:20260717T103000
 DTEND:20260717T113000
 SUMMARY:10:30 · Bursa → İstanbul  Vito
@@ -2090,9 +2090,9 @@ LOCATION:Bursa Suite Hotel ( Bkm Karşısı Şetbaşı) → Tryp By Wyndham İst
  nbul Şişli
 DESCRIPTION:Müşteri: Waleed Alnassar\, Suaad Almethen\nŞoför: Kadir Ölme
  z / +90 (543) 287 06 87\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt
-  acenta: -\nAraç: Vito\nGüzergah: Bursa Suite Hotel ( Bkm Karşısı Şetbaş
- ı) → Tryp By Wyndham İstanbul Şişli\nÖdeme: Müşteri ödemez | Araç: 6.000
-  ₺
+  acenta: Feza Turizm\nAraç: Vito\nGüzergah: Bursa Suite Hotel ( Bkm Karş
+ ısı Şetbaşı) → Tryp By Wyndham İstanbul Şişli\nÖdeme: Müşteri: 5.500 TRY
+  | Araç: 5.500 ₺ | Alt acenta: 5.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
