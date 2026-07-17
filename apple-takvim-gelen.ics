@@ -3322,8 +3322,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784291852965_grhiv1@olmeztur
 DTSTAMP:20260717T193700Z
-LAST-MODIFIED:20260717T190700Z
-SEQUENCE:1784315233
+LAST-MODIFIED:20260717T193700Z
+SEQUENCE:1784317078
 DTSTART:20260718T053000
 DTEND:20260718T063000
 SUMMARY:05:30 · İST → Https://maps.app.goo.gl/vkikuz6rweaj2jbc6?g_st=iw 
@@ -3334,8 +3334,8 @@ DESCRIPTION:Müşteri: Abdulrahman Alzughaıbı -munırah Mohammed Albıshrı -
  alanoudabdulrahman -alzugha\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİ
  şi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Recep Öter\nAraç: Vito
  \nGüzergah: İstanbul Havalimanı → Https://maps.app.goo.gl/vkikuz6rweaj2j
- bc6?g_st=iw\nUçuş: TK95\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺ | Alt ace
- nta: 6.500 ₺
+ bc6?g_st=iw\nUçuş: TK95\nÖdeme: Müşteri: 200 USD | Araç: 7.000 ₺ | Alt a
+ centa: 6.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
