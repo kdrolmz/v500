@@ -3288,15 +3288,15 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784288895529_gqy117@olmeztur
 DTSTAMP:20260717T193700Z
-LAST-MODIFIED:20260717T114800Z
-SEQUENCE:1784288895
+LAST-MODIFIED:20260717T193700Z
+SEQUENCE:1784317053
 DTSTART:20260717T135000
 DTEND:20260717T145000
 SUMMARY:13:50 · İST → Bursa  Sprinter
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: -\nŞoför: Diğer Kaptanlar\nİşi veren: Salah\nİşi ya
  pan: Ölmeztur\nAlt acenta: İstanbul Acenta\nAraç: Sprinter\nGüzergah: İs
- tanbul Havalimanı → Bursa\nÖdeme: Müşteri: 250 USD | Araç: 11.300 ₺ | Al
+ tanbul Havalimanı → Bursa\nÖdeme: Müşteri: 240 USD | Araç: 11.300 ₺ | Al
  t acenta: 10.833 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
