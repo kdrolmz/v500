@@ -2118,8 +2118,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784313584030_ij47fq@olmeztur
 DTSTAMP:20260718T113300Z
-LAST-MODIFIED:20260717T193900Z
-SEQUENCE:1784317191
+LAST-MODIFIED:20260718T113300Z
+SEQUENCE:1784374430
 DTSTART:20260718T131500
 DTEND:20260718T141500
 SUMMARY:13:15 · Lillum Hotel - Millet Mahallesi → İstanbul  Sprinter
@@ -2128,8 +2128,8 @@ DESCRIPTION:Müşteri: Wadheha Altuwajer\, Budour Alshaban\, Nehal Alshaba
  n\, Sara Alshaban\, Bader Alshaban\, Amal Amulla\, Estıklal Almulla\nŞof
  ör: -\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Murat Ş
  ahin İstanbul\nAraç: Sprinter\nGüzergah: Lillum Hotel - Millet Mahallesi
-  → İstanbul Otel\nÖdeme: Müşteri: 190 USD | Araç: 7.750 ₺ | Alt acenta: 
- 6.500 ₺
+  → İstanbul Otel\nÖdeme: Müşteri: 200 USD | Araç: 8.500 ₺ | Alt acenta: 
+ 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
