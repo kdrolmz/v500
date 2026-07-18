@@ -2154,15 +2154,15 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784400866064_qzvyui@olmeztur
 DTSTAMP:20260718T185600Z
-LAST-MODIFIED:20260718T185400Z
-SEQUENCE:1784400866
+LAST-MODIFIED:20260718T185600Z
+SEQUENCE:1784401014
 DTSTART:20260719T110000
 DTEND:20260719T120000
 SUMMARY:11:00 · Bursa → Şişli  Minibüs
 LOCATION:Bursa → Şişli
-DESCRIPTION:Müşteri: -\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi ve
- ren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Minibüs\nGüze
- rgah: Bursa → Şişli\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺
+DESCRIPTION:Müşteri: Dalal Alsenan\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: M
+ inibüs\nGüzergah: Bursa → Şişli\nÖdeme: Müşteri: 200 USD | Araç: 7.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
