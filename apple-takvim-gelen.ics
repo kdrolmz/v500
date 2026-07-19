@@ -3377,15 +3377,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784460623908_jlih2m@olmeztur
 DTSTAMP:20260719T201500Z
-LAST-MODIFIED:20260719T113000Z
-SEQUENCE:1784460623
+LAST-MODIFIED:20260719T201500Z
+SEQUENCE:1784492146
 DTSTART:20260720T130500
 DTEND:20260720T140500
 SUMMARY:13:05 · Sabiha Gökçen → Bursa  Sprinter
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
 DESCRIPTION:Müşteri: -\nŞoför: Balentur\nİşi veren: Salah\nİşi yapan: Öl
- meztur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havaliman
- ı → Bursa\nUçuş: KU157\nÖdeme: -
+ meztur\nAlt acenta: Feza Turizm\nAraç: Sprinter\nGüzergah: Sabiha Gökçen
+  Havalimanı → Bursa\nUçuş: KU157\nÖdeme: Müşteri: 180 USD | Araç: 6.500 
+ ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
