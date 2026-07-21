@@ -3497,16 +3497,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784626775422_1qtwvv@olmeztur
 DTSTAMP:20260721T115900Z
-LAST-MODIFIED:20260721T093900Z
-SEQUENCE:1784626775
+LAST-MODIFIED:20260721T115900Z
+SEQUENCE:1784635173
 DTSTART:20260722T153500
 DTEND:20260722T163500
 SUMMARY:15:35 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Akinori Miyoshi\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vit
- o\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: NH219\nÖdeme: Müşteri öd
- emez | Araç: 9.000 ₺
+ o / 16 LMZ 55\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: NH219\nÖdeme
+ : Müşteri ödemez | Araç: 9.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
