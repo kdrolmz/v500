@@ -2240,8 +2240,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783341660024_6jq779@olmeztur
 DTSTAMP:20260721T093900Z
-LAST-MODIFIED:20260717T193700Z
-SEQUENCE:1784317035
+LAST-MODIFIED:20260721T093900Z
+SEQUENCE:1784626788
 DTSTART:20260722T090000
 DTEND:20260722T100000
 SUMMARY:09:00 · Almira Hotel → Manisa  Vito
@@ -2249,7 +2249,7 @@ LOCATION:Almira Hotel → Manisa
 DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: Kadir Ölmez / +90 (543) 287 0
  6 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito 
  / 16 LMZ 55\nGüzergah: Almira Hotel → Manisa\nÖdeme: Müşteri ödemez | Ar
- aç: 9.000 ₺
+ aç: 13.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
