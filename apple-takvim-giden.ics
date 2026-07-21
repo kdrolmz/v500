@@ -2241,15 +2241,16 @@ BEGIN:VEVENT
 UID:ko-transfer-1783341660024_6jq779@olmeztur
 DTSTAMP:20260721T115600Z
 LAST-MODIFIED:20260721T115600Z
-SEQUENCE:1784634966
+SEQUENCE:1784635007
 DTSTART:20260722T080000
 DTEND:20260722T090000
 SUMMARY:08:00 · Almira Hotel → Manisa Osb  Caravelle
 LOCATION:Almira Hotel → Manisa Osb
-DESCRIPTION:Müşteri: Masashi Inoue\nŞoför: İrfan Göyceli / +90 530 304 4
- 8 66\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: İrfan Göyceli\
- nAraç: Caravelle / 16 BIS 589\nGüzergah: Almira Hotel → Manisa Osb\nÖdem
- e: Müşteri ödemez | Araç: 13.000 ₺ | Alt acenta: 11.500 ₺
+DESCRIPTION:Müşteri: Masashi Inoue\, Seda Şendir Torisu\nŞoför: İrfan Gö
+ yceli / +90 530 304 48 66\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt a
+ centa: İrfan Göyceli\nAraç: Caravelle / 16 BIS 589\nGüzergah: Almira Hot
+ el → Manisa Osb\nÖdeme: Müşteri ödemez | Araç: 13.000 ₺ | Alt acenta: 11
+ .500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
