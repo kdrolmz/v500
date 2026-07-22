@@ -2328,10 +2328,10 @@ BEGIN:VEVENT
 UID:ko-transfer-1784659352320_watw04@olmeztur
 DTSTAMP:20260722T120200Z
 LAST-MODIFIED:20260722T120200Z
-SEQUENCE:1784721721
-DTSTART:20260723T093000
-DTEND:20260723T103000
-SUMMARY:09:30 · Bursa → Sabiha Gökçen  Sprinter
+SEQUENCE:1784721741
+DTSTART:20260723T090000
+DTEND:20260723T100000
+SUMMARY:09:00 · Bursa → Sabiha Gökçen  Sprinter
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Ali Khadada\, Ammar Khadada\, Badriyah Alsafar\, Ha
  san Khadada\, Sarah Khada\nŞoför: Balentur\nİşi veren: Aziz Yapıtek\nİşi
