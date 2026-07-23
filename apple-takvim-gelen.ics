@@ -3446,8 +3446,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784492314172_56uzaa@olmeztur
 DTSTAMP:20260723T144200Z
-LAST-MODIFIED:20260719T201800Z
-SEQUENCE:1784492314
+LAST-MODIFIED:20260723T144200Z
+SEQUENCE:1784817778
 DTSTART:20260720T174000
 DTEND:20260720T184000
 SUMMARY:17:40 · İST → Bursa  Vito
@@ -3455,7 +3455,7 @@ LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Boris Smola\nŞoför: Kadir Ölmez / +90 (543) 287 06 
  87\nİşi veren: Tuncay Seçkin\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
  Vito / 16 LMZ 55\nGüzergah: İstanbul Havalimanı → Bursa\nÖdeme: Müşteri 
- ödemez | Araç: 7.000 ₺
+ ödemez | Araç: 7.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
