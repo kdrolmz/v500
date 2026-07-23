@@ -2308,6 +2308,25 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1784736318228_z6c3lo@olmeztur
+DTSTAMP:20260723T143900Z
+LAST-MODIFIED:20260722T160500Z
+SEQUENCE:1784736318
+DTSTART:20260723T070000
+DTEND:20260723T080000
+SUMMARY:07:00 · Bursa → Sabiha Gökçen  Sprinter
+LOCATION:Bursa → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Osama Almarri -sara Almarri -gaslan Almarri- Maryam
+  Almarri -asma Almarri -noura Almarri -ali Almarri- Muna Almarri- Mohamm
+ ed Almarri\nŞoför: Nuri Çalışkan / +90 (536) 307 78 31\nİşi veren: Salah
+ \nİşi yapan: Ölmeztur\nAlt acenta: Nuri Çalışkan\nAraç: Sprinter\nGüzerg
+ ah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 6.50
+ 0 ₺ | Alt acenta: 6.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1784657206262_sq2cg6@olmeztur
 DTSTAMP:20260723T143900Z
 LAST-MODIFIED:20260722T161100Z
@@ -2338,25 +2357,6 @@ DESCRIPTION:Müşteri: Ali Khadada\, Ammar Khadada\, Badriyah Alsafar\, Ha
   yapan: Ölmeztur\nAlt acenta: Nuri Çalışkan\nAraç: Sprinter\nGüzergah: B
  ursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 8.000 ₺ |
   Alt acenta: 6.000 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1784736318228_z6c3lo@olmeztur
-DTSTAMP:20260723T143900Z
-LAST-MODIFIED:20260722T185800Z
-SEQUENCE:1784746699
-DTSTART:20260723T150000
-DTEND:20260723T160000
-SUMMARY:15:00 · Bursa → Sabiha Gökçen  Sprinter
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Osama Almarri -sara Almarri -gaslan Almarri- Maryam
-  Almarri -asma Almarri -noura Almarri -ali Almarri- Muna Almarri- Mohamm
- ed Almarri\nŞoför: Nuri Çalışkan / +90 (536) 307 78 31\nİşi veren: Salah
- \nİşi yapan: Ölmeztur\nAlt acenta: Recep Öter\nAraç: Sprinter\nGüzergah:
-  Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺
-  | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
