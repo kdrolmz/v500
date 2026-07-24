@@ -3563,24 +3563,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1784914235917_qkgrdu@olmeztur
-DTSTAMP:20260724T173000Z
-LAST-MODIFIED:20260724T173000Z
-SEQUENCE:1784914235
-DTSTART:20260724T135000
-DTEND:20260724T145000
-SUMMARY:13:50 · İST → Bursa  Vito
-LOCATION:İstanbul Havalimanı → Bursa
-DESCRIPTION:Müşteri: Loluwah Althekrallah\, Danah Althekrallah\, Omar Al
- thekrallah\, Nourah Alsheqaihi\, Ginalyn Ramos\nŞoför: Kadir Ölmez / +90
-  (543) 287 06 87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\n
- Araç: Vito\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: M
- üşteri: 200 USD | Araç: 7.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1784914137601_afd949@olmeztur
 DTSTAMP:20260724T173000Z
 LAST-MODIFIED:20260724T172800Z
@@ -3593,6 +3575,24 @@ DESCRIPTION:Müşteri: Yunus Emre Bey\nŞoför: Kadir Ölmez / +90 (543) 287
  06 87\nİşi veren: Nuri Çalışkan\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
  ç: Vito / 16 LMZ 55\nGüzergah: Üsküdar → İznik Yolu\nÖdeme: Müşteri ödem
  ez | Araç: 6.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1784914235917_qkgrdu@olmeztur
+DTSTAMP:20260724T173000Z
+LAST-MODIFIED:20260724T173000Z
+SEQUENCE:1784914246
+DTSTART:20260725T135000
+DTEND:20260725T145000
+SUMMARY:13:50 · İST → Bursa  Vito
+LOCATION:İstanbul Havalimanı → Bursa
+DESCRIPTION:Müşteri: Loluwah Althekrallah\, Danah Althekrallah\, Omar Al
+ thekrallah\, Nourah Alsheqaihi\, Ginalyn Ramos\nŞoför: Kadir Ölmez / +90
+  (543) 287 06 87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\n
+ Araç: Vito\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU155\nÖdeme: M
+ üşteri: 200 USD | Araç: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
