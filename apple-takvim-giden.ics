@@ -2431,13 +2431,13 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-rtsplit_1783341732821_ix14y3@olmeztur
 DTSTAMP:20260725T165400Z
-LAST-MODIFIED:20260725T165300Z
-SEQUENCE:1784998438
+LAST-MODIFIED:20260725T165400Z
+SEQUENCE:1784998487
 DTSTART:20260727T153000
 DTEND:20260727T163000
 SUMMARY:15:30 · Jıca Türkiye Ofisi → Ankara Esenboğa  Vito
 LOCATION:Jıca Türkiye Ofisi → Ankara Esenboğa Havalimanı
-DESCRIPTION:Müşteri: Masashi Inoue\, Seda Şendir Timosu\nŞoför: Kadir Öl
+DESCRIPTION:Müşteri: Masashi Inoue\, Seda Şendir Torisu\nŞoför: Kadir Öl
  mez / +90 (543) 287 06 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt a
  centa: Aydın Abi Ankara\nAraç: Vito\nGüzergah: Jıca Türkiye Ofisi → Anka
  ra Esenboğa Havalimanı\nUçuş: VF4027\nNot: gidiş dönüş ay\nÖdeme: Müşter
