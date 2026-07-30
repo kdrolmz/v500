@@ -3877,24 +3877,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785405160210_jfzqa6@olmeztur
-DTSTAMP:20260730T100400Z
-LAST-MODIFIED:20260730T095200Z
-SEQUENCE:1785405160
-DTSTART:20260731T090000
-DTEND:20260731T100000
-SUMMARY:09:00 · Bursa → Sabiha Gökçen  Sprinter
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Alia Aladwani\nŞoför: -\nİşi veren: Sadettin Darkal
- \nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Bursa → 
- Sabiha Gökçen Havalimanı\nNot: Çanta yardımana kaptana 500 tl verilecek 
- . Ayrıca oksijende yemek molası olacak\nÖdeme: Müşteri ödemez | Araç: 7.
- 000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785405591771_nw7hhm@olmeztur
 DTSTAMP:20260730T100400Z
 LAST-MODIFIED:20260730T095900Z
