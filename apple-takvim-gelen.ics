@@ -3429,7 +3429,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1783669240397_vhqbcg@olmeztur
 DTSTAMP:20260730T214000Z
 LAST-MODIFIED:20260730T214000Z
-SEQUENCE:1785447631
+SEQUENCE:1785447647
 DTSTART:20260720T153000
 DTEND:20260720T163000
 SUMMARY:15:30 · Ankara → Bursa  Vito
@@ -3437,7 +3437,7 @@ LOCATION:Jica Türkiye Merkezi - Koza Suite Ankara → Almira Hotel Bursa
 DESCRIPTION:Müşteri: Kaho Kodama\nŞoför: İrfan Göyceli / +90 530 304 48 
  66\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: İrfan Göyceli\nA
  raç: Vito / 16BIS589\nGüzergah: Jica Türkiye Merkezi - Koza Suite Ankara
-  → Almira Hotel Bursa\nÖdeme: Müşteri ödemez | Araç: 12.200 ₺ | Alt acen
+  → Almira Hotel Bursa\nÖdeme: Müşteri ödemez | Araç: 12.500 ₺ | Alt acen
  ta: 7.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
