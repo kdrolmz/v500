@@ -3877,22 +3877,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785424569589_tbyuwe@olmeztur
-DTSTAMP:20260730T165300Z
-LAST-MODIFIED:20260730T151600Z
-SEQUENCE:1785424569
-DTSTART:20260731T131000
-DTEND:20260731T141000
-SUMMARY:13:10 · Sabiha Gökçen → El Yusufi  Vito
-LOCATION:Sabiha Gökçen Havalimanı → El Yusufi
-DESCRIPTION:Müşteri: Eisa Althayedi\nŞoför: -\nİşi veren: Salah\nİşi yap
- an: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Sabiha Gökçen Havalim
- anı → El Yusufi\nUçuş: KU157\nÖdeme: Müşteri: 160 USD | Araç: 7.600 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785427661727_hru6zt@olmeztur
 DTSTAMP:20260730T165300Z
 LAST-MODIFIED:20260730T160700Z
@@ -3925,6 +3909,23 @@ DESCRIPTION:Müşteri: Latıfa Alqloshı\, Mohammad Alfassam\, Yousef Alfass
  : Vito\nGüzergah: Sabiha Gökçen Havalimanı → Https://maps.app.goo.gl/s44
  xxur2kt3hj36g6?g_st=ic\nUçuş: KU157\nÖdeme: Müşteri: 180 USD | Araç: 8.5
  50 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785424569589_tbyuwe@olmeztur
+DTSTAMP:20260730T165300Z
+LAST-MODIFIED:20260730T165300Z
+SEQUENCE:1785430412
+DTSTART:20260731T131000
+DTEND:20260731T141000
+SUMMARY:13:10 · Sabiha Gökçen → El Yusufi  Vito
+LOCATION:Sabiha Gökçen Havalimanı → El Yusufi
+DESCRIPTION:Müşteri: Eisa Althayedi\nŞoför: Ahmet Siliman / +90(536)6512
+ 544\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
+ 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → El Yusufi\nUçuş: KU157\n
+ Ödeme: Müşteri: 160 USD | Araç: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
