@@ -3967,15 +3967,16 @@ BEGIN:VEVENT
 UID:ko-transfer-1784045931055_hbm36v@olmeztur
 DTSTAMP:20260731T230300Z
 LAST-MODIFIED:20260731T230300Z
-SEQUENCE:1785538980
+SEQUENCE:1785539000
 DTSTART:20260801T113500
 DTEND:20260801T123500
 SUMMARY:11:35 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Yousef Alsaeıd\, Jasem Aljawhar\, Dalal Aljouhar\, 
- Laila Alfathllah\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ö
- lmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: İstan
- bul Havalimanı → Bursa\nÖdeme: Müşteri: 200 USD | Araç: 9.400 ₺
+ Laila Alfathllah\nŞoför: Ahmet Siliman / +90(536)6512544\nİşi veren: Ölm
+ eztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzer
+ gah: İstanbul Havalimanı → Bursa\nÖdeme: Müşteri: 200 USD | Araç: 9.400 
+ ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
