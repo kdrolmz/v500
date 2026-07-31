@@ -2550,28 +2550,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785405377672_qf67xz@olmeztur
-DTSTAMP:20260731T050000Z
-LAST-MODIFIED:20260730T214800Z
-SEQUENCE:1785448098
-DTSTART:20260731T090000
-DTEND:20260731T100000
-SUMMARY:09:00 · Https://maps.app.goo.gl/bwmjrnn8mt78mqrm7?g_st=ic → Sabi
- ha Gökçen  Sprinter
-LOCATION:Https://maps.app.goo.gl/bwmjrnn8mt78mqrm7?g_st=ic → Sabiha Gökç
- en Havalimanı
-DESCRIPTION:Müşteri: Anwar Almutairi\, Pasmaya Tamang\, Mubarak Alwaalan
- \, Haya Alwaalan\, Waddha Alsuaıbe\, Sırjana Tamang\, Hazzaa Almutairi\,
-  Moudhi Almutairi\, Sarah Almutairi\nŞoför: Ethem Bey / +905343266394\nİ
- şi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprint
- er / 16 BLN 51\nGüzergah: Https://maps.app.goo.gl/bwmjrnn8mt78mqrm7?g_st
- =ic → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 180 USD | Araç: 7.000 ₺ 
- | Alt acenta: 6.750 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785429436147_4gkgho@olmeztur
 DTSTAMP:20260731T050000Z
 LAST-MODIFIED:20260730T214800Z
@@ -2586,6 +2564,25 @@ DESCRIPTION:Müşteri: Alia Aladwani\nŞoför: Halil İbrahim Köse / +9054225
  anı\nNot: Çanta yardımana kaptana 500 tl verilecek . Ayrıca oksijende ye
  mek molası olacak\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺ | Alt acenta: 6
  .750 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785405377672_qf67xz@olmeztur
+DTSTAMP:20260731T050000Z
+LAST-MODIFIED:20260731T050000Z
+SEQUENCE:1785474040
+DTSTART:20260731T090000
+DTEND:20260731T100000
+SUMMARY:09:00 · Bursa → Sabiha Gökçen  Sprinter
+LOCATION:Bursa → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Anwar Almutairi\, Pasmaya Tamang\, Mubarak Alwaalan
+ \, Haya Alwaalan\, Waddha Alsuaıbe\, Sırjana Tamang\, Hazzaa Almutairi\,
+  Moudhi Almutairi\, Sarah Almutairi\nŞoför: Ethem Bey / +905343266394\nİ
+ şi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprint
+ er / 16 BLN 51\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşte
+ ri: 180 USD | Araç: 7.000 ₺ | Alt acenta: 6.750 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
