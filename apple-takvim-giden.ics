@@ -2608,16 +2608,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784136123524_7in6ue@olmeztur
 DTSTAMP:20260801T214200Z
-LAST-MODIFIED:20260717T193600Z
-SEQUENCE:1784317007
+LAST-MODIFIED:20260801T214200Z
+SEQUENCE:1785620578
 DTSTART:20260801T093000
 DTEND:20260801T103000
 SUMMARY:09:30 · Bursa → Sabiha Gökçen  Vito
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Ghadeer Ismaiel\, Fatma Jarah\, Abeer Bardon\nŞoför
  : Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölm
- eztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa → Sabiha Gökçen Havali
- manı\nÖdeme: Müşteri: 7.500 TRY | Araç: 7.500 ₺
+ eztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: Bursa → Sabiha Gökçen
+  Havalimanı\nÖdeme: Müşteri: 7.500 TRY | Araç: 7.500 ₺ | Alt acenta: 5.0
+ 00 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
