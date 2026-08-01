@@ -2571,8 +2571,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785405377672_qf67xz@olmeztur
 DTSTAMP:20260801T071500Z
-LAST-MODIFIED:20260731T050000Z
-SEQUENCE:1785474040
+LAST-MODIFIED:20260801T071500Z
+SEQUENCE:1785568545
 DTSTART:20260731T090000
 DTEND:20260731T100000
 SUMMARY:09:00 · Bursa → Sabiha Gökçen  Sprinter
@@ -2582,7 +2582,7 @@ DESCRIPTION:Müşteri: Anwar Almutairi\, Pasmaya Tamang\, Mubarak Alwaalan
   Moudhi Almutairi\, Sarah Almutairi\nŞoför: Ethem Bey / +905343266394\nİ
  şi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprint
  er / 16 BLN 51\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşte
- ri: 180 USD | Araç: 7.000 ₺ | Alt acenta: 6.750 ₺
+ ri: 8.200 TRY | Araç: 7.000 ₺ | Alt acenta: 6.750 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
