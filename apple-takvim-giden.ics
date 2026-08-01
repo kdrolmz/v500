@@ -2623,6 +2623,40 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1785577900721_02jp08@olmeztur
+DTSTAMP:20260801T100600Z
+LAST-MODIFIED:20260801T095100Z
+SEQUENCE:1785577900
+DTSTART:20260802T093000
+DTEND:20260802T103000
+SUMMARY:09:30 · Bursa → Sabiha Gökçen  Vito
+LOCATION:Bursa → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Asma Sifa Mubark\, Mohammad Sifa Mubark\, Albandari
+  Sife Mubark\, Fatima Sife Mubark\nŞoför: -\nİşi veren: Salah\nİşi yapan
+ : Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa → Sabiha Gökçen H
+ avalimanı\nÖdeme: Müşteri: 160 USD | Araç: 7.600 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785576242985_c3n6of@olmeztur
+DTSTAMP:20260801T100600Z
+LAST-MODIFIED:20260801T092400Z
+SEQUENCE:1785576242
+DTSTART:20260802T100000
+DTEND:20260802T110000
+SUMMARY:10:00 · Bursa → İST  Vito
+LOCATION:Bursa → İstanbul Havalimanı
+DESCRIPTION:Müşteri: Abdulsalam Khalıfah\, Maryam Abdulkareem\, Halımah 
+ Hajı\, Badarya Khalıfah\, Danah Khalıfah\nŞoför: -\nİşi veren: Sadettin 
+ Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa 
+ → İstanbul Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1783541161594_u09k53@olmeztur
 DTSTAMP:20260801T100600Z
 LAST-MODIFIED:20260708T200600Z
