@@ -907,16 +907,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785769533489_xp871i@olmeztur
 DTSTAMP:20260803T205500Z
-LAST-MODIFIED:20260803T150500Z
-SEQUENCE:1785769533
+LAST-MODIFIED:20260803T205500Z
+SEQUENCE:1785790554
 DTSTART:20260804T163000
 DTEND:20260804T173000
 SUMMARY:16:30 · Gölyazı-mudanya Turu Turu  Vito
 LOCATION:Bursa Downtown → Gölyazı-mudanya Turu
 DESCRIPTION:Müşteri: Huda Alanezi\nŞoför: Kadir Ölmez / +90 (543) 287 06
   87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
- ç: Vito\nGüzergah: Bursa Downtown → Gölyazı-mudanya Turu\nÖdeme: Müşteri
- : 140 USD | Araç: 5.700 ₺
+ ç: Vito / 16 LMZ 55\nGüzergah: Bursa Downtown → Gölyazı-mudanya Turu\nÖd
+ eme: Müşteri: 140 USD | Araç: 5.700 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
