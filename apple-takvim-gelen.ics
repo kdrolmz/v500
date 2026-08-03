@@ -4002,8 +4002,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785578012803_yq4b32@olmeztur
 DTSTAMP:20260803T110500Z
-LAST-MODIFIED:20260801T213700Z
-SEQUENCE:1785620234
+LAST-MODIFIED:20260803T110500Z
+SEQUENCE:1785755155
 DTSTART:20260802T132000
 DTEND:20260802T142000
 SUMMARY:13:20 · Sabiha Gökçen → Bursa  Vito
@@ -4012,7 +4012,7 @@ DESCRIPTION:Müşteri: Mubarak Alhajeri\, Naser Alhajeri\, Saif Alhajeri\,
   Fatemah Alhajeri\, Athari Alkhaldi\nŞoför: Kadir Elçiboğa / +90 (539) 2
  19 01 82\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Kadir Elçib
  oğa\nAraç: Vito\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: KU157
- \nÖdeme: Müşteri: 160 USD | Araç: 6.000 ₺ | Alt acenta: 5.500 ₺
+ \nÖdeme: Müşteri ödemez | Araç: 6.000 ₺ | Alt acenta: 5.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
