@@ -2694,15 +2694,15 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785760907167_zrwnzh@olmeztur
 DTSTAMP:20260804T154400Z
-LAST-MODIFIED:20260803T124100Z
-SEQUENCE:1785760907
+LAST-MODIFIED:20260804T154400Z
+SEQUENCE:1785858287
 DTSTART:20260805T120000
 DTEND:20260805T130000
 SUMMARY:12:00 · Tuğcu Hotel → İstanbul  Sprinter
 LOCATION:Tuğcu Hotel → Mıdtownn Hotel İstanbul
 DESCRIPTION:Müşteri: Nadiah Karam\nŞoför: Balentur\nİşi veren: Ölmeztur\
  nİşi yapan: Balentur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Tuğcu Hot
- el → Mıdtownn Hotel İstanbul\nÖdeme: Müşteri: 200 USD | Araç: 9.500 ₺
+ el → Mıdtownn Hotel İstanbul\nÖdeme: Müşteri: 200 USD | Araç: 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
