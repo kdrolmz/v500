@@ -4105,16 +4105,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785765269062_5zhmmi@olmeztur
 DTSTAMP:20260804T155300Z
-LAST-MODIFIED:20260803T135400Z
-SEQUENCE:1785765269
+LAST-MODIFIED:20260804T155300Z
+SEQUENCE:1785858809
 DTSTART:20260805T110000
 DTEND:20260805T120000
 SUMMARY:11:00 · Sabiha Gökçen → Bursa  Vito
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
 DESCRIPTION:Müşteri: -\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi ve
- ren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGü
- zergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşteri: 6.500 TRY | Ar
- aç: 6.500 ₺
+ ren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
+ 6 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşteri: 6.
+ 500 TRY | Araç: 6.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
