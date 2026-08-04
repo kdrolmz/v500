@@ -4069,23 +4069,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785858387495_1w3zwt@olmeztur
-DTSTAMP:20260804T154600Z
-LAST-MODIFIED:20260804T154600Z
-SEQUENCE:1785858387
-DTSTART:20260804T090000
-DTEND:20260804T100000
-SUMMARY:09:00 · Sabiha Gökçen → Bursa  Vito
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Sadece Çanta\nŞoför: Kadir Ölmez / +90 (543) 287 06
-  87\nİşi veren: Ahmet Güler\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
- ito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşt
- eri ödemez | Araç: 2.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785790536292_nkzm6q@olmeztur
 DTSTAMP:20260804T154600Z
 LAST-MODIFIED:20260804T154500Z
@@ -4098,6 +4081,23 @@ DESCRIPTION:Müşteri: Aadlh Albathalı\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Arıkan Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAr
  aç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: 
  KU157\nÖdeme: Müşteri: 200 USD | Araç: 6.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785858387495_1w3zwt@olmeztur
+DTSTAMP:20260804T154600Z
+LAST-MODIFIED:20260804T154600Z
+SEQUENCE:1785858403
+DTSTART:20260804T133000
+DTEND:20260804T143000
+SUMMARY:13:30 · Sabiha Gökçen → Bursa  Vito
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Sadece Çanta\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Ahmet Güler\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
+ ito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşt
+ eri ödemez | Araç: 2.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
