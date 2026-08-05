@@ -2778,17 +2778,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785933535705_hmkk14@olmeztur
 DTSTAMP:20260805T130500Z
-LAST-MODIFIED:20260805T124200Z
-SEQUENCE:1785933730
+LAST-MODIFIED:20260805T130500Z
+SEQUENCE:1785935146
 DTSTART:20260806T100000
 DTEND:20260806T110000
 SUMMARY:10:00 · Bursa → Sabiha Gökçen  Vito
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
+LOCATION:Bursa Modern Sitesi → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Dhari Alkhaldi\, Nainan Alkhaldy\, Meshal Alkhaldi\
  , Fadeyah Alenezi\, Ahmad Alkhaldi\, Fatemah Alkhaldi\nŞoför: Balentur\n
  İşi veren: Şakir Önlen\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç:
-  Vito\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 170 U
- SD | Araç: 6.500 ₺ | Alt acenta: 5.500 ₺
+  Vito\nGüzergah: Bursa Modern Sitesi → Sabiha Gökçen Havalimanı\nÖdeme: 
+ Müşteri: 170 USD | Araç: 6.500 ₺ | Alt acenta: 5.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
