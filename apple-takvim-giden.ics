@@ -2742,23 +2742,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785935086230_3vg5gv@olmeztur
-DTSTAMP:20260805T135600Z
-LAST-MODIFIED:20260805T130400Z
-SEQUENCE:1785935086
-DTSTART:20260806T090000
-DTEND:20260806T100000
-SUMMARY:09:00 · Bursa → Sabiha Gökçen  Vito
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Saud Al Azmi\nŞoför: Kadir Ölmez / +90 (543) 287 06
-  87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nG
- üzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 160 USD | Ara
- ç: 6.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1783541161594_u09k53@olmeztur
 DTSTAMP:20260805T135600Z
 LAST-MODIFIED:20260805T130500Z
@@ -2771,6 +2754,23 @@ DESCRIPTION:Müşteri: Tomoko Shaw\nŞoför: Kadir Ölmez / +90 (543) 287 06
  87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: 
  Vito\nGüzergah: Almira Hotel → İstanbul Havalimanı\nÖdeme: Müşteri ödeme
  z | Araç: 9.000 ₺ | Alt acenta: 6.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785935086230_3vg5gv@olmeztur
+DTSTAMP:20260805T135600Z
+LAST-MODIFIED:20260805T135600Z
+SEQUENCE:1785938181
+DTSTART:20260806T090000
+DTEND:20260806T100000
+SUMMARY:09:00 · Bursa → Sabiha Gökçen  Vito
+LOCATION:Bursa → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Saud Al Azmi\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
+ 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 1
+ 60 USD | Araç: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
