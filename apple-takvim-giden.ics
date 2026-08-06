@@ -2725,6 +2725,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1785871821064_xj3u0s@olmeztur
+DTSTAMP:20260806T080700Z
+LAST-MODIFIED:20260804T193000Z
+SEQUENCE:1785871821
+DTSTART:20260806T090000
+DTEND:20260806T100000
+SUMMARY:09:00 · Bursa → Galataport  Vito
+LOCATION:Bursa → Galataport
+DESCRIPTION:Müşteri: Muna Alenezi\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
+ Vito\nGüzergah: Bursa → Galataport\nÖdeme: Müşteri: 180 USD | Araç: 8.55
+ 0 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1785935086230_3vg5gv@olmeztur
 DTSTAMP:20260806T080700Z
 LAST-MODIFIED:20260805T172800Z
@@ -2737,24 +2754,6 @@ DESCRIPTION:Müşteri: Saud Al Azmi\nŞoför: Kadir Ölmez / +90 (543) 287 06
   87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
  16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri öd
  emez | Araç: 6.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1785871821064_xj3u0s@olmeztur
-DTSTAMP:20260806T080700Z
-LAST-MODIFIED:20260805T190800Z
-SEQUENCE:1785956907
-DTSTART:20260806T090000
-DTEND:20260806T100000
-SUMMARY:09:00 · Bursa → Galataport  Vito
-LOCATION:Bursa → Galataport
-DESCRIPTION:Müşteri: Muna Alenezi\, Rashed Alenezi\, Abdulkareem Alenezi
- \, Salahulden Alanzi\nŞoför: Muhammet Arıkan / +90 (531) 966 94 49\nİşi 
- veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Arıkan Turizm\nAra
- ç: Vito\nGüzergah: Bursa → Galataport\nÖdeme: Müşteri: 180 USD | Araç: 7
- .750 ₺ | Alt acenta: 7.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -2780,16 +2779,33 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783541161594_u09k53@olmeztur
 DTSTAMP:20260806T080700Z
-LAST-MODIFIED:20260805T210200Z
-SEQUENCE:1785963722
+LAST-MODIFIED:20260806T080700Z
+SEQUENCE:1786003668
 DTSTART:20260806T103000
 DTEND:20260806T113000
-SUMMARY:10:30 · Bbb-almira Hotel → İST  Vito
-LOCATION:Bbb-almira Hotel → İstanbul Havalimanı
-DESCRIPTION:Müşteri: Tomoko Shaw\nŞoför: Oğuz Bey / +905337770140\nİşi v
- eren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito / 16
- BLE19\nGüzergah: Bbb-almira Hotel → İstanbul Havalimanı\nÖdeme: Müşteri 
- ödemez | Araç: 9.000 ₺ | Alt acenta: 6.000 ₺
+SUMMARY:10:30 · Almira Hotel → İST  Vito
+LOCATION:Almira Hotel → İstanbul Havalimanı
+DESCRIPTION:Müşteri: Tomoko Shaw\nŞoför: Kadir Ölmez / +90 (543) 287 06 
+ 87\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: 
+ Vito\nGüzergah: Almira Hotel → İstanbul Havalimanı\nÖdeme: Müşteri ödeme
+ z | Araç: 9.000 ₺ | Alt acenta: 6.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786003306322_1lwkky@olmeztur
+DTSTAMP:20260806T080700Z
+LAST-MODIFIED:20260806T080100Z
+SEQUENCE:1786003306
+DTSTART:20260806T130000
+DTEND:20260806T140000
+SUMMARY:13:00 · Lilium Hotel → Mahmutbey Hotel  Vito
+LOCATION:Lilium Hotel → Mahmutbey Hotel
+DESCRIPTION:Müşteri: Sadece Çanta\nŞoför: Fevzi Comfortbase\nİşi veren: 
+ Abu Fettah Lillum\nİşi yapan: Ölmeztur\nAlt acenta: Fevzi ComfortBase\nA
+ raç: Vito\nGüzergah: Lilium Hotel → Mahmutbey Hotel\nÖdeme: Müşteri: 9.0
+ 00 TRY | Araç: 7.000 ₺ | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
