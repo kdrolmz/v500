@@ -4193,7 +4193,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1786028671734_caab13@olmeztur
 DTSTAMP:20260806T150400Z
 LAST-MODIFIED:20260806T150400Z
-SEQUENCE:1786028671
+SEQUENCE:1786028694
 DTSTART:20260807T113000
 DTEND:20260807T123000
 SUMMARY:11:30 · Leluxe Hotel → Sapanca  Vito
@@ -4201,7 +4201,7 @@ LOCATION:Leluxe Hotel → Sapanca
 DESCRIPTION:Müşteri: Muıdh Aıqarn\, Tahanı Alharth\nŞoför: İrfan Göyceli
   / +90 530 304 48 66\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nA
  lt acenta: İrfan Göyceli\nAraç: Vito\nGüzergah: Leluxe Hotel → Sapanca\n
- Ödeme: Müşteri: 180 USD | Araç: 5.500 ₺
+ Ödeme: Müşteri: 180 USD | Araç: 5.500 ₺ | Alt acenta: 5.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
