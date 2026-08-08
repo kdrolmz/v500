@@ -975,16 +975,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786134450280_yh94do@olmeztur
 DTSTAMP:20260808T065700Z
-LAST-MODIFIED:20260807T202700Z
-SEQUENCE:1786134450
+LAST-MODIFIED:20260808T065700Z
+SEQUENCE:1786172266
 DTSTART:20260808T113500
 DTEND:20260808T123500
 SUMMARY:11:35 · İstanbul Turu  Sprinter
 LOCATION:İstanbul Havalimanı → İstanbul Otel- Tur
-DESCRIPTION:Müşteri: Abdullah Alkandari\nŞoför: Salah\nİşi veren: Trias 
- Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\nAraç: Sprinter\nGüzergah
- : İstanbul Havalimanı → İstanbul Otel- Tur\nUçuş: KU155\nÖdeme: Müşteri:
-  200 USD | Araç: 9.050 ₺ | Alt acenta: 8.577 ₺
+DESCRIPTION:Müşteri: Abdullah Alkandari\nŞoför: Tolga Bey / 0 (531) 893 
+ 70 99\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\n
+ Araç: Sprinter / 34 DPB 933\nGüzergah: İstanbul Havalimanı → İstanbul Ot
+ el- Tur\nUçuş: KU155\nÖdeme: Müşteri: 200 USD | Araç: 9.050 ₺ | Alt acen
+ ta: 8.577 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
