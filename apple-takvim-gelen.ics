@@ -4224,23 +4224,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786123070025_pse6z1@olmeztur
-DTSTAMP:20260809T123100Z
-LAST-MODIFIED:20260807T171700Z
-SEQUENCE:1786123070
-DTSTART:20260808T130500
-DTEND:20260808T140500
-SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Marıyam Aleıdı\nŞoför: Ata Ateş\nİşi veren: Salah\n
- İşi yapan: Ölmeztur\nAlt acenta: Ata Ateş\nAraç: Vito\nGüzergah: Sabiha 
- Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç: 6.500 ₺ | Alt a
- centa: 6.500 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1786130922409_sve0eb@olmeztur
 DTSTAMP:20260809T123100Z
 LAST-MODIFIED:20260807T192800Z
@@ -4271,6 +4254,23 @@ DESCRIPTION:Müşteri: Eiman Almutairi\nŞoför: Erol Köse\nİşi veren: Salah
  ha Gökçen Havalimanı → Bursa\nUçuş: KU157\nNot: 1200 tl çantacı parası h
  esaba dahil 165 dolar \nÖdeme: Müşteri: 9.050 TRY | Araç: 7.000 ₺ | Alt 
  acenta: 7.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786123070025_pse6z1@olmeztur
+DTSTAMP:20260809T123100Z
+LAST-MODIFIED:20260809T123100Z
+SEQUENCE:1786278689
+DTSTART:20260808T130500
+DTEND:20260808T140500
+SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Marıyam Aleıdı\nŞoför: Ata Ateş\nİşi veren: Salah\n
+ İşi yapan: Ölmeztur\nAlt acenta: Ata Ateş\nAraç: Vito\nGüzergah: Sabiha 
+ Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç: 6.500 ₺ | Alt a
+ centa: 6.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
