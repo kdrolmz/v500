@@ -2970,14 +2970,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1786271052374_sv1dtq@olmeztur
 DTSTAMP:20260809T102400Z
 LAST-MODIFIED:20260809T102400Z
-SEQUENCE:1786271052
+SEQUENCE:1786271095
 DTSTART:20260810T143000
 DTEND:20260810T153000
 SUMMARY:14:30 · Bursa → İST  Vito
 LOCATION:Bursa Alpiş Tuana Evleri 2.etap B:7 → İstanbul Havalimanı
-DESCRIPTION:Müşteri: -\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi ve
- ren: Muhammet s.\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzerg
- ah: Bursa Alpiş Tuana Evleri 2.etap B:7 → İstanbul Havalimanı\nÖdeme: -
+DESCRIPTION:Müşteri: Ali Abdullah\, Mohammad Abdullah\nŞoför: Kadir Ölme
+ z / +90 (543) 287 06 87\nİşi veren: Muhammet s.\nİşi yapan: Ölmeztur\nAl
+ t acenta: -\nAraç: Vito\nGüzergah: Bursa Alpiş Tuana Evleri 2.etap B:7 →
+  İstanbul Havalimanı\nÖdeme: Müşteri ödemez | Araç: 9.050 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
