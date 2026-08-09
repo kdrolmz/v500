@@ -4313,17 +4313,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786269811015_oczx4a@olmeztur
 DTSTAMP:20260809T121400Z
-LAST-MODIFIED:20260809T100400Z
-SEQUENCE:1786269899
+LAST-MODIFIED:20260809T121400Z
+SEQUENCE:1786277670
 DTSTART:20260810T184500
 DTEND:20260810T194500
 SUMMARY:18:45 · İST → Bursa  Vito
 LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Almarri Mohammed Rakan -almarri Rakan Mohd -almarri
   Norah Naie -almarri Ahmed Rakan\nŞoför: Kadir Ölmez / +90 (543) 287 06 
- 87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGü
- zergah: İstanbul Havalimanı → Bursa\nUçuş: QR245\nÖdeme: Müşteri: 200 US
- D | Araç: 9.550 ₺
+ 87\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 1
+ 6 LMZ 55\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: QR245\nÖdeme: Müş
+ teri: 200 USD | Araç: 9.550 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
