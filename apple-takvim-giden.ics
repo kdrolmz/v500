@@ -2916,17 +2916,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786269606214_pbvuej@olmeztur
 DTSTAMP:20260809T164600Z
-LAST-MODIFIED:20260809T103700Z
-SEQUENCE:1786271860
+LAST-MODIFIED:20260809T164600Z
+SEQUENCE:1786293985
 DTSTART:20260810T083000
 DTEND:20260810T093000
 SUMMARY:08:30 · Bursa → İST  Vito
 LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: •⁠ ⁠⁠* Noura Al-harbi •⁠ ⁠haifa Al-zughaibi •⁠ ⁠ahm
  ed Al-jahdali\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Sala
- h\nİşi yapan: Ölmeztur\nAlt acenta: Feza Turizm\nAraç: Vito\nGüzergah: B
- ursa → İstanbul Havalimanı\nÖdeme: Müşteri: 200 USD | Araç: 7.000 ₺ | Al
- t acenta: 6.500 ₺
+ h\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nGüzergah: Bu
+ rsa → İstanbul Havalimanı\nÖdeme: Müşteri: 200 USD | Araç: 7.000 ₺ | Alt
+  acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
