@@ -4365,16 +4365,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786378874142_f5z36z@olmeztur
 DTSTAMP:20260810T202100Z
-LAST-MODIFIED:20260810T192400Z
-SEQUENCE:1786389868
+LAST-MODIFIED:20260810T202100Z
+SEQUENCE:1786393308
 DTSTART:20260811T120000
 DTEND:20260811T130000
 SUMMARY:12:00 · İstanbul → Bursa  Vito
 LOCATION:İstanbul → Bursa
 DESCRIPTION:Müşteri: Mahmoud Hecham Wahbi - Mona Assil\nŞoför: Kadir Ölm
  ez / +90 (543) 287 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztu
- r\nAlt acenta: Kadir Elçiboğa\nAraç: Vito\nGüzergah: İstanbul → Bursa\nÖ
- deme: Müşteri: 200 USD | Araç: 6.500 ₺ | Alt acenta: 6.000 ₺
+ r\nAlt acenta: Suat Cengizoğlu\nAraç: Vito\nGüzergah: İstanbul → Bursa\n
+ Ödeme: Müşteri: 200 USD | Araç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
