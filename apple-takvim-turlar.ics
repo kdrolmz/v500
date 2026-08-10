@@ -1032,7 +1032,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1786375701159_a3dssy@olmeztur
 DTSTAMP:20260810T152800Z
 LAST-MODIFIED:20260810T152800Z
-SEQUENCE:1786375701
+SEQUENCE:1786375734
 DTSTART:20260811T100000
 DTEND:20260811T110000
 SUMMARY:10:00 · Bursa Turu  Vito
@@ -1040,7 +1040,7 @@ LOCATION:Sia Hotel → Bursa Tur
 DESCRIPTION:Müşteri: Saaed Abu Saleh\nŞoför: Şenol Hemitli / +90 (537) 4
  75 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ş
  enol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur\nÖdeme: Müşter
- i ödemez | Araç: 4.300 ₺
+ i ödemez | Araç: 4.300 ₺ | Alt acenta: 4.294 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
