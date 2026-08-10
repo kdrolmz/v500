@@ -3039,17 +3039,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786374579199_c8g888@olmeztur
 DTSTAMP:20260810T202800Z
-LAST-MODIFIED:20260810T201900Z
-SEQUENCE:1786393165
+LAST-MODIFIED:20260810T202800Z
+SEQUENCE:1786393713
 DTSTART:20260811T103000
 DTEND:20260811T113000
 SUMMARY:10:30 · Bursa → Sabiha Gökçen  Vito
-LOCATION:Bursa Downtown → Sabiha Gökçen Havalimanı
+LOCATION:Crowne Plaza Bursa - Downtown → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Faisal Alenezi\, Ms Shrestha Gopı Maya\nŞoför: Kadi
  r Elçiboğa / +90 (539) 219 01 82\nİşi veren: Sadettin Darkal\nİşi yapan:
-  Ölmeztur\nAlt acenta: Kadir Elçiboğa\nAraç: Vito\nGüzergah: Bursa Downt
- own → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 175 USD | Araç: 6.500 ₺ 
- | Alt acenta: 6.000 ₺
+  Ölmeztur\nAlt acenta: Kadir Elçiboğa\nAraç: Vito\nGüzergah: Crowne Plaz
+ a Bursa - Downtown → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 175 USD |
+  Araç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
