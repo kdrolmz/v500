@@ -993,8 +993,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786277128819_gsifdq@olmeztur
 DTSTAMP:20260810T192300Z
-LAST-MODIFIED:20260809T120500Z
-SEQUENCE:1786277128
+LAST-MODIFIED:20260810T152700Z
+SEQUENCE:1786375650
 DTSTART:20260810T100000
 DTEND:20260810T110000
 SUMMARY:10:00 · Bursa Turu  Sprinter
@@ -1009,17 +1009,38 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786278925527_oent26@olmeztur
+UID:ko-transfer-1786374916165_tcswr1@olmeztur
 DTSTAMP:20260810T192300Z
-LAST-MODIFIED:20260809T123500Z
-SEQUENCE:1786278925
+LAST-MODIFIED:20260810T152800Z
+SEQUENCE:1786375723
+DTSTART:20260811T090000
+DTEND:20260811T100000
+SUMMARY:09:00 · İstanbul Turu  Sprinter
+LOCATION:Millet Mahallesi - Bursa Modern → İstanbul Tur
+DESCRIPTION:Müşteri: Khaled Alfailakawi -tahani Alfailakawi -shaikhah Al
+ failakawi -khadija Alfailakawi -abdullah Alfailakawi -shaikhah Alfailaka
+ wi -rawan Anani -nadiah Alansari- Anwar Alaslawi -turki Alaslawi\nŞoför:
+  Yaşar Taşdemir / 0 (537) 563 78 19\nİşi veren: Trias Turizm\nİşi yapan:
+  Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprinter\nGüzergah: Millet Ma
+ hallesi - Bursa Modern → İstanbul Tur\nNot: GİDİŞ FERİBOT - DÖNÜŞ KÖPRÜ 
+ \nÖdeme: Müşteri: 15.850 TRY | Araç: 15.850 ₺ | Alt acenta: 15.000 ₺
+CATEGORIES:KÖ Turlar
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786375701159_a3dssy@olmeztur
+DTSTAMP:20260810T192300Z
+LAST-MODIFIED:20260810T152800Z
+SEQUENCE:1786375734
 DTSTART:20260811T100000
 DTEND:20260811T110000
-SUMMARY:10:00 · Tabiat Parkı Turu  Vito
-LOCATION:Bursa → Tabiat Parkı
-DESCRIPTION:Müşteri: -\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi ve
- ren: Muhammet s.\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzerg
- ah: Bursa → Tabiat Parkı\nÖdeme: Müşteri: 120 USD | Araç: 5.250 ₺
+SUMMARY:10:00 · Bursa Turu  Vito
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saaed Abu Saleh\nŞoför: Şenol Hemitli / +90 (537) 4
+ 75 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ş
+ enol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur\nÖdeme: Müşter
+ i ödemez | Araç: 4.300 ₺ | Alt acenta: 4.294 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
