@@ -4365,16 +4365,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786374714182_v7blin@olmeztur
 DTSTAMP:20260810T192400Z
-LAST-MODIFIED:20260810T151100Z
-SEQUENCE:1786374714
+LAST-MODIFIED:20260810T192400Z
+SEQUENCE:1786389893
 DTSTART:20260811T130500
 DTEND:20260811T140500
 SUMMARY:13:05 · Sabiha Gökçen → Bursa  Sprinter
 LOCATION:Sabiha Gökçen Havalimanı → Bursa Suite ( Setbaşı )
 DESCRIPTION:Müşteri: Mohammad Thani\, Maryam Albannia\, Batlah Thani\nŞo
- för: Balentur\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: -
- \nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havalimanı → Bursa Suite ( Set
- başı )\nUçuş: KU157\nÖdeme: Müşteri ödemez | Araç: 7.000 ₺
+ för: Balentur\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: N
+ uri Çalışkan\nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havalimanı → Bursa
+  Suite ( Setbaşı )\nUçuş: KU157\nÖdeme: Müşteri ödemez | Araç: 7.250 ₺ |
+  Alt acenta: 7.250 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
