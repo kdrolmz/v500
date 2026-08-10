@@ -1011,8 +1011,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786374916165_tcswr1@olmeztur
 DTSTAMP:20260810T152800Z
-LAST-MODIFIED:20260810T151500Z
-SEQUENCE:1786374916
+LAST-MODIFIED:20260810T152800Z
+SEQUENCE:1786375723
 DTSTART:20260811T090000
 DTEND:20260811T100000
 SUMMARY:09:00 · İstanbul Turu  Sprinter
@@ -1023,7 +1023,7 @@ DESCRIPTION:Müşteri: Khaled Alfailakawi -tahani Alfailakawi -shaikhah Al
   Yaşar Taşdemir / 0 (537) 563 78 19\nİşi veren: Trias Turizm\nİşi yapan:
   Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprinter\nGüzergah: Millet Ma
  hallesi - Bursa Modern → İstanbul Tur\nNot: GİDİŞ FERİBOT - DÖNÜŞ KÖPRÜ 
- \nÖdeme: Müşteri: 15.850 TRY | Araç: 15.000 ₺
+ \nÖdeme: Müşteri: 15.850 TRY | Araç: 15.850 ₺ | Alt acenta: 15.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
