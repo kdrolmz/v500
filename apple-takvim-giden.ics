@@ -3109,15 +3109,15 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786458129972_2eda5b@olmeztur
 DTSTAMP:20260811T142400Z
-LAST-MODIFIED:20260811T142200Z
-SEQUENCE:1786458129
+LAST-MODIFIED:20260811T142400Z
+SEQUENCE:1786458276
 DTSTART:20260812T100000
 DTEND:20260812T110000
 SUMMARY:10:00 · Crowne Plaza Hotel → Sabiha Gökçen  Vito
 LOCATION:Crowne Plaza Hotel → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Fatma Alenezi\, Haura Alenezi\nŞoför: -\nİşi veren:
   Şakir Önlen\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: 
- Crowne Plaza Hotel → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 160 TRY |
+ Crowne Plaza Hotel → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 160 USD |
   Araç: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
