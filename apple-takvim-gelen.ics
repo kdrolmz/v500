@@ -4503,6 +4503,22 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1786460329626_litqm7@olmeztur
+DTSTAMP:20260811T145800Z
+LAST-MODIFIED:20260811T145800Z
+SEQUENCE:1786460329
+DTSTART:20260817T110000
+DTEND:20260817T120000
+SUMMARY:11:00 · Sabiha Gökçen → Bandırma  Sprinter
+LOCATION:Sabiha Gökçen Havalimanı → Bandırma
+DESCRIPTION:Müşteri: -\nŞoför: -\nİşi veren: Jica Nippon\nİşi yapan: Ölm
+ eztur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Sabiha Gökçen Havalimanı
+  → Bandırma\nÖdeme: Müşteri ödemez
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1786460300993_1pt2uu@olmeztur
 DTSTAMP:20260811T145800Z
 LAST-MODIFIED:20260811T145800Z
