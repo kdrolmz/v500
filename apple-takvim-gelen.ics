@@ -4469,8 +4469,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786460134031_jztfrs@olmeztur
 DTSTAMP:20260812T164100Z
-LAST-MODIFIED:20260811T145500Z
-SEQUENCE:1786460134
+LAST-MODIFIED:20260812T164100Z
+SEQUENCE:1786552889
 DTSTART:20260813T025000
 DTEND:20260813T035000
 SUMMARY:02:50 · İST → Bursa  Sprinter
@@ -4478,8 +4478,9 @@ LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Abdulrahman Alkandari -fahad Alkandari- Ali Alkanda
  ri -khaled Alkandari -talal Alkandari- Suod Alkandari -boduor Mandekar -
  jamuna B.k\nŞoför: -\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt 
- acenta: -\nAraç: Sprinter\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: 
- KU151\nÖdeme: Müşteri: 200 USD | Araç: 9.550 ₺
+ acenta: Balentur\nAraç: Sprinter\nGüzergah: İstanbul Havalimanı → Bursa\
+ nUçuş: KU151\nÖdeme: Müşteri: 200 USD | Araç: 9.000 ₺ | Alt acenta: 8.50
+ 0 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
