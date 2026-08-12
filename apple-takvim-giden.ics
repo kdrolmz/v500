@@ -2864,8 +2864,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785760988830_m0q3cj@olmeztur
 DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260807T171000Z
-SEQUENCE:1786122610
+LAST-MODIFIED:20260811T151900Z
+SEQUENCE:1786461588
 DTSTART:20260808T103000
 DTEND:20260808T113000
 SUMMARY:10:30 · Bursa → İST  Sprinter
@@ -2898,8 +2898,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786170279280_czp7ec@olmeztur
 DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260808T062400Z
-SEQUENCE:1786170279
+LAST-MODIFIED:20260811T150700Z
+SEQUENCE:1786460825
 DTSTART:20260809T150000
 DTEND:20260809T160000
 SUMMARY:15:00 · Bursa → Sabiha Gökçen  Vito
@@ -3072,6 +3072,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1786458129972_2eda5b@olmeztur
+DTSTAMP:20260812T201300Z
+LAST-MODIFIED:20260811T201100Z
+SEQUENCE:1786479091
+DTSTART:20260812T100000
+DTEND:20260812T110000
+SUMMARY:10:00 · Crowne Plaza Hotel → Sabiha Gökçen  Vito
+LOCATION:Crowne Plaza Hotel → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Fatma Alenezi\, Haura Alenezi\nŞoför: -\nİşi veren:
+  Şakir Önlen\nİşi yapan: Ölmeztur\nAlt acenta: Nuri Çalışkan\nAraç: Vito
+ \nGüzergah: Crowne Plaza Hotel → Sabiha Gökçen Havalimanı\nÖdeme: Müşter
+ i: 160 USD | Araç: 6.000 ₺ | Alt acenta: 5.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1786450160528_nq3yer@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260811T142900Z
@@ -3108,41 +3125,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786458129972_2eda5b@olmeztur
-DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260811T201100Z
-SEQUENCE:1786479091
-DTSTART:20260812T100000
-DTEND:20260812T110000
-SUMMARY:10:00 · Crowne Plaza Hotel → Sabiha Gökçen  Vito
-LOCATION:Crowne Plaza Hotel → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Fatma Alenezi\, Haura Alenezi\nŞoför: -\nİşi veren:
-  Şakir Önlen\nİşi yapan: Ölmeztur\nAlt acenta: Nuri Çalışkan\nAraç: Vito
- \nGüzergah: Crowne Plaza Hotel → Sabiha Gökçen Havalimanı\nÖdeme: Müşter
- i: 160 USD | Araç: 6.000 ₺ | Alt acenta: 5.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1786560450286_3tbygq@olmeztur
-DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260812T184700Z
-SEQUENCE:1786560450
-DTSTART:20260812T123000
-DTEND:20260812T133000
-SUMMARY:12:30 · Bursa → İstanbul  Vito
-LOCATION:Bursa Suite ( Setbaşı) → İstanbul Otel
-DESCRIPTION:Müşteri: Abdullah Alreeisi\, Fatıma Alhosaini\, Dana Alraees
- i\, Nada Alraeesi\, Khaled Alreesi\, Rashed Alreesi\, Ali Alreesi\, Moha
- mmad Alreesi\nŞoför: -\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt 
- acenta: -\nAraç: Vito\nGüzergah: Bursa Suite ( Setbaşı) → İstanbul Otel\
- nÖdeme: Müşteri ödemez | Araç: 7.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1786553059045_3z79ie@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260812T164400Z
@@ -3172,6 +3154,24 @@ DESCRIPTION:Müşteri: Laila Alenezi\nŞoför: Yaşar Taşdemir / 0 (537) 563
  78 19\nİşi veren: Ölmeztur\nİşi yapan: Balentur\nAlt acenta: Taşdemir Tu
  r\nAraç: Sprinter\nGüzergah: Altıparmak- Downtown → İstanbul\nÖdeme: Müş
  teri: 180 USD | Araç: 8.600 ₺ | Alt acenta: 8.593 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786560450286_3tbygq@olmeztur
+DTSTAMP:20260812T201300Z
+LAST-MODIFIED:20260812T201300Z
+SEQUENCE:1786565614
+DTSTART:20260813T123000
+DTEND:20260813T133000
+SUMMARY:12:30 · Bursa → İstanbul  Vito
+LOCATION:Bursa Suite ( Setbaşı) → İstanbul Otel
+DESCRIPTION:Müşteri: Abdullah Alreeisi\, Fatıma Alhosaini\, Dana Alraees
+ i\, Nada Alraeesi\, Khaled Alreesi\, Rashed Alreesi\, Ali Alreesi\, Moha
+ mmad Alreesi\nŞoför: -\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt 
+ acenta: -\nAraç: Vito\nGüzergah: Bursa Suite ( Setbaşı) → İstanbul Otel\
+ nÖdeme: Müşteri ödemez | Araç: 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
