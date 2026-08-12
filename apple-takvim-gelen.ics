@@ -4156,23 +4156,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1785934292784_svfdji@olmeztur
-DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260806T145000Z
-SEQUENCE:1786027819
-DTSTART:20260806T141500
-DTEND:20260806T151500
-SUMMARY:14:15 · Sabiha Gökçen → Bursa  Sprinter
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Kamali Murugaih\nŞoför: Can Ahser\nİşi veren: Salah
- \nİşi yapan: Ölmeztur\nAlt acenta: Can Ahser\nAraç: Sprinter\nGüzergah: 
- Sabiha Gökçen Havalimanı → Bursa\nUçuş: J9305\nÖdeme: Müşteri: 175 USD |
-  Araç: 7.000 ₺ | Alt acenta: 7.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785933701031_nw5m6r@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260807T123600Z
@@ -4185,6 +4168,23 @@ DESCRIPTION:Müşteri: Sara Alhajeri\, Zaınab Almansour\, Sumandeep Kaur\n
  Şoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi yapan
  : Feza Turizm\nAlt acenta: -\nAraç: Vito\nGüzergah: Sabiha Gökçen Havali
  manı → Bursa\nUçuş: J9305\nÖdeme: Müşteri: 170 USD | Araç: 6.500 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1785934292784_svfdji@olmeztur
+DTSTAMP:20260812T201300Z
+LAST-MODIFIED:20260806T145000Z
+SEQUENCE:1786027819
+DTSTART:20260806T141500
+DTEND:20260806T151500
+SUMMARY:14:15 · Sabiha Gökçen → Bursa  Sprinter
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Kamali Murugaih\nŞoför: Can Ahser\nİşi veren: Salah
+ \nİşi yapan: Ölmeztur\nAlt acenta: Can Ahser\nAraç: Sprinter\nGüzergah: 
+ Sabiha Gökçen Havalimanı → Bursa\nUçuş: J9305\nÖdeme: Müşteri: 175 USD |
+  Araç: 7.000 ₺ | Alt acenta: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -4209,8 +4209,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1785761063947_ufaqo5@olmeztur
 DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260807T171200Z
-SEQUENCE:1786122756
+LAST-MODIFIED:20260811T151900Z
+SEQUENCE:1786461597
 DTSTART:20260808T130500
 DTEND:20260808T140500
 SUMMARY:13:05 · Sabiha Gökçen → Yalova  Vito
@@ -4224,18 +4224,18 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786130922409_sve0eb@olmeztur
+UID:ko-transfer-1786123070025_pse6z1@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260809T123100Z
-SEQUENCE:1786278705
+SEQUENCE:1786278700
 DTSTART:20260808T130500
 DTEND:20260808T140500
-SUMMARY:13:05 · Sabiha Gökçen → Bursa  Sprinter
+SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Ahmad Alkandari\nŞoför: Mehmet Ateş\nİşi veren: Muh
- ammet s.\nİşi yapan: Ölmeztur\nAlt acenta: Mehmet Ateş\nAraç: Sprinter\n
- Güzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç
- : 7.850 ₺ | Alt acenta: 7.000 ₺
+DESCRIPTION:Müşteri: Marıyam Aleıdı\nŞoför: Ata Ateş\nİşi veren: Salah\n
+ İşi yapan: Ölmeztur\nAlt acenta: Ata Ateş\nAraç: Vito\nGüzergah: Sabiha 
+ Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç: 6.500 ₺ | Alt a
+ centa: 6.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -4259,18 +4259,18 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786123070025_pse6z1@olmeztur
+UID:ko-transfer-1786130922409_sve0eb@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260809T123100Z
-SEQUENCE:1786278700
+SEQUENCE:1786278705
 DTSTART:20260808T130500
 DTEND:20260808T140500
-SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
+SUMMARY:13:05 · Sabiha Gökçen → Bursa  Sprinter
 LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Marıyam Aleıdı\nŞoför: Ata Ateş\nİşi veren: Salah\n
- İşi yapan: Ölmeztur\nAlt acenta: Ata Ateş\nAraç: Vito\nGüzergah: Sabiha 
- Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç: 6.500 ₺ | Alt a
- centa: 6.500 ₺
+DESCRIPTION:Müşteri: Ahmad Alkandari\nŞoför: Mehmet Ateş\nİşi veren: Muh
+ ammet s.\nİşi yapan: Ölmeztur\nAlt acenta: Mehmet Ateş\nAraç: Sprinter\n
+ Güzergah: Sabiha Gökçen Havalimanı → Bursa\nÖdeme: Müşteri ödemez | Araç
+ : 7.850 ₺ | Alt acenta: 7.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -4313,8 +4313,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786374476416_7jem0v@olmeztur
 DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260810T150700Z
-SEQUENCE:1786374476
+LAST-MODIFIED:20260811T150600Z
+SEQUENCE:1786460813
 DTSTART:20260810T141500
 DTEND:20260810T151500
 SUMMARY:14:15 · Sabiha Gökçen → Bursa  Vito
@@ -4398,23 +4398,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1786131542740RD_v5ns6t@olmeztur
-DTSTAMP:20260812T201300Z
-LAST-MODIFIED:20260811T145100Z
-SEQUENCE:1786459917
-DTSTART:20260812T120000
-DTEND:20260812T130000
-SUMMARY:12:00 · İzmit → Bursa  Vito
-LOCATION:İzmit → Bursa
-DESCRIPTION:Müşteri: Ismahan Alkanderi- Rabah Alkanderi\nŞoför: Kadir Öl
- mez / +90 (543) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\
- nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzergah: İzmit → Bursa\nÖdeme: 
- Müşteri: 150 USD | Araç: 7.150 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1786378874142_f5z36z@olmeztur
 DTSTAMP:20260812T201300Z
 LAST-MODIFIED:20260811T142300Z
@@ -4427,6 +4410,23 @@ DESCRIPTION:Müşteri: Mahmoud Hecham Wahbi - Mona Assil\nŞoför: Balentur\
  nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\n
  Araç: Vito\nGüzergah: İstanbul → Bursa\nÖdeme: Müşteri: 200 USD | Araç: 
  6.500 ₺ | Alt acenta: 6.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786131542740RD_v5ns6t@olmeztur
+DTSTAMP:20260812T201300Z
+LAST-MODIFIED:20260811T145100Z
+SEQUENCE:1786459917
+DTSTART:20260812T120000
+DTEND:20260812T130000
+SUMMARY:12:00 · İzmit → Bursa  Vito
+LOCATION:İzmit → Bursa
+DESCRIPTION:Müşteri: Ismahan Alkanderi- Rabah Alkanderi\nŞoför: Kadir Öl
+ mez / +90 (543) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\
+ nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzergah: İzmit → Bursa\nÖdeme: 
+ Müşteri: 150 USD | Araç: 7.150 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
