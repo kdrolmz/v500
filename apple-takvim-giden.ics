@@ -3127,16 +3127,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786553059045_3z79ie@olmeztur
 DTSTAMP:20260812T203000Z
-LAST-MODIFIED:20260812T164400Z
-SEQUENCE:1786553059
+LAST-MODIFIED:20260812T203000Z
+SEQUENCE:1786566652
 DTSTART:20260813T100000
 DTEND:20260813T110000
 SUMMARY:10:00 · Bursa → İstanbul  Vito
 LOCATION:Bursa → Rayelin Hotel İstanbul
-DESCRIPTION:Müşteri: Afran Alenezi\nŞoför: Kadir Ölmez / +90 (543) 287 0
- 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
-  Vito\nGüzergah: Bursa → Rayelin Hotel İstanbul\nÖdeme: Müşteri: 160 USD
-  | Araç: 7.150 ₺
+DESCRIPTION:Müşteri: Afran Alenezi\nŞoför: Balentur\nİşi veren: Trias Tu
+ rizm\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: B
+ ursa → Rayelin Hotel İstanbul\nNot: cihat își ile karşılıklı 7000 tl cih
+ at verecek\nÖdeme: Müşteri: 160 USD | Araç: 7.150 ₺ | Alt acenta: 6.500 
+ ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
