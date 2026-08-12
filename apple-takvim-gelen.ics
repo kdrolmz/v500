@@ -4506,7 +4506,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1786460214096_uvagg6@olmeztur
 DTSTAMP:20260812T164200Z
 LAST-MODIFIED:20260812T164200Z
-SEQUENCE:1786552938
+SEQUENCE:1786552952
 DTSTART:20260813T120000
 DTEND:20260813T130000
 SUMMARY:12:00 · Lionel Hotel Bayrampaşa → Bursa  Sprinter
@@ -4516,7 +4516,7 @@ DESCRIPTION:Müşteri: Mohammad Alkandari- Dalal Mandakar -hamad Alkandari
  bunalo\nŞoför: Yaşar Taşdemir / 0 (537) 563 78 19\nİşi veren: Trias Turi
  zm\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprinter\nGüzer
  gah: Lionel Hotel Bayrampaşa → Viaport (max.4 Saat) - Bursa\nÖdeme: Müşt
- eri: 250 USD | Araç: 1.100 ₺ | Alt acenta: 10.000 ₺
+ eri: 250 USD | Araç: 11.000 ₺ | Alt acenta: 10.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
