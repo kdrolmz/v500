@@ -4542,8 +4542,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786460529874_ip8x4b@olmeztur
 DTSTAMP:20260813T201200Z
-LAST-MODIFIED:20260812T203100Z
-SEQUENCE:1786566680
+LAST-MODIFIED:20260813T201200Z
+SEQUENCE:1786651978
 DTSTART:20260813T141500
 DTEND:20260813T151500
 SUMMARY:14:15 · Sabiha Gökçen → Bursa  Vito
@@ -4551,7 +4551,7 @@ LOCATION:Sabiha Gökçen Havalimanı → Bursa
 DESCRIPTION:Müşteri: Abdulrahman Almutairi\nŞoför: Kadir Ölmez / +90 (54
  3) 287 06 87\nİşi veren: Gani Balta\nİşi yapan: Ölmeztur\nAlt acenta: -\
  nAraç: Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçu
- ş: J9305\nÖdeme: Müşteri ödemez | Araç: 6.000 ₺
+ ş: J9305\nÖdeme: Müşteri: 6.000 TRY | Araç: 6.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
