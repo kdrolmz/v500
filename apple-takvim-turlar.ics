@@ -1048,15 +1048,15 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786478914754_fl24dv@olmeztur
 DTSTAMP:20260813T121300Z
-LAST-MODIFIED:20260811T200800Z
-SEQUENCE:1786478914
+LAST-MODIFIED:20260813T121300Z
+SEQUENCE:1786623209
 DTSTART:20260812T090000
 DTEND:20260812T100000
 SUMMARY:09:00 · İstanbul Turu  Vito
 LOCATION:Bursa → İstanbul Tur
 DESCRIPTION:Müşteri: Khaled Alhashel\nŞoför: Yaşar Taşdemir / 0 (537) 56
  3 78 19\nİşi veren: Ölmeztur\nİşi yapan: Taşdemir Tur\nAlt acenta: -\nAr
- aç: Vito\nGüzergah: Bursa → İstanbul Tur\nÖdeme: Müşteri: 350 USD | Araç
+ aç: Vito\nGüzergah: Bursa → İstanbul Tur\nÖdeme: Müşteri: 300 USD | Araç
  : 15.750 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
