@@ -3480,8 +3480,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1783540858001_cksw95@olmeztur
 DTSTAMP:20260814T073900Z
-LAST-MODIFIED:20260721T160200Z
-SEQUENCE:1784649721
+LAST-MODIFIED:20260814T073900Z
+SEQUENCE:1786693192
 DTSTART:20260722T101500
 DTEND:20260722T111500
 SUMMARY:10:15 · İST → Bursa  Vito
@@ -3489,7 +3489,7 @@ LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Shinichi Fukusawa\nŞoför: Bülent Kırkıl / +90541646
  8844\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç
  : Vito / 16 BLE 47\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: TK2631\
- nÖdeme: Müşteri ödemez | Araç: 9.000 ₺ | Alt acenta: 6.000 ₺
+ nÖdeme: Müşteri ödemez | Araç: 9.000 ₺ | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
