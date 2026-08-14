@@ -2100,8 +2100,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784290219571_tl6t5q@olmeztur
 DTSTAMP:20260814T074000Z
-LAST-MODIFIED:20260718T185700Z
-SEQUENCE:1784401037
+LAST-MODIFIED:20260814T074000Z
+SEQUENCE:1786693251
 DTSTART:20260718T100000
 DTEND:20260718T110000
 SUMMARY:10:00 · Bursa → Litros Hotel & Spa  Sprinter
@@ -2110,7 +2110,7 @@ DESCRIPTION:Müşteri: Iftikhar Alsous - Amar Alsous -maysam Ghennam -lami
  s Ghennam- Layth Belbol -hasnaa Belbol -mohammad Belbol- Laya Belbol\nŞo
  för: Balentur\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acen
  ta: Balentur\nAraç: Sprinter\nGüzergah: Bursa → Litros Hotel & Spa\nÖdem
- e: Müşteri ödemez | Araç: 7.500 ₺ | Alt acenta: 6.000 ₺
+ e: Müşteri ödemez | Araç: 7.500 ₺ | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
