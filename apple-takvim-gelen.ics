@@ -4593,16 +4593,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786716734696_prheij@olmeztur
 DTSTAMP:20260815T081000Z
-LAST-MODIFIED:20260814T141200Z
-SEQUENCE:1786716734
+LAST-MODIFIED:20260815T081000Z
+SEQUENCE:1786781437
 DTSTART:20260815T180000
 DTEND:20260815T190000
 SUMMARY:18:00 · İstanbul → Bursa  Vito
 LOCATION:İstanbul Rayalin Hotel → Bursa
 DESCRIPTION:Müşteri: Afrah Alazmi Deema Alazmi Munria Alazmi Hala Alazmi
-  Jamela Alazmi\nŞoför: -\nİşi veren: -\nİşi yapan: -\nAlt acenta: -\nAra
- ç: Vito\nGüzergah: İstanbul Rayalin Hotel → Bursa\nÖdeme: Müşteri: 180 U
- SD | Araç: 8.600 ₺
+  Jamela Alazmi\nŞoför: Cihat Öter\nİşi veren: Trias Turizm\nİşi yapan: Ö
+ lmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nGüzergah: İstanbul Rayalin 
+ Hotel → Bursa\nÖdeme: Müşteri: 180 USD | Araç: 7.650 ₺ | Alt acenta: 7.0
+ 00 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
