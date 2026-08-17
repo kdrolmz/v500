@@ -3300,16 +3300,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786869597698_updaw4@olmeztur
 DTSTAMP:20260817T084800Z
-LAST-MODIFIED:20260816T083900Z
-SEQUENCE:1786869597
+LAST-MODIFIED:20260817T084800Z
+SEQUENCE:1786956524
 DTSTART:20260817T093000
 DTEND:20260817T103000
 SUMMARY:09:30 · Bursa → Sabiha Gökçen  Vito
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Suha Alarfaj\nŞoför: Kadir Ölmez / +90 (543) 287 06
   87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
- Vito\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 160 US
- D | Araç: 7.650 ₺
+ Vito / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müş
+ teri: 160 USD | Araç: 7.200 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
