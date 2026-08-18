@@ -3422,6 +3422,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1787045858137_y28y9j@olmeztur
+DTSTAMP:20260818T173700Z
+LAST-MODIFIED:20260818T173700Z
+SEQUENCE:1787074676
+DTSTART:20260819T093000
+DTEND:20260819T103000
+SUMMARY:09:30 · Bandırma → Sabiha Gökçen  Sprinter
+LOCATION:Bandırma → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Osman Yakut\, Mustafa Baltacı\nŞoför: Kadir Ölmez /
+  +90 (543) 287 06 87\nİşi veren: Jica Nippon\nİşi yapan: Ölmeztur\nAlt a
+ centa: -\nAraç: Sprinter\nGüzergah: Bandırma → Sabiha Gökçen Havalimanı\
+ nÖdeme: Müşteri ödemez | Araç: 13.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1787045491900_sxbdvf@olmeztur
 DTSTAMP:20260818T173700Z
 LAST-MODIFIED:20260818T093100Z
@@ -3435,23 +3452,6 @@ DESCRIPTION:Müşteri: Reşat Taman -büşra Summak -yunus Akaslan-mustafa Uz
  an: Ölmeztur\nAlt acenta: Ömer Çelik\nAraç: Sprinter\nGüzergah: İzmir Ad
  nan Menderes Havalimanı → Aydın Merkez\nÖdeme: Müşteri ödemez | Araç: 5.
  000 ₺ | Alt acenta: 4.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1787045858137_y28y9j@olmeztur
-DTSTAMP:20260818T173700Z
-LAST-MODIFIED:20260818T093700Z
-SEQUENCE:1787045858
-DTSTART:20260819T160000
-DTEND:20260819T170000
-SUMMARY:16:00 · Bandırma → Sabiha Gökçen  Sprinter
-LOCATION:Bandırma → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Osman Yakut\, Mustafa Baltacı\nŞoför: Kadir Ölmez /
-  +90 (543) 287 06 87\nİşi veren: Jica Nippon\nİşi yapan: Ölmeztur\nAlt a
- centa: -\nAraç: Sprinter\nGüzergah: Bandırma → Sabiha Gökçen Havalimanı\
- nÖdeme: Müşteri ödemez | Araç: 13.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
