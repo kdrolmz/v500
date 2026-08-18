@@ -4646,7 +4646,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1786460329626_litqm7@olmeztur
 DTSTAMP:20260818T174700Z
 LAST-MODIFIED:20260818T174700Z
-SEQUENCE:1787075227
+SEQUENCE:1787075245
 DTSTART:20260817T110000
 DTEND:20260817T120000
 SUMMARY:11:00 · Sabiha Gökçen → Bandırma-aydın Paket Tur  Minibüs
@@ -4654,7 +4654,8 @@ LOCATION:Sabiha Gökçen Havalimanı → Bandırma-aydın Paket Tur
 DESCRIPTION:Müşteri: Doğa Nalçacı\nŞoför: Halil İbrahim Köse / +90542253
  0537\nİşi veren: Jica Nippon\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\
  nAraç: Minibüs / 16 BLE 17\nGüzergah: Sabiha Gökçen Havalimanı → Bandırm
- a-aydın Paket Tur\nÖdeme: Müşteri ödemez | Araç: 81.000 ₺
+ a-aydın Paket Tur\nÖdeme: Müşteri ödemez | Araç: 81.000 ₺ | Alt acenta: 
+ 81.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
