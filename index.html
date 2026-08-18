@@ -990,6 +990,7 @@ const BF = {
     childSeat: false, childSeatCount: 0,
     tourCommission: '', tourCommissionShop: '',
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
+    kdvEnabled: false, kdvRate: 0, kdvAmount: 0, kdvBaseTRY: 0, kdvTotalTRY: 0,
     paymentMethod: 'cash', paymentStatus: 'pending', driverPayment: '', paymentToMe: false,
     partialFromFirm: false, remainingAmount: '', remainingCurrency: 'TRY', noCollectAmount: '', noCollectCurrency: 'TRY',
     driverPaymentCurrency: 'TRY', driverPaymentRaw: '', altAcentaCurrency: 'TRY', altAcentaRaw: '',
@@ -1629,6 +1630,11 @@ const getVehiclePaymentState = t => needsVehiclePayment(t) ? (isVehiclePaid(t) ?
 const normalizeTransfer = t => {
     const fixed = repairKnownPlate(t || {});
     const companyCollected = !!(fixed && (fixed.companyCollected || fixed.settled));
+    const kdvRate = transferKdvRate(fixed);
+    const kdvFallbackBase = kdvRate > 0 ? transferFirmBaseForKdv(fixed).base : 0;
+    const kdvBaseTRY = kdvRate > 0 ? Math.round(moneyValue(fixed.kdvBaseTRY) || moneyValue(fixed.netOlKdvHaric) || kdvFallbackBase) : 0;
+    const kdvAmount = kdvRate > 0 ? Math.round(moneyValue(fixed.kdvAmount) || calcKdvAmountForBase(kdvBaseTRY, kdvRate)) : 0;
+    const kdvTotalTRY = kdvRate > 0 ? Math.round(moneyValue(fixed.kdvTotalTRY) || (kdvBaseTRY + kdvAmount)) : 0;
     const rawPassengers = Array.isArray(fixed.passengers) && fixed.passengers.length ? fixed.passengers : [emptyPassenger()];
     const passengers = rawPassengers.map(p => {
         const base = { ...emptyPassenger(), ...(p || {}), idNo: passengerIdDisplay(p) };
@@ -1648,6 +1654,11 @@ const normalizeTransfer = t => {
         customerCollected: !!fixed.customerCollected,
         paymentStatus: fixed.paymentStatus || 'pending',
         vehiclePaid: !!fixed.vehiclePaid,
+        kdvEnabled: kdvRate > 0,
+        kdvRate,
+        kdvAmount,
+        kdvBaseTRY,
+        kdvTotalTRY,
         settledFirms: (fixed.settledFirms && typeof fixed.settledFirms === 'object') ? { ...fixed.settledFirms } : {}
     };
 };
@@ -2132,6 +2143,80 @@ function remainingFromFirmDisplay(t) {
     const tl = Math.round(remainingFromFirmTRY(t));
     return { isForeign: true, main: currencySymbolFor(cur) + Math.abs(Math.round(raw)).toLocaleString('tr-TR'), sub: tl > 0 ? fr(tl) + '₺' : '' };
 }
+function normalizeKdvRate(v) {
+    const n = Math.round(moneyValue(v));
+    return n === 10 || n === 20 ? n : 0;
+}
+function transferKdvRate(t) {
+    if (!t)
+        return 0;
+    if (t.kdvEnabled === false)
+        return 0;
+    const explicit = normalizeKdvRate(t.kdvRate);
+    if (t.kdvEnabled)
+        return explicit || 20;
+    return explicit;
+}
+function calcKdvAmountForBase(base, rate) {
+    const b = Math.max(0, moneyValue(base));
+    const r = normalizeKdvRate(rate);
+    return r > 0 && b > 0 ? Math.round(b * r / 100) : 0;
+}
+function transferFirmBaseForKdv(t) {
+    if (!t)
+        return { firm: '', netOl: 0, base: 0 };
+    const b = calcBal(t);
+    if (!b)
+        return { firm: '', netOl: 0, base: 0 };
+    const netOl = moneyValue(b.netOl) + remainingFromFirmTRY(t);
+    return { firm: b.firm || '', netOl, base: netOl > 0 ? netOl : 0 };
+}
+function buildKdvFields(t) {
+    const rate = transferKdvRate(t);
+    const baseInfo = transferFirmBaseForKdv(t);
+    const base = rate > 0 ? Math.round(baseInfo.base) : 0;
+    const amount = calcKdvAmountForBase(base, rate);
+    return {
+        kdvEnabled: rate > 0,
+        kdvRate: rate > 0 ? rate : 0,
+        kdvAmount: amount,
+        kdvBaseTRY: base,
+        kdvTotalTRY: rate > 0 ? Math.round(base + amount) : 0
+    };
+}
+function transferKdvInfo(t) {
+    const rate = transferKdvRate(t);
+    const baseInfo = transferFirmBaseForKdv(t);
+    const base = rate > 0 ? Math.round(baseInfo.base) : 0;
+    const computed = calcKdvAmountForBase(base, rate);
+    const stored = Math.round(moneyValue(t && t.kdvAmount));
+    const amount = computed || (rate > 0 && base > 0 ? stored : 0);
+    return {
+        enabled: rate > 0 && base > 0 && amount > 0,
+        rate,
+        firm: baseInfo.firm,
+        netOlWithoutKdv: Math.round(baseInfo.netOl),
+        base,
+        amount,
+        total: Math.round(base + amount)
+    };
+}
+function accountKdvInfoForRow(t) {
+    if (!t || t.kaynak === 'alt' || t.kaynak === 'manual' || t.kaynak === 'odelo' || t.yon === 'alt')
+        return { active: false, rate: 0, base: 0, amount: 0, total: 0 };
+    const rate = normalizeKdvRate(t && t.kdvRate);
+    const amount = Math.round(moneyValue(t && t.kdvAmount));
+    const fallbackBase = moneyValue(t && t.netOlKdvHaric);
+    const base = Math.round(moneyValue(t && t.kdvBaseTRY) || (fallbackBase > 0 ? fallbackBase : 0));
+    const total = Math.round(moneyValue(t && t.kdvTotalTRY) || (base + amount));
+    return {
+        active: rate > 0 && base > 0 && amount > 0,
+        rate,
+        base,
+        amount,
+        total
+    };
+}
 function accountUsdRateForRow(t) {
     const pairs = [];
     const addUsdPair = (raw, currency, tl) => {
@@ -2201,8 +2286,11 @@ function accountRawUsdNet(t) {
 }
 function accountRowUsdAmount(t) {
     const rawUsdNet = accountRawUsdNet(t);
-    if (rawUsdNet !== null)
-        return rawUsdNet;
+    if (rawUsdNet !== null) {
+        const kdv = accountKdvInfoForRow(t);
+        const r = accountUsdRateForRow(t);
+        return rawUsdNet + (kdv.active && r > 0 ? (kdv.amount / r) : 0);
+    }
     const r = accountUsdRateForRow(t);
     return r > 0 ? moneyValue(t && t.netOl) / r : 0;
 }
@@ -4007,7 +4095,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const settleKeys = accountSettleKeys(firm);
                 const km = isFirmSettled(t, firm);
                 const extra = remainingFromFirmTRY(t);
-                const e = { ...t, netOl: b.netOl + extra, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
+                const netOlKdvHaric = Math.round(moneyValue(b.netOl) + extra);
+                const kdvRate = transferKdvRate(t);
+                const kdvAmount = netOlKdvHaric > 0 ? calcKdvAmountForBase(netOlKdvHaric, kdvRate) : 0;
+                const e = { ...t, netOl: netOlKdvHaric + kdvAmount, netOlKdvHaric, kdvEnabled: kdvAmount > 0, kdvRate: kdvAmount > 0 ? kdvRate : 0, kdvAmount, kdvBaseTRY: kdvAmount > 0 ? netOlKdvHaric : 0, kdvTotalTRY: kdvAmount > 0 ? netOlKdvHaric + kdvAmount : 0, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
                 detay.push(e);
                 if (!km) {
                     if (e.netOl > 0)
@@ -4115,7 +4206,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             const hd = tourCommissionTotal(t);
             const hdPay = tourCommissionShare(t);
             const hdLine = hd > 0 ? ('\n   🪙 Tur komisyonu: ' + fr(hd) + '₺ (pay ' + fr(hdPay) + '₺ / ' + fr(hdPay) + '₺)' + ((t.tourCommissionShop || '').trim() ? ' (' + t.tourCommissionShop + ')' : '')) : '';
-            return (t.firmSettled ? '✓' : '○') + ' ' + (i + 1) + '. ' + dt + ' ' + t.time + '\n   ' + (t.pickup || '—') + ' → ' + (t.dropoff || '—') + '\n   Müşteri: ' + odeme + ' | Araç: ' + fr(t.driverPayment) + '₺' + hdLine;
+            const kdv = accountKdvInfoForRow(t);
+            const kdvLine = kdv.active ? ('\n   KDV: KDV\'siz ' + fr(kdv.base) + '₺ + %' + kdv.rate + ' KDV ' + fr(kdv.amount) + '₺ = ' + fr(kdv.total) + '₺') : '';
+            return (t.firmSettled ? '✓' : '○') + ' ' + (i + 1) + '. ' + dt + ' ' + t.time + '\n   ' + (t.pickup || '—') + ' → ' + (t.dropoff || '—') + '\n   Müşteri: ' + odeme + ' | Araç: ' + fr(t.driverPayment) + '₺' + hdLine + kdvLine;
         }).join('\n\n');
         const tourHd = ts.filter(t => tourCommissionTotal(t) > 0);
         const toplamHd = Math.round(tourHd.reduce((s, t) => s + tourCommissionTotal(t), 0));
@@ -4192,11 +4285,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         csv += 'Toplam Borç (TL),' + Math.round(gO.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gO.net) + '\n';
         csv += '\n';
-        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
+        csv += "No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,KDV'siz Net (TL),KDV Oranı,KDV Tutarı (TL),Net KDV Dahil (TL),Durum,Hesap\n";
         oVerdi.forEach((t, i) => {
             const hd = tourCommissionTotal(t);
             const hdPay = tourCommissionShare(t);
             const hdNot = (t.tourCommissionShop || '').trim();
+            const kdv = accountKdvInfoForRow(t);
             const row = [
                 i + 1,
                 esc(t.date || ''),
@@ -4209,13 +4303,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
+                kdv.active ? Math.round(kdv.base) : Math.round(moneyValue(t.netOl)),
+                kdv.active ? '%' + kdv.rate : '',
+                kdv.active ? Math.round(kdv.amount) : 0,
                 Math.round(moneyValue(t.netOl)),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
             csv += row.join(',') + '\n';
         });
-        if (oVerdi.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—,—\n';
+        if (oVerdi.length === 0) csv += Array(17).fill('—').join(',') + '\n';
         csv += '\n';
 
         // ═══ GRUP 2: ÖLMEZTUR'UN VERDİĞİ İŞLER (VERECEK) ═══
@@ -4225,11 +4322,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         csv += 'Toplam Borç (TL),' + Math.round(gB.ver) + '\n';
         csv += 'Net (TL),' + Math.round(gB.net) + '\n';
         csv += '\n';
-        csv += 'No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,Net (TL),Durum,Hesap\n';
+        csv += "No,Tarih,Saat,Alış,Bırakış,Müşteri Ücreti,Döviz,Araç Ödemesi (TL),Tur Komisyonu (TL),Bölüşen Pay (TL),Komisyon Notu,KDV'siz Net (TL),KDV Oranı,KDV Tutarı (TL),Net KDV Dahil (TL),Durum,Hesap\n";
         benVerdim.forEach((t, i) => {
             const hd = tourCommissionTotal(t);
             const hdPay = tourCommissionShare(t);
             const hdNot = (t.tourCommissionShop || '').trim();
+            const kdv = accountKdvInfoForRow(t);
             const row = [
                 i + 1,
                 esc(t.date || ''),
@@ -4242,13 +4340,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
+                kdv.active ? Math.round(kdv.base) : Math.round(moneyValue(t.netOl)),
+                kdv.active ? '%' + kdv.rate : '',
+                kdv.active ? Math.round(kdv.amount) : 0,
                 Math.round(moneyValue(t.netOl)),
                 esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
             csv += row.join(',') + '\n';
         });
-        if (benVerdim.length === 0) csv += '—,—,—,—,—,—,—,—,—,—,—,—,—,—\n';
+        if (benVerdim.length === 0) csv += Array(17).fill('—').join(',') + '\n';
         csv += '\n';
 
         // ═══ GRUP 3: ALT TRANSFERLER (varsa) ═══
@@ -4377,11 +4478,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         };
         const rows = [];
         rows.push([]);
-        rows.push(['TARİH', 'SAAT', 'MÜŞTERİ ADI', 'ALIŞ NOKTASI', 'GÜZERGAH', 'VARIŞ NOKTASI', 'MÜŞTERİ ÜCRETİ', 'ARABA ÜCRETİ', 'KALAN', 'NOTLAR']);
+        rows.push(['TARİH', 'SAAT', 'MÜŞTERİ ADI', 'ALIŞ NOKTASI', 'GÜZERGAH', 'VARIŞ NOKTASI', 'MÜŞTERİ ÜCRETİ', 'ARABA ÜCRETİ', "KDV'SİZ", 'KDV', 'KDV DAHİL / KALAN', 'NOTLAR']);
         const sectionRows = [];
         const addSection = (title, list, type) => {
             sectionRows.push(rows.length);
-            rows.push([up(title), '', '', '', '', '', '', '', '', '']);
+            rows.push([up(title), '', '', '', '', '', '', '', '', '', '', '']);
             list.forEach(t => {
                 const odeloGross = Math.round(moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t));
                 const odeloCar = t.yon === 'odeloBalentur' ? Math.round(moneyValue(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0)) : 0;
@@ -4389,6 +4490,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const araba = type === 'odelo' ? odeloCar : Math.round(moneyValue(t.driverPayment));
                 const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
                 const kalan = hasNet ? moneyValue(t.netOl) : (musteri - araba);
+                const kdv = accountKdvInfoForRow(t);
                 rows.push([
                     dateTxt(t.date),
                     t.time || '',
@@ -4398,11 +4500,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     placeTxt(t.dropoff),
                     money(musteri),
                     money(araba),
+                    kdv.active ? money(kdv.base) : '',
+                    kdv.active ? money(kdv.amount) : '',
                     money(kalan),
                     clean(t.notes || t.tourCommissionShop || '')
                 ]);
             });
-            if (!list.length) rows.push(['', '', 'KAYIT YOK', '', '', '', '', '', '', '']);
+            if (!list.length) rows.push(['', '', 'KAYIT YOK', '', '', '', '', '', '', '', '', '']);
         };
         if (isBalenturFirm(firm)) {
             addSection(OL + ' - ' + firm, benVerdim, 'normal');
@@ -4419,7 +4523,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const ws = XLSX.utils.aoa_to_sheet(rows);
         ws['!cols'] = [
             { wch: 13 }, { wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 24 },
-            { wch: 22 }, { wch: 13 }, { wch: 13 }, { wch: 12 }, { wch: 28 }
+            { wch: 22 }, { wch: 13 }, { wch: 13 }, { wch: 12 }, { wch: 11 },
+            { wch: 15 }, { wch: 28 }
         ];
         const range = XLSX.utils.decode_range(ws['!ref']);
         for (let Rw = range.s.r; Rw <= range.e.r; Rw++) {
@@ -4561,6 +4666,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             return null;
         const kar = transferNetAmount({ ...detayT });
         const pos = detayT.netOl >= 0;
+        const detayKdv = accountKdvInfoForRow(detayT);
         const odeme = detayT.paymentToMe
             ? ('Hesap bana geldi' + (detayT.paymentAmount ? ': ' + detayT.paymentAmount + ' ' + (detayT.paymentCurrency || 'TRY') : ''))
             : (detayT.paymentCollect === 'no'
@@ -4595,6 +4701,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             detayT.altAcenta ? ['Alt Acenta', detayT.altAcenta + (moneyValue(detayT.altAcentaUcreti) > 0 ? (' · ' + fr(detayT.altAcentaUcreti) + '₺' + ((detayT.altAcentaCurrency && detayT.altAcentaCurrency !== 'TRY' && moneyValue(detayT.altAcentaRaw) > 0) ? (' (' + currencySymbolFor(detayT.altAcentaCurrency) + fr(detayT.altAcentaRaw) + ')') : '')) : '')] : null,
             hakedisVar ? ['🪙 Tur Komisyonu', hakedisDagilim + (hakedisNot ? ' · ' + hakedisNot : '')] : null,
             ['Hesap', detayT.firmSettled ? 'Kapandı' : 'Açık'],
+            detayKdv.active ? ['KDV', "KDV'siz " + fr(detayKdv.base) + "₺ · KDV %" + detayKdv.rate + " +" + fr(detayKdv.amount) + "₺ · Dahil " + fr(detayKdv.total) + "₺"] : null,
             ['Net', (pos ? '+' : '−') + fr(detayT.netOl) + '₺'],
             ['Kâr', (kar >= 0 ? '+' : '−') + fr(kar) + '₺'],
             detayT.notes ? ['Not', detayT.notes] : null
@@ -4661,6 +4768,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const kar = transferNetAmount({ ...t });
         const kartKomisyonToplam = tourCommissionTotal(t);
         const kartKomisyonPay = tourCommissionShare(t);
+        const kartKdv = accountKdvInfoForRow(t);
         const settleKeys = t.settleFirmKeys || accountSettleKeys(sel, t.kaynak === 'alt' ? 'alt' : (t.kaynak === 'odelo' ? 'odelo' : ''));
         const yonBilgi = t.kaynak === 'odelo'
             ? {
@@ -4714,6 +4822,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
                         kar !== 0 && React.createElement("div", { style: { background: 'rgba(30,122,69,.08)', borderRadius: 6, padding: '2px 7px' } },
                             React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 450 } }, 'Kâr: ' + (kar >= 0 ? '+' : '−') + fr(kar) + '₺')),
+                        kartKdv.active && React.createElement("div", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 6, padding: '2px 7px' } },
+                            React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 450 } }, "KDV: " + fr(kartKdv.base) + "₺ + " + fr(kartKdv.amount) + "₺")),
                         kartKomisyonToplam > 0 && React.createElement("div", {
                             style: {
                                 background: 'linear-gradient(135deg,#F2F2F7,#E5E5EA)',
@@ -4772,6 +4882,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const jabirNetUnderCustomer = isJabirFirm(sel) && Math.round(Math.abs(usdNet)) > 0
             ? React.createElement("small", { className: "ko-account-jabir-net-under " + (usdNet >= 0 ? 'is-pos' : 'is-neg') }, (usdNet >= 0 ? '+' : '−') + Math.abs(Math.round(moneyValue(usdNet))).toLocaleString('tr-TR'))
             : null;
+        const rowKdv = accountKdvInfoForRow(t);
         if (t.kaynak === 'manual') {
             const meta = accountAdjustmentTypeMeta(t.adjustmentType);
             const amount = Math.abs(moneyValue(t.adjustmentAmount || t.paymentAmount || t.netOl));
@@ -4869,10 +4980,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             (isJabirFirm(sel)
                 ? React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
                     React.createElement("b", null, signedUsdText(usdNet)),
-                    React.createElement("small", null, '(' + fmtTl(accountRowUsdTlEquivalent(t)) + ')'))
+                    React.createElement("small", null, '(' + fmtTl(accountRowUsdTlEquivalent(t)) + ')'),
+                    rowKdv.active && React.createElement("small", null, "KDV " + fr(rowKdv.amount) + "₺"))
                 : React.createElement("div", { className: "ko-account-cell ko-account-net-cell " + (pos ? 'is-pos' : 'is-neg') },
                     React.createElement("b", null, hesapMoney(netVal)),
-                    kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar)))),
+                    rowKdv.active
+                        ? React.createElement("small", null, "KDV'siz " + fr(rowKdv.base) + "₺ + KDV " + fr(rowKdv.amount) + "₺")
+                        : (kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar))))),
             React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
                 React.createElement("button", {
                     type: "button",
@@ -6737,7 +6851,7 @@ function App() {
                 const rDrvTRY = rHasDrv ? (rDrvCur === 'TRY' ? t.returnDriverPayment : Math.round(toTRY(t.returnDriverPayment, rDrvCur))) : '';
                 const nowIso = new Date().toISOString();
                 const retId = 'rtsplit_' + String(t.id);
-                additions.push(normalizeTransfer({ ...t, id: retId, editRootId: retId, date: retDate, time: rt,
+                const retDraft = { ...t, id: retId, editRootId: retId, date: retDate, time: rt,
                     pickup: t.dropoff, dropoff: t.pickup, transferType: retType,
                     givenBy: rGiven, assignedTo: rAssigned, altAcenta: rAlt,
                     paymentAmount: rAmt, paymentCurrency: rCur, customerTRY: rCustomerTRY,
@@ -6746,7 +6860,8 @@ function App() {
                     tripMode: 'single', isReturn: false, hasReturn: false, isReturnLeg: true, isRecurring: false, endDate: '',
                     returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '',
                     returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY',
-                    createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, linkedTransferId: String(t.id) }));
+                    createdAt: nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso, linkedTransferId: String(t.id) };
+                additions.push(normalizeTransfer({ ...retDraft, ...buildKdvFields(retDraft) }));
             });
             if (!additions.length) return prev;
             const splitParentIds = new Set(additions.map(a => String(a.linkedTransferId)));
@@ -7005,6 +7120,7 @@ function App() {
             const retDriverRaw = retHasDriver ? form.returnDriverPayment : '';
             const retDriverTRY = retHasDriver ? (retDriverCur === 'TRY' ? form.returnDriverPayment : Math.round(toTRY(form.returnDriverPayment, retDriverCur) / 50) * 50) : '';
             const retProfitBase = { ...outBase, givenBy: returnGivenBy, assignedTo: returnAssignedTo, altAcenta: returnAltAcenta, paymentAmount: retAmount, paymentCurrency: retCurrency, customerTRY: retCustomerTRY, driverPayment: retDriverTRY };
+            const retKdvFields = buildKdvFields(retProfitBase);
             return ({
             ...outBase,
             id: retId,
@@ -7027,6 +7143,7 @@ function App() {
             driverPaymentRaw: retDriverRaw,
             driverPaymentCurrency: retDriverCur,
             profit: olmezKar(retProfitBase),
+            ...retKdvFields,
             returnPaymentAmount: '',
             returnPaymentCurrency: 'TRY',
             returnDriverPayment: '',
@@ -7051,7 +7168,8 @@ function App() {
         
         if (editId) {
             const nowIso = new Date().toISOString();
-            const base = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const baseDraft = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const base = { ...baseDraft, ...buildKdvFields(baseDraft) };
             let baseFixed = base;
             const extraKs = [];
             // ═══ KARŞILIKLI: SADECE GÖRSEL EŞLEŞTİRME (hesap yok, ikinci bacak oluşturmaz) ═══
@@ -7089,7 +7207,8 @@ function App() {
                 const dateStr = currentDate.toISOString().split('T')[0];
                 
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
-                const outBase = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
+                const outDraft = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
+                const outBase = { ...outDraft, ...buildKdvFields(outDraft) };
                 transfersToAdd.push(normalizeTransfer(outBase));
 
                 // ═══ KARŞILIKLI: SADECE GÖRSEL EŞLEŞTİRME (yeni transfer + seçilen mevcut iş) ═══
@@ -7237,7 +7356,7 @@ function App() {
         const cTRY = toTRYr(draft.paymentAmount, draft.paymentCurrency);
         const companyCollected = !!(draft.companyCollected || draft.settled);
         const passengers = ensureQuickPassengers(draft);
-        const base = {
+        const baseDraft = {
             ...prev,
             ...draft,
             editRootId: (prev && prev.editRootId) || draft.editRootId || draft.id,
@@ -7253,6 +7372,7 @@ function App() {
             updatedAt: new Date().toISOString(),
             clientUpdatedAt: new Date().toISOString()
         };
+        const base = { ...baseDraft, ...buildKdvFields(baseDraft) };
         const next = normalizeTransfer(base);
         setT(p => {
             const list = dedupeTransfers([...removeEditedTransferClones(p || [], next.id, prev), next]);
@@ -7585,6 +7705,10 @@ function App() {
         const pax = passengers[0] || {};
         const cTRY = toTRYr(q.paymentAmount, q.paymentCurrency);
         const previewNet = Math.round(formPreviewAmounts({ ...q, customerTRY: cTRY, totalTRY: cTRY }).olmezNet);
+        const quickKdvRate = q.kdvEnabled ? (normalizeKdvRate(q.kdvRate) || 20) : 0;
+        const quickKdvBase = quickKdvRate > 0 ? Math.round(transferFirmBaseForKdv({ ...q, customerTRY: cTRY, totalTRY: cTRY, kdvEnabled: q.kdvEnabled, kdvRate: quickKdvRate }).base) : 0;
+        const quickKdvAmount = quickKdvRate > 0 ? calcKdvAmountForBase(quickKdvBase, quickKdvRate) : 0;
+        const quickKdvTotal = quickKdvBase + quickKdvAmount;
         const quickShowOlmezNet = hasOlmezturSide(q) && !isPlate16Transfer(q);
         const quickAgencyListId = "ko-quick-agency-list";
         const quickDriverListId = "ko-quick-driver-list";
@@ -7707,6 +7831,30 @@ function App() {
                     }, q.paymentToMe ? "✓ Hesap / ödeme bana geldi" : "Hesap bana geldiyse tıkla"), true),
                     field('Araç Ödemesi', input({ type: 'text', inputMode: 'decimal', defaultValue: q.driverPayment || '', onBlur: e => quickSet({ driverPayment: e.target.value }), placeholder: '0' })),
                     field('Alt Acenta Ücreti', input({ type: 'text', inputMode: 'decimal', defaultValue: q.altAcentaUcreti || '', onBlur: e => quickSet({ altAcentaUcreti: e.target.value }), placeholder: '0' })),
+                    field('KDV', React.createElement("div", { style: { background: q.kdvEnabled ? '#F4F6F9' : INP, border: '1px solid ' + (q.kdvEnabled ? '#D1D1D6' : BOR), borderRadius: 12, padding: 9 } },
+                        React.createElement("button", {
+                            type: "button",
+                            onClick: () => {
+                                const next = !q.kdvEnabled;
+                                quickSet(next
+                                    ? { kdvEnabled: true, kdvRate: normalizeKdvRate(q.kdvRate) || 20 }
+                                    : { kdvEnabled: false, kdvRate: 0, kdvAmount: 0, kdvBaseTRY: 0, kdvTotalTRY: 0 });
+                            },
+                            style: { width: '100%', minHeight: 34, border: 'none', background: 'transparent', color: q.kdvEnabled ? G : SB, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 0, cursor: 'pointer', fontSize: 12, fontWeight: 650 }
+                        },
+                            React.createElement("span", null, q.kdvEnabled ? "\u2713 KDV a\u00e7\u0131k" : "+ KDV ekle"),
+                            React.createElement("span", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 999, padding: '3px 8px', fontSize: 10.5, fontWeight: 650 } }, q.kdvEnabled ? '%' + quickKdvRate : 'Kapalı')),
+                        q.kdvEnabled && React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 7 } }, [10, 20].map(rate => React.createElement("button", {
+                            key: rate,
+                            type: "button",
+                            onClick: () => quickSet({ kdvEnabled: true, kdvRate: rate }),
+                            style: { border: '1px solid ' + (quickKdvRate === rate ? NAV : BOR), borderRadius: 9, background: quickKdvRate === rate ? NAV : '#fff', color: quickKdvRate === rate ? '#fff' : TX, minHeight: 32, fontSize: 11.5, fontWeight: 650, cursor: 'pointer' }
+                        }, '%' + rate))),
+                        q.kdvEnabled && React.createElement("div", { style: { marginTop: 7, fontSize: 10.5, color: quickKdvAmount > 0 ? G : SB, fontWeight: 600, lineHeight: 1.35, fontVariantNumeric: 'tabular-nums' } },
+                            quickKdvAmount > 0
+                                ? "KDV'siz " + fr(quickKdvBase) + "\u20BA · KDV +" + fr(quickKdvAmount) + "\u20BA · Dahil " + fr(quickKdvTotal) + "\u20BA"
+                                : "Firma alaca\u011f\u0131 olu\u015funca hesaplan\u0131r.")
+                    ), true),
 	                    (q.transferType || '') === 'tour' && field('Hakediş', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 6 } },
 		                        input({ type: 'text', inputMode: 'decimal', defaultValue: q.tourCommission || '', onBlur: e => quickInputSet({ tourCommission: e.target.value }), placeholder: 'Hakediş' }),
 		                        input({ defaultValue: q.tourCommissionShop || '', onBlur: e => quickInputSet({ tourCommissionShop: e.target.value }), placeholder: 'Not / mağaza' })
@@ -8140,6 +8288,7 @@ function App() {
             : ((custDisp.isForeign && custDisp.sub) ? ('(' + custDisp.sub + ')') : '');
         const typeClass = 't-' + (t.transferType || 'arrival');
         const currencySym = payCurrency === 'USD' ? '$' : payCurrency === 'EUR' ? '€' : payCurrency === 'KWD' ? 'KD' : '₺';
+        const kdvInfo = transferKdvInfo(t);
 
         // ═══ YENİ PREMIUM KART TASARIMI ═══
         return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : ''), "data-transfer-id": t.id },
@@ -8198,7 +8347,9 @@ function App() {
                             ),
                             React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : (showNoPayment && noCollectRaw > 0 ? 'tahsilat yok' : 'müşteriden')),
                             remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: '#22252E' } },
-                                'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : ''))
+                                'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : '')),
+                            kdvInfo.enabled && React.createElement("div", { className: 'tcard-amount-sub', style: { color: G, fontWeight: 650, lineHeight: 1.25 } },
+                                "KDV: " + fr(kdvInfo.base) + " + " + fr(kdvInfo.amount) + " = " + fr(kdvInfo.total) + "\u20BA")
                         ),
                         React.createElement("div", {
                                 onClick: e => { e.stopPropagation(); toggleSettled(t.id); },
@@ -8259,6 +8410,11 @@ function App() {
                     React.createElement("div", { style: { background: '#fff', borderRadius: 9, padding: '8px 10px', border: '1px solid #D1D1D6' } },
                         React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 470, letterSpacing: .5, textTransform: 'uppercase' } }, '💰 Müşteri Ücreti'),
                         React.createElement("div", { style: { fontSize: 12, fontWeight: 470, color: TX, marginTop: 2, fontVariantNumeric: 'tabular-nums' } }, payCollectTxt)
+                    ),
+                    kdvInfo.enabled && React.createElement("div", { style: { gridColumn: '1 / -1', background: '#F4F6F9', borderRadius: 9, padding: '8px 10px', border: '1px solid #D1D1D6' } },
+                        React.createElement("div", { style: { fontSize: 9, color: SB, fontWeight: 470, letterSpacing: .5, textTransform: 'uppercase' } }, 'KDV %' + kdvInfo.rate),
+                        React.createElement("div", { style: { fontSize: 12, fontWeight: 650, color: G, marginTop: 2, fontVariantNumeric: 'tabular-nums', lineHeight: 1.35 } },
+                            "KDV'siz " + fr(kdvInfo.base) + "\u20BA · KDV +" + fr(kdvInfo.amount) + "\u20BA · Dahil " + fr(kdvInfo.total) + "\u20BA")
                     ),
                     /* Araç Ücreti */
                     React.createElement("div", { style: { background: '#fff', borderRadius: 9, padding: '8px 10px', border: '1px solid #D1D1D6' } },
@@ -8680,6 +8836,12 @@ function App() {
     const firmPreviewBal = formPreview.firmBal;
     const altPreviewBal = formPreview.altBal;
     const firmPreviewNet = firmPreviewBal ? firmPreviewBal.netOl : 0;
+    const formKdvRate = form.kdvEnabled ? (normalizeKdvRate(form.kdvRate) || 20) : 0;
+    const formKdvBaseInfo = transferFirmBaseForKdv({ ...formPreviewT, kdvEnabled: form.kdvEnabled, kdvRate: formKdvRate });
+    const formKdvBase = formKdvRate > 0 ? Math.round(formKdvBaseInfo.base) : 0;
+    const formKdvAmount = formKdvRate > 0 ? calcKdvAmountForBase(formKdvBase, formKdvRate) : 0;
+    const formKdvTotal = formKdvBase + formKdvAmount;
+    const firmPreviewNetWithKdv = firmPreviewNet > 0 ? firmPreviewNet + formKdvAmount : firmPreviewNet;
     const altPreviewNet = altPreviewBal ? altPreviewBal.netOl : 0;
     const formBalenturOdelo = formPreview.odeloBal;
     const previewTL = n => fr(moneyValue(n));
@@ -10325,6 +10487,36 @@ function App() {
                                 React.createElement("option", { value: "EUR" }, "\u20AC"),
                                 React.createElement("option", { value: "KWD" }, "KD"))),
                         form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY' && moneyValue(form.driverPaymentRaw) > 0 && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 4 } }, "\u2248 " + fr(toTRY(form.driverPaymentRaw, form.driverPaymentCurrency)) + " \u20BA (ara\u00e7 hesab\u0131 TL i\u015fler)")),
+                    React.createElement("div", { style: { marginTop: 8, marginBottom: 8, border: '1.4px solid ' + (form.kdvEnabled ? '#D1D1D6' : BOR), borderRadius: 11, background: form.kdvEnabled ? '#F4F6F9' : INP, padding: '9px 10px' } },
+                        React.createElement("button", {
+                            type: "button",
+                            onClick: () => {
+                                const next = !form.kdvEnabled;
+                                sf(next
+                                    ? { kdvEnabled: true, kdvRate: normalizeKdvRate(form.kdvRate) || 20 }
+                                    : { kdvEnabled: false, kdvRate: 0, kdvAmount: 0, kdvBaseTRY: 0, kdvTotalTRY: 0 });
+                            },
+                            style: { width: '100%', minHeight: 35, border: 'none', background: 'transparent', color: form.kdvEnabled ? G : SB, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, cursor: 'pointer', padding: 0, fontSize: 12.5, fontWeight: 650 }
+                        },
+                            React.createElement("span", null, form.kdvEnabled ? "\u2713 KDV a\u00e7\u0131k" : "+ KDV ekle"),
+                            React.createElement("span", { style: { fontSize: 11, fontWeight: 650, color: form.kdvEnabled ? G : SB, background: '#fff', border: '1px solid ' + BOR, borderRadius: 999, padding: '3px 8px', fontVariantNumeric: 'tabular-nums' } }, form.kdvEnabled ? '%' + formKdvRate : 'Kapalı')),
+                        form.kdvEnabled && React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 7 } }, [10, 20].map(rate => React.createElement("button", {
+                            key: rate,
+                            type: "button",
+                            onClick: () => sf({ kdvEnabled: true, kdvRate: rate }),
+                            className: "lg-choice" + (formKdvRate === rate ? " is-active ko-selected-gold" : ""),
+                            style: { border: '1.5px solid ' + (formKdvRate === rate ? NAV : BOR), borderRadius: 9, background: formKdvRate === rate ? NAV : '#fff', color: formKdvRate === rate ? '#fff' : TX, minHeight: 34, fontSize: 12, fontWeight: 650, cursor: 'pointer' }
+                        }, '%' + rate))),
+                        form.kdvEnabled && React.createElement("div", { style: { marginTop: 8, borderTop: '1px dashed ' + BOR, paddingTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
+                            React.createElement("div", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 8, padding: '6px 5px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8.5, color: SB, fontWeight: 650, letterSpacing: .3 } }, "KDV'SİZ"),
+                                React.createElement("div", { style: { fontSize: 12, color: TX, fontWeight: 650, fontVariantNumeric: 'tabular-nums' } }, formKdvBase > 0 ? fr(formKdvBase) + "\u20BA" : "—")),
+                            React.createElement("div", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 8, padding: '6px 5px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8.5, color: SB, fontWeight: 650, letterSpacing: .3 } }, "KDV"),
+                                React.createElement("div", { style: { fontSize: 12, color: G, fontWeight: 650, fontVariantNumeric: 'tabular-nums' } }, formKdvAmount > 0 ? '+' + fr(formKdvAmount) + "\u20BA" : "—")),
+                            React.createElement("div", { style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 8, padding: '6px 5px', textAlign: 'center' } },
+                                React.createElement("div", { style: { fontSize: 8.5, color: SB, fontWeight: 650, letterSpacing: .3 } }, "DAHİL"),
+                                React.createElement("div", { style: { fontSize: 12, color: formKdvTotal > 0 ? G : TX, fontWeight: 650, fontVariantNumeric: 'tabular-nums' } }, formKdvTotal > 0 ? fr(formKdvTotal) + "\u20BA" : "—")))),
                     (form.driverPayment || form.paymentAmount) && (React.createElement("div", { style: { marginTop: 10 } },
                         formBalenturOdelo && React.createElement("div", {
                             style: {
@@ -10346,18 +10538,20 @@ function App() {
                             style: {
                                 padding: '10px 13px',
                                 borderRadius: 11,
-                                background: firmPreviewNet > 0 ? 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%)' : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                                border: '1.5px solid ' + (firmPreviewNet > 0 ? '#D1D1D6' : '#FFC4C0'),
+                                background: firmPreviewNetWithKdv > 0 ? 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 100%)' : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
+                                border: '1.5px solid ' + (firmPreviewNetWithKdv > 0 ? '#D1D1D6' : '#FFC4C0'),
                                 marginBottom: 8,
-                                boxShadow: firmPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: firmPreviewNetWithKdv > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
                             }
                         },
-                            React.createElement("div", { style: { fontSize: 9, color: firmPreviewNet > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
+                            React.createElement("div", { style: { fontSize: 9, color: firmPreviewNetWithKdv > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
                                 (firmPreviewNet > 0 ? '▲ ' : '▼ ') + (firmPreviewBal.firm || 'FİRMA') + (firmPreviewNet > 0 ? "'DAN ALACA\u011EIN" : "'YA VERECE\u011E\u0130N")),
-                            React.createElement("div", { style: { fontSize: 17, fontWeight: 450, color: firmPreviewNet > 0 ? G : R } },
-                                firmPreviewNet >= 0 ? '+' : '−',
-                                previewTL(firmPreviewNet),
-                                " \u20BA"))),
+                            React.createElement("div", { style: { fontSize: 17, fontWeight: 450, color: firmPreviewNetWithKdv > 0 ? G : R } },
+                                firmPreviewNetWithKdv >= 0 ? '+' : '−',
+                                previewTL(firmPreviewNetWithKdv),
+                                " \u20BA"),
+                            formKdvAmount > 0 && React.createElement("div", { style: { marginTop: 3, fontSize: 10, color: SB, fontWeight: 500, lineHeight: 1.35 } },
+                                "KDV'siz " + previewTL(firmPreviewNet) + "\u20BA + KDV %" + formKdvRate + " " + previewTL(formKdvAmount) + "\u20BA"))),
                         (altPreviewBal && altPreviewNet !== 0) && (React.createElement("div", {
                             style: {
                                 padding: '10px 13px',
