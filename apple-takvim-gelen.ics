@@ -4732,8 +4732,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787307366267_x49gba@olmeztur
 DTSTAMP:20260821T103300Z
-LAST-MODIFIED:20260821T102400Z
-SEQUENCE:1787307866
+LAST-MODIFIED:20260821T103300Z
+SEQUENCE:1787308413
 DTSTART:20260821T195500
 DTEND:20260821T205500
 SUMMARY:19:55 · İST → Holiday İnn Şişli  Vito
@@ -4741,7 +4741,7 @@ LOCATION:İstanbul Havalimanı → Holiday İnn Şişli
 DESCRIPTION:Müşteri: Bashah Alfaghm\, Ohud Alfagham\nŞoför: Faruk Acar /
   +90 533 329 9225\nİşi veren: Ölmeztur\nİşi yapan: Cihat Öter\nAlt acent
  a: -\nAraç: Vito / 34 ELC 50\nGüzergah: İstanbul Havalimanı → Holiday İn
- n Şişli\nUçuş: XY299\nÖdeme: Müşteri: 50 USD | Araç: 1.500 ₺
+ n Şişli\nUçuş: XY299\nÖdeme: Müşteri: 50 USD | Araç: 1.700 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
