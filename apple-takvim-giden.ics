@@ -3530,8 +3530,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787308159375_4vukcf@olmeztur
 DTSTAMP:20260821T171500Z
-LAST-MODIFIED:20260821T171400Z
-SEQUENCE:1787332471
+LAST-MODIFIED:20260821T171500Z
+SEQUENCE:1787332551
 DTSTART:20260822T100000
 DTEND:20260822T110000
 SUMMARY:10:00 · Bursa → Sabiha Gökçen  Sprinter
@@ -3541,7 +3541,7 @@ DESCRIPTION:Müşteri: 1. Jood Alhusaını 2. Saud Alhussını 3. Fahad Alhusa
  mah Alhussaını 8. Abdulazız Alhussaını 9. Hamed Alhoussını\nŞoför: -\nİş
  i veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinte
  r\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 8.500 TRY
-  | Araç: 8.800 ₺ | Alt acenta: 8.200 ₺
+  | Araç: 8.200 ₺ | Alt acenta: 8.200 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
