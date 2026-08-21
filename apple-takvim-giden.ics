@@ -3493,8 +3493,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787229992219_623h2s@olmeztur
 DTSTAMP:20260821T103200Z
-LAST-MODIFIED:20260820T150400Z
-SEQUENCE:1787238276
+LAST-MODIFIED:20260821T103200Z
+SEQUENCE:1787308377
 DTSTART:20260821T140000
 DTEND:20260821T150000
 SUMMARY:14:00 · Bursa → İST  Sprinter
@@ -3503,7 +3503,7 @@ DESCRIPTION:Müşteri: Almarri Mohammed Rakan -almarri Rakan Mohd -almarri
   Norah Naie -almarri Ahmed Rakan\nŞoför: Cihat Öter\nİşi veren: Salah\nİ
  şi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Sprinter\nGüzergah: Bu
  rsa → İstanbul Havalimanı\nNot: köprüden sonra oksijende duracaklar.\nÖd
- eme: Müşteri ödemez | Alt acenta: 8.500 ₺
+ eme: Müşteri: 230 USD | Araç: 8.500 ₺ | Alt acenta: 8.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
