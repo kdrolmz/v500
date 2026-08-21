@@ -4747,6 +4747,24 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1787308220326_qwbczt@olmeztur
+DTSTAMP:20260821T103300Z
+LAST-MODIFIED:20260821T103300Z
+SEQUENCE:1787308432
+DTSTART:20260822T130500
+DTEND:20260822T140500
+SUMMARY:13:05 · Sabiha Gökçen → Bursa  Vito
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Abdulrahman Al-mutairi Bader Al-mutairi Rima Al-mut
+ airi Dalal Al-mutairi Rand Al-mutairi Sadeem Al-mutairi\nŞoför: -\nİşi v
+ eren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: S
+ abiha Gökçen Havalimanı → Bursa\nUçuş: KU157\nÖdeme: Müşteri: 160 USD | 
+ Araç: 7.700 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1786873317395_cch7sg@olmeztur
 DTSTAMP:20260821T103300Z
 LAST-MODIFIED:20260816T094100Z
