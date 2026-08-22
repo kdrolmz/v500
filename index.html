@@ -10,11 +10,11 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Pasaport Okuma v70</title>
+<title>KÖ Transfer Takip - Ölmez Midnight Ink v54</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -810,7 +810,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 
 /* ── Transfer tip renkleri: belirgin sol şerit + net çip (kurumsal) ── */
 .tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:#2E7D5B !important}
-.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:#6F8798 !important}
+.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:#2B4A82 !important}
 .tcard.t-tour .tcard-stripe,.lg-home-transfer-list .tcard.t-tour .tcard-stripe{background:#B0842E !important}
 .tcard.t-shortpass .tcard-stripe,.lg-home-transfer-list .tcard.t-shortpass .tcard-stripe{background:#7A5CB0 !important}
 .tcard.t-intercity .tcard-stripe,.lg-home-transfer-list .tcard.t-intercity .tcard-stripe{background:#3A5570 !important}
@@ -819,7 +819,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .tcard-stripe{width:6px !important;min-width:6px !important}
 /* Çipler: tip rengiyle dolgulu, okunur */
 .tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:#E4F3EB !important;border-color:#B4DBC5 !important;color:#1F6E48 !important;-webkit-text-fill-color:#1F6E48 !important}
-.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:#EEF3F6 !important;border-color:#C9D6DD !important;color:#526B7C !important;-webkit-text-fill-color:#526B7C !important}
+.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:#E7EDF7 !important;border-color:#BDCCE6 !important;color:#294C86 !important;-webkit-text-fill-color:#294C86 !important}
 .tcard.t-tour .tcard-type,.tcard.t-tour .tcard-pill:first-child{background:#F8F0DC !important;border-color:#E4D2A0 !important;color:#8A6414 !important;-webkit-text-fill-color:#8A6414 !important}
 .tcard.t-shortpass .tcard-type,.tcard.t-shortpass .tcard-pill:first-child{background:#F0EAF8 !important;border-color:#D2C4E8 !important;color:#5B449A !important;-webkit-text-fill-color:#5B449A !important}
 .tcard.t-intercity .tcard-type,.tcard.t-intercity .tcard-pill:first-child{background:#E9EEF4 !important;border-color:#C6D2E0 !important;color:#33475E !important;-webkit-text-fill-color:#33475E !important}
@@ -914,7 +914,7 @@ const NAV = '#22252E', NAV2 = '#22252E', GOLD = 'rgba(255,255,255,.85)';
 const G = '#6E8060', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
 const TX = '#1F2733', SB = '#5F6B7A', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#6F8798', bg: '#EEF3F6', b: '#C9D6DD' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
     { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#3E7C5B', bg: '#E9F3ED', b: '#BFDCCB' },
     { id: 'tour', n: 'Tur', ico: '🏔️', c: '#96762A', bg: '#F7F0DE', b: '#E0D2A8' },
     { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6C5A92', bg: '#EFEAF6', b: '#CFC2E3' },
@@ -982,57 +982,12 @@ const ULKELER = [
     { k: 'ES', n: 'İspanya' }, { k: 'PL', n: 'Polonya' }, { k: 'GR', n: 'Yunanistan' },
     { k: 'OTHER', n: 'Diğer' },
 ];
-const PASSENGER_GENDERS = [
-    { k: '', n: 'Belirtilmedi' },
-    { k: 'M', n: 'Erkek' },
-    { k: 'F', n: 'Kadın' },
-];
-const MRZ_COUNTRY_TO_UI = {
-    TUR: 'TR', TR: 'TR',
-    DEU: 'DE', D: 'DE',
-    GBR: 'GB', GBD: 'GB', GBN: 'GB', GBP: 'GB',
-    USA: 'US',
-    FRA: 'FR',
-    NLD: 'NL',
-    BEL: 'BE',
-    AUT: 'AT',
-    CHE: 'CH',
-    SAU: 'SA',
-    ARE: 'AE',
-    RUS: 'RU',
-    KWT: 'KW',
-    QAT: 'QA',
-    ITA: 'IT',
-    ESP: 'ES',
-    POL: 'PL',
-    GRC: 'GR'
-};
-const NATIONALITY_TR = {
-    TR: 'Türk',
-    DE: 'Alman',
-    GB: 'İngiliz',
-    US: 'Amerikalı',
-    FR: 'Fransız',
-    NL: 'Hollandalı',
-    BE: 'Belçikalı',
-    AT: 'Avusturyalı',
-    CH: 'İsviçreli',
-    SA: 'Suudi Arabistanlı',
-    AE: "BAE'li",
-    RU: 'Rus',
-    KW: 'Kuveytli',
-    QA: 'Katarlı',
-    IT: 'İtalyan',
-    ES: 'İspanyol',
-    PL: 'Polonyalı',
-    GR: 'Yunan'
-};
 const BF = {
     date: new Date().toISOString().split('T')[0], time: '09:00', flightCode: '',
     transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '',
     pickup: '', dropoff: '', pickupMaps: '', dropoffMaps: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '',
     driverName: '', driverPhone: '',
-    passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR', cinsiyet: '' }],
+    passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
     childSeat: false, childSeatCount: 0,
     tourCommission: '', tourCommissionShop: '',
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
@@ -1139,7 +1094,7 @@ const mergeRecordsByIdWithDeletes = (preferred, fallback, deletedIds) => {
     (preferred || []).forEach(put);
     return Array.from(map.values());
 };
-const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR', cinsiyet: '' });
+const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' });
 const passengerIdDisplay = p => String((p && (p.idNo || p.tc || p.pasaport)) || '');
 const splitPassengerId = v => {
     const raw = String(v || '').trim().toUpperCase();
@@ -1149,6 +1104,344 @@ const splitPassengerId = v => {
         ? { idNo: raw, tc: digits, pasaport: '' }
         : { idNo: raw, tc: '', pasaport: raw };
 };
+/* ═══════════════════════════════════════════════════════════════
+   🪪 PASAPORT MRZ OKUMA — Galeriden pasaport ekle (güvenilir)
+   Pasaportun altındaki 2 satırlık makine-okunur alanı (MRZ) okur.
+   Check-digit doğrulaması + OCR hatası otomatik düzeltme ile
+   ad/soyad ve pasaport numarasını stabil şekilde çıkarır.
+   ═══════════════════════════════════════════════════════════════ */
+/* MRZ ülke kodu (ISO-3) → uygulama ülke anahtarı (ULKELER) */
+const MRZ_ISO3_TO_APP = {
+    TUR: 'TR', DEU: 'DE', GBR: 'GB', USA: 'US', FRA: 'FR', NLD: 'NL',
+    BEL: 'BE', AUT: 'AT', CHE: 'CH', SAU: 'SA', ARE: 'AE', RUS: 'RU',
+    KWT: 'KW', QAT: 'QA', ITA: 'IT', ESP: 'ES', POL: 'PL', GRC: 'GR',
+    // Sık karşılaşılan diğer uyruklar → 'OTHER' (uygulamada karşılığı yok)
+    D: 'DE', GBD: 'GB', GBN: 'GB', GBO: 'GB', GBP: 'GB', GBS: 'GB'
+};
+/* MRZ karakter değeri: 0-9 => 0-9, A-Z => 10-35, '<' => 0 */
+function mrzCharVal(c) {
+    if (c >= '0' && c <= '9') return c.charCodeAt(0) - 48;
+    if (c >= 'A' && c <= 'Z') return c.charCodeAt(0) - 55;
+    return 0;
+}
+/* MRZ check-digit (ağırlık 7,3,1 döngüsü) */
+function mrzCheckDigit(str) {
+    const w = [7, 3, 1];
+    let sum = 0;
+    for (let i = 0; i < str.length; i++) sum += mrzCharVal(str[i]) * w[i % 3];
+    return sum % 10;
+}
+/* Yaygın OCR karışıklıkları (iki yönlü) — check-digit ile düzeltme için */
+const MRZ_CONFUSIONS = {
+    '0': ['O', 'D', 'Q', 'C'], 'O': ['0', 'C', 'Q', 'D'], 'D': ['0', 'O'], 'Q': ['0', 'O'],
+    '1': ['I', 'L'], 'I': ['1', 'L'], 'L': ['1', 'I'], '|': ['1'],
+    '2': ['Z'], 'Z': ['2'],
+    '5': ['S'], 'S': ['5'],
+    '8': ['B'], 'B': ['8'],
+    '6': ['G'], 'G': ['6', 'C'], 'C': ['G', 'O', '0'],
+    '4': ['A'], 'A': ['4'],
+    '7': ['T'], 'T': ['7'],
+    '9': ['G', 'Q'],
+    'U': ['V'], 'V': ['U'],
+    'K': ['X'], 'X': ['K']
+};
+/* Bir MRZ alanını (ör. pasaport no) check-digit'e uyacak şekilde düzelt.
+   Tek ve çift karakter ikamesi dener; bulursa düzeltilmiş halini döndürür. */
+function mrzFixField(field, expected) {
+    if (typeof expected !== 'number' || isNaN(expected)) return { val: field, ok: false };
+    // Alan olduğu gibi check-digit'i tutuyorsa: en güvenilir durum
+    if (mrzCheckDigit(field) === expected) return { val: field, ok: true };
+    // Aksi halde: yalnızca TEK karakter ikamesiyle ve BENZERSİZ bir çözüm varsa düzelt.
+    // Birden fazla olası düzeltme varsa (belirsiz) dokunma; kullanıcı onay ekranında görsün.
+    // Böylece yanlış bir numarayı "doğrulandı" diye işaretlemeyiz.
+    const chars = field.split('');
+    const solutions = new Set();
+    for (let i = 0; i < chars.length; i++) {
+        const alts = MRZ_CONFUSIONS[chars[i]];
+        if (!alts) continue;
+        for (const alt of alts) {
+            const cand = chars.slice(); cand[i] = alt;
+            const s = cand.join('');
+            if (mrzCheckDigit(s) === expected) solutions.add(s);
+        }
+    }
+    if (solutions.size === 1) return { val: Array.from(solutions)[0], ok: true, amb: false };
+    if (solutions.size > 1) {
+        // Birden fazla aday (belirsiz): en makul olanı seç ama "doğrulandı" işaretleme —
+        // kullanıcı onay ekranında görüp düzeltebilsin.
+        // Tercih sırası: MRZ'de 'O' harfi nadirdir (genelde '0' yazılır) → 'O' içeren aday
+        // cezalandırılır; sonra rakam ağırlığı yüksek olan tercih edilir.
+        const penalty = s => (s.split('O').length - 1) * 10 - s.replace(/[^0-9]/g, '').length;
+        const best = Array.from(solutions).sort((a, b) => penalty(a) - penalty(b))[0];
+        return { val: best, ok: false, amb: true };
+    }
+    return { val: field, ok: false, amb: false };
+}
+/* Bir satırı MRZ karakter setine indirger (yalnız A-Z 0-9 <) */
+function mrzNormalizeLine(line) {
+    return String(line || '')
+        .toUpperCase()
+        .replace(/[«»«»]/g, '<')
+        .replace(/[^A-Z0-9<]/g, '');
+}
+/* Bir satırın MRZ satırı olma olasılığı yüksek mi? */
+function mrzIsCandidate(line) {
+    if (line.length < 20) return false;
+    const fillers = (line.match(/</g) || []).length;
+    const alnum = (line.match(/[A-Z0-9]/g) || []).length;
+    return fillers >= 2 && alnum >= 10 && (fillers + alnum) >= line.length * 0.9;
+}
+/* MRZ isimleri ASCII büyük harftir (ALI, IREM). Türkçe küçültme kuralı 'I' harfini 'ı'
+   yaptığı için burada İngilizce kurallarıyla düzgün yazım uygulanır: ALI → Ali.
+   (MRZ'de Türkçe harfler zaten sadeleştirilmiştir; kullanıcı gerekirse düzeltebilir.) */
+function mrzTitleCase(v) {
+    return String(v || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split(' ')
+        .map(w => w ? (w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : w)
+        .join(' ');
+}
+/* MRZ isim alanını okunur ada çevirir: SURNAME<<GIVEN<NAMES → "Surname Given Names" */
+function mrzNamePart(s) {
+    return String(s || '')
+        .replace(/</g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split(' ')
+        // OCR bulanık görüntülerde MRZ dolgu karakterlerini ('<<<<') 'LLL', 'CCC', 'KKK'
+        // gibi tekrarlı harflere çevirebiliyor. Tamamen aynı harften oluşan 2+ harfli
+        // "kelimeler" gerçek isim olamaz → dolgu artığı sayılıp atılır.
+        .filter(w => !(w.length >= 2 && /^([A-Z])\1+$/.test(w)))
+        .join(' ')
+        .trim();
+}
+/* OCR metninden MRZ'yi bul ve ayrıştır.
+   TD3 (pasaport, 2×44) öncelikli; TD2 (2×36) de desteklenir.
+   Dönen: { ok, name, surname, given, passportNo, nationality(appKey),
+            passportVerified, raw } veya null */
+/* Satır 2 formatına uyuyor mu? (pozisyon 10-12 = 3 harfli ülke kodu, 0-8 arası alfanumerik) */
+function mrzLooksLikeLine2(s) {
+    if (!s || s.length < 28) return false;
+    return /^[A-Z0-9<]{9}[0-9<][A-Z<]{3}/.test(s);
+}
+/* MRZ 2. satırından pasaport no + uyruk çıkar.
+   OCR bazen satırın başına fazladan karakter ekler / karakter yutar ve hizalama kayar.
+   Bunu önlemek için "uyruk + doğum tarihi + cinsiyet + son kullanma" bloğunu çapa
+   olarak kullanıp pasaport alanının gerçek konumunu buluruz. */
+function mrzReadLine2(line2, iss3) {
+    const std = () => {
+        const f = line2.slice(0, 9);
+        const c = line2[9];
+        const exp = /[0-9]/.test(c) ? parseInt(c, 10) : NaN;
+        const fx = mrzFixField(f, exp);
+        const n3 = line2.slice(10, 13).replace(/</g, '');
+        return { fixed: fx, passportNo: fx.val.replace(/</g, '').trim(), natKey: MRZ_ISO3_TO_APP[n3] || MRZ_ISO3_TO_APP[iss3] || 'OTHER' };
+    };
+    const a = std();
+    if (a.fixed.ok) return a; // standart hizalama check-digit'i tutuyor → en güvenilir
+    // Çapa ara: 3 harf uyruk + 6 hane doğum + check + cinsiyet + 6 hane geçerlilik + check
+    const anchor = /([A-Z<]{3})([0-9]{6})([0-9])([MFX<])([0-9]{6})([0-9])/g;
+    let m;
+    while ((m = anchor.exec(line2)) !== null) {
+        const at = m.index;              // uyruk kodunun başladığı yer (standart: 10)
+        if (at < 6 || at > 14) continue; // makul kayma aralığı dışındaysa atla
+        const field = line2.slice(Math.max(0, at - 10), at - 1);
+        const chk = line2[at - 1];
+        const exp = /[0-9]/.test(chk) ? parseInt(chk, 10) : NaN;
+        const fx = mrzFixField(field.padEnd(9, '<').slice(0, 9), exp);
+        // Çapa hizalaması bir çözüm ürettiyse (kesin ya da belirsiz) onu tercih et:
+        // kaymış standart okumadan her hâlükârda daha doğrudur.
+        if (fx.ok || fx.amb) {
+            const n3 = m[1].replace(/</g, '');
+            return { fixed: fx, passportNo: fx.val.replace(/</g, '').trim(), natKey: MRZ_ISO3_TO_APP[n3] || MRZ_ISO3_TO_APP[iss3] || 'OTHER' };
+        }
+    }
+    return a; // çapa da tutmadı → standart okuma, "doğrulanmadı" işaretiyle
+}
+function parseMRZFromText(rawText) {
+    let allLines = String(rawText || '').split(/\r?\n/).map(mrzNormalizeLine).filter(Boolean);
+    // OCR bazen iki MRZ satırını tek satırda birleştirir → ortadan ikiye böl
+    const expanded = [];
+    allLines.forEach(function (ln) {
+        if (ln.length >= 80 && ln.length <= 92) {
+            const half = ln.length >= 86 ? 44 : Math.round(ln.length / 2);
+            expanded.push(ln.slice(0, half), ln.slice(half));
+        } else if (ln.length >= 68 && ln.length < 80) {
+            const half = Math.round(ln.length / 2);
+            expanded.push(ln.slice(0, half), ln.slice(half));
+        } else {
+            expanded.push(ln);
+        }
+    });
+    allLines = expanded;
+    const cand = allLines.filter(mrzIsCandidate);
+    // Yalnızca 2. satır okunabildiyse: en azından pasaport no + uyruk çıkar
+    if (cand.length === 1 && mrzLooksLikeLine2(cand[0])) {
+        const only = (cand[0] + '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0, 44);
+        const chk = only[9];
+        const exp = /[0-9]/.test(chk) ? parseInt(chk, 10) : NaN;
+        const fx = mrzFixField(only.slice(0, 9), exp);
+        const pno = fx.val.replace(/</g, '').trim();
+        const n3 = only.slice(10, 13).replace(/</g, '');
+        if (!pno) return null;
+        return { ok: true, name: '', surname: '', given: '', passportNo: pno, nationality: MRZ_ISO3_TO_APP[n3] || 'OTHER', passportVerified: fx.ok, raw: only };
+    }
+    if (cand.length < 2) return null;
+    // 'P' ile başlayan bir satırı (line1) ve onu izleyen aday satırı (line2) bul
+    let l1 = -1;
+    // 1) İdeal: 'P' ile başlayan isim satırı + hemen ardından 2. satır formatına uyan satır
+    for (let i = 0; i < cand.length - 1; i++) {
+        if (/^P[A-Z0-9<]/.test(cand[i]) && cand[i].indexOf('<<') >= 0 && mrzLooksLikeLine2(cand[i + 1])) { l1 = i; break; }
+    }
+    // 2) 'P' var ama sonraki satır format testini geçmiyorsa yine de kabul et
+    if (l1 === -1) {
+        for (let i = 0; i < cand.length - 1; i++) {
+            if (/^P[A-Z0-9<]/.test(cand[i]) && cand[i].indexOf('<<') >= 0) { l1 = i; break; }
+        }
+    }
+    // 3) 'P' hiç okunamadıysa: '<<' içeren ve ardından 2. satır gelen ilk adayı kullan
+    if (l1 === -1) {
+        for (let i = 0; i < cand.length - 1; i++) {
+            if (cand[i].indexOf('<<') >= 0 && mrzLooksLikeLine2(cand[i + 1])) { l1 = i; break; }
+        }
+    }
+    if (l1 === -1) {
+        for (let i = 0; i < cand.length - 1; i++) {
+            if (cand[i].indexOf('<<') >= 0) { l1 = i; break; }
+        }
+    }
+    if (l1 === -1 || l1 + 1 >= cand.length) return null;
+    let line1 = cand[l1];
+    let line2 = cand[l1 + 1];
+    // Uzunlukları normalize et (TD3=44, TD2=36). '<' ile doldur / kırp.
+    const td = (line1.length >= 40 || line2.length >= 40) ? 44 : 36;
+    const pad = s => (s + '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0, td);
+    line1 = pad(line1);
+    line2 = pad(line2);
+    // ── Line 1: isimler ──
+    // Format: P<ISS SURNAME<<GIVEN<NAMES
+    let namesRaw = line1[0] === 'P' ? line1.slice(5) : line1.replace(/^[A-Z0-9<]{5}/, '');
+    // Baştaki 'P<ISS' ülke kodunu ULKELER'e eşle (line1[2..4])
+    const iss3 = line1.slice(2, 5).replace(/</g, '');
+    const parts = namesRaw.split('<<');
+    const surname = mrzNamePart(parts[0]);
+    const given = mrzNamePart(parts.slice(1).join(' '));
+    // Uygulamadaki alan "Ad Soyad" olduğu için: önce ad(lar), sonra soyad
+    const fullName = ((given ? given + ' ' : '') + surname).replace(/\s+/g, ' ').trim();
+    // ── Line 2: pasaport no + uyruk ──
+    // Standart hizalama: 0-8 pasaport no, 9 check, 10-12 uyruk
+    const l2res = mrzReadLine2(line2, iss3);
+    const fixed = l2res.fixed;
+    const passportNo = l2res.passportNo;
+    const natKey = l2res.natKey;
+    if (!fullName && !passportNo) return null;
+    return {
+        ok: true,
+        name: fullName,
+        surname: surname,
+        given: given,
+        passportNo: passportNo,
+        nationality: natKey,
+        passportVerified: fixed.ok,
+        raw: line1 + '\n' + line2
+    };
+}
+/* Dosyayı OCR için hazır bir <canvas>'a çevir (ölçekle + gri tonlama + kontrast).
+   region: 'bottom' => alt %38 (MRZ genelde altta), 'full' => tümü */
+function mrzFileToCanvas(file, region) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = function () {
+            try {
+                const iw = img.naturalWidth, ih = img.naturalHeight;
+                // OCR için genişliği ~1600px'e ölçekle (küçükse büyüt)
+                const targetW = Math.max(1000, Math.min(2000, iw < 1200 ? iw * 2 : iw));
+                const scale = targetW / iw;
+                const cw = Math.round(iw * scale);
+                const chFull = Math.round(ih * scale);
+                const bottom = region === 'bottom';
+                const ch = bottom ? Math.round(chFull * 0.40) : chFull;
+                const sy = bottom ? chFull - ch : 0;
+                const canvas = document.createElement('canvas');
+                canvas.width = cw; canvas.height = ch;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, bottom ? (ih - ih * 0.40) : 0, iw, bottom ? ih * 0.40 : ih, 0, 0, cw, ch);
+                // gri tonlama + kontrast germe
+                const imgData = ctx.getImageData(0, 0, cw, ch);
+                const d = imgData.data;
+                let mn = 255, mx = 0;
+                for (let i = 0; i < d.length; i += 4) {
+                    const g = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
+                    d[i] = d[i + 1] = d[i + 2] = g;
+                    if (g < mn) mn = g; if (g > mx) mx = g;
+                }
+                const rng = Math.max(1, mx - mn);
+                for (let i = 0; i < d.length; i += 4) {
+                    let v = (d[i] - mn) * 255 / rng;
+                    v = v < 0 ? 0 : v > 255 ? 255 : v;
+                    d[i] = d[i + 1] = d[i + 2] = v;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                URL.revokeObjectURL(url);
+                resolve(canvas);
+            } catch (e) { URL.revokeObjectURL(url); reject(e); }
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('Görsel açılamadı')); };
+        img.src = url;
+    });
+}
+/* Tesseract worker'ı (tek sefer kurulur, tekrar kullanılır) */
+let __mrzWorker = null;
+let __mrzWorkerPromise = null;
+async function mrzGetWorker() {
+    if (__mrzWorker) return __mrzWorker;
+    if (__mrzWorkerPromise) return __mrzWorkerPromise;
+    if (!window.Tesseract) throw new Error('OCR kütüphanesi yüklenemedi (internet gerekli).');
+    __mrzWorkerPromise = (async () => {
+        const worker = await Tesseract.createWorker('eng', 1);
+        await worker.setParameters({
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
+            tessedit_pageseg_mode: '6'
+        });
+        __mrzWorker = worker;
+        return worker;
+    })();
+    return __mrzWorkerPromise;
+}
+/* Bir görsel dosyadan MRZ oku. Önce alt bölge, olmazsa tüm görsel denenir. */
+/* Bir sonucu puanla: doğrulanmış pasaport no > isim + no > sadece biri */
+function mrzScore(p) {
+    if (!p) return -1;
+    let s = 0;
+    if (p.passportNo) s += 3;
+    if (p.passportVerified) s += 6;
+    if (p.name) s += 3;
+    if (p.surname && p.given) s += 1;
+    if (p.nationality && p.nationality !== 'OTHER') s += 1;
+    return s;
+}
+async function mrzReadFromFile(file) {
+    const worker = await mrzGetWorker();
+    const regions = ['bottom', 'full'];
+    let best = null, bestScore = -1;
+    for (const region of regions) {
+        let canvas;
+        try { canvas = await mrzFileToCanvas(file, region); } catch (e) { continue; }
+        let text = '';
+        try {
+            const res = await worker.recognize(canvas);
+            text = res && res.data && res.data.text ? res.data.text : '';
+        } catch (e) { continue; }
+        const parsed = parseMRZFromText(text);
+        const sc = mrzScore(parsed);
+        if (sc > bestScore) { best = parsed; bestScore = sc; }
+        // Pasaport no doğrulandı ve isim de okundu → en iyi sonuç, aramayı bitir
+        if (parsed && parsed.passportVerified && parsed.name) return parsed;
+    }
+    return best;
+}
 const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
 function moneyValue(v) {
@@ -1178,720 +1471,6 @@ function moneyValue(v) {
     return Number.isFinite(n) ? n : 0;
 }
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
-const koTitleCaseLatin = v => String(v || '').replace(/\s+/g, ' ').trim().split(' ').map(w => w ? (w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : w).join(' ');
-const passengerCountryName = k => {
-    const code = String(k || '').toUpperCase();
-    if (!code || code === 'OTHER') return code === 'OTHER' ? 'Diğer' : '';
-    const u = ULKELER.find(x => x.k === code);
-    return u ? u.n : code;
-};
-const passengerGenderName = k => {
-    const code = String(k || '').toUpperCase();
-    const g = PASSENGER_GENDERS.find(x => x.k === code);
-    return g ? g.n : '';
-};
-const passengerNationalityWord = k => {
-    const code = String(k || '').toUpperCase();
-    return NATIONALITY_TR[code] || passengerCountryName(code);
-};
-const passengerNationalitySummary = passengers => {
-    const rows = (passengers || []).filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
-    const codes = Array.from(new Set(rows.map(p => String(p.uyruk || '').toUpperCase()).filter(k => k && k !== 'OTHER')));
-    if (!codes.length) return '';
-    if (codes.length === 1) return (rows.length > 1 ? 'Misafirler ' : 'Misafir ') + passengerNationalityWord(codes[0]);
-    return 'Uyruklar: ' + codes.map(passengerCountryName).filter(Boolean).join(', ');
-};
-const passengerDetailLine = (p, idx) => {
-    const parts = [];
-    const name = String((p && (p.name || p.fullName)) || 'Misafir').trim();
-    parts.push((idx + 1) + '. ' + name);
-    const pass = p && (p.pasaport || (!p.tc && passengerIdDisplay(p)));
-    if (pass) parts.push('Pasaport: ' + pass);
-    if (p && p.tc) parts.push('TC: ' + p.tc);
-    if (p && p.uyruk) parts.push('Uyruk: ' + passengerCountryName(p.uyruk));
-    if (p && p.cinsiyet) parts.push('Cinsiyet: ' + passengerGenderName(p.cinsiyet));
-    if (p && p.phone) parts.push('Tel: ' + p.phone);
-    return parts.filter(Boolean).join(' | ');
-};
-const passengerDetailText = passengers => (passengers || [])
-    .filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)))
-    .map(passengerDetailLine)
-    .join('\n');
-const mrzCountryCode = v => {
-    const raw = String(v || '').replace(/[^A-Za-z]/g, '').toUpperCase();
-    if (!raw) return '';
-    if (MRZ_COUNTRY_TO_UI[raw]) return MRZ_COUNTRY_TO_UI[raw];
-    if (ULKELER.some(u => u.k === raw)) return raw;
-    return raw.length === 2 ? raw : '';
-};
-const passportGenderCode = v => {
-    const c = String(v || '').trim().toUpperCase().charAt(0);
-    return c === 'M' || c === 'F' ? c : '';
-};
-const mrzDigitish = v => String(v || '')
-    .toUpperCase()
-    .replace(/[OQD]/g, '0')
-    .replace(/[IL|]/g, '1')
-    .replace(/Z/g, '2')
-    .replace(/S/g, '5')
-    .replace(/G/g, '6')
-    .replace(/B/g, '8')
-    .replace(/[^0-9<]/g, '');
-const mrzNameish = v => String(v || '')
-    .toUpperCase()
-    .replace(/0/g, 'O')
-    .replace(/[1|]/g, 'I')
-    .replace(/2/g, 'Z')
-    .replace(/5/g, 'S')
-    .replace(/6/g, 'G')
-    .replace(/8/g, 'B')
-    .replace(/4/g, 'A')
-    .replace(/[^A-Z<]/g, '');
-const mrzCharValue = c => {
-    const ch = String(c || '<').charAt(0).toUpperCase();
-    if (ch >= '0' && ch <= '9') return ch.charCodeAt(0) - 48;
-    if (ch >= 'A' && ch <= 'Z') return ch.charCodeAt(0) - 55;
-    return 0;
-};
-const mrzCheckDigit = v => {
-    const weights = [7, 3, 1];
-    const sum = String(v || '').split('').reduce((acc, ch, i) => acc + mrzCharValue(ch) * weights[i % 3], 0);
-    return String(sum % 10);
-};
-const mrzCheckOk = (field, digit) => /^[0-9]$/.test(String(digit || '')) && mrzCheckDigit(field) === String(digit);
-const mrzAltChars = ch => {
-    const c = String(ch || '<').toUpperCase().charAt(0);
-    if (c === '<') return ['<'];
-    const group = ['0OQD', '1IL', '2Z', '5S', '6G', '8B', '4A'].find(g => g.includes(c));
-    if (group) return Array.from(new Set(group.split('')));
-    return /^[A-Z0-9]$/.test(c) ? [c] : ['<'];
-};
-const mrzRepairCheckField = (field, digit) => {
-    const original = normalizeMrzLine(field);
-    const clean = original.padEnd(String(field || '').length, '<').slice(0, String(field || '').length);
-    if (mrzCheckOk(clean, digit)) return clean;
-    let candidates = [''];
-    for (const ch of clean) {
-        const next = [];
-        candidates.forEach(base => mrzAltChars(ch).forEach(opt => next.push(base + opt)));
-        candidates = next.slice(0, 6000);
-    }
-    return candidates.find(v => mrzCheckOk(v, digit)) || clean;
-};
-const normalizeMrzLine = line => String(line || '')
-    .toUpperCase()
-    .replace(/[«‹]/g, '<')
-    .replace(/[^A-Z0-9<]/g, '');
-const normalizeMrzLineLoose = line => String(line || '')
-    .toUpperCase()
-    .replace(/[«‹≤]/g, '<')
-    .replace(/[({\[_]/g, '<')
-    .replace(/[)\]}]/g, '<')
-    .replace(/[|!]/g, 'I')
-    .replace(/[^A-Z0-9]/g, '<');
-const normalizeMrzTd3NameLine = line => {
-    let s = normalizeMrzLine(line);
-    if (/^P[A-Z]{3}/.test(s) && s.charAt(1) !== '<') s = 'P<' + s.slice(1);
-    if (/^[A-Z]{3}[A-Z]+<<[A-Z]/.test(s)) s = 'P<' + s;
-    return s;
-};
-const mrzTd3NameLikely = line => /^P[A-Z0-9<]/.test(normalizeMrzTd3NameLine(line));
-const mrzLikelyLine = line => {
-    const s = String(line || '');
-    if (s.length < 20) return false;
-    if (s.includes('<<') || mrzTd3NameLikely(s)) return true;
-    const alnum = (s.match(/[A-Z0-9]/g) || []).length;
-    const digits = (s.match(/[0-9]/g) || []).length;
-    return s.length >= 30 && alnum >= 24 && digits >= 5;
-};
-const mrzClean = v => String(v || '').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
-const parseMrzName = field => {
-    const raw = mrzNameish(field).replace(/<+$/g, '');
-    const parts = raw.split('<<');
-    const surname = mrzClean(parts[0]);
-    const given = mrzClean(parts.slice(1).join(' '));
-    return koTitleCaseLatin([given, surname].filter(Boolean).join(' '));
-};
-const mrzNamePenalty = field => {
-    const raw = String(field || '').toUpperCase();
-    const core = raw.replace(/<+$/g, '');
-    const digitHits = (raw.match(/[0-9|]/g) || []).length;
-    const weirdHits = (raw.replace(/[A-Z0-9<|]/g, '').length || 0);
-    const hasSeparator = core.includes('<<') ? 0 : 3;
-    const nameishCore = mrzNameish(core);
-    const parts = nameishCore.split('<<');
-    const givenWords = mrzClean(parts.slice(1).join(' ')).split(/\s+/).filter(Boolean);
-    const lastGiven = givenWords[givenWords.length - 1] || '';
-    const shortTail = givenWords.length && lastGiven.length <= 2 ? 4 : 0;
-    return digitHits + weirdHits + hasSeparator + shortTail;
-};
-const mrzPassengerRank = p => {
-    const name = String((p && p.name) || '').trim();
-    const words = name ? name.split(/\s+/).filter(Boolean).length : 0;
-    return (p && p.mrzValid ? 1000 : 0)
-        + ((p && p.mrzCheckScore) || 0) * 50
-        + Math.min(4, words) * 35
-        - ((p && p.mrzNamePenalty) || 0) * 12
-        - ((p && p.mrzTruncPenalty) || 0) * 16
-        - ((p && p.mrzPairPenalty) || 0) * 10
-        + name.length;
-};
-const mrzPassengerFromTd3 = (line1, line2) => {
-    const cleanLine1 = normalizeMrzTd3NameLine(line1);
-    const cleanLine2 = normalizeMrzLine(line2);
-    const l1 = cleanLine1.padEnd(44, '<').slice(0, 44);
-    const l2 = cleanLine2.padEnd(44, '<').slice(0, 44);
-    const nameField = l1.slice(5, 44);
-    const name = parseMrzName(nameField);
-    const docCheck = mrzDigitish(l2.slice(9, 10)).slice(0, 1);
-    const birthCheck = mrzDigitish(l2.slice(19, 20)).slice(0, 1);
-    const expiryCheck = mrzDigitish(l2.slice(27, 28)).slice(0, 1);
-    const docNoField = mrzRepairCheckField(l2.slice(0, 9), docCheck).padEnd(9, '<').slice(0, 9);
-    const birth = mrzRepairCheckField(mrzDigitish(l2.slice(13, 19)).padEnd(6, '<').slice(0, 6), birthCheck).padEnd(6, '<').slice(0, 6);
-    const expiry = mrzRepairCheckField(mrzDigitish(l2.slice(21, 27)).padEnd(6, '<').slice(0, 6), expiryCheck).padEnd(6, '<').slice(0, 6);
-    const personal = l2.slice(28, 42);
-    const personalCheck = mrzDigitish(l2.slice(42, 43)).slice(0, 1);
-    const compositeCheck = mrzDigitish(l2.slice(43, 44)).slice(0, 1);
-    const passport = docNoField.replace(/</g, '').replace(/[^A-Z0-9]/g, '');
-    const uyruk = mrzCountryCode(l2.slice(10, 13)) || mrzCountryCode(l1.slice(2, 5));
-    const cinsiyet = passportGenderCode(l2.slice(20, 21));
-    const checks = {
-        passport: mrzCheckOk(docNoField, docCheck),
-        birth: mrzCheckOk(birth, birthCheck),
-        expiry: mrzCheckOk(expiry, expiryCheck),
-        composite: mrzCheckOk(docNoField + docCheck + birth + birthCheck + expiry + expiryCheck + personal + personalCheck, compositeCheck)
-    };
-    const validCount = Object.values(checks).filter(Boolean).length;
-    const mrzValid = checks.passport && (checks.birth || checks.expiry);
-    if (!name && !passport) return null;
-    const truncatedName = cleanLine1.length < 44 && /[A-Z]$/.test(cleanLine1) ? 3 : 0;
-    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzTruncPenalty: truncatedName, mrzSource: 'td3' };
-};
-const mrzPassengerFromTd1 = (line1, line2, line3) => {
-    const l1 = normalizeMrzLine(line1).padEnd(30, '<').slice(0, 30);
-    const l2 = normalizeMrzLine(line2).padEnd(30, '<').slice(0, 30);
-    const l3 = normalizeMrzLine(line3).padEnd(30, '<').slice(0, 30);
-    const nameField = l3;
-    const name = parseMrzName(nameField);
-    const docNoField = l1.slice(5, 14);
-    const docCheck = mrzDigitish(l1.slice(14, 15)).slice(0, 1);
-    const birth = mrzDigitish(l2.slice(0, 6)).padEnd(6, '<').slice(0, 6);
-    const birthCheck = mrzDigitish(l2.slice(6, 7)).slice(0, 1);
-    const expiry = mrzDigitish(l2.slice(8, 14)).padEnd(6, '<').slice(0, 6);
-    const expiryCheck = mrzDigitish(l2.slice(14, 15)).slice(0, 1);
-    const passport = docNoField.replace(/</g, '').replace(/[^A-Z0-9]/g, '');
-    const uyruk = mrzCountryCode(l2.slice(15, 18)) || mrzCountryCode(l1.slice(2, 5));
-    const cinsiyet = passportGenderCode(l2.slice(7, 8));
-    const checks = {
-        passport: mrzCheckOk(docNoField, docCheck),
-        birth: mrzCheckOk(birth, birthCheck),
-        expiry: mrzCheckOk(expiry, expiryCheck)
-    };
-    const validCount = Object.values(checks).filter(Boolean).length;
-    const mrzValid = checks.passport && checks.birth && checks.expiry;
-    if (!name && !passport) return null;
-    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzSource: 'td1' };
-};
-const parsePassportMrzFromText = text => {
-    const rawLines = [];
-    const addRawLine = x => {
-        const v = String(x || '');
-        if (mrzLikelyLine(v) && !rawLines.includes(v)) rawLines.push(v);
-    };
-    const addRawLineAfter = (x, anchor) => {
-        const v = String(x || '');
-        if (!mrzLikelyLine(v) || rawLines.includes(v)) return;
-        const at = rawLines.indexOf(anchor);
-        if (at >= 0) rawLines.splice(at + 1, 0, v);
-        else rawLines.push(v);
-    };
-    const sourceTextLines = String(text || '').split(/\r?\n/);
-    sourceTextLines.forEach(line => {
-        const tight = normalizeMrzLine(line);
-        const loose = normalizeMrzLineLoose(line);
-        addRawLine(tight);
-        addRawLine(loose);
-        const fixedTight = normalizeMrzTd3NameLine(tight);
-        const fixedLoose = normalizeMrzTd3NameLine(loose);
-        if (fixedTight !== tight) addRawLine(fixedTight);
-        if (fixedLoose !== loose) addRawLine(fixedLoose);
-        if (/^\s*P[\s<]/i.test(line) && !/^P</.test(tight)) addRawLine(('P<' + tight.replace(/^P+/, '')).slice(0, 88));
-    });
-    for (let i = 0; i < sourceTextLines.length - 1; i++) {
-        const a = normalizeMrzLine(sourceTextLines[i]);
-        const b = normalizeMrzLine(sourceTextLines[i + 1]);
-        if (a.length >= 10 && a.length < 44 && b.length >= 10 && !/^P[A-Z0-9<]/.test(b)) {
-            const joined = (a + b).padEnd(44, '<').slice(0, 44);
-            addRawLineAfter(joined, a);
-            addRawLine((a + b).slice(0, 88));
-        }
-        const al = normalizeMrzLineLoose(sourceTextLines[i]);
-        const bl = normalizeMrzLineLoose(sourceTextLines[i + 1]);
-        if (al.length >= 10 && al.length < 44 && bl.length >= 10 && !/^P[A-Z0-9<]/.test(bl)) {
-            const joinedLoose = (al + bl).padEnd(44, '<').slice(0, 44);
-            addRawLineAfter(joinedLoose, al);
-            addRawLine((al + bl).slice(0, 88));
-        }
-    }
-    [normalizeMrzLine, normalizeMrzLineLoose].forEach(normalize => {
-        const compactLines = sourceTextLines.map(normalize).filter(Boolean);
-        for (let i = 0; i < compactLines.length; i++) {
-            let joined = '';
-            for (let j = i; j < Math.min(compactLines.length, i + 7); j++) {
-                const part = compactLines[j];
-                if (joined && /^P[A-Z0-9<]/.test(part)) break;
-                joined += part;
-                if (joined.length >= 20) {
-                    addRawLine(joined.slice(0, 132));
-                    if (joined.length < 44) addRawLine(joined.padEnd(44, '<').slice(0, 44));
-                    if (joined.length >= 44) addRawLine(joined.slice(0, 44));
-                    if (joined.length >= 88) addRawLine(joined.slice(0, 88));
-                }
-                if (joined.length >= 132) break;
-            }
-        }
-    });
-    const splitTd3NameChunks = line => {
-        const out = [];
-        const pPositions = [];
-        for (let pos = line.indexOf('P<'); pos >= 0; pos = line.indexOf('P<', pos + 2)) pPositions.push(pos);
-        if (pPositions.length > 1) pPositions.forEach(pos => out.push(line.slice(pos, pos + 44)));
-        else if (mrzTd3NameLikely(line) && line.length >= 88) for (let i = 0; i + 35 <= line.length; i += 44) out.push(line.slice(i, i + 44));
-        return out.map(normalizeMrzTd3NameLine).filter(x => mrzTd3NameLikely(x));
-    };
-    const splitTd3DataChunks = line => {
-        if (mrzTd3NameLikely(line)) return [];
-        const out = [];
-        if (line.length >= 80) for (let i = 0; i + 30 <= line.length; i += 44) out.push(line.slice(i, i + 44));
-        return out.filter(x => x.length >= 30);
-    };
-    const lines = [];
-    const addLine = x => { if (x && x.length >= 20 && !lines.includes(x)) lines.push(x); };
-    const out = [];
-    for (let r = 0; r < rawLines.length - 1; r++) {
-        const nameChunks = splitTd3NameChunks(rawLines[r]);
-        const dataChunks = splitTd3DataChunks(rawLines[r + 1]);
-        if (nameChunks.length > 1 && dataChunks.length >= nameChunks.length) {
-            for (let c = 0; c < Math.min(nameChunks.length, dataChunks.length); c++) {
-                const p = mrzPassengerFromTd3(nameChunks[c], dataChunks[c]);
-                if (p && (p.mrzValid || (p.mrzCheckScore || 0) >= 2)) out.push({ ...p, mrzPairPenalty: 0, mrzSource: 'td3-same-column' });
-            }
-        }
-    }
-    rawLines.forEach(line => {
-        addLine(line);
-        const pPositions = [];
-        const fixed = normalizeMrzTd3NameLine(line);
-        if (fixed !== line) addLine(fixed);
-        for (let pos = line.indexOf('P<'); pos >= 0; pos = line.indexOf('P<', pos + 2)) pPositions.push(pos);
-        if (pPositions.length > 1) {
-            pPositions.forEach((pos, idx) => addLine(line.slice(pos, pPositions[idx + 1] || pos + 44)));
-        }
-        if (line.length >= 80) {
-            for (let i = 0; i + 30 <= line.length; i += 44) addLine(line.slice(i, i + 44));
-            for (let i = 0; i + 25 <= line.length; i += 30) addLine(line.slice(i, i + 30));
-        }
-    });
-    const line1Indexes = lines.map((line, i) => ({ line: normalizeMrzTd3NameLine(line), i })).filter(x => mrzTd3NameLikely(x.line));
-    line1Indexes.forEach(({ line: a, i }) => {
-        for (let j = i + 1; j < Math.min(lines.length, i + 8); j++) {
-            const b = lines[j];
-            if (mrzTd3NameLikely(b) || b.length < 30) continue;
-            const p = mrzPassengerFromTd3(a, b);
-            if (p && (p.mrzValid || (p.mrzCheckScore || 0) >= 2)) out.push({ ...p, mrzPairPenalty: j === i + 1 ? 1 : 8 });
-        }
-    });
-    for (let i = 0; i < lines.length - 2; i++) {
-        const a = lines[i], b = lines[i + 1], c = lines[i + 2];
-        if (!/^P[A-Z0-9<]/.test(a) && a.length >= 25 && b.length >= 25 && c.length >= 20 && c.includes('<<')) {
-            const p = mrzPassengerFromTd1(a, b, c);
-            if (p && (p.mrzValid || (p.mrzCheckScore || 0) >= 2)) { out.push(p); i += 2; }
-        }
-    }
-    const best = new Map();
-    out.forEach(p => {
-        const key = String(p.pasaport || p.name || '').toUpperCase();
-        if (!key) return;
-        const prev = best.get(key);
-        if (!prev || mrzPassengerRank(p) > mrzPassengerRank(prev)) best.set(key, p);
-    });
-    return Array.from(best.values()).sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
-};
-const passengerCountryFromText = row => {
-    const s = nm(row);
-    const entries = [
-        ['kw', ['kuveyt', 'kuwait', 'kuwaiti', 'kwt', 'kw']],
-        ['us', ['abd', 'amerika', 'american', 'united states', 'united states of america', 'usa', 'us']],
-        ['gb', ['ingiltere', 'british', 'united kingdom', 'great britain', 'gbr', 'gb']],
-        ['de', ['almanya', 'germany', 'german', 'deutsch', 'deu', 'de']],
-        ['fr', ['fransa', 'france', 'french', 'fra', 'fr']],
-        ['nl', ['hollanda', 'netherlands', 'dutch', 'nld', 'nl']],
-        ['be', ['belcika', 'belgium', 'belgian', 'bel', 'be']],
-        ['sa', ['suudi', 'saudi', 'saudi arabia', 'sau', 'sa']],
-        ['ae', ['bae', 'emirates', 'united arab emirates', 'are', 'ae']],
-        ['ru', ['rusya', 'russia', 'russian', 'rus', 'ru']],
-        ['qa', ['katar', 'qatar', 'qatari', 'qat', 'qa']],
-        ['tr', ['turkiye', 'turkey', 'turkish', 'turk', 'tur', 'tr']],
-        ['it', ['italya', 'italy', 'italian', 'ita', 'it']],
-        ['es', ['ispanya', 'spain', 'spanish', 'esp', 'es']],
-        ['pl', ['polonya', 'poland', 'polish', 'pol', 'pl']],
-        ['gr', ['yunan', 'greece', 'greek', 'grc', 'gr']]
-    ];
-    const hit = entries.find(([code, words]) => words.some(w => new RegExp('(^|[^a-z])' + w + '([^a-z]|$)').test(s)));
-    return hit ? hit[0].toUpperCase() : '';
-};
-const passengerGenderFromText = row => {
-    const s = nm(row);
-    if (/(^|[^a-z])(erkek|male|bay| mr | m )([^a-z]|$)/.test(' ' + s + ' ')) return 'M';
-    if (/(^|[^a-z])(kadin|female|bayan| ms | mrs | f )([^a-z]|$)/.test(' ' + s + ' ')) return 'F';
-    return '';
-};
-const passengerPassportFromText = row => {
-    const s = String(row || '').toUpperCase();
-    const labeled = s.match(/(?:PASAPORT|PASSPORT|PASS|P NO|P\.NO|NO)[:\s-]*([A-Z0-9]{6,12})/i);
-    if (labeled) return labeled[1].replace(/[^A-Z0-9]/g, '');
-    const generic = s.match(/\b(?=[A-Z0-9]*\d)[A-Z]{1,3}[A-Z0-9]{5,10}\b/);
-    return generic ? generic[0] : '';
-};
-const passengerNameFromTextRow = row => {
-    let s = String(row || '').replace(/^\s*[\d#*•\-–—.)]+/g, ' ');
-    s = s.replace(/(?:PASAPORT|PASSPORT|PASS|UYRUK|ULKE|ÜLKE|CINSIYET|CİNSİYET|GENDER|NATIONALITY|AD SOYAD|NAME|YOLCU|MISAFIR|MİSAFİR)[:\s-]*/gi, ' ');
-    s = s.replace(/\b(?=[A-Z0-9]*\d)[A-Z]{1,3}[A-Z0-9]{5,10}\b/gi, ' ');
-    s = s.replace(/\b\d{5,}\b/g, ' ');
-    ['kuveyt','kuwait','kw','kwt','abd','amerika','american','usa','us','ingiltere','british','gbr','gb','almanya','germany','deu','de','fransa','france','fra','fr','hollanda','netherlands','nld','nl','belçika','belcika','belgium','bel','be','suudi','saudi','sau','sa','bae','emirates','are','ae','rusya','russia','rus','ru','katar','qatar','qat','qa','türkiye','turkiye','turkey','turk','tur','tr','italya','italy','ita','it','ispanya','spain','esp','es','polonya','poland','pol','pl','yunan','greece','grc','gr','erkek','male','kadin','kadın','female','bayan','bay'].forEach(w => {
-        s = s.replace(new RegExp('\\b' + w + '\\b', 'gi'), ' ');
-    });
-    const words = (s.match(/[A-Za-zÇĞİÖŞÜçğıöşü'’.-]+/g) || [])
-        .map(w => w.replace(/^[.'’ -]+|[.'’ -]+$/g, ''))
-        .filter(w => w.length > 1);
-    if (words.length < 2 || words.length > 6) return '';
-    const stop = ['tarih','saat','otel','hotel','transfer','airport','havalimani','havaalani','ucus','flight','phone','telefon','listesi','liste'];
-    if (words.some(w => stop.includes(nm(w)))) return '';
-    return koTitleCaseLatin(words.join(' '));
-};
-const passportVisibleStripLabels = v => String(v || '')
-    .replace(/(?:PASAPORT|PASSPORT|DOCUMENT|DOC|TRAVEL|TYPE|CODE|COUNTRY|COUNTRY CODE|SURNAME|SOYADI|SOYAD|LAST NAME|GIVEN NAMES?|GIVEN|FIRST NAME|FORENAMES?|ADI|AD|NATIONALITY|UYRUK|CITIZENSHIP|SEX|GENDER|CINSIYET|CİNSİYET|DATE|BIRTH|EXPIRY|VALID|AUTHORITY|SIGNATURE|HOLDER|NO|NUMBER|NUMARA)[:/\\s.-]*/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-const passportVisibleCleanName = v => {
-    let s = passportVisibleStripLabels(v);
-    s = s.replace(/\b(P|TUR|USA|GBR|KWT|QAT|DEU|FRA|NLD|BEL|SAU|ARE|RUS|ITA|ESP|POL|GRC)\b/gi, ' ');
-    s = s.replace(/\b\d+\b/g, ' ').replace(/[^A-Za-zÇĞİÖŞÜçğıöşü'’ -]/g, ' ');
-    const stop = ['passport','pasaport','surname','given','names','name','nationality','sex','date','birth','expiry','country','code','document','signature','authority'];
-    const words = (s.match(/[A-Za-zÇĞİÖŞÜçğıöşü'’.-]+/g) || [])
-        .map(w => w.replace(/^[.'’ -]+|[.'’ -]+$/g, ''))
-        .filter(w => w.length > 1 && !stop.includes(nm(w)));
-    return words.length ? koTitleCaseLatin(words.slice(0, 5).join(' ')) : '';
-};
-const passportVisibleCleanPassport = v => passengerPassportFromText(passportVisibleStripLabels(v));
-const passportVisibleCleanCountry = v => {
-    const s = passportVisibleStripLabels(v);
-    const mrz = String(s || '').toUpperCase().match(/\b(TUR|USA|GBR|DEU|FRA|NLD|BEL|AUT|CHE|SAU|ARE|RUS|KWT|QAT|ITA|ESP|POL|GRC|TR|US|GB|DE|FR|NL|BE|AT|CH|SA|AE|RU|KW|QA|IT|ES|PL|GR)\b/);
-    return (mrz && mrzCountryCode(mrz[1])) || passengerCountryFromText(s);
-};
-const passportVisibleCleanGender = v => {
-    const s = nm(passportVisibleStripLabels(v));
-    if (/(^|[^a-z])(m|male|erkek|bay)([^a-z]|$)/.test(' ' + s + ' ')) return 'M';
-    if (/(^|[^a-z])(f|female|kadin|bayan)([^a-z]|$)/.test(' ' + s + ' ')) return 'F';
-    return passengerGenderFromText(s);
-};
-const passportVisibleFindValue = (lines, keys, cleaner) => {
-    const hasKey = line => keys.some(k => nm(line).includes(k));
-    for (let i = 0; i < lines.length; i++) {
-        if (!hasKey(lines[i])) continue;
-        const same = cleaner(passportVisibleStripLabels(lines[i]));
-        if (same) return same;
-        for (let j = i + 1; j < Math.min(lines.length, i + 4); j++) {
-            if (hasKey(lines[j]) || /date|birth|expiry|valid|signature|authority/i.test(lines[j])) continue;
-            const v = cleaner(lines[j]);
-            if (v) return v;
-        }
-    }
-    return '';
-};
-const parsePassportVisibleFieldsFromText = text => {
-    const lines = String(text || '').split(/\r?\n/).map(x => x.replace(/\s+/g, ' ').trim()).filter(x => x.length > 1);
-    const noMrzLines = lines.filter(line => !mrzLikelyLine(normalizeMrzLineLoose(line)));
-    const scanLines = noMrzLines.length ? noMrzLines : lines;
-    const surname = passportVisibleFindValue(scanLines, ['surname', 'soyadi', 'soyad', 'last name'], passportVisibleCleanName);
-    const given = passportVisibleFindValue(scanLines, ['given', 'first name', 'forename', 'adi ', ' ad '], passportVisibleCleanName);
-    const passport = passportVisibleFindValue(scanLines, ['passport', 'pasaport', 'document', 'doc no', 'number', 'numara'], passportVisibleCleanPassport) || passengerPassportFromText(text);
-    const uyruk = passportVisibleFindValue(scanLines, ['nationality', 'uyruk', 'citizenship'], passportVisibleCleanCountry) || passportVisibleCleanCountry(text);
-    const cinsiyet = passportVisibleFindValue(scanLines, ['sex', 'gender', 'cinsiyet'], passportVisibleCleanGender) || passportVisibleCleanGender(text);
-    let name = [given, surname].filter(Boolean).join(' ').trim();
-    if (!name) {
-        const likely = scanLines.map(passengerNameFromTextRow).filter(Boolean).sort((a, b) => b.length - a.length)[0] || '';
-        name = likely;
-    }
-    name = koTitleCaseLatin(name);
-    if (!name && !passport) return [];
-    return [{ ...emptyPassenger(), name, idNo: passport || '', pasaport: passport || '', tc: '', uyruk: uyruk || '', cinsiyet: cinsiyet || '', mrzValid: false, ocrFallback: true }];
-};
-const passportScanNameOk = name => {
-    const s = String(name || '').trim();
-    const words = s.split(/\s+/).filter(Boolean);
-    return words.length >= 2 && s.length >= 5 && !/[0-9<>{}[\]|]/.test(s) && words.every(w => w.length > 1);
-};
-const passportScanNoOk = v => /^(?=.*\d)[A-Z0-9]{6,12}$/.test(String(v || '').toUpperCase());
-const passportScanNormalize = line => String(line || '')
-    .toUpperCase()
-    .replace(/[«‹≤]/g, '<')
-    .replace(/[({\[_]/g, '<')
-    .replace(/[)\]}]/g, '<')
-    .replace(/[|!]/g, 'I')
-    .replace(/[^A-Z0-9<]/g, '');
-const passportScanLoose = line => String(line || '')
-    .toUpperCase()
-    .replace(/[«‹≤]/g, '<')
-    .replace(/[({\[_]/g, '<')
-    .replace(/[)\]}]/g, '<')
-    .replace(/[|!]/g, 'I')
-    .replace(/[^A-Z0-9]/g, '<');
-const passportScanFixNameLine = line => {
-    let s = passportScanNormalize(line);
-    if (/^P[A-Z]{3}/.test(s) && s.charAt(1) !== '<') s = 'P<' + s.slice(1);
-    if (/^[A-Z]{3}[A-Z]+<<[A-Z]/.test(s)) s = 'P<' + s;
-    return s;
-};
-const passportScanIsNameLine = line => /^P<[A-Z0-9<]{3,}/.test(passportScanFixNameLine(line)) && passportScanFixNameLine(line).includes('<<');
-const passportScanIsDataLine = line => {
-    const s = passportScanNormalize(line);
-    const digits = (s.match(/\d/g) || []).length;
-    return s.length >= 30 && digits >= 12 && !passportScanIsNameLine(s);
-};
-const passportScanLinePool = text => {
-    const raw = String(text || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-    const lines = [];
-    const add = (line, pos) => {
-        const s = passportScanNormalize(line);
-        if (s.length < 20) return;
-        if (!passportScanIsNameLine(s) && !passportScanIsDataLine(s) && !s.includes('<<')) return;
-        const key = s + '@' + pos;
-        if (!lines.some(x => x.key === key)) lines.push({ line: s, pos, key });
-        const fixed = passportScanFixNameLine(s);
-        const fkey = fixed + '@' + pos;
-        if (fixed !== s && fixed.length >= 20 && !lines.some(x => x.key === fkey)) lines.push({ line: fixed, pos, key: fkey });
-    };
-    raw.forEach((line, i) => {
-        add(passportScanNormalize(line), i);
-        add(passportScanLoose(line), i);
-    });
-    for (let i = 0; i < raw.length; i++) {
-        let joined = '';
-        let joinedLoose = '';
-        for (let j = i; j < Math.min(raw.length, i + 6); j++) {
-            const a = passportScanNormalize(raw[j]);
-            const b = passportScanLoose(raw[j]);
-            if (joined && passportScanIsNameLine(a)) break;
-            joined += a;
-            joinedLoose += b;
-            add(joined, i);
-            add(joinedLoose, i);
-            if (joined.length >= 132) break;
-        }
-    }
-    const expanded = [];
-    lines.forEach(item => {
-        expanded.push(item);
-        const fixed = passportScanFixNameLine(item.line);
-        if (fixed.length >= 88) {
-            for (let p = 0; p + 44 <= fixed.length; p += 44) expanded.push({ line: fixed.slice(p, p + 44), pos: item.pos + p / 100, key: fixed.slice(p, p + 44) + '#' + p });
-        }
-        const starts = [];
-        for (let p = fixed.indexOf('P<'); p >= 0; p = fixed.indexOf('P<', p + 2)) starts.push(p);
-        if (starts.length > 1) starts.forEach((p, idx) => expanded.push({ line: fixed.slice(p, starts[idx + 1] || p + 44), pos: item.pos + idx / 10, key: fixed.slice(p, starts[idx + 1] || p + 44) + '$' + idx }));
-    });
-    const seen = new Set();
-    return expanded.filter(x => {
-        const key = x.line + '|' + x.pos;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-};
-const passportScanCandidateRank = p => {
-    const passport = String((p && (p.pasaport || p.idNo)) || '').toUpperCase();
-    return (p && p.mrzVerified ? 5000 : 0)
-        + ((p && p.mrzCheckScore) || 0) * 250
-        + (p && p.mrzSource === 'td3-same-column' ? 600 : 0)
-        + (passportScanNoOk(passport) ? 350 : 0)
-        + (passportScanNameOk(p && p.name) ? 300 : -500)
-        - ((p && p.mrzPairGap) || 0) * 300
-        - ((p && p.mrzNamePenalty) || 0) * 25
-        + String((p && p.name) || '').length;
-};
-const passportScanVerifiedRowsFromText = text => {
-    const out = [];
-    const push = (p, extra) => {
-        if (!p) return;
-        const passport = String(p.pasaport || p.idNo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-        if (!passportScanNoOk(passport) || !passportScanNameOk(p.name)) return;
-        const score = p.mrzCheckScore || 0;
-        if (score < 4) return;
-        out.push({ ...p, ...extra, idNo: passport, pasaport: passport, tc: '', mrzValid: true, mrzVerified: true, scanSource: 'mrz' });
-    };
-    try { parsePassportMrzFromText(text).forEach(p => push(p, { mrzPairGap: p.mrzPairPenalty || 0 })); } catch (e) {}
-    const pool = passportScanLinePool(text);
-    pool.forEach((a, i) => {
-        if (!passportScanIsNameLine(a.line)) return;
-        for (let j = i + 1; j < Math.min(pool.length, i + 14); j++) {
-            const b = pool[j];
-            if (!passportScanIsDataLine(b.line)) continue;
-            const p = mrzPassengerFromTd3(a.line, b.line);
-            push(p, { mrzPairGap: Math.abs((b.pos || j) - (a.pos || i)) });
-        }
-    });
-    for (let i = 0; i < pool.length - 1; i++) {
-        const a = passportScanFixNameLine(pool[i].line);
-        const b = passportScanNormalize(pool[i + 1].line);
-        const nameChunks = [];
-        const dataChunks = [];
-        if (a.length >= 88) for (let c = 0; c + 44 <= a.length; c += 44) nameChunks.push(a.slice(c, c + 44));
-        if (b.length >= 88) for (let c = 0; c + 44 <= b.length; c += 44) dataChunks.push(b.slice(c, c + 44));
-        if (nameChunks.length && dataChunks.length) {
-            for (let c = 0; c < Math.min(nameChunks.length, dataChunks.length); c++) push(mrzPassengerFromTd3(nameChunks[c], dataChunks[c]), { mrzPairGap: 0 });
-        }
-    }
-    const best = new Map();
-    out.forEach(p => {
-        const key = String(p.pasaport || '').toUpperCase();
-        const prev = best.get(key);
-        if (!prev || passportScanCandidateRank(p) > passportScanCandidateRank(prev)) best.set(key, p);
-    });
-    return Array.from(best.values()).sort((a, b) => passportScanCandidateRank(b) - passportScanCandidateRank(a));
-};
-const passportScanVisibleSuggestions = text => parsePassportVisibleFieldsFromText(text)
-    .map(p => ({ ...p, scanSource: 'visible', needsReview: true, mrzVerified: false }))
-    .filter(p => p && (passportScanNameOk(p.name) || passportScanNoOk(p.pasaport || p.idNo)));
-const parsePassengerListFromText = text => {
-    const rows = String(text || '').split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
-    const out = [];
-    rows.forEach(row => {
-        const name = passengerNameFromTextRow(row);
-        if (!name) return;
-        const passport = passengerPassportFromText(row);
-        const uyruk = passengerCountryFromText(row);
-        const cinsiyet = passengerGenderFromText(row);
-        out.push({ ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk, cinsiyet });
-    });
-    const seen = new Set();
-    return out.filter(p => {
-        const key = nm((p.name || '') + '|' + (p.pasaport || ''));
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
-};
-const loadImageForOcr = source => new Promise((resolve, reject) => {
-    if (typeof document === 'undefined') return reject(new Error('Tarayıcı gerekli'));
-    const img = document.createElement('img');
-    let url = '';
-    img.onload = () => { if (url) URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = err => { if (url) URL.revokeObjectURL(url); reject(err); };
-    if (source instanceof Blob) {
-        url = URL.createObjectURL(source);
-        img.src = url;
-    } else {
-        img.src = source;
-    }
-});
-const buildEnhancedOcrImage = async (file, mode) => {
-    const img = await loadImageForOcr(file);
-    let srcW = img.naturalWidth || img.width;
-    let srcH = img.naturalHeight || img.height;
-    if (!srcW || !srcH) return '';
-    const m = typeof mode === 'object' && mode ? mode : { id: String(mode || 'full') };
-    let source = img;
-    if (m.rotate) {
-        const deg = Number(m.rotate) || 0;
-        const rad = deg * Math.PI / 180;
-        const rotated = document.createElement('canvas');
-        rotated.width = Math.abs(deg) % 180 === 90 ? srcH : srcW;
-        rotated.height = Math.abs(deg) % 180 === 90 ? srcW : srcH;
-        const rctx = rotated.getContext('2d', { willReadFrequently: true });
-        if (rctx) {
-            rctx.translate(rotated.width / 2, rotated.height / 2);
-            rctx.rotate(rad);
-            rctx.drawImage(img, -srcW / 2, -srcH / 2, srcW, srcH);
-            source = rotated;
-            srcW = rotated.width;
-            srcH = rotated.height;
-        }
-    }
-    let cropLeft = 0, cropTop = 0, cropW = srcW, cropH = srcH;
-    if (m.id === 'mrz-crop') { cropTop = Math.round(srcH * 0.48); cropH = srcH - cropTop; }
-    else if (m.id === 'mrz-low') { cropTop = Math.round(srcH * 0.64); cropH = srcH - cropTop; }
-    else if (m.id === 'top-half') { cropH = Math.round(srcH * 0.58); }
-    else if (m.id === 'bottom-half') { cropTop = Math.round(srcH * 0.42); cropH = srcH - cropTop; }
-    else if (m.id === 'left-half') { cropW = Math.round(srcW * 0.56); }
-    else if (m.id === 'right-half') { cropLeft = Math.round(srcW * 0.44); cropW = srcW - cropLeft; }
-    else if (m.id === 'top-left') { cropW = Math.round(srcW * 0.56); cropH = Math.round(srcH * 0.58); }
-    else if (m.id === 'top-right') { cropLeft = Math.round(srcW * 0.44); cropW = srcW - cropLeft; cropH = Math.round(srcH * 0.58); }
-    else if (m.id === 'bottom-left') { cropTop = Math.round(srcH * 0.42); cropW = Math.round(srcW * 0.56); cropH = srcH - cropTop; }
-    else if (m.id === 'bottom-right') { cropLeft = Math.round(srcW * 0.44); cropTop = Math.round(srcH * 0.42); cropW = srcW - cropLeft; cropH = srcH - cropTop; }
-    cropLeft = Math.max(0, Math.min(srcW - 1, cropLeft));
-    cropTop = Math.max(0, Math.min(srcH - 1, cropTop));
-    cropW = Math.max(1, Math.min(srcW - cropLeft, cropW));
-    cropH = Math.max(1, Math.min(srcH - cropTop, cropH));
-    const targetW = Math.max(900, Math.min(2200, cropW < 1200 ? cropW * 2 : cropW));
-    const scale = targetW / cropW;
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(cropW * scale);
-    canvas.height = Math.round(cropH * scale);
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return '';
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(source, cropLeft, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
-    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const threshold = m.threshold !== false && m.id !== 'full-soft';
-    const contrast = m.contrast || (m.id === 'mrz-crop' || m.id === 'mrz-low' ? 2.35 : 1.85);
-    for (let i = 0; i < data.data.length; i += 4) {
-        const r = data.data[i], g = data.data[i + 1], b = data.data[i + 2];
-        let y = 0.299 * r + 0.587 * g + 0.114 * b;
-        y = Math.max(0, Math.min(255, (y - 128) * contrast + 128));
-        if (threshold) y = y > (m.cutoff || 142) ? 255 : 0;
-        data.data[i] = data.data[i + 1] = data.data[i + 2] = y;
-        data.data[i + 3] = 255;
-    }
-    ctx.putImageData(data, 0, 0);
-    return canvas.toDataURL('image/png');
-};
-const buildOcrSources = async (file, mode) => {
-    const sources = [{ label: 'orijinal', source: file }];
-    if (mode === 'passport' || mode === 'passportFields') {
-        const presets = mode === 'passportFields' ? [
-            ['tam alan', { id: 'full-soft', threshold: false, contrast: 1.45 }],
-            ['üst alan', { id: 'top-half', threshold: false, contrast: 1.5 }],
-            ['alt alan', { id: 'bottom-half', threshold: false, contrast: 1.5 }],
-            ['sağa dönük alan', { id: 'full-soft', rotate: 90, threshold: false, contrast: 1.45 }],
-            ['sola dönük alan', { id: 'full-soft', rotate: 270, threshold: false, contrast: 1.45 }],
-            ['ters alan', { id: 'full-soft', rotate: 180, threshold: false, contrast: 1.45 }]
-        ] : [
-            ['MRZ alt', { id: 'mrz-crop' }],
-            ['MRZ en alt', { id: 'mrz-low' }],
-            ['üst yarı', { id: 'top-half', threshold: false, contrast: 1.6 }],
-            ['alt yarı', { id: 'bottom-half', threshold: false, contrast: 1.6 }],
-            ['sol yarı', { id: 'left-half', threshold: false, contrast: 1.55 }],
-            ['sağ yarı', { id: 'right-half', threshold: false, contrast: 1.55 }],
-            ['sol üst', { id: 'top-left', threshold: false, contrast: 1.55 }],
-            ['sağ üst', { id: 'top-right', threshold: false, contrast: 1.55 }],
-            ['sol alt', { id: 'bottom-left', threshold: false, contrast: 1.55 }],
-            ['sağ alt', { id: 'bottom-right', threshold: false, contrast: 1.55 }],
-            ['tam net', { id: 'full' }],
-            ['tam yumuşak', { id: 'full-soft', threshold: false, contrast: 1.45 }],
-            ['sağa dönük MRZ', { id: 'mrz-crop', rotate: 90 }],
-            ['sola dönük MRZ', { id: 'mrz-crop', rotate: 270 }],
-            ['ters MRZ', { id: 'mrz-crop', rotate: 180 }]
-        ];
-        for (const [label, preset] of presets) {
-            try {
-                const img = await buildEnhancedOcrImage(file, preset);
-                if (img) sources.push({ label, source: img });
-            } catch (e) { console.warn(label + ' hazırlanamadı', e); }
-        }
-    }
-    return sources;
-};
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const firmSlug = v => nm(v).replace(/\s+/g, '');
 const isOlmezturParty = v => {
@@ -2640,12 +2219,8 @@ const appleCalendarTitle = t => {
 const appleCalendarDescription = t => {
     const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
     const customer = passengers || (t && (t.passengerName || t.customerName || t.clientName)) || '';
-    const passengerDetails = passengerDetailText((t && t.passengers) || []);
-    const nationalityLine = passengerNationalitySummary((t && t.passengers) || []);
     return [
         'Müşteri: ' + (customer || '-'),
-        passengerDetails ? ('Yolcu detayları:\n' + passengerDetails) : '',
-        nationalityLine,
         'Şoför: ' + ([t && t.driverName, t && t.driverPhone].filter(Boolean).join(' / ') || '-'),
         'İşi veren: ' + ((t && t.givenBy) || '-'),
         'İşi yapan: ' + ((t && t.assignedTo) || '-'),
@@ -7178,12 +6753,8 @@ function App() {
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
     const [paxModal, setPaxModal] = useState(null);
-    const [ocrState, setOcrState] = useState({ busy: false, message: '' });
-    const [scanReview, setScanReview] = useState(null);
-    const paxCameraInputRef = useRef(null);
-    const paxGalleryInputRef = useRef(null);
-    const paxListInputRef = useRef(null);
-    const paxPassportBatchInputRef = useRef(null);
+    const [passportScan, setPassportScan] = useState(null); // {status:'loading'|'reading', msg} tarama sırasında
+    const passportFileRef = useRef(null);
     const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
     const [rstTxt, setRstTxt] = useState('');
@@ -7810,225 +7381,48 @@ function App() {
     // --- Yolcu ekleme/düzenleme modalı (yan yana kart + küçük sayfa) ---
     const paxReal = () => (form.passengers || []).filter(p => (p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))));
     const openPaxModal = (idx) => {
-        setScanReview(null);
-        setOcrState({ busy: false, message: '' });
-        if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR', cinsiyet: '' }); return; }
+        if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR' }); return; }
         const p = paxReal()[idx] || emptyPassenger();
-        setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '' });
+        setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR' });
     };
     const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
-    const runOcrForFile = async (file, label, mode, stopEarly) => {
-        if (!file) return '';
-        if (!window.Tesseract || !window.Tesseract.recognize) {
-            setOcrState({ busy: false, message: 'Okuma motoru yüklenemedi. Manuel giriş yapabilirsiniz.' });
-            tip('Pasaport okuma yüklenemedi');
-            return '';
-        }
-        setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor...' });
+    /* 📷 Galeriden pasaport tara → MRZ oku → paxModal'ı doldurup onaya sun */
+    const openPassportPicker = () => {
+        if (passportScan) return; // zaten tarıyor
+        if (passportFileRef.current) { passportFileRef.current.value = ''; passportFileRef.current.click(); }
+    };
+    const handlePassportFile = async (file) => {
+        if (!file) return;
+        if (!window.Tesseract) { tip('OCR yüklenemedi — internet bağlantısı gerekli'); return; }
+        setPassportScan({ status: 'reading', msg: 'Pasaport okunuyor…' });
+        let parsed = null;
         try {
-            const sources = await buildOcrSources(file, mode || 'list');
-            const allText = [];
-            const logger = m => {
-                if (!m || !m.status) return;
-                const pct = typeof m.progress === 'number' ? Math.round(m.progress * 100) : 0;
-                const msg = m.status === 'recognizing text' && pct ? ('Metin okunuyor %' + pct) : 'Görsel hazırlanıyor...';
-                setOcrState({ busy: true, message: msg });
-            };
-            for (let i = 0; i < sources.length; i++) {
-                const item = sources[i];
-                setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor (' + item.label + ' ' + (i + 1) + '/' + sources.length + ')' });
-                const opts = mode === 'passport'
-                    ? { logger, tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<', tessedit_pageseg_mode: '6', user_defined_dpi: '300', preserve_interword_spaces: '1' }
-                    : (mode === 'passportFields'
-                        ? { logger, tessedit_pageseg_mode: '6', user_defined_dpi: '300', preserve_interword_spaces: '1' }
-                        : { logger, preserve_interword_spaces: '1' });
-                let result;
-                try {
-                    result = await window.Tesseract.recognize(item.source, mode === 'passport' ? 'eng' : 'eng+tur', opts);
-                } catch (firstErr) {
-                    console.warn('OCR eng diliyle tekrar denenecek', firstErr);
-                    result = await window.Tesseract.recognize(item.source, 'eng', opts);
-                }
-                const text = result && result.data ? (result.data.text || '') : '';
-                if (text) {
-                    allText.push(text);
-                    if (mode === 'passport' && stopEarly) {
-                        const earlyRows = passportScanVerifiedRowsFromText(allText.join('\n'));
-                        if (earlyRows.length) {
-                            setOcrState({ busy: false, message: 'Pasaport doğrulandı. Bilgiler hazırlanıyor...' });
-                            return allText.join('\n');
-                        }
-                    }
-                }
-            }
-            const text = allText.join('\n');
-            setOcrState({ busy: false, message: text ? 'Okuma tamamlandı. Alanları kontrol edin.' : 'Metin bulunamadı. Manuel giriş yapabilirsiniz.' });
-            return text;
+            parsed = await mrzReadFromFile(file);
         } catch (e) {
-            console.error('OCR hata', e);
-            setOcrState({ busy: false, message: 'Tarama başarısız oldu. Manuel giriş yapabilirsiniz.' });
-            tip('Tarama başarısız');
-            return '';
+            console.error('MRZ okuma hatası', e);
         }
-    };
-    const applyScannedPassengerToModal = p => {
-        if (!p) return;
-        setPaxModal(m => m ? ({
-            ...m,
-            name: p.name || m.name || '',
-            id: p.pasaport || p.idNo || m.id || '',
-            uyruk: p.uyruk || m.uyruk || 'TR',
-            cinsiyet: p.cinsiyet || m.cinsiyet || '',
-            mrzValid: !!p.mrzValid
-        }) : m);
-    };
-    const safePassportRowsFromText = (text) => passportScanVerifiedRowsFromText(text)
-        .sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
-    const mergePassengerRows = rows => {
-        const merged = [...paxReal(), ...(rows || [])].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
-        const seen = new Set();
-        return merged.filter(p => {
-            const passKey = passengerIdDisplay(p);
-            const key = passKey ? ('pass:' + passKey.toUpperCase()) : ('name:' + nm(p.name || ''));
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
-    };
-    const readPassportPassengersFromFile = async (file, label, strictName, stopEarly) => {
-        const text = await runOcrForFile(file, label || 'Pasaport', 'passport', stopEarly);
-        if (!text) return { rows: [], suggestions: [], found: 0, rejected: 0 };
-        const rows = safePassportRowsFromText(text);
-        if (rows.length) return { rows, suggestions: [], found: rows.length, rejected: 0 };
-        const fieldText = await runOcrForFile(file, (label || 'Pasaport') + ' alanları', 'passportFields', false);
-        const combined = text + '\n' + (fieldText || '');
-        const suggestions = passportScanVisibleSuggestions(combined);
-        return { rows: [], suggestions, found: rows.length + suggestions.length, rejected: suggestions.length ? 1 : 0, fallback: suggestions.length > 0 };
-    };
-    const scanPassportImageFile = async file => {
-        const result = await readPassportPassengersFromFile(file, 'Pasaport', false, true);
-        const p = (result.rows || [])[0];
-        if (!p) {
-            const suggestion = (result.suggestions || [])[0];
-            if (suggestion) {
-                applyScannedPassengerToModal(suggestion);
-                setOcrState({ busy: false, message: 'MRZ doğrulanmadı; görünen alanlardan öneri doldurdum. Ad soyad ve pasaport numarasını kontrol edip Kaydet’e basın.' });
-                tip('Kontrol gerekli');
-                return;
-            }
-            const msg = 'Pasaporttan doğrulanmış MRZ çıkarılamadı. Yanlış kayıt oluşturmamak için otomatik doldurmadım. Alt iki MRZ satırı net ve düz görünecek şekilde tekrar seçin ya da elle yazın.';
-            setOcrState({ busy: false, message: msg });
-            tip('Pasaport doğrulanamadı');
-            return;
+        setPassportScan(null);
+        if (parsed && (parsed.passportNo || parsed.name)) {
+            setPaxModal({
+                idx: -1,
+                name: parsed.name ? mrzTitleCase(parsed.name) : '',
+                phone: '',
+                id: parsed.passportNo || '',
+                uyruk: parsed.nationality || 'TR',
+                scan: { verified: !!parsed.passportVerified, hadName: !!parsed.name, hadNo: !!parsed.passportNo }
+            });
+            tip(parsed.passportVerified ? 'Pasaport okundu ✓' : 'Pasaport okundu — lütfen kontrol edin');
+        } else {
+            // Okunamadı: boş modalı aç, kullanıcı elle girsin (stabil davranış)
+            setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR', scan: { verified: false, hadName: false, hadNo: false, failed: true } });
+            tip('Pasaport net okunamadı — bilgileri elle girebilirsiniz');
         }
-        applyScannedPassengerToModal(p);
-        setOcrState({ busy: false, message: 'Pasaport MRZ ile doğrulandı. Ad soyad ve pasaport numarasını yine gözle kontrol edip Kaydet’e basın.' });
-        tip('Pasaport doğrulandı');
-    };
-    const scanPassportBatchFiles = async files => {
-        const list = Array.from(files || []).filter(Boolean);
-        if (!list.length) return;
-        const allRows = [];
-        const reviewRows = [];
-        let found = 0, rejected = 0;
-        for (let i = 0; i < list.length; i++) {
-            setOcrState({ busy: true, message: 'Pasaportlar okunuyor ' + (i + 1) + '/' + list.length });
-            const res = await readPassportPassengersFromFile(list[i], 'Pasaport ' + (i + 1) + '/' + list.length, false, list.length > 1);
-            found += res.found || 0;
-            rejected += res.rejected || 0;
-            (res.rows || []).forEach(p => allRows.push(p));
-            (res.suggestions || []).forEach(p => reviewRows.push({ ...p, fileLabel: 'Pasaport ' + (i + 1), selected: true }));
-        }
-        if (!allRows.length) {
-            if (reviewRows.length) {
-                setScanReview({ rows: reviewRows, title: 'Kontrol Gereken Pasaportlar' });
-                setOcrState({ busy: false, message: reviewRows.length + ' pasaport için öneri bulundu. Yanlış kayıt olmaması için kontrol edip onaylayın.' });
-                tip('Kontrol gerekli');
-                return;
-            }
-            setOcrState({ busy: false, message: found ? 'Metin bulundu ama pasaport numarası MRZ kontrolüyle doğrulanmadı. Otomatik kayıt yapılmadı.' : 'Seçilen pasaportlarda doğrulanmış MRZ bulunamadı.' });
-            tip('Pasaport eklenmedi');
-            return;
-        }
-        const clean = mergePassengerRows(allRows);
-        sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
-        const added = allRows.length;
-        if (reviewRows.length) setScanReview({ rows: reviewRows, title: 'Kontrol Gereken Pasaportlar' });
-        const msg = added + ' yolcu doğrulanmış MRZ ile eklendi.' + (reviewRows.length ? (' ' + reviewRows.length + ' kayıt kontrol ekranına alındı.') : '');
-        setOcrState({ busy: false, message: msg });
-        tip(added + ' yolcu eklendi');
-    };
-    const setScanReviewRow = (idx, field, value) => {
-        setScanReview(r => {
-            if (!r) return r;
-            const rows = [...(r.rows || [])];
-            rows[idx] = { ...(rows[idx] || emptyPassenger()), [field]: value };
-            return { ...r, rows };
-        });
-    };
-    const toggleScanReviewRow = idx => {
-        setScanReview(r => {
-            if (!r) return r;
-            const rows = [...(r.rows || [])];
-            rows[idx] = { ...(rows[idx] || emptyPassenger()), selected: rows[idx] && rows[idx].selected === false };
-            return { ...r, rows };
-        });
-    };
-    const commitScanReviewRows = () => {
-        const rows = ((scanReview && scanReview.rows) || [])
-            .filter(p => p && p.selected !== false)
-            .map(p => ({ ...emptyPassenger(), name: koTitleCaseTR((p.name || '').trim()), phone: p.phone || '', uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '', ...splitPassengerId((p.pasaport || p.idNo || '').trim()) }))
-            .filter(p => (p.name || '').trim() && passengerIdDisplay(p));
-        if (!rows.length) { tip('Onaylanacak yolcu yok'); return; }
-        const clean = mergePassengerRows(rows);
-        sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
-        setScanReview(null);
-        setOcrState({ busy: false, message: rows.length + ' yolcu kontrol edilerek eklendi.' });
-        tip(rows.length + ' yolcu eklendi');
-    };
-    const scanPassengerListImageFile = async file => {
-        const text = await runOcrForFile(file, 'Yolcu listesi', 'list');
-        if (!text) return;
-        const validMrzRows = passportScanVerifiedRowsFromText(text);
-        const listRows = validMrzRows.length ? validMrzRows : parsePassengerListFromText(text);
-        if (!listRows.length) {
-            setOcrState({ busy: false, message: 'Listeden yolcu adı bulunamadı. Manuel ekleme yapabilirsiniz.' });
-            tip('Yolcu bulunamadı');
-            return;
-        }
-        const cur = paxReal();
-        const merged = [...cur, ...listRows].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
-        const seen = new Set();
-        const clean = merged.filter(p => {
-            const key = nm(((p.name || '') + '|' + passengerIdDisplay(p)).trim());
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
-        sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
-        setOcrState({ busy: false, message: listRows.length + ' yolcu görselden eklendi. Liste görselinde MRZ kontrolü olmadığı için kartlardan isimleri kontrol edin.' });
-        tip(listRows.length + ' yolcu eklendi');
-    };
-    const handlePassportFileInput = async e => {
-        const file = e && e.target && e.target.files ? e.target.files[0] : null;
-        if (e && e.target) e.target.value = '';
-        await scanPassportImageFile(file);
-    };
-    const handlePassportBatchFileInput = async e => {
-        const files = e && e.target && e.target.files ? Array.from(e.target.files) : [];
-        if (e && e.target) e.target.value = '';
-        await scanPassportBatchFiles(files);
-    };
-    const handlePassengerListFileInput = async e => {
-        const file = e && e.target && e.target.files ? e.target.files[0] : null;
-        if (e && e.target) e.target.value = '';
-        await scanPassengerListImageFile(file);
     };
     const savePaxModal = () => {
         const m = paxModal; if (!m) return;
         const nm = (m.name || '').trim();
         if (!nm) { tip('Ad soyad gerekli'); return; }
-        const built = { ...emptyPassenger(), name: koTitleCaseTR(nm), phone: (m.phone || '').trim(), uyruk: m.uyruk || 'TR', cinsiyet: m.cinsiyet || '', ...splitPassengerId((m.id || '').trim()) };
+        const built = { ...emptyPassenger(), name: koTitleCaseTR(nm), phone: (m.phone || '').trim(), uyruk: m.uyruk || 'TR', ...splitPassengerId((m.id || '').trim()) };
         const list = paxReal();
         if (m.idx === -1) list.push(built); else list[m.idx] = { ...(list[m.idx] || {}), ...built };
         sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
@@ -8038,8 +7432,7 @@ function App() {
         const list = paxReal().filter((_, i) => i !== idx);
         sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
     };
-    const paxCountryName = passengerCountryName;
-    const paxGenderName = passengerGenderName;
+    const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
     const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
         setAgencies(p => [...p, n.trim()]); };
     const addAgencyContact = (name, phone) => {
@@ -8520,7 +7913,6 @@ function App() {
                 line += '  • Pasaport: ' + p.pasaport;
             return line;
         }).join('\n');
-        const nationalityLine = passengerNationalitySummary(t.passengers || []);
         let msg = 'Misafir Bilgileri\n\n';
         msg += 'Tarih: ' + dt + '\n';
         msg += '🕒 Saat: ' + t.time + '\n';
@@ -8539,7 +7931,6 @@ function App() {
         else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
         else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
         if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
-        if (nationalityLine) msg += '\n\n' + nationalityLine;
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
@@ -11358,15 +10749,11 @@ function App() {
                             }
                         }, "🚐 ", PLAKA)))),
                 React.createElement("div", { className: "card ko-passenger-card" },
-                    React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                    React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
                         React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
-                        React.createElement("input", { ref: paxListInputRef, type: "file", accept: "image/*", onChange: handlePassengerListFileInput, style: { display: 'none' } }),
-                        React.createElement("input", { ref: paxPassportBatchInputRef, type: "file", accept: "image/*", multiple: true, onChange: handlePassportBatchFileInput, style: { display: 'none' } }),
-                        React.createElement("div", { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
-                            React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxPassportBatchInputRef.current && paxPassportBatchInputRef.current.click(), style: { display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 10px', fontSize: 11.5, fontWeight: 500, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .6 : 1 } }, "Pasaportları Toplu Seç"),
-                            React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxListInputRef.current && paxListInputRef.current.click(), style: { display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', color: NAV, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px', fontSize: 11.5, fontWeight: 500, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .6 : 1 } }, "Liste Görseli Yükle"),
-                            React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle"))),
-                    ocrState.message && !paxModal && React.createElement("div", { style: { fontSize: 11, color: SB, margin: '-2px 0 9px', background: INP, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px' } }, ocrState.message),
+                        React.createElement("input", { ref: passportFileRef, type: "file", accept: "image/*", style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handlePassportFile(f); } }),
+                        React.createElement("button", { type: "button", onClick: openPassportPicker, disabled: !!passportScan, title: "Galeriden pasaport foto\u011Fraf\u0131 se\u00E7 \u2014 ad soyad ve pasaport no otomatik okunur", style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: passportScan ? '#8E8E93' : '#0B7285', color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: passportScan ? 'default' : 'pointer' } }, passportScan ? "\u23F3 Okunuyor\u2026" : "\uD83D\uDCF7 Pasaport (Galeri)"),
+                        React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle")),
                     (function () {
                         const list = paxReal();
                         if (!list.length) return React.createElement("div", { style: { fontSize: 12, color: SB, textAlign: 'center', padding: '14px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR } }, "Hen\u00FCz yolcu eklenmedi. \u201C+ Yolcu Ekle\u201D ile ekleyin.");
@@ -11375,8 +10762,7 @@ function App() {
                                 React.createElement("span", { style: { fontSize: 13, fontWeight: 500, color: TX } }, p.name || 'Misafir'),
                                 React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83E\uDEAA " + (passengerIdDisplay(p) || '\u2014')),
                                 React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83D\uDCDE " + (p.phone || '\u2014')),
-                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83C\uDF0D " + (paxCountryName(p.uyruk) || '\u2014')),
-                                p.cinsiyet && React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\u25E6 " + paxGenderName(p.cinsiyet))),
+                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83C\uDF0D " + paxCountryName(p.uyruk))),
                             React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 5, flex: 'none' } },
                                 React.createElement("button", { type: "button", onClick: () => openPaxModal(i), style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "D\u00FCzenle"),
                                 React.createElement("button", { type: "button", onClick: () => delPax(i), style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "Sil")))));
@@ -11720,60 +11106,42 @@ function App() {
             )
         ),
         quickEditT && renderQuickEditModal(),
+        passportScan && React.createElement("div", { style: { position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(20,22,28,.55)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+            React.createElement("div", { style: { background: '#fff', borderRadius: 16, padding: '22px 26px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, boxShadow: '0 18px 48px rgba(0,0,0,.28)', maxWidth: 260, textAlign: 'center' } },
+                React.createElement("div", { style: { width: 34, height: 34, border: '3px solid #D6E4E8', borderTopColor: '#0B7285', borderRadius: '50%', animation: 'koSpin .8s linear infinite' } }),
+                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 500, color: TX } }, "🪪 Pasaport okunuyor…"),
+                React.createElement("div", { style: { fontSize: 11, color: SB, lineHeight: 1.4 } }, "Ad soyad ve pasaport numarası çıkarılıyor. İlk seferde okuma verisi indirilebilir, birkaç saniye sürebilir.")),
+            React.createElement("style", null, "@keyframes koSpin{to{transform:rotate(360deg)}}")),
         paxModal && (React.createElement("div", { className: "mo", onClick: () => setPaxModal(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
-                    React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, paxModal.idx === -1 ? "👤 Yeni Yolcu" : "👤 Yolcu Düzenle"),
+                    React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, paxModal.scan ? (paxModal.scan.failed ? "🪪 Pasaport Okunamadı" : "🪪 Pasaporttan Okundu") : (paxModal.idx === -1 ? "👤 Yeni Yolcu" : "👤 Yolcu Düzenle")),
                     React.createElement("button", { onClick: () => setPaxModal(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
-                React.createElement("input", { ref: paxCameraInputRef, type: "file", accept: "image/*", capture: "environment", onChange: handlePassportFileInput, style: { display: 'none' } }),
-                React.createElement("input", { ref: paxGalleryInputRef, type: "file", accept: "image/*", onChange: handlePassportFileInput, style: { display: 'none' } }),
-                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
-                    React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxCameraInputRef.current && paxCameraInputRef.current.click(), style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '11px 8px', fontWeight: 500, fontSize: 12, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .65 : 1 } }, "Pasaport Tara"),
-                    React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxGalleryInputRef.current && paxGalleryInputRef.current.click(), style: { background: '#FFFFFF', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 12, padding: '11px 8px', fontWeight: 500, fontSize: 12, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .65 : 1 } }, "Galeriden Seç")),
-                ocrState.message && React.createElement("div", { style: { fontSize: 11, color: SB, background: INP, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px', marginBottom: 10, lineHeight: 1.35 } }, ocrState.message),
+                paxModal.scan && React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '9px 11px', borderRadius: 10, fontSize: 11.5, fontWeight: 450, lineHeight: 1.35, background: paxModal.scan.failed ? '#FFF4E5' : (paxModal.scan.verified ? '#E7F6EC' : '#FFF8E1'), color: paxModal.scan.failed ? '#8A5300' : (paxModal.scan.verified ? '#1B5E20' : '#7A5B00'), border: '1px solid ' + (paxModal.scan.failed ? '#F0C48A' : (paxModal.scan.verified ? '#B7E1C4' : '#EAD08A')) } },
+                    React.createElement("span", { style: { fontSize: 15, flexShrink: 0 } }, paxModal.scan.failed ? '⚠️' : (paxModal.scan.verified ? '✅' : '📷')),
+                    React.createElement("span", null, paxModal.scan.failed ? 'Pasaport net okunamadı. Ad soyad ve pasaport no’yu elle girip kaydedin.' : (paxModal.scan.verified ? 'Pasaport numarası doğrulandı. Ad soyadı kontrol edip kaydedin.' : 'Pasaport okundu. Ad soyad ve pasaport numarasını kontrol edip kaydedin.'))),
                 React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                     React.createElement("div", null,
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Ad Soyad"),
                         React.createElement("input", { type: "text", value: paxModal.name, onChange: e => setPaxField('name', e.target.value), placeholder: "Ad Soyad", className: "inp", autoComplete: "name", autoCapitalize: "words", style: { width: '100%' } })),
                     React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Telefon"),
-                        React.createElement("input", { type: "tel", value: paxModal.phone, onChange: e => setPaxField('phone', e.target.value), placeholder: "Telefon", className: "inp", autoComplete: "tel", inputMode: "tel", style: { width: '100%' } })),
-                    React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "TC / Pasaport No"),
-                        React.createElement("input", { type: "text", value: paxModal.id, onChange: e => setPaxField('id', e.target.value), placeholder: "TC / Pasaport No", className: "inp", inputMode: "text", autoCapitalize: "characters", style: { width: '100%' } })),
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, paxModal.scan ? "Pasaport No" : "TC / Pasaport No"),
+                        React.createElement("input", { type: "text", value: paxModal.id, onChange: e => setPaxField('id', e.target.value), placeholder: paxModal.scan ? "Pasaport No" : "TC / Pasaport No", className: "inp", inputMode: "text", autoCapitalize: "characters", style: { width: '100%', letterSpacing: paxModal.scan ? .6 : 0, fontWeight: paxModal.scan ? 500 : 400 } })),
                     React.createElement("div", null,
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Uyruk / Ülke"),
                         React.createElement("select", { value: paxModal.uyruk || 'TR', onChange: e => setPaxField('uyruk', e.target.value), className: "inp", style: { width: '100%' } }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n)))),
-                    React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Cinsiyet"),
-                        React.createElement("select", { value: paxModal.cinsiyet || '', onChange: e => setPaxField('cinsiyet', e.target.value), className: "inp", style: { width: '100%' } }, PASSENGER_GENDERS.map(g => React.createElement("option", { key: g.k || 'empty', value: g.k }, g.n))))),
+                    /* Telefon — taramada varsayılan gizli, tek dokunuşla açılır (kompakt) */
+                    (!paxModal.scan || paxModal.showPhone)
+                        ? React.createElement("div", null,
+                            React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Telefon"),
+                            React.createElement("input", { type: "tel", value: paxModal.phone, onChange: e => setPaxField('phone', e.target.value), placeholder: "Telefon", className: "inp", autoComplete: "tel", inputMode: "tel", style: { width: '100%' } }))
+                        : React.createElement("button", { type: "button", onClick: () => setPaxField('showPhone', true), style: { alignSelf: 'flex-start', background: 'none', border: 'none', color: NAV, fontSize: 12, fontWeight: 470, cursor: 'pointer', padding: '2px 0' } }, "＋ Telefon ekle")),
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 18 } },
-                    React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
-                    React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, "Kaydet"))))),
-        scanReview && (React.createElement("div", { className: "mo", onClick: () => setScanReview(null) },
-            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
-                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
-                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                    React.createElement("div", null,
-                        React.createElement("div", { style: { fontWeight: 520, fontSize: 15, color: TX } }, scanReview.title || 'Pasaport Kontrol'),
-                        React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 3, lineHeight: 1.35 } }, "MRZ doğrulanmayan sonuçlar otomatik kayda girmez. Ad soyad ve pasaport numarasını kontrol edip aktarın.")),
-                    React.createElement("button", { onClick: () => setScanReview(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
-                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, maxHeight: '55vh', overflowY: 'auto', paddingRight: 2 } },
-                    ((scanReview && scanReview.rows) || []).map((p, i) => React.createElement("div", { key: i, style: { border: '1px solid ' + BOR, borderRadius: 13, background: INP, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-                            React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, fontWeight: 520, color: TX } },
-                                React.createElement("input", { type: "checkbox", checked: p.selected !== false, onChange: () => toggleScanReviewRow(i), style: { width: 18, minHeight: 18 } }),
-                                p.fileLabel || ('Kayıt ' + (i + 1))),
-                            React.createElement("span", { style: { fontSize: 10, color: p.mrzVerified ? G : R, fontWeight: 520 } }, p.mrzVerified ? 'MRZ doğrulandı' : 'Kontrol gerekli')),
-                        React.createElement("input", { className: "inp", value: p.name || '', onChange: e => setScanReviewRow(i, 'name', e.target.value), placeholder: "Ad Soyad", autoCapitalize: "words" }),
-                        React.createElement("input", { className: "inp", value: p.pasaport || p.idNo || '', onChange: e => { setScanReviewRow(i, 'pasaport', e.target.value.toUpperCase()); setScanReviewRow(i, 'idNo', e.target.value.toUpperCase()); }, placeholder: "Pasaport No", autoCapitalize: "characters" }),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
-                            React.createElement("select", { className: "inp", value: p.uyruk || 'TR', onChange: e => setScanReviewRow(i, 'uyruk', e.target.value) }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))),
-                            React.createElement("select", { className: "inp", value: p.cinsiyet || '', onChange: e => setScanReviewRow(i, 'cinsiyet', e.target.value) }, PASSENGER_GENDERS.map(g => React.createElement("option", { key: g.k || 'empty', value: g.k }, g.n))))))),
-                React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 16 } },
-                    React.createElement("button", { onClick: () => setScanReview(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
-                    React.createElement("button", { onClick: commitScanReviewRows, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 520, fontSize: '14px', cursor: 'pointer' } }, "Kontrol Edildi, Aktar"))))),
+                    paxModal.scan
+                        ? React.createElement("button", { onClick: () => { setPaxModal(null); setTimeout(openPassportPicker, 60); }, title: "Başka bir pasaport fotoğrafı seç", style: { flex: 1, background: '#FFFFFF', color: '#0B7285', border: '1.5px solid #0B7285', borderRadius: 13, padding: 13, fontWeight: 470, fontSize: '14px', cursor: 'pointer' } }, "📷 Tekrar Tara")
+                        : React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
+                    React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, paxModal.scan ? "✓ Yolcuyu Ekle" : "Kaydet"))))),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
