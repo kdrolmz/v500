@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - MRZ Stabil Okuma v62</title>
+<title>KÖ Transfer Takip - Pasaport Okuma v70</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1627,6 +1627,142 @@ const parsePassportVisibleFieldsFromText = text => {
     if (!name && !passport) return [];
     return [{ ...emptyPassenger(), name, idNo: passport || '', pasaport: passport || '', tc: '', uyruk: uyruk || '', cinsiyet: cinsiyet || '', mrzValid: false, ocrFallback: true }];
 };
+const passportScanNameOk = name => {
+    const s = String(name || '').trim();
+    const words = s.split(/\s+/).filter(Boolean);
+    return words.length >= 2 && s.length >= 5 && !/[0-9<>{}[\]|]/.test(s) && words.every(w => w.length > 1);
+};
+const passportScanNoOk = v => /^(?=.*\d)[A-Z0-9]{6,12}$/.test(String(v || '').toUpperCase());
+const passportScanNormalize = line => String(line || '')
+    .toUpperCase()
+    .replace(/[«‹≤]/g, '<')
+    .replace(/[({\[_]/g, '<')
+    .replace(/[)\]}]/g, '<')
+    .replace(/[|!]/g, 'I')
+    .replace(/[^A-Z0-9<]/g, '');
+const passportScanLoose = line => String(line || '')
+    .toUpperCase()
+    .replace(/[«‹≤]/g, '<')
+    .replace(/[({\[_]/g, '<')
+    .replace(/[)\]}]/g, '<')
+    .replace(/[|!]/g, 'I')
+    .replace(/[^A-Z0-9]/g, '<');
+const passportScanFixNameLine = line => {
+    let s = passportScanNormalize(line);
+    if (/^P[A-Z]{3}/.test(s) && s.charAt(1) !== '<') s = 'P<' + s.slice(1);
+    if (/^[A-Z]{3}[A-Z]+<<[A-Z]/.test(s)) s = 'P<' + s;
+    return s;
+};
+const passportScanIsNameLine = line => /^P<[A-Z0-9<]{3,}/.test(passportScanFixNameLine(line)) && passportScanFixNameLine(line).includes('<<');
+const passportScanIsDataLine = line => {
+    const s = passportScanNormalize(line);
+    const digits = (s.match(/\d/g) || []).length;
+    return s.length >= 30 && digits >= 12 && !passportScanIsNameLine(s);
+};
+const passportScanLinePool = text => {
+    const raw = String(text || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    const lines = [];
+    const add = (line, pos) => {
+        const s = passportScanNormalize(line);
+        if (s.length < 20) return;
+        if (!passportScanIsNameLine(s) && !passportScanIsDataLine(s) && !s.includes('<<')) return;
+        const key = s + '@' + pos;
+        if (!lines.some(x => x.key === key)) lines.push({ line: s, pos, key });
+        const fixed = passportScanFixNameLine(s);
+        const fkey = fixed + '@' + pos;
+        if (fixed !== s && fixed.length >= 20 && !lines.some(x => x.key === fkey)) lines.push({ line: fixed, pos, key: fkey });
+    };
+    raw.forEach((line, i) => {
+        add(passportScanNormalize(line), i);
+        add(passportScanLoose(line), i);
+    });
+    for (let i = 0; i < raw.length; i++) {
+        let joined = '';
+        let joinedLoose = '';
+        for (let j = i; j < Math.min(raw.length, i + 6); j++) {
+            const a = passportScanNormalize(raw[j]);
+            const b = passportScanLoose(raw[j]);
+            if (joined && passportScanIsNameLine(a)) break;
+            joined += a;
+            joinedLoose += b;
+            add(joined, i);
+            add(joinedLoose, i);
+            if (joined.length >= 132) break;
+        }
+    }
+    const expanded = [];
+    lines.forEach(item => {
+        expanded.push(item);
+        const fixed = passportScanFixNameLine(item.line);
+        if (fixed.length >= 88) {
+            for (let p = 0; p + 44 <= fixed.length; p += 44) expanded.push({ line: fixed.slice(p, p + 44), pos: item.pos + p / 100, key: fixed.slice(p, p + 44) + '#' + p });
+        }
+        const starts = [];
+        for (let p = fixed.indexOf('P<'); p >= 0; p = fixed.indexOf('P<', p + 2)) starts.push(p);
+        if (starts.length > 1) starts.forEach((p, idx) => expanded.push({ line: fixed.slice(p, starts[idx + 1] || p + 44), pos: item.pos + idx / 10, key: fixed.slice(p, starts[idx + 1] || p + 44) + '$' + idx }));
+    });
+    const seen = new Set();
+    return expanded.filter(x => {
+        const key = x.line + '|' + x.pos;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+};
+const passportScanCandidateRank = p => {
+    const passport = String((p && (p.pasaport || p.idNo)) || '').toUpperCase();
+    return (p && p.mrzVerified ? 5000 : 0)
+        + ((p && p.mrzCheckScore) || 0) * 250
+        + (p && p.mrzSource === 'td3-same-column' ? 600 : 0)
+        + (passportScanNoOk(passport) ? 350 : 0)
+        + (passportScanNameOk(p && p.name) ? 300 : -500)
+        - ((p && p.mrzPairGap) || 0) * 300
+        - ((p && p.mrzNamePenalty) || 0) * 25
+        + String((p && p.name) || '').length;
+};
+const passportScanVerifiedRowsFromText = text => {
+    const out = [];
+    const push = (p, extra) => {
+        if (!p) return;
+        const passport = String(p.pasaport || p.idNo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!passportScanNoOk(passport) || !passportScanNameOk(p.name)) return;
+        const score = p.mrzCheckScore || 0;
+        if (score < 4) return;
+        out.push({ ...p, ...extra, idNo: passport, pasaport: passport, tc: '', mrzValid: true, mrzVerified: true, scanSource: 'mrz' });
+    };
+    try { parsePassportMrzFromText(text).forEach(p => push(p, { mrzPairGap: p.mrzPairPenalty || 0 })); } catch (e) {}
+    const pool = passportScanLinePool(text);
+    pool.forEach((a, i) => {
+        if (!passportScanIsNameLine(a.line)) return;
+        for (let j = i + 1; j < Math.min(pool.length, i + 14); j++) {
+            const b = pool[j];
+            if (!passportScanIsDataLine(b.line)) continue;
+            const p = mrzPassengerFromTd3(a.line, b.line);
+            push(p, { mrzPairGap: Math.abs((b.pos || j) - (a.pos || i)) });
+        }
+    });
+    for (let i = 0; i < pool.length - 1; i++) {
+        const a = passportScanFixNameLine(pool[i].line);
+        const b = passportScanNormalize(pool[i + 1].line);
+        const nameChunks = [];
+        const dataChunks = [];
+        if (a.length >= 88) for (let c = 0; c + 44 <= a.length; c += 44) nameChunks.push(a.slice(c, c + 44));
+        if (b.length >= 88) for (let c = 0; c + 44 <= b.length; c += 44) dataChunks.push(b.slice(c, c + 44));
+        if (nameChunks.length && dataChunks.length) {
+            for (let c = 0; c < Math.min(nameChunks.length, dataChunks.length); c++) push(mrzPassengerFromTd3(nameChunks[c], dataChunks[c]), { mrzPairGap: 0 });
+        }
+    }
+    const best = new Map();
+    out.forEach(p => {
+        const key = String(p.pasaport || '').toUpperCase();
+        const prev = best.get(key);
+        if (!prev || passportScanCandidateRank(p) > passportScanCandidateRank(prev)) best.set(key, p);
+    });
+    return Array.from(best.values()).sort((a, b) => passportScanCandidateRank(b) - passportScanCandidateRank(a));
+};
+const passportScanVisibleSuggestions = text => parsePassportVisibleFieldsFromText(text)
+    .map(p => ({ ...p, scanSource: 'visible', needsReview: true, mrzVerified: false }))
+    .filter(p => p && (passportScanNameOk(p.name) || passportScanNoOk(p.pasaport || p.idNo)));
 const parsePassengerListFromText = text => {
     const rows = String(text || '').split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
     const out = [];
@@ -7043,6 +7179,7 @@ function App() {
     const [msgM, setMsgM] = useState(null);
     const [paxModal, setPaxModal] = useState(null);
     const [ocrState, setOcrState] = useState({ busy: false, message: '' });
+    const [scanReview, setScanReview] = useState(null);
     const paxCameraInputRef = useRef(null);
     const paxGalleryInputRef = useRef(null);
     const paxListInputRef = useRef(null);
@@ -7673,6 +7810,7 @@ function App() {
     // --- Yolcu ekleme/düzenleme modalı (yan yana kart + küçük sayfa) ---
     const paxReal = () => (form.passengers || []).filter(p => (p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))));
     const openPaxModal = (idx) => {
+        setScanReview(null);
         setOcrState({ busy: false, message: '' });
         if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR', cinsiyet: '' }); return; }
         const p = paxReal()[idx] || emptyPassenger();
@@ -7715,10 +7853,9 @@ function App() {
                 if (text) {
                     allText.push(text);
                     if (mode === 'passport' && stopEarly) {
-                        const earlyRows = parsePassportMrzFromText(allText.join('\n'))
-                            .filter(p => p && p.mrzValid && p.name && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && (p.mrzCheckScore || 0) >= 3);
+                        const earlyRows = passportScanVerifiedRowsFromText(allText.join('\n'));
                         if (earlyRows.length) {
-                            setOcrState({ busy: false, message: 'MRZ doğrulandı. Bilgiler dolduruluyor...' });
+                            setOcrState({ busy: false, message: 'Pasaport doğrulandı. Bilgiler hazırlanıyor...' });
                             return allText.join('\n');
                         }
                     }
@@ -7745,8 +7882,7 @@ function App() {
             mrzValid: !!p.mrzValid
         }) : m);
     };
-    const safePassportRowsFromText = (text, strictName) => parsePassportMrzFromText(text)
-        .filter(p => p && p.mrzValid && p.name && !/[0-9]/.test(String(p.name)) && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && (p.mrzCheckScore || 0) >= 2 && (((p.mrzNamePenalty || 0) <= (strictName ? 10 : 14)) || (p.mrzCheckScore || 0) >= 3))
+    const safePassportRowsFromText = (text) => passportScanVerifiedRowsFromText(text)
         .sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
     const mergePassengerRows = rows => {
         const merged = [...paxReal(), ...(rows || [])].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
@@ -7761,32 +7897,39 @@ function App() {
     };
     const readPassportPassengersFromFile = async (file, label, strictName, stopEarly) => {
         const text = await runOcrForFile(file, label || 'Pasaport', 'passport', stopEarly);
-        if (!text) return { rows: [], found: 0, rejected: 0 };
-        const all = parsePassportMrzFromText(text);
-        const rows = safePassportRowsFromText(text, strictName);
-        if (rows.length) return { rows, found: all.length, rejected: Math.max(0, all.length - rows.length) };
+        if (!text) return { rows: [], suggestions: [], found: 0, rejected: 0 };
+        const rows = safePassportRowsFromText(text);
+        if (rows.length) return { rows, suggestions: [], found: rows.length, rejected: 0 };
         const fieldText = await runOcrForFile(file, (label || 'Pasaport') + ' alanları', 'passportFields', false);
-        const fallbackRows = parsePassportVisibleFieldsFromText(text + '\n' + (fieldText || ''))
-            .filter(p => p && ((p.name || '').trim() || (p.pasaport || '').trim()));
-        return { rows: fallbackRows, found: all.length + fallbackRows.length, rejected: Math.max(0, all.length - rows.length), fallback: fallbackRows.length > 0 };
+        const combined = text + '\n' + (fieldText || '');
+        const suggestions = passportScanVisibleSuggestions(combined);
+        return { rows: [], suggestions, found: rows.length + suggestions.length, rejected: suggestions.length ? 1 : 0, fallback: suggestions.length > 0 };
     };
     const scanPassportImageFile = async file => {
         const result = await readPassportPassengersFromFile(file, 'Pasaport', false, true);
         const p = (result.rows || [])[0];
         if (!p) {
-            const msg = result.found ? 'Pasaportta metin bulundu ama ad/pasaport alanı net ayrılmadı. Alanları elle doldurabilir veya pasaportu daha yakın kırpıp tekrar seçebilirsiniz.' : 'Pasaport okunamadı. Pasaportun tamamı ve alttaki iki MRZ satırı net görünecek şekilde yeniden seçebilirsiniz; alanlar elle her zaman düzenlenebilir.';
+            const suggestion = (result.suggestions || [])[0];
+            if (suggestion) {
+                applyScannedPassengerToModal(suggestion);
+                setOcrState({ busy: false, message: 'MRZ doğrulanmadı; görünen alanlardan öneri doldurdum. Ad soyad ve pasaport numarasını kontrol edip Kaydet’e basın.' });
+                tip('Kontrol gerekli');
+                return;
+            }
+            const msg = 'Pasaporttan doğrulanmış MRZ çıkarılamadı. Yanlış kayıt oluşturmamak için otomatik doldurmadım. Alt iki MRZ satırı net ve düz görünecek şekilde tekrar seçin ya da elle yazın.';
             setOcrState({ busy: false, message: msg });
-            tip(result.found ? 'MRZ kontrol gerekli' : 'Pasaport okunamadı');
+            tip('Pasaport doğrulanamadı');
             return;
         }
         applyScannedPassengerToModal(p);
-        setOcrState({ busy: false, message: p.ocrFallback ? 'MRZ net çıkmadı; pasaportun görünen alanlarından doldurdum. Kaydetmeden önce gözle kontrol edin.' : (p.mrzNamePenalty ? 'MRZ doğrulandı; isimde küçük OCR düzeltmesi yapıldı. Son kez gözle kontrol edin.' : 'MRZ doğrulandı. Ad soyad ve pasaport alanlarını son kez gözle kontrol edin.') });
-        tip('Pasaport bilgileri doğrulandı');
+        setOcrState({ busy: false, message: 'Pasaport MRZ ile doğrulandı. Ad soyad ve pasaport numarasını yine gözle kontrol edip Kaydet’e basın.' });
+        tip('Pasaport doğrulandı');
     };
     const scanPassportBatchFiles = async files => {
         const list = Array.from(files || []).filter(Boolean);
         if (!list.length) return;
         const allRows = [];
+        const reviewRows = [];
         let found = 0, rejected = 0;
         for (let i = 0; i < list.length; i++) {
             setOcrState({ busy: true, message: 'Pasaportlar okunuyor ' + (i + 1) + '/' + list.length });
@@ -7794,30 +7937,59 @@ function App() {
             found += res.found || 0;
             rejected += res.rejected || 0;
             (res.rows || []).forEach(p => allRows.push(p));
+            (res.suggestions || []).forEach(p => reviewRows.push({ ...p, fileLabel: 'Pasaport ' + (i + 1), selected: true }));
         }
         if (!allRows.length) {
-            setOcrState({ busy: false, message: found ? 'MRZ görüldü ama doğrulanmayan/şüpheli isimler olduğu için otomatik kayıt yapılmadı.' : 'Seçilen pasaportlarda doğrulanmış MRZ bulunamadı.' });
+            if (reviewRows.length) {
+                setScanReview({ rows: reviewRows, title: 'Kontrol Gereken Pasaportlar' });
+                setOcrState({ busy: false, message: reviewRows.length + ' pasaport için öneri bulundu. Yanlış kayıt olmaması için kontrol edip onaylayın.' });
+                tip('Kontrol gerekli');
+                return;
+            }
+            setOcrState({ busy: false, message: found ? 'Metin bulundu ama pasaport numarası MRZ kontrolüyle doğrulanmadı. Otomatik kayıt yapılmadı.' : 'Seçilen pasaportlarda doğrulanmış MRZ bulunamadı.' });
             tip('Pasaport eklenmedi');
             return;
         }
         const clean = mergePassengerRows(allRows);
         sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
         const added = allRows.length;
-        const fallbackCount = allRows.filter(p => p && p.ocrFallback).length;
-        const msg = added + ' yolcu pasaporttan eklendi' + (fallbackCount ? ('. ' + fallbackCount + ' kayıt görünen alanlardan alındı, kontrol edin.') : '.') + (rejected ? (' ' + rejected + ' şüpheli MRZ atlandı.') : '');
+        if (reviewRows.length) setScanReview({ rows: reviewRows, title: 'Kontrol Gereken Pasaportlar' });
+        const msg = added + ' yolcu doğrulanmış MRZ ile eklendi.' + (reviewRows.length ? (' ' + reviewRows.length + ' kayıt kontrol ekranına alındı.') : '');
         setOcrState({ busy: false, message: msg });
         tip(added + ' yolcu eklendi');
+    };
+    const setScanReviewRow = (idx, field, value) => {
+        setScanReview(r => {
+            if (!r) return r;
+            const rows = [...(r.rows || [])];
+            rows[idx] = { ...(rows[idx] || emptyPassenger()), [field]: value };
+            return { ...r, rows };
+        });
+    };
+    const toggleScanReviewRow = idx => {
+        setScanReview(r => {
+            if (!r) return r;
+            const rows = [...(r.rows || [])];
+            rows[idx] = { ...(rows[idx] || emptyPassenger()), selected: rows[idx] && rows[idx].selected === false };
+            return { ...r, rows };
+        });
+    };
+    const commitScanReviewRows = () => {
+        const rows = ((scanReview && scanReview.rows) || [])
+            .filter(p => p && p.selected !== false)
+            .map(p => ({ ...emptyPassenger(), name: koTitleCaseTR((p.name || '').trim()), phone: p.phone || '', uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '', ...splitPassengerId((p.pasaport || p.idNo || '').trim()) }))
+            .filter(p => (p.name || '').trim() && passengerIdDisplay(p));
+        if (!rows.length) { tip('Onaylanacak yolcu yok'); return; }
+        const clean = mergePassengerRows(rows);
+        sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
+        setScanReview(null);
+        setOcrState({ busy: false, message: rows.length + ' yolcu kontrol edilerek eklendi.' });
+        tip(rows.length + ' yolcu eklendi');
     };
     const scanPassengerListImageFile = async file => {
         const text = await runOcrForFile(file, 'Yolcu listesi', 'list');
         if (!text) return;
-        const rows = parsePassportMrzFromText(text);
-        const validMrzRows = rows.filter(p => p && p.mrzValid && ((p.mrzNamePenalty || 0) <= 1));
-        if (rows.length && !validMrzRows.length) {
-            setOcrState({ busy: false, message: 'Görselde MRZ benzeri satır var ama kontrol haneleri tutmadı. Yanlış kayıt oluşturmamak için eklemedim.' });
-            tip('MRZ doğrulanamadı');
-            return;
-        }
+        const validMrzRows = passportScanVerifiedRowsFromText(text);
         const listRows = validMrzRows.length ? validMrzRows : parsePassengerListFromText(text);
         if (!listRows.length) {
             setOcrState({ busy: false, message: 'Listeden yolcu adı bulunamadı. Manuel ekleme yapabilirsiniz.' });
@@ -11579,6 +11751,29 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 18 } },
                     React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
                     React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, "Kaydet"))))),
+        scanReview && (React.createElement("div", { className: "mo", onClick: () => setScanReview(null) },
+            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
+                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 12 } },
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontWeight: 520, fontSize: 15, color: TX } }, scanReview.title || 'Pasaport Kontrol'),
+                        React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 3, lineHeight: 1.35 } }, "MRZ doğrulanmayan sonuçlar otomatik kayda girmez. Ad soyad ve pasaport numarasını kontrol edip aktarın.")),
+                    React.createElement("button", { onClick: () => setScanReview(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, maxHeight: '55vh', overflowY: 'auto', paddingRight: 2 } },
+                    ((scanReview && scanReview.rows) || []).map((p, i) => React.createElement("div", { key: i, style: { border: '1px solid ' + BOR, borderRadius: 13, background: INP, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                            React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 7, fontSize: 11.5, fontWeight: 520, color: TX } },
+                                React.createElement("input", { type: "checkbox", checked: p.selected !== false, onChange: () => toggleScanReviewRow(i), style: { width: 18, minHeight: 18 } }),
+                                p.fileLabel || ('Kayıt ' + (i + 1))),
+                            React.createElement("span", { style: { fontSize: 10, color: p.mrzVerified ? G : R, fontWeight: 520 } }, p.mrzVerified ? 'MRZ doğrulandı' : 'Kontrol gerekli')),
+                        React.createElement("input", { className: "inp", value: p.name || '', onChange: e => setScanReviewRow(i, 'name', e.target.value), placeholder: "Ad Soyad", autoCapitalize: "words" }),
+                        React.createElement("input", { className: "inp", value: p.pasaport || p.idNo || '', onChange: e => { setScanReviewRow(i, 'pasaport', e.target.value.toUpperCase()); setScanReviewRow(i, 'idNo', e.target.value.toUpperCase()); }, placeholder: "Pasaport No", autoCapitalize: "characters" }),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                            React.createElement("select", { className: "inp", value: p.uyruk || 'TR', onChange: e => setScanReviewRow(i, 'uyruk', e.target.value) }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))),
+                            React.createElement("select", { className: "inp", value: p.cinsiyet || '', onChange: e => setScanReviewRow(i, 'cinsiyet', e.target.value) }, PASSENGER_GENDERS.map(g => React.createElement("option", { key: g.k || 'empty', value: g.k }, g.n))))))),
+                React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 16 } },
+                    React.createElement("button", { onClick: () => setScanReview(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
+                    React.createElement("button", { onClick: commitScanReviewRows, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 520, fontSize: '14px', cursor: 'pointer' } }, "Kontrol Edildi, Aktar"))))),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
