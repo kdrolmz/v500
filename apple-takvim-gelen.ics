@@ -5062,24 +5062,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1787411346520_2h7zxl@olmeztur
-DTSTAMP:20260822T150900Z
-LAST-MODIFIED:20260822T150900Z
-SEQUENCE:1787411346
-DTSTART:20260823T120000
-DTEND:20260823T130000
-SUMMARY:12:00 · Prestij Park Bulvar C Blok→SAW
-LOCATION:Prestij Park Bulvar C Blok → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Almershad Jarrah\, Alkhamees Wafaa\, Alkhamees Reta
- g\nYolcu detayları:\n1. Almershad Jarrah\n2. Alkhamees Wafaa\n3. Alkhame
- es Retag\nŞoför: -\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: -
- \nAraç: Sprinter\nGüzergah: Prestij Park Bulvar C Blok → Sabiha Gökçen H
- avalimanı\nÖdeme: Müşteri: 185 USD | Araç: 8.900 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1786873317395_cch7sg@olmeztur
 DTSTAMP:20260822T150900Z
 LAST-MODIFIED:20260816T094100Z
