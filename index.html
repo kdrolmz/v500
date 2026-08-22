@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - MRZ Çoklu Okuma v60</title>
+<title>KÖ Transfer Takip - MRZ Çoklu Okuma v61</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1403,6 +1403,24 @@ const parsePassportMrzFromText = text => {
             addRawLine((al + bl).slice(0, 88));
         }
     }
+    [normalizeMrzLine, normalizeMrzLineLoose].forEach(normalize => {
+        const compactLines = sourceTextLines.map(normalize).filter(Boolean);
+        for (let i = 0; i < compactLines.length; i++) {
+            let joined = '';
+            for (let j = i; j < Math.min(compactLines.length, i + 7); j++) {
+                const part = compactLines[j];
+                if (joined && /^P[A-Z0-9<]/.test(part)) break;
+                joined += part;
+                if (joined.length >= 20) {
+                    addRawLine(joined.slice(0, 132));
+                    if (joined.length < 44) addRawLine(joined.padEnd(44, '<').slice(0, 44));
+                    if (joined.length >= 44) addRawLine(joined.slice(0, 44));
+                    if (joined.length >= 88) addRawLine(joined.slice(0, 88));
+                }
+                if (joined.length >= 132) break;
+            }
+        }
+    });
     const splitTd3NameChunks = line => {
         const out = [];
         const pPositions = [];
@@ -1553,10 +1571,27 @@ const loadImageForOcr = source => new Promise((resolve, reject) => {
 });
 const buildEnhancedOcrImage = async (file, mode) => {
     const img = await loadImageForOcr(file);
-    const srcW = img.naturalWidth || img.width;
-    const srcH = img.naturalHeight || img.height;
+    let srcW = img.naturalWidth || img.width;
+    let srcH = img.naturalHeight || img.height;
     if (!srcW || !srcH) return '';
     const m = typeof mode === 'object' && mode ? mode : { id: String(mode || 'full') };
+    let source = img;
+    if (m.rotate) {
+        const deg = Number(m.rotate) || 0;
+        const rad = deg * Math.PI / 180;
+        const rotated = document.createElement('canvas');
+        rotated.width = Math.abs(deg) % 180 === 90 ? srcH : srcW;
+        rotated.height = Math.abs(deg) % 180 === 90 ? srcW : srcH;
+        const rctx = rotated.getContext('2d', { willReadFrequently: true });
+        if (rctx) {
+            rctx.translate(rotated.width / 2, rotated.height / 2);
+            rctx.rotate(rad);
+            rctx.drawImage(img, -srcW / 2, -srcH / 2, srcW, srcH);
+            source = rotated;
+            srcW = rotated.width;
+            srcH = rotated.height;
+        }
+    }
     let cropLeft = 0, cropTop = 0, cropW = srcW, cropH = srcH;
     if (m.id === 'mrz-crop') { cropTop = Math.round(srcH * 0.48); cropH = srcH - cropTop; }
     else if (m.id === 'mrz-low') { cropTop = Math.round(srcH * 0.64); cropH = srcH - cropTop; }
@@ -1580,7 +1615,7 @@ const buildEnhancedOcrImage = async (file, mode) => {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return '';
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, cropLeft, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(source, cropLeft, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const threshold = m.threshold !== false && m.id !== 'full-soft';
     const contrast = m.contrast || (m.id === 'mrz-crop' || m.id === 'mrz-low' ? 2.35 : 1.85);
@@ -1610,7 +1645,10 @@ const buildOcrSources = async (file, mode) => {
             ['sol alt', { id: 'bottom-left', threshold: false, contrast: 1.55 }],
             ['sağ alt', { id: 'bottom-right', threshold: false, contrast: 1.55 }],
             ['tam net', { id: 'full' }],
-            ['tam yumuşak', { id: 'full-soft', threshold: false, contrast: 1.45 }]
+            ['tam yumuşak', { id: 'full-soft', threshold: false, contrast: 1.45 }],
+            ['sağa dönük MRZ', { id: 'mrz-crop', rotate: 90 }],
+            ['sola dönük MRZ', { id: 'mrz-crop', rotate: 270 }],
+            ['ters MRZ', { id: 'mrz-crop', rotate: 180 }]
         ];
         for (const [label, preset] of presets) {
             try {
@@ -7544,7 +7582,7 @@ function App() {
         setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '' });
     };
     const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
-    const runOcrForFile = async (file, label, mode) => {
+    const runOcrForFile = async (file, label, mode, stopEarly) => {
         if (!file) return '';
         if (!window.Tesseract || !window.Tesseract.recognize) {
             setOcrState({ busy: false, message: 'Okuma motoru yüklenemedi. Manuel giriş yapabilirsiniz.' });
@@ -7565,7 +7603,7 @@ function App() {
                 const item = sources[i];
                 setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor (' + item.label + ' ' + (i + 1) + '/' + sources.length + ')' });
                 const opts = mode === 'passport'
-                    ? { logger, tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<', preserve_interword_spaces: '1' }
+                    ? { logger, tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<', tessedit_pageseg_mode: '6', user_defined_dpi: '300', preserve_interword_spaces: '1' }
                     : { logger, preserve_interword_spaces: '1' };
                 let result;
                 try {
@@ -7575,7 +7613,17 @@ function App() {
                     result = await window.Tesseract.recognize(item.source, 'eng', opts);
                 }
                 const text = result && result.data ? (result.data.text || '') : '';
-                if (text) allText.push(text);
+                if (text) {
+                    allText.push(text);
+                    if (mode === 'passport' && stopEarly) {
+                        const earlyRows = parsePassportMrzFromText(allText.join('\n'))
+                            .filter(p => p && p.mrzValid && p.name && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && (p.mrzCheckScore || 0) >= 3);
+                        if (earlyRows.length) {
+                            setOcrState({ busy: false, message: 'MRZ doğrulandı. Bilgiler dolduruluyor...' });
+                            return allText.join('\n');
+                        }
+                    }
+                }
             }
             const text = allText.join('\n');
             setOcrState({ busy: false, message: text ? 'Okuma tamamlandı. Alanları kontrol edin.' : 'Metin bulunamadı. Manuel giriş yapabilirsiniz.' });
@@ -7599,7 +7647,7 @@ function App() {
         }) : m);
     };
     const safePassportRowsFromText = (text, strictName) => parsePassportMrzFromText(text)
-        .filter(p => p && p.mrzValid && p.name && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && ((p.mrzNamePenalty || 0) <= (strictName ? 1 : 2)))
+        .filter(p => p && p.mrzValid && p.name && !/[0-9]/.test(String(p.name)) && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && (p.mrzCheckScore || 0) >= 3 && (((p.mrzNamePenalty || 0) <= (strictName ? 9 : 12)) || (p.mrzCheckScore || 0) >= 4))
         .sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
     const mergePassengerRows = rows => {
         const merged = [...paxReal(), ...(rows || [])].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
@@ -7612,18 +7660,18 @@ function App() {
             return true;
         });
     };
-    const readPassportPassengersFromFile = async (file, label, strictName) => {
-        const text = await runOcrForFile(file, label || 'Pasaport', 'passport');
+    const readPassportPassengersFromFile = async (file, label, strictName, stopEarly) => {
+        const text = await runOcrForFile(file, label || 'Pasaport', 'passport', stopEarly);
         if (!text) return { rows: [], found: 0, rejected: 0 };
         const all = parsePassportMrzFromText(text);
         const rows = safePassportRowsFromText(text, strictName);
         return { rows, found: all.length, rejected: Math.max(0, all.length - rows.length) };
     };
     const scanPassportImageFile = async file => {
-        const result = await readPassportPassengersFromFile(file, 'Pasaport', false);
+        const result = await readPassportPassengersFromFile(file, 'Pasaport', false, true);
         const p = (result.rows || [])[0];
         if (!p) {
-            const msg = result.found ? 'MRZ bulundu ama kontrol/isim güvenliği geçmedi. Yanlış kayıt oluşturmamak için otomatik doldurmadım.' : 'MRZ okunamadı. Alanları elle doldurabilirsiniz.';
+            const msg = result.found ? 'MRZ bulundu ama pasaport kontrol haneleri tam tutmadı. Alanları elle doldurabilir veya daha net kırpmış görsel seçebilirsiniz.' : 'MRZ okunamadı. Pasaportun altındaki iki satır tamamen görünür şekilde yeniden seçebilirsiniz; alanlar elle her zaman düzenlenebilir.';
             setOcrState({ busy: false, message: msg });
             tip(result.found ? 'MRZ kontrol gerekli' : 'Pasaport okunamadı');
             return;
@@ -7639,7 +7687,7 @@ function App() {
         let found = 0, rejected = 0;
         for (let i = 0; i < list.length; i++) {
             setOcrState({ busy: true, message: 'Pasaportlar okunuyor ' + (i + 1) + '/' + list.length });
-            const res = await readPassportPassengersFromFile(list[i], 'Pasaport ' + (i + 1) + '/' + list.length, true);
+            const res = await readPassportPassengersFromFile(list[i], 'Pasaport ' + (i + 1) + '/' + list.length, false, list.length > 1);
             found += res.found || 0;
             rejected += res.rejected || 0;
             (res.rows || []).forEach(p => allRows.push(p));
