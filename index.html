@@ -982,6 +982,31 @@ const ULKELER = [
     { k: 'ES', n: 'İspanya' }, { k: 'PL', n: 'Polonya' }, { k: 'GR', n: 'Yunanistan' },
     { k: 'OTHER', n: 'Diğer' },
 ];
+/* Uyruk kodundan Türkçe sıfat: kaptan mesajında "Misafirler Kuveytli" gibi
+   kısa ve profesyonel bir satır yazabilmek için. */
+const UYRUK_SIFAT = {
+    TR: 'Türk', DE: 'Alman', GB: 'İngiliz', US: 'Amerikalı', FR: 'Fransız',
+    NL: 'Hollandalı', BE: 'Belçikalı', AT: 'Avusturyalı', CH: 'İsviçreli',
+    SA: 'Suudi Arabistanlı', AE: 'Birleşik Arap Emirlikleri’nden', RU: 'Rus',
+    KW: 'Kuveytli', QA: 'Katarlı', IT: 'İtalyan', ES: 'İspanyol',
+    PL: 'Polonyalı', GR: 'Yunan'
+};
+const uyrukSifat = k => UYRUK_SIFAT[String(k || '').toUpperCase()] || '';
+/* Yolcu listesinden "Misafirler Kuveytli" / "2 Kuveytli · 1 Türk" satırı üretir */
+function uyrukOzeti(passengers) {
+    const list = (passengers || []).filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
+    if (!list.length) return '';
+    const counts = {};
+    list.forEach(p => { const a = uyrukSifat(p.uyruk); if (a) counts[a] = (counts[a] || 0) + 1; });
+    const keys = Object.keys(counts);
+    if (!keys.length) return '';
+    if (keys.length === 1) {
+        const a = keys[0];
+        return counts[a] > 1 ? ('Misafirler ' + a) : ('Misafir ' + a);
+    }
+    keys.sort((x, y) => counts[y] - counts[x]);
+    return keys.map(a => counts[a] + ' ' + a).join(' · ');
+}
 const BF = {
     date: new Date().toISOString().split('T')[0], time: '09:00', flightCode: '',
     transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '',
@@ -1439,68 +1464,248 @@ function mrzOtsu(gray) {
     }
     return thr;
 }
-/* MRZ bandını bul: MRZ satırları sayfanın altında, neredeyse tam genişlikte,
-   çok sayıda eşit aralıklı koyu blok içerir. Bulursa {y0, y1} (0-1 oran) döner. */
-function mrzFindBand(img) {
-    try {
-        const AW = 1000;
-        const scale = Math.min(1, AW / img.naturalWidth);
-        const W = Math.max(1, Math.round(img.naturalWidth * scale));
-        const H = Math.max(1, Math.round(img.naturalHeight * scale));
-        const c = document.createElement('canvas'); c.width = W; c.height = H;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, W, H);
-        const d = ctx.getImageData(0, 0, W, H).data;
-        const g = new Uint8Array(W * H);
-        for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
-        const thr = mrzOtsu(g);
-        // Sadece alt yarıyı tara (MRZ her zaman altta)
-        const yStart = Math.floor(H * 0.45);
-        const rowIsMrz = new Uint8Array(H);
-        for (let y = yStart; y < H; y++) {
-            let cnt = 0, first = -1, last = -1, runs = 0, prev = false;
-            for (let x = 0; x < W; x++) {
-                const dark = g[y * W + x] < thr;
-                if (dark) { cnt++; if (first < 0) first = x; last = x; if (!prev) runs++; }
-                prev = dark;
-            }
-            const dens = cnt / W, ext = first < 0 ? 0 : (last - first) / W;
-            // MRZ satırı: geniş yayılım + çok sayıda ayrık karakter bloğu
-            rowIsMrz[y] = (runs >= 18 && ext >= 0.78 && dens > 0.04 && dens < 0.85) ? 1 : 0;
-        }
-        // Bitişik satırları grupla
-        let groups = [], s = -1;
-        for (let y = yStart; y <= H; y++) {
-            if (y < H && rowIsMrz[y]) { if (s < 0) s = y; }
-            else if (s >= 0) { if (y - s >= 5) groups.push({ y0: s, y1: y }); s = -1; }
-        }
-        if (!groups.length) return null;
-        // Küçük boşlukları birleştir (aynı satırın parçaları)
-        const merged = [];
-        groups.forEach(gp => {
-            const last = merged[merged.length - 1];
-            if (last && gp.y0 - last.y1 <= 4) last.y1 = gp.y1;
-            else merged.push({ y0: gp.y0, y1: gp.y1 });
-        });
-        // Sayfanın en altındaki iki satırı al (MRZ 2 satırdır)
-        const tail = merged.slice(-3).filter(gp => (gp.y1 - gp.y0) >= 6);
-        if (!tail.length) return null;
-        const lineH = tail.reduce((a, gp) => a + (gp.y1 - gp.y0), 0) / tail.length;
-        // Son satırdan geriye doğru, satır yüksekliğinin ~2.5 katı kadar boşlukla bağlı olanları topla
-        const picked = [tail[tail.length - 1]];
-        for (let i = tail.length - 2; i >= 0 && picked.length < 2; i--) {
-            if (picked[0].y0 - tail[i].y1 <= lineH * 2.2) picked.unshift(tail[i]);
-        }
-        const pad = Math.max(4, Math.round(lineH * 0.45));
-        const y0 = Math.max(0, picked[0].y0 - pad);
-        const y1 = Math.min(H, picked[picked.length - 1].y1 + pad);
-        if (y1 - y0 < 10) return null;
-        return { y0: y0 / H, y1: y1 / H };
-    } catch (e) { return null; }
+/* Görseli istenen açıyla (0/90/180/270) tuvale çizer. Telefon fotoğrafları yatay
+   ya da ters çekilmiş olabildiği için tüm yönler denenir. */
+function mrzRotatedCanvas(img, deg, maxW) {
+    const iw = img.width || img.naturalWidth, ih = img.height || img.naturalHeight;
+    const rad = deg * Math.PI / 180;
+    const ca = Math.abs(Math.cos(rad)), sa = Math.abs(Math.sin(rad));
+    const ow = iw * ca + ih * sa, oh = iw * sa + ih * ca;
+    const scale = Math.min(1, maxW / ow);
+    const cw = Math.max(1, Math.round(ow * scale)), ch = Math.max(1, Math.round(oh * scale));
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    const x = c.getContext('2d');
+    x.fillStyle = '#C9C9C9'; x.fillRect(0, 0, cw, ch);
+    x.imageSmoothingEnabled = true;
+    try { x.imageSmoothingQuality = 'high'; } catch (e) {}
+    x.save();
+    x.translate(cw / 2, ch / 2);
+    x.rotate(rad);
+    x.drawImage(img, -(iw * scale) / 2, -(ih * scale) / 2, iw * scale, ih * scale);
+    x.restore();
+    return c;
 }
-/* Görselin bir bölümünü OCR'a hazır tuvale çevir (ölçekle + gri + kontrast ger) */
+/* ── MRZ ŞERİDİNİ BULMA ───────────────────────────────────────────
+   Pasaport kağıdının güvenlik dokusu, "koyu piksel yoğunluğu" gibi basit
+   ölçütleri yanıltır. MRZ'nin asıl imzası, şerit boyunca EŞİT ARALIKLI ~44
+   karakter hücresi bulunmasıdır. Bunu sütun profilinin otokorelasyonuyla
+   ölçeriz. Bulucu birden çok aday üretir; hangisinin gerçekten MRZ olduğuna
+   OCR karar verir — böylece tek bir sezgisel hata sonucu bozmaz. */
+function mrzGrayOf(canvas) {
+    const W = canvas.width, H = canvas.height;
+    const d = canvas.getContext('2d').getImageData(0, 0, W, H).data;
+    const g = new Uint8Array(W * H);
+    for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
+    return g;
+}
+/* Yerel ortalamaya göre eşikleme (integral görüntü ile hızlı) */
+function mrzBinarize(g, W, H, win, off) {
+    const bin = new Uint8Array(W * H);
+    const I = new Float64Array((W + 1) * (H + 1));
+    for (let y = 0; y < H; y++) {
+        let rs = 0;
+        for (let x = 0; x < W; x++) { rs += g[y * W + x]; I[(y + 1) * (W + 1) + x + 1] = I[y * (W + 1) + x + 1] + rs; }
+    }
+    const r = Math.max(4, win | 0);
+    for (let y = 0; y < H; y++) {
+        const y0 = Math.max(0, y - r), y1 = Math.min(H - 1, y + r);
+        for (let x = 0; x < W; x++) {
+            const x0 = Math.max(0, x - r), x1 = Math.min(W - 1, x + r);
+            const A = I[y0 * (W + 1) + x0], B = I[y0 * (W + 1) + x1 + 1];
+            const C = I[(y1 + 1) * (W + 1) + x0], D = I[(y1 + 1) * (W + 1) + x1 + 1];
+            const mean = (D - B - C + A) / ((x1 - x0 + 1) * (y1 - y0 + 1));
+            bin[y * W + x] = g[y * W + x] < mean - off ? 1 : 0;
+        }
+    }
+    return bin;
+}
+/* Bir şeritteki karakter periyodunu otokorelasyonla ölç → kaç hücre var? */
+function mrzPeriodOf(bin, W, y0, y1, x0, x1) {
+    const n = x1 - x0 + 1;
+    if (n < 40) return null;
+    const prof = new Float64Array(n);
+    for (let y = y0; y < y1; y++) { const row = y * W; for (let x = x0; x <= x1; x++) prof[x - x0] += bin[row + x]; }
+    let mean = 0; for (let i = 0; i < n; i++) mean += prof[i];
+    mean /= n;
+    let energy = 0;
+    for (let i = 0; i < n; i++) { prof[i] -= mean; energy += prof[i] * prof[i]; }
+    if (energy <= 0) return null;
+    const minLag = Math.max(3, Math.round(n / 70)), maxLag = Math.max(minLag + 2, Math.round(n / 20));
+    const corr = new Float64Array(maxLag + 1);
+    let bestLag = -1, bestVal = -1;
+    for (let lag = minLag; lag <= maxLag; lag++) {
+        let s = 0;
+        for (let i = 0; i + lag < n; i++) s += prof[i] * prof[i + lag];
+        const v = s / (n - lag);
+        corr[lag] = v;
+        if (v > bestVal) { bestVal = v; bestLag = lag; }
+    }
+    if (bestLag < 0) return null;
+    // TEMEL PERİYOT: otokorelasyon, gerçek karakter adımının 2-3 katında da güçlü
+    // tepe verir (MRZ'de tekrar eden '<' dizileri yüzünden). En küçük bölene inerek
+    // gerçek adımı buluruz; yoksa 44 karakterlik şerit 22 hücre gibi ölçülür.
+    for (const d of [4, 3, 2]) {
+        const cand = Math.round(bestLag / d);
+        if (cand >= minLag && corr[cand] >= bestVal * 0.62) { bestLag = cand; bestVal = corr[cand]; break; }
+    }
+    return { period: bestLag, cells: n / bestLag, strength: bestVal / (energy / n) };
+}
+/* Bir tuvalde MRZ olabilecek şerit adaylarını puan sırasıyla döndürür */
+function mrzDetectCandidates(canvas) {
+    const W = canvas.width, H = canvas.height;
+    if (W < 120 || H < 40) return [];
+    const g = mrzGrayOf(canvas);
+    const bin = mrzBinarize(g, W, H, Math.max(5, Math.round(W / 70)), 20);
+    const maxRun = Math.max(3, Math.round(W / 30));
+    const rowRuns = new Int32Array(H), rMin = new Int32Array(H).fill(W), rMax = new Int32Array(H).fill(-1);
+    for (let y = 0; y < H; y++) {
+        let runs = 0, s = -1;
+        for (let x = 0; x <= W; x++) {
+            const dark = x < W && bin[y * W + x];
+            if (dark) { if (s < 0) s = x; }
+            else if (s >= 0) {
+                const w = x - s;
+                if (w >= 1 && w <= maxRun) { runs++; if (s < rMin[y]) rMin[y] = s; if (x - 1 > rMax[y]) rMax[y] = x - 1; }
+                s = -1;
+            }
+        }
+        rowRuns[y] = runs;
+    }
+    // Metin satırlarını ayrı ayrı bul (birleştirme yok — satırlar karışmasın)
+    const thr = Math.max(10, Math.round(W / 70));
+    const raw = [];
+    let s = -1;
+    for (let y = 0; y <= H; y++) {
+        const on = y < H && rowRuns[y] >= thr;
+        if (on) { if (s < 0) s = y; }
+        else if (s >= 0) { if (y - s >= 3) raw.push({ y0: s, y1: y }); s = -1; }
+    }
+    // MRZ'ye benzeyen satırlar: geniş ve ~44 eşit hücreli
+    const rows = [];
+    raw.forEach(b => {
+        let x0 = W, x1 = -1;
+        for (let y = b.y0; y < b.y1; y++) { if (rMin[y] < x0) x0 = rMin[y]; if (rMax[y] > x1) x1 = rMax[y]; }
+        if (x1 <= x0 || (x1 - x0) < W * 0.18) return;
+        const pr = mrzPeriodOf(bin, W, b.y0, b.y1, x0, x1);
+        if (!pr || pr.cells < 26 || pr.cells > 60) return;
+        rows.push({ y0: b.y0, y1: b.y1, x0: x0, x1: x1, cells: pr.cells, strength: pr.strength, span: (x1 - x0) / W });
+    });
+    if (!rows.length) return [];
+    rows.sort((a, b) => a.y0 - b.y0);
+    const out = [];
+    // Komşu iki satırı MRZ çifti olarak eşle
+    for (let i = 0; i < rows.length; i++) {
+        for (let j = i + 1; j < rows.length; j++) {
+            const a = rows[i], b = rows[j];
+            const ha = a.y1 - a.y0, hb = b.y1 - b.y0, gap = b.y0 - a.y1;
+            if (gap > Math.max(ha, hb) * 1.8) break;
+            if (Math.min(ha, hb) / Math.max(ha, hb) < 0.5) continue;
+            if (Math.min(a.span, b.span) / Math.max(a.span, b.span) < 0.7) continue;
+            // Periyodiklik gücü, MRZ'ye en özgü sinyaldir — en ağır o tartılır.
+            const cellFit = (c) => Math.max(0, 12 - Math.abs(c - 44));
+            const score = (a.strength + b.strength) * 22 + (a.span + b.span) * 20 + (a.y0 / H) * 6
+                + cellFit(a.cells) + cellFit(b.cells)
+                + (Math.abs(a.cells - b.cells) < 6 ? 10 : 0);
+            out.push({ rx0: Math.min(a.x0, b.x0) / W, ry0: a.y0 / H, rx1: Math.max(a.x1, b.x1) / W, ry1: b.y1 / H, score: score, rows: 2 });
+        }
+    }
+    // Tek satırlık adaylar da eklenir (ikinci satır okunamamış olabilir)
+    rows.forEach(r => out.push({
+        rx0: r.x0 / W, ry0: r.y0 / H, rx1: r.x1 / W, ry1: r.y1 / H,
+        score: r.strength * 18 + r.span * 18 + (r.y0 / H) * 5 + Math.max(0, 10 - Math.abs(r.cells - 44)), rows: 1
+    }));
+    out.sort((a, b) => b.score - a.score);
+    // Büyük ölçüde çakışan adayları ele
+    const kept = [];
+    out.forEach(c => {
+        const dup = kept.some(k => Math.abs(k.ry0 - c.ry0) < 0.012 && Math.abs(k.ry1 - c.ry1) < 0.012);
+        if (!dup) kept.push(c);
+    });
+    return kept.slice(0, 4);
+}
+/* Bulunan bandı, eğikliği düzeltilmiş biçimde yüksek çözünürlükte OCR tuvaline aktarır.
+   rect: 0-1 aralığında oranlar (döndürülmüş görsele göre), angle: radyan eğiklik. */
+function mrzBandCanvas(img, deg, rect, targetW, flip180, binarizeMode) {
+    const useDeg = deg + (flip180 ? 180 : 0);
+    const src = mrzRotatedCanvas(img, useDeg, 3200);
+    const W = src.width, H = src.height;
+    let bx0 = rect.rx0 * W, by0 = rect.ry0 * H, bx1 = rect.rx1 * W, by1 = rect.ry1 * H;
+    if (flip180) {   // 180° çevrildiğinde bandın konumu da aynalanır
+        const nx0 = W - bx1, nx1 = W - bx0, ny0 = H - by1, ny1 = H - by0;
+        bx0 = nx0; bx1 = nx1; by0 = ny0; by1 = ny1;
+    }
+    const bw = Math.max(8, bx1 - bx0), bh = Math.max(8, by1 - by0);
+    const ang = rect.angle || 0;
+    const padX = bw * 0.03 + bh * Math.abs(Math.sin(ang)) * 0.7;
+    const padY = bh * 0.34 + bw * Math.abs(Math.sin(ang)) * 0.55;
+    // Payları görüntü sınırları içinde tut: kırpmanın dışına taşan yapay dolgu,
+    // kontrast hesabını ve Tesseract'ın eşiklemesini bozuyor.
+    const cx0 = Math.max(0, bx0 - padX), cx1 = Math.min(W, bx1 + padX);
+    const cy0 = Math.max(0, by0 - padY), cy1 = Math.min(H, by1 + padY);
+    const outW = Math.max(8, cx1 - cx0), outH = Math.max(8, cy1 - cy0);
+    const ccx = (cx0 + cx1) / 2, ccy = (cy0 + cy1) / 2;
+    const scale = Math.min(5, targetW / outW);
+    const cw = Math.round(outW * scale), ch = Math.round(outH * scale);
+    if (cw < 40 || ch < 16 || cw > 6000 || ch > 3200) return null;
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    const x = c.getContext('2d');
+    // Dolgu kağıt tonunda olmalı: saf beyaz dolgu, hem kontrast germeyi hem de
+    // Tesseract'ın kendi eşiklemesini bozup metnin tümden kaybolmasına yol açıyor.
+    x.fillStyle = '#C9C9C9'; x.fillRect(0, 0, cw, ch);
+    x.imageSmoothingEnabled = true;
+    try { x.imageSmoothingQuality = 'high'; } catch (e) {}
+    x.save();
+    x.translate(cw / 2, ch / 2);
+    x.rotate(-ang);
+    x.scale(scale, scale);
+    x.translate(-ccx, -ccy);
+    x.drawImage(src, 0, 0);
+    x.restore();
+    return mrzEnhance(c, binarizeMode);
+}
+/* Gri tonlama + kontrast germe.
+   ÖNEMLİ: Germe, en küçük/en büyük piksele göre değil %2–%98 yüzdeliklerine göre
+   yapılır. Kırpma kenarındaki dolgu ya da tek bir parlak leke, uç değerlere
+   bakan bir germeyi işlevsiz bırakıp metni gri bırakıyordu — bu durumda
+   Tesseract sayfayı boş okuyor. */
+function mrzEnhance(c, binarize) {
+    const x = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const im = x.getImageData(0, 0, W, H), d = im.data;
+    const hist = new Uint32Array(256);
+    for (let i = 0; i < d.length; i += 4) {
+        const g = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
+        d[i] = d[i + 1] = d[i + 2] = g;
+        hist[g]++;
+    }
+    const total = W * H;
+    let lo = 0, hi = 255, acc = 0;
+    const loCut = total * 0.02, hiCut = total * 0.98;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= loCut) { lo = v; break; } }
+    acc = 0;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= hiCut) { hi = v; break; } }
+    const rng = Math.max(12, hi - lo);
+    for (let i = 0; i < d.length; i += 4) {
+        let v = (d[i] - lo) * 255 / rng;
+        v = v < 0 ? 0 : v > 255 ? 255 : v;
+        d[i] = d[i + 1] = d[i + 2] = v;
+    }
+    if (binarize) {
+        // Kağıt dokusunu ve gölgeyi temizler: yerel ortalamaya göre siyah/beyaz
+        const g = new Uint8Array(W * H);
+        for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = d[i];
+        const bin = mrzBinarize(g, W, H, Math.max(6, Math.round(H / 4)), 12);
+        for (let j = 0, i = 0; j < bin.length; j++, i += 4) {
+            const v = bin[j] ? 0 : 255;
+            d[i] = d[i + 1] = d[i + 2] = v;
+        }
+    }
+    x.putImageData(im, 0, 0);
+    return c;
+}
+/* Görselin bir bölümünü OCR'a hazır tuvale çevir (bant bulunamazsa yedek yol) */
 function mrzCropCanvas(img, y0rel, y1rel, targetW) {
-    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const iw = img.width || img.naturalWidth, ih = img.height || img.naturalHeight;
     const sy = Math.max(0, Math.round(ih * y0rel));
     const sh = Math.max(1, Math.min(ih - sy, Math.round(ih * (y1rel - y0rel))));
     const scale = Math.max(1, targetW / iw);
@@ -1510,21 +1715,7 @@ function mrzCropCanvas(img, y0rel, y1rel, targetW) {
     x.imageSmoothingEnabled = true;
     try { x.imageSmoothingQuality = 'high'; } catch (e) {}
     x.drawImage(img, 0, sy, iw, sh, 0, 0, cw, ch);
-    const im = x.getImageData(0, 0, cw, ch), d = im.data;
-    let mn = 255, mx = 0;
-    for (let i = 0; i < d.length; i += 4) {
-        const g = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0;
-        d[i] = d[i + 1] = d[i + 2] = g;
-        if (g < mn) mn = g; if (g > mx) mx = g;
-    }
-    const rng = Math.max(1, mx - mn);
-    for (let i = 0; i < d.length; i += 4) {
-        let v = (d[i] - mn) * 255 / rng;
-        v = v < 0 ? 0 : v > 255 ? 255 : v;
-        d[i] = d[i + 1] = d[i + 2] = v;
-    }
-    x.putImageData(im, 0, 0);
-    return c;
+    return mrzEnhance(c);
 }
 /* ── OCR sonucundan MRZ satırlarını kur ────────────────────────────
    KRİTİK: MRZ karakter setinde ('<' ve A-Z 0-9) yalnızca '<' kısa boyludur;
@@ -1532,46 +1723,108 @@ function mrzCropCanvas(img, y0rel, y1rel, targetW) {
    gibi harflere benzetir — bu da isimlere yanlış harfler eklenmesine yol açar.
    Her karakterin gerçek mürekkep yüksekliğine bakarak kısa olanları '<' kabul
    ederiz; bu, isim alanını neredeyse hatasız çıkarır. */
-function mrzLinesFromSymbols(data) {
-    const syms = [];
+/* OCR çıktısındaki metin satırlarını, karakter kutularıyla birlikte döndürür.
+   Satır gruplaması Tesseract'ın kendi sayfa analizinden alınır; karakterleri
+   dikey konuma göre kendimiz gruplamak, eğik ve çok satırlı sayfalarda ayrı
+   satırları birbirine karıştırıyordu. */
+function mrzSymbolLines(data) {
+    const out = [];
     try {
-        (data.blocks || []).forEach(bl => (bl.paragraphs || []).forEach(pa => (pa.lines || []).forEach(ln => (ln.words || []).forEach(wd => (wd.symbols || []).forEach(sy => {
-            const t = String(sy.text || '').toUpperCase().replace(/[^A-Z0-9<]/g, '');
-            if (!t || !sy.bbox) return;
-            const h = sy.bbox.y1 - sy.bbox.y0;
-            const w = sy.bbox.x1 - sy.bbox.x0;
-            if (h <= 1 || w <= 0) return;
-            syms.push({ t: t[0], x: sy.bbox.x0, x1: sy.bbox.x1, y0: sy.bbox.y0, y1: sy.bbox.y1, cy: (sy.bbox.y0 + sy.bbox.y1) / 2, h: h });
-        })))));
-    } catch (e) { return null; }
-    if (syms.length < 20) return null;
-    // ── Sembolleri satırlara ayır (dikey merkeze göre) ──
-    syms.sort((a, b) => a.cy - b.cy);
-    const hAll = syms.map(s => s.h).sort((a, b) => a - b);
-    const hMed = hAll[Math.floor(hAll.length / 2)] || 10;
-    const groups = [];
-    let cur = [syms[0]];
-    for (let i = 1; i < syms.length; i++) {
-        if (syms[i].cy - cur[cur.length - 1].cy > hMed * 0.7) { groups.push(cur); cur = [syms[i]]; }
-        else cur.push(syms[i]);
+        (data.blocks || []).forEach(bl => (bl.paragraphs || []).forEach(pa => (pa.lines || []).forEach(ln => {
+            const L = [];
+            (ln.words || []).forEach(wd => (wd.symbols || []).forEach(sy => {
+                const t = String(sy.text || '').toUpperCase().replace(/[^A-Z0-9<]/g, '');
+                if (!t || !sy.bbox) return;
+                const h = sy.bbox.y1 - sy.bbox.y0, w = sy.bbox.x1 - sy.bbox.x0;
+                if (h <= 1 || w <= 0) return;
+                L.push({
+                    t: t[0], x: sy.bbox.x0, x1: sy.bbox.x1, y0: sy.bbox.y0, y1: sy.bbox.y1,
+                    cx: (sy.bbox.x0 + sy.bbox.x1) / 2, cy: (sy.bbox.y0 + sy.bbox.y1) / 2, h: h
+                });
+            }));
+            if (L.length < 6) return;
+            L.sort((a, b) => a.x - b.x);
+            let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+            L.forEach(s => { if (s.x < x0) x0 = s.x; if (s.x1 > x1) x1 = s.x1; if (s.y0 < y0) y0 = s.y0; if (s.y1 > y1) y1 = s.y1; });
+            // Eğim: karakter merkezlerine en küçük kareler doğrusu (eğik fotoğraf düzeltmesi)
+            const n = L.length;
+            let sx = 0, sy = 0, sxx = 0, sxy = 0;
+            L.forEach(s => { sx += s.cx; sy += s.cy; sxx += s.cx * s.cx; sxy += s.cx * s.cy; });
+            const den = n * sxx - sx * sx;
+            let slope = Math.abs(den) > 1e-6 ? (n * sxy - sx * sy) / den : 0;
+            if (!isFinite(slope) || Math.abs(slope) > 0.5) slope = 0;
+            out.push({ L: L, n: n, x0: x0, x1: x1, y0: y0, y1: y1, span: x1 - x0, slope: slope });
+        })));
+    } catch (e) { return []; }
+    return out;
+}
+/* Bir satır MRZ satırına benziyor mu? MRZ satırı 44 (TD3) ya da 36 (TD2)
+   karakterdir; OCR birkaç karakteri birleştirebilir ya da bölebilir. */
+function mrzRowLooksLikeMrz(r, canvasW) {
+    if (!r) return false;
+    if (r.n < 24 || r.n > 62) return false;
+    if (r.span < canvasW * 0.25) return false;
+    // Monospace: karakter genişlikleri birbirine yakın olmalı
+    const ws = r.L.map(s => s.x1 - s.x).sort((a, b) => a - b);
+    const med = ws[Math.floor(ws.length / 2)] || 1;
+    const wide = ws.filter(w => w > med * 2.2).length;
+    return wide <= Math.max(2, Math.round(r.n * 0.12));
+}
+/* MRZ satırlarını seçer: birbirine komşu, benzer boyda, uzun iki satır. */
+function mrzPickMrzRows(lines, canvasW) {
+    if (!lines || !lines.length) return null;
+    const cand = lines.filter(r => mrzRowLooksLikeMrz(r, canvasW));
+    if (!cand.length) return null;
+    const byY = cand.slice().sort((a, b) => a.y0 - b.y0);
+    let best = null;
+    for (let i = 0; i < byY.length; i++) {
+        for (let j = i + 1; j < byY.length; j++) {
+            const a = byY[i], b = byY[j];
+            const ha = a.y1 - a.y0, hb = b.y1 - b.y0;
+            const gap = b.y0 - a.y1;
+            if (gap < -ha * 0.6 || gap > Math.max(ha, hb) * 1.6) continue;    // komşu değil
+            if (Math.min(ha, hb) / Math.max(ha, hb) < 0.55) continue;         // boyları uyuşmuyor
+            if (Math.min(a.span, b.span) / Math.max(a.span, b.span) < 0.75) continue;
+            // Puan: karakter sayısı + genişlik + sayfanın altına yakınlık
+            const score = (a.n + b.n) + (Math.min(a.span, b.span) / canvasW) * 40 + (a.y0 > 0 ? 0 : 0);
+            if (!best || score > best.score) best = { rows: [a, b], score: score };
+        }
     }
-    groups.push(cur);
-    // ── MRZ satırlarını seç ──
-    // MRZ satırı ≈44 karakterdir ve sayfanın neredeyse tüm genişliğini kaplar;
-    // kırpma alanına başka metin girse bile doğru iki satırı böylece ayıklarız.
-    const rows = groups.map(L => {
-        L.sort((a, b) => a.x - b.x);
-        return { L: L, n: L.length, span: L[L.length - 1].x1 - L[0].x };
-    }).filter(r => r.n >= 22);
-    if (!rows.length) return null;
-    const maxSpan = rows.reduce((m, r) => Math.max(m, r.span), 1);
-    const mrzRows = rows.filter(r => r.span >= maxSpan * 0.80);
-    const picked = (mrzRows.length ? mrzRows : rows).slice(-2);   // MRZ en alttadır
-    if (!picked.length) return null;
-    return picked.map(r => ({
-        raw: r.L.map(s => s.t).join(''),
-        fixed: mrzFixFillers(r.L)
-    }));
+    if (best) return best;
+    const one = cand.slice().sort((x, y) => y.n - x.n)[0];
+    return one && one.n >= 30 ? { rows: [one], score: one.n } : null;
+}
+/* OCR karakter kutularından MRZ bandının konumunu ve eğikliğini çıkarır */
+function mrzLocateFromSymbols(data, canvasW, canvasH) {
+    const pick = mrzPickMrzRows(mrzSymbolLines(data), canvasW);
+    if (!pick) return null;
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, slopeSum = 0;
+    pick.rows.forEach(r => {
+        if (r.x0 < x0) x0 = r.x0; if (r.x1 > x1) x1 = r.x1;
+        if (r.y0 < y0) y0 = r.y0; if (r.y1 > y1) y1 = r.y1;
+        slopeSum += r.slope;
+    });
+    let angle = Math.atan(slopeSum / pick.rows.length);
+    if (!isFinite(angle) || Math.abs(angle) > 0.45) angle = 0;
+    return {
+        rx0: Math.max(0, x0 / canvasW), ry0: Math.max(0, y0 / canvasH),
+        rx1: Math.min(1, x1 / canvasW), ry1: Math.min(1, y1 / canvasH),
+        angle: angle, rows: pick.rows.length, score: pick.score
+    };
+}
+/* OCR sonucundan MRZ metin satırlarını kurar.
+   KRİTİK: MRZ karakter setinde yalnızca '<' kısa boyludur; Tesseract onu sık sık
+   C/E/K/L gibi harflere benzetir ve isimlere yanlış harf ekler. Karakter
+   yüksekliğine bakarak kısa olanları '<' kabul ederiz. */
+function mrzLinesFromSymbols(data) {
+    const lines = mrzSymbolLines(data);
+    if (!lines.length) return null;
+    const canvasW = Math.max.apply(null, lines.map(r => r.x1)) || 1000;
+    const pick = mrzPickMrzRows(lines, canvasW);
+    const rows = pick ? pick.rows
+        : lines.filter(r => r.n >= 18).sort((a, b) => a.y0 - b.y0).slice(-2);
+    if (!rows || !rows.length) return null;
+    return rows.map(r => ({ raw: r.L.map(s => s.t).join(''), fixed: mrzFixFillers(r.L) }));
 }
 /* Bir MRZ satırındaki '<' dolgu karakterlerini KESİN olarak tespit eder.
    MRZ karakter setinde ('<', A-Z, 0-9) yalnızca '<' kısa boyludur; tüm harf ve
@@ -1667,6 +1920,12 @@ function mrzNameLineClean(line1) {
     const tail = (String(line1).match(/<+$/) || [''])[0].length;
     return tail >= 3;
 }
+/* İsim alanındaki (soyad<<ad bölümü) '<' ayıraç sayısı */
+function mrzNameFillerCount(line1) {
+    if (!line1) return 0;
+    let body = String(line1).slice(5).split(/<{3,}/)[0] || '';
+    return (body.match(/</g) || []).length;
+}
 function mrzNameLineQuality(line1) {
     if (!line1) return 0;
     const m = String(line1).match(/<+$/);
@@ -1686,17 +1945,13 @@ function mrzScore(p) {
     if (p.surname && p.given) s += 1;
     if (p.nationality && p.nationality !== 'OTHER') s += 1;
     s += mrzNameLineQuality(String(p.raw || '').split('\n')[0]);
+    // OCR, '<' ayıracını harfe çevirme yönünde hata yapar; tersi neredeyse hiç
+    // olmaz. Bu yüzden isim alanında daha çok ayıraç gören okuma daha doğrudur.
+    s += Math.min(8, mrzNameFillerCount(String(p.raw || '').split('\n')[0])) * 1.6;
     return s;
 }
-/* Tek bir kırpma denemesini oku ve en iyi ayrıştırmayı döndür */
-async function mrzReadAttempt(worker, img, a) {
-    let canvas;
-    try { canvas = mrzCropCanvas(img, a.y0, a.y1, a.w); } catch (e) { return null; }
-    let data;
-    try {
-        const res = await worker.recognize(canvas, {}, { text: true, blocks: true });
-        data = res && res.data;
-    } catch (e) { return null; }
+/* Bir OCR çıktısından en iyi MRZ ayrıştırmasını döndür */
+function mrzParseFromData(data) {
     if (!data) return null;
     // Adaylar: isim satırında karakter-yüksekliği düzeltmesi esastır ('<' ayıraçları
     // harf okunmasın diye); numara satırında ham okuma da denenir, çünkü onu MRZ
@@ -1721,38 +1976,112 @@ async function mrzReadAttempt(worker, img, a) {
     }
     return best;
 }
-/* Bir görsel dosyadan MRZ oku.
-   Birden fazla ön işleme (otomatik bulunan MRZ bandı, alt kırpmalar, tüm görsel)
-   bağımsız olarak okunur. Kontrol haneleri hataların çoğunu yakalar ama %100'ünü
-   değil; bu yüzden ayrıca iki bağımsız okumanın AYNI pasaport numarasını vermesi
-   aranır. Okumalar çelişirse sonuç "doğrulandı" sayılmaz ve kullanıcıdan kontrol
-   istenir — yanlış bir numara asla doğrulanmış gibi gösterilmez. */
-async function mrzReadFromFile(file) {
+/* Bir okumanın "kesin" sayılıp sayılmayacağı */
+function mrzIsSolid(r) {
+    return !!(r && r.passportNo && r.name && r.passportVerified && (r.checks || 0) >= 3
+        && mrzNameLineClean(String(r.raw || '').split('\n')[0]));
+}
+/* Bir görsel dosyadan MRZ oku — üç aşamalı.
+   1) ARAMA  : Fotoğraf yatay/ters çekilmiş olabileceğinden 0° ve 90° taranır;
+               her yönde MRZ olabilecek şerit adayları çıkarılır.
+   2) ELEME  : Adaylar düşük çözünürlükte hızlıca okunur; hangisinin gerçekten
+               MRZ olduğuna OCR karar verir. Hiçbiri okunamazsa fotoğrafın ters
+               olduğu varsayılıp 180° çevrilmiş hâli denenir.
+   3) OKUMA  : Kazanan şerit, ölçülen eğikliği düzeltilerek yüksek çözünürlükte
+               yeniden okunur.
+   Kontrol haneleri hataların çoğunu yakalar ama %100'ünü değil; bu yüzden ayrıca
+   iki bağımsız okumanın AYNI numarayı vermesi aranır. Okumalar çelişirse sonuç
+   "doğrulandı" sayılmaz — yanlış bir numara asla doğrulanmış gibi gösterilmez. */
+async function mrzOcr(worker, canvas) {
+    try {
+        const res = await worker.recognize(canvas, {}, { text: true, blocks: true });
+        return (res && res.data) || null;
+    } catch (e) { return null; }
+}
+async function mrzReadFromFile(file, onProgress) {
     const worker = await mrzGetWorker();
     let img;
     try { img = await mrzLoadImage(file); }
     catch (e) { return null; }
+    const results = [];
+    const note = m => { try { if (onProgress) onProgress(m); } catch (e) {} };
+    const add = r => { if (r && (r.passportNo || r.name)) results.push(r); return r; };
     try {
-        const band = mrzFindBand(img);
-        const attempts = [];
-        if (band) attempts.push({ y0: band.y0, y1: band.y1, w: 2200 });
-        attempts.push({ y0: 0.86, y1: 1.0, w: 2000 });
-        attempts.push({ y0: 0.72, y1: 1.0, w: 2000 });
-        attempts.push({ y0: 0.0, y1: 1.0, w: 1800 });
-        const results = [];
-        for (const a of attempts) {
-            const r = await mrzReadAttempt(worker, img, a);
-            if (r && (r.passportNo || r.name)) results.push(r);
-            // İki bağımsız okuma aynı numarada birleşti ve kontrol haneleri tuttuysa
-            // sonuç kesindir; daha fazla denemeye gerek yok.
-            if (results.length >= 2) {
-                const agree = results.filter(x => x.passportNo && x.passportNo === r.passportNo).length;
-                if (agree >= 2 && r.checks >= 3 && r.name
-                    && mrzNameLineClean(String(r.raw || '').split('\n')[0])) break;
+        // 1) Şerit adaylarını çıkar (OCR yok — yalnız piksel analizi, hızlı)
+        note('Pasaport taranıyor…');
+        // Fotoğraf yatay/ters çekilmiş ya da eğik tutulmuş olabilir: hem 0°/90°
+        // hem de birkaç küçük eğim denenerek şerit adayları çıkarılır.
+        const cands = [];
+        for (const base of [0, 90]) {
+            for (const tilt of [0, -9, 9, -4.5, 4.5]) {
+                const deg = base + tilt;
+                let c = null;
+                try { c = mrzEnhance(mrzRotatedCanvas(img, deg, 820)); } catch (e) { continue; }
+                let list = [];
+                try { list = mrzDetectCandidates(c) || []; } catch (e) { list = []; }
+                list.slice(0, 2).forEach(rect => cands.push({ deg: deg, rect: rect }));
+            }
+        }
+        cands.sort((a, b) => b.rect.score - a.rect.score);
+        // Klasik alt kırpmalar HER ZAMAN denenir: şerit bulucu yanılsa bile,
+        // pasaportun kareyi doldurduğu olağan fotoğraflarda sonuç garanti olsun.
+        const fallbacks = [
+            { deg: 0, rect: { rx0: 0, ry0: 0.84, rx1: 1, ry1: 1.0, rows: 2, score: -1 } },
+            { deg: 0, rect: { rx0: 0, ry0: 0.62, rx1: 1, ry1: 0.94, rows: 2, score: -2 } }
+        ];
+        // 2) ELEME: adaylar küçük tuvalde hızlıca okunur; gerçek MRZ'yi OCR seçer.
+        note('Pasaport okunuyor…');
+        const tried = cands.slice(0, 5).concat(fallbacks);
+        const scoredCands = [];
+        let sawAny = false;
+        for (const c of tried) {
+            let canvas = null;
+            try { canvas = mrzBandCanvas(img, c.deg, c.rect, 1900, false); } catch (e) { continue; }
+            if (!canvas) continue;
+            const data = await mrzOcr(worker, canvas);
+            if (!data) continue;
+            const r = add(mrzParseFromData(data));
+            const sc = mrzScore(r);
+            if (r) { sawAny = true; }
+            const loc = mrzLocateFromSymbols(data, canvas.width, canvas.height);
+            scoredCands.push({ deg: c.deg, rect: c.rect, flip: false, angle: (loc && loc.angle) || 0, score: sc });
+        }
+        // Hiçbiri okunamadıysa fotoğraf ters çekilmiş olabilir → 180° çevirip dene
+        if (!sawAny) {
+            note('Fotoğraf yönü deneniyor…');
+            for (const c of tried.slice(0, 4)) {
+                let canvas = null;
+                try { canvas = mrzBandCanvas(img, c.deg, c.rect, 1900, true); } catch (e) { continue; }
+                if (!canvas) continue;
+                const data = await mrzOcr(worker, canvas);
+                if (!data) continue;
+                const r = add(mrzParseFromData(data));
+                const loc = mrzLocateFromSymbols(data, canvas.width, canvas.height);
+                scoredCands.push({ deg: c.deg, rect: c.rect, flip: true, angle: (loc && loc.angle) || 0, score: mrzScore(r) });
+            }
+        }
+        // 3) OKUMA: en iyi iki şerit, eğikliği düzeltilerek yüksek çözünürlükte okunur
+        scoredCands.sort((a, b) => b.score - a.score);
+        const finals = scoredCands.filter(c => c.score > 0).slice(0, 2);
+        if (finals.length) {
+            note('Bilgiler doğrulanıyor…');
+            for (const win of finals) {
+                // Aynı şerit iki farklı ön işlemeyle okunur: düz kontrast germe ve
+                // yerel eşikleme (kağıt dokusunu/gölgeyi temizler). İkisinin
+                // sonuçları puanlamada yarışır; bağımsız iki okuma aynı numarayı
+                // verirse sonuç ayrıca doğrulanmış sayılır.
+                for (const v of [{ w: 2600, bin: false }, { w: 3300, bin: false }]) {
+                    const rect = Object.assign({}, win.rect, { angle: win.angle });
+                    let canvas = null;
+                    try { canvas = mrzBandCanvas(img, win.deg, rect, v.w, win.flip, v.bin); } catch (e) { continue; }
+                    if (!canvas) continue;
+                    const data = await mrzOcr(worker, canvas);
+                    add(mrzParseFromData(data));
+                }
             }
         }
         if (!results.length) return null;
-        // Pasaport numarasına göre oy ver: en çok tekrar eden okuma esas alınır
+        // 4) Pasaport numarasına göre oy ver: en çok tekrar eden okuma esas alınır
         const votes = {};
         results.forEach(r => { if (r.passportNo) votes[r.passportNo] = (votes[r.passportNo] || 0) + 1; });
         let topNo = '', topVotes = 0;
@@ -1762,14 +2091,14 @@ async function mrzReadFromFile(file) {
         pool.forEach(r => { const sc = mrzScore(r); if (sc > bestScore) { best = r; bestScore = sc; } });
         if (!best) return null;
         // İsim, oy çokluğuyla değil yapısal kaliteyle seçilir: bozuk okumalarda MRZ
-        // dolgu kuyruğu bozulur ve bu, puanlamada zaten cezalandırılır. Oy sayısı
-        // yalnızca "kaç okuma aynı ismi verdi" bilgisi olarak tutulur.
+        // dolgu kuyruğu bozulur ve bu, puanlamada zaten cezalandırılır.
+        // İsim, yapısal kaliteyle seçilir (mrzScore isim satırının dolgu yapısını
+        // ödüllendirir); bozuk okumalarda MRZ dolgu kuyruğu bozulduğu için elenir.
         const nameAgree = best.name ? pool.filter(r => r.name === best.name).length : 0;
-        // Farklı numara okuyan bir deneme varsa doğrulama iddiasını geri çek
         const distinct = Object.keys(votes).length;
         return Object.assign({}, best, {
-            passportVerified: best.passportVerified && (distinct === 1),
-            agreed: topVotes >= 2 && distinct === 1,
+            passportVerified: best.passportVerified && (distinct === 1 || topVotes >= 2),
+            agreed: topVotes >= 2,
             nameAgreed: nameAgree >= 2,
             readings: results.length,
             distinctReadings: distinct
@@ -1778,6 +2107,7 @@ async function mrzReadFromFile(file) {
         try { URL.revokeObjectURL(img.__url); } catch (e) {}
     }
 }
+
 const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
 function moneyValue(v) {
@@ -8246,14 +8576,15 @@ function App() {
     const drvMsg = (t, withMaps) => {
         withMaps = false;
         const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const px = (t.passengers || []).map((p, i) => {
+        const px = (t.passengers || []).filter(p => p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))).map((p, i) => {
             let line = (i + 1) + '. 👤 ' + (p.name || 'Misafir');
-            if (p.phone)
-                line += '  📞 ' + p.phone;
-            if (p.tc)
-                line += '  • TC: ' + p.tc;
-            else if (p.pasaport)
-                line += '  • Pasaport: ' + p.pasaport;
+            if (p.phone) line += '  📞 ' + p.phone;
+            // Kimlik: TC varsa TC, pasaport varsa pasaport numarası (ikisi de varsa ikisi de)
+            if (p.tc) line += '  • TC: ' + p.tc;
+            if (p.pasaport) line += '  • Pasaport: ' + p.pasaport;
+            if (!p.tc && !p.pasaport && p.idNo) line += '  • Kimlik: ' + p.idNo;
+            const sif = uyrukSifat(p.uyruk);
+            if (sif) line += '  • ' + sif;
             return line;
         }).join('\n');
         let msg = 'Misafir Bilgileri\n\n';
@@ -8274,6 +8605,7 @@ function App() {
         else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
         else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
         if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
+        { const uz = uyrukOzeti(t.passengers); if (uz) msg += '\n\n🌍 Uyruk: ' + uz; }
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
