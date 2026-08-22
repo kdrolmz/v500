@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Pasaport MRZ v55</title>
+<title>KÖ Transfer Takip - Pasaport MRZ Güvenli v56</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1228,38 +1228,109 @@ const passportGenderCode = v => {
     const c = String(v || '').trim().toUpperCase().charAt(0);
     return c === 'M' || c === 'F' ? c : '';
 };
+const mrzDigitish = v => String(v || '')
+    .toUpperCase()
+    .replace(/[OQD]/g, '0')
+    .replace(/[IL|]/g, '1')
+    .replace(/Z/g, '2')
+    .replace(/S/g, '5')
+    .replace(/G/g, '6')
+    .replace(/B/g, '8')
+    .replace(/[^0-9<]/g, '');
+const mrzNameish = v => String(v || '')
+    .toUpperCase()
+    .replace(/0/g, 'O')
+    .replace(/[1|]/g, 'I')
+    .replace(/2/g, 'Z')
+    .replace(/5/g, 'S')
+    .replace(/6/g, 'G')
+    .replace(/8/g, 'B')
+    .replace(/4/g, 'A')
+    .replace(/[^A-Z<]/g, '');
+const mrzCharValue = c => {
+    const ch = String(c || '<').charAt(0).toUpperCase();
+    if (ch >= '0' && ch <= '9') return ch.charCodeAt(0) - 48;
+    if (ch >= 'A' && ch <= 'Z') return ch.charCodeAt(0) - 55;
+    return 0;
+};
+const mrzCheckDigit = v => {
+    const weights = [7, 3, 1];
+    const sum = String(v || '').split('').reduce((acc, ch, i) => acc + mrzCharValue(ch) * weights[i % 3], 0);
+    return String(sum % 10);
+};
+const mrzCheckOk = (field, digit) => /^[0-9]$/.test(String(digit || '')) && mrzCheckDigit(field) === String(digit);
 const normalizeMrzLine = line => String(line || '')
     .toUpperCase()
     .replace(/[«‹]/g, '<')
     .replace(/[^A-Z0-9<]/g, '');
 const mrzClean = v => String(v || '').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
 const parseMrzName = field => {
-    const raw = String(field || '').replace(/<+$/g, '');
+    const raw = mrzNameish(field).replace(/<+$/g, '');
     const parts = raw.split('<<');
     const surname = mrzClean(parts[0]);
     const given = mrzClean(parts.slice(1).join(' '));
     return koTitleCaseLatin([given, surname].filter(Boolean).join(' '));
 };
+const mrzNamePenalty = field => {
+    const raw = String(field || '').toUpperCase();
+    const digitHits = (raw.match(/[0-9|]/g) || []).length;
+    const weirdHits = (raw.replace(/[A-Z0-9<|]/g, '').length || 0);
+    const hasSeparator = raw.includes('<<') ? 0 : 3;
+    return digitHits + weirdHits + hasSeparator;
+};
+const mrzPassengerRank = p => (p && p.mrzValid ? 1000 : 0) + ((p && p.mrzCheckScore) || 0) * 50 - ((p && p.mrzNamePenalty) || 0) * 8 + String((p && p.name) || '').length;
 const mrzPassengerFromTd3 = (line1, line2) => {
     const l1 = normalizeMrzLine(line1).padEnd(44, '<').slice(0, 44);
     const l2 = normalizeMrzLine(line2).padEnd(44, '<').slice(0, 44);
-    const name = parseMrzName(l1.slice(5, 44));
-    const passport = l2.slice(0, 9).replace(/</g, '').replace(/[^A-Z0-9]/g, '');
+    const nameField = l1.slice(5, 44);
+    const name = parseMrzName(nameField);
+    const docNoField = l2.slice(0, 9);
+    const docCheck = mrzDigitish(l2.slice(9, 10)).slice(0, 1);
+    const birth = mrzDigitish(l2.slice(13, 19)).padEnd(6, '<').slice(0, 6);
+    const birthCheck = mrzDigitish(l2.slice(19, 20)).slice(0, 1);
+    const expiry = mrzDigitish(l2.slice(21, 27)).padEnd(6, '<').slice(0, 6);
+    const expiryCheck = mrzDigitish(l2.slice(27, 28)).slice(0, 1);
+    const personal = l2.slice(28, 42);
+    const personalCheck = mrzDigitish(l2.slice(42, 43)).slice(0, 1);
+    const compositeCheck = mrzDigitish(l2.slice(43, 44)).slice(0, 1);
+    const passport = docNoField.replace(/</g, '').replace(/[^A-Z0-9]/g, '');
     const uyruk = mrzCountryCode(l2.slice(10, 13)) || mrzCountryCode(l1.slice(2, 5));
     const cinsiyet = passportGenderCode(l2.slice(20, 21));
+    const checks = {
+        passport: mrzCheckOk(docNoField, docCheck),
+        birth: mrzCheckOk(birth, birthCheck),
+        expiry: mrzCheckOk(expiry, expiryCheck),
+        composite: mrzCheckOk(docNoField + docCheck + birth + birthCheck + expiry + expiryCheck + personal + personalCheck, compositeCheck)
+    };
+    const validCount = Object.values(checks).filter(Boolean).length;
+    const mrzValid = checks.passport && checks.birth && checks.expiry && checks.composite;
     if (!name && !passport) return null;
-    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet };
+    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzSource: 'td3' };
 };
 const mrzPassengerFromTd1 = (line1, line2, line3) => {
     const l1 = normalizeMrzLine(line1).padEnd(30, '<').slice(0, 30);
     const l2 = normalizeMrzLine(line2).padEnd(30, '<').slice(0, 30);
     const l3 = normalizeMrzLine(line3).padEnd(30, '<').slice(0, 30);
-    const name = parseMrzName(l3);
-    const passport = l1.slice(5, 14).replace(/</g, '').replace(/[^A-Z0-9]/g, '');
+    const nameField = l3;
+    const name = parseMrzName(nameField);
+    const docNoField = l1.slice(5, 14);
+    const docCheck = mrzDigitish(l1.slice(14, 15)).slice(0, 1);
+    const birth = mrzDigitish(l2.slice(0, 6)).padEnd(6, '<').slice(0, 6);
+    const birthCheck = mrzDigitish(l2.slice(6, 7)).slice(0, 1);
+    const expiry = mrzDigitish(l2.slice(8, 14)).padEnd(6, '<').slice(0, 6);
+    const expiryCheck = mrzDigitish(l2.slice(14, 15)).slice(0, 1);
+    const passport = docNoField.replace(/</g, '').replace(/[^A-Z0-9]/g, '');
     const uyruk = mrzCountryCode(l2.slice(15, 18)) || mrzCountryCode(l1.slice(2, 5));
     const cinsiyet = passportGenderCode(l2.slice(7, 8));
+    const checks = {
+        passport: mrzCheckOk(docNoField, docCheck),
+        birth: mrzCheckOk(birth, birthCheck),
+        expiry: mrzCheckOk(expiry, expiryCheck)
+    };
+    const validCount = Object.values(checks).filter(Boolean).length;
+    const mrzValid = checks.passport && checks.birth && checks.expiry;
     if (!name && !passport) return null;
-    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet };
+    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzSource: 'td1' };
 };
 const parsePassportMrzFromText = text => {
     const lines = String(text || '').split(/\r?\n/)
@@ -1280,13 +1351,14 @@ const parsePassportMrzFromText = text => {
             if (p) { out.push(p); i += 2; }
         }
     }
-    const seen = new Set();
-    return out.filter(p => {
+    const best = new Map();
+    out.forEach(p => {
         const key = String(p.pasaport || p.name || '').toUpperCase();
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
+        if (!key) return;
+        const prev = best.get(key);
+        if (!prev || mrzPassengerRank(p) > mrzPassengerRank(prev)) best.set(key, p);
     });
+    return Array.from(best.values()).sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
 };
 const passengerCountryFromText = row => {
     const s = nm(row);
@@ -1358,6 +1430,62 @@ const parsePassengerListFromText = text => {
         seen.add(key);
         return true;
     });
+};
+const loadImageForOcr = source => new Promise((resolve, reject) => {
+    if (typeof document === 'undefined') return reject(new Error('Tarayıcı gerekli'));
+    const img = document.createElement('img');
+    let url = '';
+    img.onload = () => { if (url) URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = err => { if (url) URL.revokeObjectURL(url); reject(err); };
+    if (source instanceof Blob) {
+        url = URL.createObjectURL(source);
+        img.src = url;
+    } else {
+        img.src = source;
+    }
+});
+const buildEnhancedOcrImage = async (file, mode) => {
+    const img = await loadImageForOcr(file);
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+    if (!srcW || !srcH) return '';
+    const cropTop = mode === 'mrz-crop' ? Math.round(srcH * 0.54) : 0;
+    const cropH = mode === 'mrz-crop' ? Math.max(1, srcH - cropTop) : srcH;
+    const cropW = srcW;
+    const targetW = Math.max(900, Math.min(2200, cropW < 1200 ? cropW * 2 : cropW));
+    const scale = targetW / cropW;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(cropW * scale);
+    canvas.height = Math.round(cropH * scale);
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return '';
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < data.data.length; i += 4) {
+        const r = data.data[i], g = data.data[i + 1], b = data.data[i + 2];
+        let y = 0.299 * r + 0.587 * g + 0.114 * b;
+        y = Math.max(0, Math.min(255, (y - 128) * (mode === 'mrz-crop' ? 2.35 : 1.75) + 128));
+        if (mode === 'mrz-crop') y = y > 142 ? 255 : 0;
+        data.data[i] = data.data[i + 1] = data.data[i + 2] = y;
+        data.data[i + 3] = 255;
+    }
+    ctx.putImageData(data, 0, 0);
+    return canvas.toDataURL('image/png');
+};
+const buildOcrSources = async (file, mode) => {
+    const sources = [{ label: 'orijinal', source: file }];
+    if (mode === 'passport') {
+        try {
+            const crop = await buildEnhancedOcrImage(file, 'mrz-crop');
+            if (crop) sources.unshift({ label: 'MRZ net', source: crop });
+        } catch (e) { console.warn('MRZ kırpım hazırlanamadı', e); }
+        try {
+            const full = await buildEnhancedOcrImage(file, 'full');
+            if (full) sources.push({ label: 'tam net', source: full });
+        } catch (e) { console.warn('Tam görüntü hazırlanamadı', e); }
+    }
+    return sources;
 };
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const firmSlug = v => nm(v).replace(/\s+/g, '');
@@ -7281,7 +7409,7 @@ function App() {
         setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '' });
     };
     const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
-    const runOcrForFile = async (file, label) => {
+    const runOcrForFile = async (file, label, mode) => {
         if (!file) return '';
         if (!window.Tesseract || !window.Tesseract.recognize) {
             setOcrState({ busy: false, message: 'Okuma motoru yüklenemedi. Manuel giriş yapabilirsiniz.' });
@@ -7290,20 +7418,31 @@ function App() {
         }
         setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor...' });
         try {
+            const sources = await buildOcrSources(file, mode || 'list');
+            const allText = [];
             const logger = m => {
                 if (!m || !m.status) return;
                 const pct = typeof m.progress === 'number' ? Math.round(m.progress * 100) : 0;
                 const msg = m.status === 'recognizing text' && pct ? ('Metin okunuyor %' + pct) : 'Görsel hazırlanıyor...';
                 setOcrState({ busy: true, message: msg });
             };
-            let result;
-            try {
-                result = await window.Tesseract.recognize(file, 'eng+tur', { logger });
-            } catch (firstErr) {
-                console.warn('OCR eng diliyle tekrar denenecek', firstErr);
-                result = await window.Tesseract.recognize(file, 'eng', { logger });
+            for (let i = 0; i < sources.length; i++) {
+                const item = sources[i];
+                setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor (' + item.label + ' ' + (i + 1) + '/' + sources.length + ')' });
+                const opts = mode === 'passport'
+                    ? { logger, tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<', preserve_interword_spaces: '1' }
+                    : { logger, preserve_interword_spaces: '1' };
+                let result;
+                try {
+                    result = await window.Tesseract.recognize(item.source, mode === 'passport' ? 'eng' : 'eng+tur', opts);
+                } catch (firstErr) {
+                    console.warn('OCR eng diliyle tekrar denenecek', firstErr);
+                    result = await window.Tesseract.recognize(item.source, 'eng', opts);
+                }
+                const text = result && result.data ? (result.data.text || '') : '';
+                if (text) allText.push(text);
             }
-            const text = result && result.data ? (result.data.text || '') : '';
+            const text = allText.join('\n');
             setOcrState({ busy: false, message: text ? 'Okuma tamamlandı. Alanları kontrol edin.' : 'Metin bulunamadı. Manuel giriş yapabilirsiniz.' });
             return text;
         } catch (e) {
@@ -7320,28 +7459,46 @@ function App() {
             name: p.name || m.name || '',
             id: p.pasaport || p.idNo || m.id || '',
             uyruk: p.uyruk || m.uyruk || 'TR',
-            cinsiyet: p.cinsiyet || m.cinsiyet || ''
+            cinsiyet: p.cinsiyet || m.cinsiyet || '',
+            mrzValid: !!p.mrzValid
         }) : m);
     };
     const scanPassportImageFile = async file => {
-        const text = await runOcrForFile(file, 'Pasaport');
+        const text = await runOcrForFile(file, 'Pasaport', 'passport');
         if (!text) return;
-        const mrzRows = parsePassportMrzFromText(text);
-        const fallbackRows = mrzRows.length ? [] : parsePassengerListFromText(text);
-        const p = mrzRows[0] || fallbackRows[0];
+        const mrzRows = parsePassportMrzFromText(text)
+            .sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
+        const p = mrzRows[0];
         if (!p) {
             setOcrState({ busy: false, message: 'MRZ okunamadı. Alanları elle doldurabilirsiniz.' });
             tip('Pasaport okunamadı');
             return;
         }
+        if (!p.mrzValid) {
+            setOcrState({ busy: false, message: 'MRZ kontrolü tutmadı; yanlış isim/pasaport riski var. Otomatik doldurmadım, elle kontrol edin.' });
+            tip('MRZ doğrulanamadı');
+            return;
+        }
+        if ((p.mrzNamePenalty || 0) > 2) {
+            setOcrState({ busy: false, message: 'MRZ numarası doğrulandı ama isim satırı şüpheli okundu. Yanlış isim kaydetmemek için otomatik doldurmadım.' });
+            tip('İsim satırı kontrol gerekli');
+            return;
+        }
         applyScannedPassengerToModal(p);
-        tip('Pasaport bilgileri dolduruldu');
+        setOcrState({ busy: false, message: (p.mrzNamePenalty ? 'MRZ doğrulandı; isimde küçük OCR düzeltmesi yapıldı. Son kez gözle kontrol edin.' : 'MRZ doğrulandı. Ad soyad ve pasaport alanlarını son kez gözle kontrol edin.') });
+        tip('Pasaport bilgileri doğrulandı');
     };
     const scanPassengerListImageFile = async file => {
-        const text = await runOcrForFile(file, 'Yolcu listesi');
+        const text = await runOcrForFile(file, 'Yolcu listesi', 'list');
         if (!text) return;
         const rows = parsePassportMrzFromText(text);
-        const listRows = rows.length ? rows : parsePassengerListFromText(text);
+        const validMrzRows = rows.filter(p => p && p.mrzValid);
+        if (rows.length && !validMrzRows.length) {
+            setOcrState({ busy: false, message: 'Görselde MRZ benzeri satır var ama kontrol haneleri tutmadı. Yanlış kayıt oluşturmamak için eklemedim.' });
+            tip('MRZ doğrulanamadı');
+            return;
+        }
+        const listRows = validMrzRows.length ? validMrzRows : parsePassengerListFromText(text);
         if (!listRows.length) {
             setOcrState({ busy: false, message: 'Listeden yolcu adı bulunamadı. Manuel ekleme yapabilirsiniz.' });
             tip('Yolcu bulunamadı');
@@ -7357,7 +7514,7 @@ function App() {
             return true;
         });
         sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
-        setOcrState({ busy: false, message: listRows.length + ' yolcu görselden eklendi. Kartlardan kontrol edebilirsiniz.' });
+        setOcrState({ busy: false, message: listRows.length + ' yolcu görselden eklendi. Liste görselinde MRZ kontrolü olmadığı için kartlardan isimleri kontrol edin.' });
         tip(listRows.length + ' yolcu eklendi');
     };
     const handlePassportFileInput = async e => {
