@@ -10,10 +10,11 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Ölmez Midnight Ink v54</title>
+<title>KÖ Transfer Takip - Pasaport MRZ v55</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -809,7 +810,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 
 /* ── Transfer tip renkleri: belirgin sol şerit + net çip (kurumsal) ── */
 .tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:#2E7D5B !important}
-.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:#2B4A82 !important}
+.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:#6F8798 !important}
 .tcard.t-tour .tcard-stripe,.lg-home-transfer-list .tcard.t-tour .tcard-stripe{background:#B0842E !important}
 .tcard.t-shortpass .tcard-stripe,.lg-home-transfer-list .tcard.t-shortpass .tcard-stripe{background:#7A5CB0 !important}
 .tcard.t-intercity .tcard-stripe,.lg-home-transfer-list .tcard.t-intercity .tcard-stripe{background:#3A5570 !important}
@@ -818,7 +819,7 @@ input,select,textarea,.inp{min-height:42px !important;font-size:15px !important}
 .tcard-stripe{width:6px !important;min-width:6px !important}
 /* Çipler: tip rengiyle dolgulu, okunur */
 .tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:#E4F3EB !important;border-color:#B4DBC5 !important;color:#1F6E48 !important;-webkit-text-fill-color:#1F6E48 !important}
-.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:#E7EDF7 !important;border-color:#BDCCE6 !important;color:#294C86 !important;-webkit-text-fill-color:#294C86 !important}
+.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:#EEF3F6 !important;border-color:#C9D6DD !important;color:#526B7C !important;-webkit-text-fill-color:#526B7C !important}
 .tcard.t-tour .tcard-type,.tcard.t-tour .tcard-pill:first-child{background:#F8F0DC !important;border-color:#E4D2A0 !important;color:#8A6414 !important;-webkit-text-fill-color:#8A6414 !important}
 .tcard.t-shortpass .tcard-type,.tcard.t-shortpass .tcard-pill:first-child{background:#F0EAF8 !important;border-color:#D2C4E8 !important;color:#5B449A !important;-webkit-text-fill-color:#5B449A !important}
 .tcard.t-intercity .tcard-type,.tcard.t-intercity .tcard-pill:first-child{background:#E9EEF4 !important;border-color:#C6D2E0 !important;color:#33475E !important;-webkit-text-fill-color:#33475E !important}
@@ -913,7 +914,7 @@ const NAV = '#22252E', NAV2 = '#22252E', GOLD = 'rgba(255,255,255,.85)';
 const G = '#6E8060', O = '#3D5A8F', R = '#C05F5F', BR = '#D3DAE3';
 const TX = '#1F2733', SB = '#5F6B7A', INP = '#F7F9FB', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#2E4670', bg: '#EAEEF6', b: '#C3CFE3' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: '#6F8798', bg: '#EEF3F6', b: '#C9D6DD' },
     { id: 'arrival', n: 'Geliş', ico: '🛬', c: '#3E7C5B', bg: '#E9F3ED', b: '#BFDCCB' },
     { id: 'tour', n: 'Tur', ico: '🏔️', c: '#96762A', bg: '#F7F0DE', b: '#E0D2A8' },
     { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: '#6C5A92', bg: '#EFEAF6', b: '#CFC2E3' },
@@ -981,12 +982,57 @@ const ULKELER = [
     { k: 'ES', n: 'İspanya' }, { k: 'PL', n: 'Polonya' }, { k: 'GR', n: 'Yunanistan' },
     { k: 'OTHER', n: 'Diğer' },
 ];
+const PASSENGER_GENDERS = [
+    { k: '', n: 'Belirtilmedi' },
+    { k: 'M', n: 'Erkek' },
+    { k: 'F', n: 'Kadın' },
+];
+const MRZ_COUNTRY_TO_UI = {
+    TUR: 'TR', TR: 'TR',
+    DEU: 'DE', D: 'DE',
+    GBR: 'GB', GBD: 'GB', GBN: 'GB', GBP: 'GB',
+    USA: 'US',
+    FRA: 'FR',
+    NLD: 'NL',
+    BEL: 'BE',
+    AUT: 'AT',
+    CHE: 'CH',
+    SAU: 'SA',
+    ARE: 'AE',
+    RUS: 'RU',
+    KWT: 'KW',
+    QAT: 'QA',
+    ITA: 'IT',
+    ESP: 'ES',
+    POL: 'PL',
+    GRC: 'GR'
+};
+const NATIONALITY_TR = {
+    TR: 'Türk',
+    DE: 'Alman',
+    GB: 'İngiliz',
+    US: 'Amerikalı',
+    FR: 'Fransız',
+    NL: 'Hollandalı',
+    BE: 'Belçikalı',
+    AT: 'Avusturyalı',
+    CH: 'İsviçreli',
+    SA: 'Suudi Arabistanlı',
+    AE: "BAE'li",
+    RU: 'Rus',
+    KW: 'Kuveytli',
+    QA: 'Katarlı',
+    IT: 'İtalyan',
+    ES: 'İspanyol',
+    PL: 'Polonyalı',
+    GR: 'Yunan'
+};
 const BF = {
     date: new Date().toISOString().split('T')[0], time: '09:00', flightCode: '',
     transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '',
     pickup: '', dropoff: '', pickupMaps: '', dropoffMaps: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '',
     driverName: '', driverPhone: '',
-    passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
+    passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR', cinsiyet: '' }],
     childSeat: false, childSeatCount: 0,
     tourCommission: '', tourCommissionShop: '',
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
@@ -1093,7 +1139,7 @@ const mergeRecordsByIdWithDeletes = (preferred, fallback, deletedIds) => {
     (preferred || []).forEach(put);
     return Array.from(map.values());
 };
-const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' });
+const emptyPassenger = () => ({ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR', cinsiyet: '' });
 const passengerIdDisplay = p => String((p && (p.idNo || p.tc || p.pasaport)) || '');
 const splitPassengerId = v => {
     const raw = String(v || '').trim().toUpperCase();
@@ -1132,6 +1178,187 @@ function moneyValue(v) {
     return Number.isFinite(n) ? n : 0;
 }
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
+const koTitleCaseLatin = v => String(v || '').replace(/\s+/g, ' ').trim().split(' ').map(w => w ? (w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : w).join(' ');
+const passengerCountryName = k => {
+    const code = String(k || '').toUpperCase();
+    if (!code || code === 'OTHER') return code === 'OTHER' ? 'Diğer' : '';
+    const u = ULKELER.find(x => x.k === code);
+    return u ? u.n : code;
+};
+const passengerGenderName = k => {
+    const code = String(k || '').toUpperCase();
+    const g = PASSENGER_GENDERS.find(x => x.k === code);
+    return g ? g.n : '';
+};
+const passengerNationalityWord = k => {
+    const code = String(k || '').toUpperCase();
+    return NATIONALITY_TR[code] || passengerCountryName(code);
+};
+const passengerNationalitySummary = passengers => {
+    const rows = (passengers || []).filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
+    const codes = Array.from(new Set(rows.map(p => String(p.uyruk || '').toUpperCase()).filter(k => k && k !== 'OTHER')));
+    if (!codes.length) return '';
+    if (codes.length === 1) return (rows.length > 1 ? 'Misafirler ' : 'Misafir ') + passengerNationalityWord(codes[0]);
+    return 'Uyruklar: ' + codes.map(passengerCountryName).filter(Boolean).join(', ');
+};
+const passengerDetailLine = (p, idx) => {
+    const parts = [];
+    const name = String((p && (p.name || p.fullName)) || 'Misafir').trim();
+    parts.push((idx + 1) + '. ' + name);
+    const pass = p && (p.pasaport || (!p.tc && passengerIdDisplay(p)));
+    if (pass) parts.push('Pasaport: ' + pass);
+    if (p && p.tc) parts.push('TC: ' + p.tc);
+    if (p && p.uyruk) parts.push('Uyruk: ' + passengerCountryName(p.uyruk));
+    if (p && p.cinsiyet) parts.push('Cinsiyet: ' + passengerGenderName(p.cinsiyet));
+    if (p && p.phone) parts.push('Tel: ' + p.phone);
+    return parts.filter(Boolean).join(' | ');
+};
+const passengerDetailText = passengers => (passengers || [])
+    .filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)))
+    .map(passengerDetailLine)
+    .join('\n');
+const mrzCountryCode = v => {
+    const raw = String(v || '').replace(/[^A-Za-z]/g, '').toUpperCase();
+    if (!raw) return '';
+    if (MRZ_COUNTRY_TO_UI[raw]) return MRZ_COUNTRY_TO_UI[raw];
+    if (ULKELER.some(u => u.k === raw)) return raw;
+    return raw.length === 2 ? raw : '';
+};
+const passportGenderCode = v => {
+    const c = String(v || '').trim().toUpperCase().charAt(0);
+    return c === 'M' || c === 'F' ? c : '';
+};
+const normalizeMrzLine = line => String(line || '')
+    .toUpperCase()
+    .replace(/[«‹]/g, '<')
+    .replace(/[^A-Z0-9<]/g, '');
+const mrzClean = v => String(v || '').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
+const parseMrzName = field => {
+    const raw = String(field || '').replace(/<+$/g, '');
+    const parts = raw.split('<<');
+    const surname = mrzClean(parts[0]);
+    const given = mrzClean(parts.slice(1).join(' '));
+    return koTitleCaseLatin([given, surname].filter(Boolean).join(' '));
+};
+const mrzPassengerFromTd3 = (line1, line2) => {
+    const l1 = normalizeMrzLine(line1).padEnd(44, '<').slice(0, 44);
+    const l2 = normalizeMrzLine(line2).padEnd(44, '<').slice(0, 44);
+    const name = parseMrzName(l1.slice(5, 44));
+    const passport = l2.slice(0, 9).replace(/</g, '').replace(/[^A-Z0-9]/g, '');
+    const uyruk = mrzCountryCode(l2.slice(10, 13)) || mrzCountryCode(l1.slice(2, 5));
+    const cinsiyet = passportGenderCode(l2.slice(20, 21));
+    if (!name && !passport) return null;
+    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet };
+};
+const mrzPassengerFromTd1 = (line1, line2, line3) => {
+    const l1 = normalizeMrzLine(line1).padEnd(30, '<').slice(0, 30);
+    const l2 = normalizeMrzLine(line2).padEnd(30, '<').slice(0, 30);
+    const l3 = normalizeMrzLine(line3).padEnd(30, '<').slice(0, 30);
+    const name = parseMrzName(l3);
+    const passport = l1.slice(5, 14).replace(/</g, '').replace(/[^A-Z0-9]/g, '');
+    const uyruk = mrzCountryCode(l2.slice(15, 18)) || mrzCountryCode(l1.slice(2, 5));
+    const cinsiyet = passportGenderCode(l2.slice(7, 8));
+    if (!name && !passport) return null;
+    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet };
+};
+const parsePassportMrzFromText = text => {
+    const lines = String(text || '').split(/\r?\n/)
+        .map(normalizeMrzLine)
+        .filter(x => x.length >= 20 && (x.includes('<<') || (x.match(/</g) || []).length >= 3));
+    const out = [];
+    for (let i = 0; i < lines.length - 1; i++) {
+        const a = lines[i], b = lines[i + 1];
+        if (/^P[A-Z0-9<]/.test(a) && b.length >= 30) {
+            const p = mrzPassengerFromTd3(a, b);
+            if (p) { out.push(p); i++; }
+        }
+    }
+    for (let i = 0; i < lines.length - 2; i++) {
+        const a = lines[i], b = lines[i + 1], c = lines[i + 2];
+        if (!/^P[A-Z0-9<]/.test(a) && a.length >= 25 && b.length >= 25 && c.length >= 20 && c.includes('<<')) {
+            const p = mrzPassengerFromTd1(a, b, c);
+            if (p) { out.push(p); i += 2; }
+        }
+    }
+    const seen = new Set();
+    return out.filter(p => {
+        const key = String(p.pasaport || p.name || '').toUpperCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+};
+const passengerCountryFromText = row => {
+    const s = nm(row);
+    const entries = [
+        ['kw', ['kuveyt', 'kuwait', 'kwt', 'kw']],
+        ['us', ['abd', 'amerika', 'american', 'usa', 'us']],
+        ['gb', ['ingiltere', 'british', 'united kingdom', 'gbr', 'gb']],
+        ['de', ['almanya', 'germany', 'deu', 'de']],
+        ['fr', ['fransa', 'france', 'fra', 'fr']],
+        ['nl', ['hollanda', 'netherlands', 'nld', 'nl']],
+        ['be', ['belcika', 'belgium', 'bel', 'be']],
+        ['sa', ['suudi', 'saudi', 'sau', 'sa']],
+        ['ae', ['bae', 'emirates', 'are', 'ae']],
+        ['ru', ['rusya', 'russia', 'rus', 'ru']],
+        ['qa', ['katar', 'qatar', 'qat', 'qa']],
+        ['tr', ['turkiye', 'turkey', 'turk', 'tur', 'tr']],
+        ['it', ['italya', 'italy', 'ita', 'it']],
+        ['es', ['ispanya', 'spain', 'esp', 'es']],
+        ['pl', ['polonya', 'poland', 'pol', 'pl']],
+        ['gr', ['yunan', 'greece', 'grc', 'gr']]
+    ];
+    const hit = entries.find(([code, words]) => words.some(w => new RegExp('(^|[^a-z])' + w + '([^a-z]|$)').test(s)));
+    return hit ? hit[0].toUpperCase() : '';
+};
+const passengerGenderFromText = row => {
+    const s = nm(row);
+    if (/(^|[^a-z])(erkek|male|bay| mr | m )([^a-z]|$)/.test(' ' + s + ' ')) return 'M';
+    if (/(^|[^a-z])(kadin|female|bayan| ms | mrs | f )([^a-z]|$)/.test(' ' + s + ' ')) return 'F';
+    return '';
+};
+const passengerPassportFromText = row => {
+    const s = String(row || '').toUpperCase();
+    const labeled = s.match(/(?:PASAPORT|PASSPORT|PASS|P NO|P\.NO|NO)[:\s-]*([A-Z0-9]{6,12})/i);
+    if (labeled) return labeled[1].replace(/[^A-Z0-9]/g, '');
+    const generic = s.match(/\b(?=[A-Z0-9]*\d)[A-Z]{1,3}[A-Z0-9]{5,10}\b/);
+    return generic ? generic[0] : '';
+};
+const passengerNameFromTextRow = row => {
+    let s = String(row || '').replace(/^\s*[\d#*•\-–—.)]+/g, ' ');
+    s = s.replace(/(?:PASAPORT|PASSPORT|PASS|UYRUK|ULKE|ÜLKE|CINSIYET|CİNSİYET|GENDER|NATIONALITY|AD SOYAD|NAME|YOLCU|MISAFIR|MİSAFİR)[:\s-]*/gi, ' ');
+    s = s.replace(/\b(?=[A-Z0-9]*\d)[A-Z]{1,3}[A-Z0-9]{5,10}\b/gi, ' ');
+    s = s.replace(/\b\d{5,}\b/g, ' ');
+    ['kuveyt','kuwait','kw','kwt','abd','amerika','american','usa','us','ingiltere','british','gbr','gb','almanya','germany','deu','de','fransa','france','fra','fr','hollanda','netherlands','nld','nl','belçika','belcika','belgium','bel','be','suudi','saudi','sau','sa','bae','emirates','are','ae','rusya','russia','rus','ru','katar','qatar','qat','qa','türkiye','turkiye','turkey','turk','tur','tr','italya','italy','ita','it','ispanya','spain','esp','es','polonya','poland','pol','pl','yunan','greece','grc','gr','erkek','male','kadin','kadın','female','bayan','bay'].forEach(w => {
+        s = s.replace(new RegExp('\\b' + w + '\\b', 'gi'), ' ');
+    });
+    const words = (s.match(/[A-Za-zÇĞİÖŞÜçğıöşü'’.-]+/g) || [])
+        .map(w => w.replace(/^[.'’ -]+|[.'’ -]+$/g, ''))
+        .filter(w => w.length > 1);
+    if (words.length < 2 || words.length > 6) return '';
+    const stop = ['tarih','saat','otel','hotel','transfer','airport','havalimani','havaalani','ucus','flight','phone','telefon','listesi','liste'];
+    if (words.some(w => stop.includes(nm(w)))) return '';
+    return koTitleCaseLatin(words.join(' '));
+};
+const parsePassengerListFromText = text => {
+    const rows = String(text || '').split(/\r?\n|;/).map(x => x.trim()).filter(Boolean);
+    const out = [];
+    rows.forEach(row => {
+        const name = passengerNameFromTextRow(row);
+        if (!name) return;
+        const passport = passengerPassportFromText(row);
+        const uyruk = passengerCountryFromText(row);
+        const cinsiyet = passengerGenderFromText(row);
+        out.push({ ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk, cinsiyet });
+    });
+    const seen = new Set();
+    return out.filter(p => {
+        const key = nm((p.name || '') + '|' + (p.pasaport || ''));
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+};
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const firmSlug = v => nm(v).replace(/\s+/g, '');
 const isOlmezturParty = v => {
@@ -1817,6 +2044,25 @@ const appleCalendarCompactLoc = name => {
         .replace(/\s+/g, ' ')
         .trim();
 };
+const appleCalendarTitleLoc = name => {
+    const raw = String(name || '').trim();
+    if (!raw) return '';
+    if (isIstanbulAirportName(raw)) return 'IST';
+    if (/^SAW$/i.test(raw) || /Sabiha Gökçen|Sabiha Gokcen|\(SAW\)/i.test(raw)) return 'SAW';
+    if (/^ESB$/i.test(raw) || /Ankara Esenboğa|Ankara Esenboga|\(ESB\)/i.test(raw)) return 'ESB';
+    if (/^ADB$/i.test(raw) || /İzmir Adnan|Izmir Adnan|\(ADB\)/i.test(raw)) return 'ADB';
+    if (/^AYT$/i.test(raw) || /Antalya Havalimanı|Antalya Airport|\(AYT\)/i.test(raw)) return 'AYT';
+    if (/^DLM$/i.test(raw) || /Dalaman|\(DLM\)/i.test(raw)) return 'DLM';
+    if (/^BJV$/i.test(raw) || /Bodrum Milas|Milas Bodrum|\(BJV\)/i.test(raw)) return 'BJV';
+    if (/^TZX$/i.test(raw) || /Trabzon Havalimanı|Trabzon Airport|\(TZX\)/i.test(raw)) return 'TZX';
+    if (/^BTZ$/i.test(raw) || /Bursa Yenişehir|Bursa Yenisehir|\(BTZ\)/i.test(raw)) return 'BTZ';
+    return appleCalendarCompactLoc(raw)
+        .replace(/^İST$/i, 'IST')
+        .replace(/Sabiha\s+Gökçen/gi, 'SAW')
+        .replace(/İstanbul\s+Havalimanı|Istanbul\s+Havalimanı|Istanbul\s+Airport/gi, 'IST')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
 const transferCalendarRoute = t => {
     const type = String((t && t.transferType) || 'arrival');
     const from = appleCalendarCompactLoc(t && t.pickup);
@@ -1845,27 +2091,28 @@ const appleCalendarPaymentText = t => {
 };
 const appleCalendarTitle = t => {
     const tm = String((t && t.time) || '').slice(0, 5) || '--:--';
-    /* Kurumsal tek satır: "08:30 · IST → Sultanahmet" — ikon yok, araç yok,
-       ince nokta ayraç, ok etrafında boşluk. Notlar/açıklama aynen korunur. */
     const type = String((t && t.transferType) || 'arrival');
-    const from = appleCalendarCompactLoc(t && t.pickup);
-    const to = appleCalendarCompactLoc(t && t.dropoff);
+    const from = appleCalendarTitleLoc(t && t.pickup);
+    const to = appleCalendarTitleLoc(t && t.dropoff);
     let route;
     if (type === 'tour') {
-        route = (to || from || 'Tur') + ' Turu';
+        route = (to || from || 'Tur') + ' Tur';
     } else if (from && to) {
-        route = from + ' → ' + to;
+        route = from + '→' + to;
     } else {
         route = from || to || 'Transfer';
     }
-    const veh = appleCalendarVehicle(t);
-    return tm + ' · ' + route + (veh ? '  ' + veh : '');
+    return tm + ' · ' + route;
 };
 const appleCalendarDescription = t => {
     const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
     const customer = passengers || (t && (t.passengerName || t.customerName || t.clientName)) || '';
+    const passengerDetails = passengerDetailText((t && t.passengers) || []);
+    const nationalityLine = passengerNationalitySummary((t && t.passengers) || []);
     return [
         'Müşteri: ' + (customer || '-'),
+        passengerDetails ? ('Yolcu detayları:\n' + passengerDetails) : '',
+        nationalityLine,
         'Şoför: ' + ([t && t.driverName, t && t.driverPhone].filter(Boolean).join(' / ') || '-'),
         'İşi veren: ' + ((t && t.givenBy) || '-'),
         'İşi yapan: ' + ((t && t.assignedTo) || '-'),
@@ -6398,6 +6645,10 @@ function App() {
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
     const [paxModal, setPaxModal] = useState(null);
+    const [ocrState, setOcrState] = useState({ busy: false, message: '' });
+    const paxCameraInputRef = useRef(null);
+    const paxGalleryInputRef = useRef(null);
+    const paxListInputRef = useRef(null);
     const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
     const [rstTxt, setRstTxt] = useState('');
@@ -7024,16 +7275,106 @@ function App() {
     // --- Yolcu ekleme/düzenleme modalı (yan yana kart + küçük sayfa) ---
     const paxReal = () => (form.passengers || []).filter(p => (p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))));
     const openPaxModal = (idx) => {
-        if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR' }); return; }
+        setOcrState({ busy: false, message: '' });
+        if (idx == null) { setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR', cinsiyet: '' }); return; }
         const p = paxReal()[idx] || emptyPassenger();
-        setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR' });
+        setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR', cinsiyet: p.cinsiyet || '' });
     };
     const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
+    const runOcrForFile = async (file, label) => {
+        if (!file) return '';
+        if (!window.Tesseract || !window.Tesseract.recognize) {
+            setOcrState({ busy: false, message: 'Okuma motoru yüklenemedi. Manuel giriş yapabilirsiniz.' });
+            tip('Pasaport okuma yüklenemedi');
+            return '';
+        }
+        setOcrState({ busy: true, message: (label || 'Görsel') + ' okunuyor...' });
+        try {
+            const logger = m => {
+                if (!m || !m.status) return;
+                const pct = typeof m.progress === 'number' ? Math.round(m.progress * 100) : 0;
+                const msg = m.status === 'recognizing text' && pct ? ('Metin okunuyor %' + pct) : 'Görsel hazırlanıyor...';
+                setOcrState({ busy: true, message: msg });
+            };
+            let result;
+            try {
+                result = await window.Tesseract.recognize(file, 'eng+tur', { logger });
+            } catch (firstErr) {
+                console.warn('OCR eng diliyle tekrar denenecek', firstErr);
+                result = await window.Tesseract.recognize(file, 'eng', { logger });
+            }
+            const text = result && result.data ? (result.data.text || '') : '';
+            setOcrState({ busy: false, message: text ? 'Okuma tamamlandı. Alanları kontrol edin.' : 'Metin bulunamadı. Manuel giriş yapabilirsiniz.' });
+            return text;
+        } catch (e) {
+            console.error('OCR hata', e);
+            setOcrState({ busy: false, message: 'Tarama başarısız oldu. Manuel giriş yapabilirsiniz.' });
+            tip('Tarama başarısız');
+            return '';
+        }
+    };
+    const applyScannedPassengerToModal = p => {
+        if (!p) return;
+        setPaxModal(m => m ? ({
+            ...m,
+            name: p.name || m.name || '',
+            id: p.pasaport || p.idNo || m.id || '',
+            uyruk: p.uyruk || m.uyruk || 'TR',
+            cinsiyet: p.cinsiyet || m.cinsiyet || ''
+        }) : m);
+    };
+    const scanPassportImageFile = async file => {
+        const text = await runOcrForFile(file, 'Pasaport');
+        if (!text) return;
+        const mrzRows = parsePassportMrzFromText(text);
+        const fallbackRows = mrzRows.length ? [] : parsePassengerListFromText(text);
+        const p = mrzRows[0] || fallbackRows[0];
+        if (!p) {
+            setOcrState({ busy: false, message: 'MRZ okunamadı. Alanları elle doldurabilirsiniz.' });
+            tip('Pasaport okunamadı');
+            return;
+        }
+        applyScannedPassengerToModal(p);
+        tip('Pasaport bilgileri dolduruldu');
+    };
+    const scanPassengerListImageFile = async file => {
+        const text = await runOcrForFile(file, 'Yolcu listesi');
+        if (!text) return;
+        const rows = parsePassportMrzFromText(text);
+        const listRows = rows.length ? rows : parsePassengerListFromText(text);
+        if (!listRows.length) {
+            setOcrState({ busy: false, message: 'Listeden yolcu adı bulunamadı. Manuel ekleme yapabilirsiniz.' });
+            tip('Yolcu bulunamadı');
+            return;
+        }
+        const cur = paxReal();
+        const merged = [...cur, ...listRows].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
+        const seen = new Set();
+        const clean = merged.filter(p => {
+            const key = nm(((p.name || '') + '|' + passengerIdDisplay(p)).trim());
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+        sf({ passengers: clean.length ? clean : [emptyPassenger()], passengerCount: clean.length });
+        setOcrState({ busy: false, message: listRows.length + ' yolcu görselden eklendi. Kartlardan kontrol edebilirsiniz.' });
+        tip(listRows.length + ' yolcu eklendi');
+    };
+    const handlePassportFileInput = async e => {
+        const file = e && e.target && e.target.files ? e.target.files[0] : null;
+        if (e && e.target) e.target.value = '';
+        await scanPassportImageFile(file);
+    };
+    const handlePassengerListFileInput = async e => {
+        const file = e && e.target && e.target.files ? e.target.files[0] : null;
+        if (e && e.target) e.target.value = '';
+        await scanPassengerListImageFile(file);
+    };
     const savePaxModal = () => {
         const m = paxModal; if (!m) return;
         const nm = (m.name || '').trim();
         if (!nm) { tip('Ad soyad gerekli'); return; }
-        const built = { ...emptyPassenger(), name: koTitleCaseTR(nm), phone: (m.phone || '').trim(), uyruk: m.uyruk || 'TR', ...splitPassengerId((m.id || '').trim()) };
+        const built = { ...emptyPassenger(), name: koTitleCaseTR(nm), phone: (m.phone || '').trim(), uyruk: m.uyruk || 'TR', cinsiyet: m.cinsiyet || '', ...splitPassengerId((m.id || '').trim()) };
         const list = paxReal();
         if (m.idx === -1) list.push(built); else list[m.idx] = { ...(list[m.idx] || {}), ...built };
         sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
@@ -7043,7 +7384,8 @@ function App() {
         const list = paxReal().filter((_, i) => i !== idx);
         sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
     };
-    const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
+    const paxCountryName = passengerCountryName;
+    const paxGenderName = passengerGenderName;
     const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
         setAgencies(p => [...p, n.trim()]); };
     const addAgencyContact = (name, phone) => {
@@ -7524,6 +7866,7 @@ function App() {
                 line += '  • Pasaport: ' + p.pasaport;
             return line;
         }).join('\n');
+        const nationalityLine = passengerNationalitySummary(t.passengers || []);
         let msg = 'Misafir Bilgileri\n\n';
         msg += 'Tarih: ' + dt + '\n';
         msg += '🕒 Saat: ' + t.time + '\n';
@@ -7542,6 +7885,7 @@ function App() {
         else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
         else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
         if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
+        if (nationalityLine) msg += '\n\n' + nationalityLine;
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
@@ -10362,7 +10706,11 @@ function App() {
                 React.createElement("div", { className: "card ko-passenger-card" },
                     React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
                         React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
-                        React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle")),
+                        React.createElement("input", { ref: paxListInputRef, type: "file", accept: "image/*", onChange: handlePassengerListFileInput, style: { display: 'none' } }),
+                        React.createElement("div", { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                            React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxListInputRef.current && paxListInputRef.current.click(), style: { display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', color: NAV, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px', fontSize: 11.5, fontWeight: 500, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .6 : 1 } }, "Liste Görseli Yükle"),
+                            React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle"))),
+                    ocrState.message && !paxModal && React.createElement("div", { style: { fontSize: 11, color: SB, margin: '-2px 0 9px', background: INP, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px' } }, ocrState.message),
                     (function () {
                         const list = paxReal();
                         if (!list.length) return React.createElement("div", { style: { fontSize: 12, color: SB, textAlign: 'center', padding: '14px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR } }, "Hen\u00FCz yolcu eklenmedi. \u201C+ Yolcu Ekle\u201D ile ekleyin.");
@@ -10371,7 +10719,8 @@ function App() {
                                 React.createElement("span", { style: { fontSize: 13, fontWeight: 500, color: TX } }, p.name || 'Misafir'),
                                 React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83E\uDEAA " + (passengerIdDisplay(p) || '\u2014')),
                                 React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83D\uDCDE " + (p.phone || '\u2014')),
-                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83C\uDF0D " + paxCountryName(p.uyruk))),
+                                React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\uD83C\uDF0D " + (paxCountryName(p.uyruk) || '\u2014')),
+                                p.cinsiyet && React.createElement("span", { style: { fontSize: 11.5, color: SB } }, "\u25E6 " + paxGenderName(p.cinsiyet))),
                             React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 5, flex: 'none' } },
                                 React.createElement("button", { type: "button", onClick: () => openPaxModal(i), style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "D\u00FCzenle"),
                                 React.createElement("button", { type: "button", onClick: () => delPax(i), style: { background: R, color: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "Sil")))));
@@ -10721,6 +11070,12 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
                     React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, paxModal.idx === -1 ? "👤 Yeni Yolcu" : "👤 Yolcu Düzenle"),
                     React.createElement("button", { onClick: () => setPaxModal(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                React.createElement("input", { ref: paxCameraInputRef, type: "file", accept: "image/*", capture: "environment", onChange: handlePassportFileInput, style: { display: 'none' } }),
+                React.createElement("input", { ref: paxGalleryInputRef, type: "file", accept: "image/*", onChange: handlePassportFileInput, style: { display: 'none' } }),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+                    React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxCameraInputRef.current && paxCameraInputRef.current.click(), style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '11px 8px', fontWeight: 500, fontSize: 12, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .65 : 1 } }, "Pasaport Tara"),
+                    React.createElement("button", { type: "button", disabled: ocrState.busy, onClick: () => paxGalleryInputRef.current && paxGalleryInputRef.current.click(), style: { background: '#FFFFFF', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 12, padding: '11px 8px', fontWeight: 500, fontSize: 12, cursor: ocrState.busy ? 'default' : 'pointer', opacity: ocrState.busy ? .65 : 1 } }, "Galeriden Seç")),
+                ocrState.message && React.createElement("div", { style: { fontSize: 11, color: SB, background: INP, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px', marginBottom: 10, lineHeight: 1.35 } }, ocrState.message),
                 React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                     React.createElement("div", null,
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Ad Soyad"),
@@ -10733,7 +11088,10 @@ function App() {
                         React.createElement("input", { type: "text", value: paxModal.id, onChange: e => setPaxField('id', e.target.value), placeholder: "TC / Pasaport No", className: "inp", inputMode: "text", autoCapitalize: "characters", style: { width: '100%' } })),
                     React.createElement("div", null,
                         React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Uyruk / Ülke"),
-                        React.createElement("select", { value: paxModal.uyruk || 'TR', onChange: e => setPaxField('uyruk', e.target.value), className: "inp", style: { width: '100%' } }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))))),
+                        React.createElement("select", { value: paxModal.uyruk || 'TR', onChange: e => setPaxField('uyruk', e.target.value), className: "inp", style: { width: '100%' } }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n)))),
+                    React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: SB, marginBottom: 4 } }, "Cinsiyet"),
+                        React.createElement("select", { value: paxModal.cinsiyet || '', onChange: e => setPaxField('cinsiyet', e.target.value), className: "inp", style: { width: '100%' } }, PASSENGER_GENDERS.map(g => React.createElement("option", { key: g.k || 'empty', value: g.k }, g.n))))),
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 18 } },
                     React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
                     React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, "Kaydet"))))),
@@ -10847,5 +11205,171 @@ class AppErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(AppErrorBoundary, null, React.createElement(App, null)));
 
 </script>
+<style id="rogo-premium-typography-override">
+/* Rogo inspired typography pass - final override only, no color or layout changes */
+:root{
+  --ko-ui-font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Arial,sans-serif;
+  --ko-display-font:"New York","Iowan Old Style","Apple Garamond","Palatino Linotype",Georgia,serif;
+  --ko-type-tight:-0.008em;
+  --ko-type-soft:0.004em;
+}
+
+html,body,#root,.app-shell{
+  font-family:var(--ko-ui-font) !important;
+  font-size:14px !important;
+  font-weight:380 !important;
+  line-height:1.38 !important;
+  letter-spacing:var(--ko-type-soft) !important;
+  -webkit-font-smoothing:antialiased !important;
+  -moz-osx-font-smoothing:grayscale !important;
+  text-rendering:optimizeLegibility !important;
+  font-optical-sizing:auto;
+  font-synthesis-weight:none;
+}
+
+body *,body *::before,body *::after,
+button,input,select,textarea,.inp{
+  font-family:var(--ko-ui-font) !important;
+  font-synthesis-weight:none;
+}
+
+:where([style*="font-family"],[style*="fontFamily"]){
+  font-family:var(--ko-ui-font) !important;
+}
+
+pre,code,kbd,samp{
+  font-family:var(--ko-ui-font) !important;
+  letter-spacing:0 !important;
+}
+
+:where(.ko-pwa-brand-title,.hdr-title,.lg-greeting-title,.lg-section-title,.lg-month-title-main,.lg-period-panel-title,.date-hdr-txt,.tk-month-title,.tk-panel-date,.ko-passenger-title,.ko-debt-direct-title,.ko-account-section-title){
+  font-family:var(--ko-display-font) !important;
+  font-weight:400 !important;
+  letter-spacing:-0.012em !important;
+  line-height:1.14 !important;
+}
+
+.ko-pwa-brand-title{font-size:20px !important}
+.lg-greeting-title{font-size:17.2px !important}
+.lg-section-title{font-size:16.2px !important}
+.lg-month-title-main{font-size:18px !important}
+.lg-period-panel-title,.date-hdr-txt,.tk-month-title,.tk-panel-date{font-size:14px !important}
+
+:where(b,strong,
+[style*="font-weight: 900"],[style*="font-weight:900"],[style*="fontWeight: 900"],[style*="fontWeight:900"],
+[style*="font-weight: 800"],[style*="font-weight:800"],[style*="fontWeight: 800"],[style*="fontWeight:800"],
+[style*="font-weight: 750"],[style*="font-weight:750"],[style*="fontWeight: 750"],[style*="fontWeight:750"],
+[style*="font-weight: 720"],[style*="font-weight:720"],[style*="fontWeight: 720"],[style*="fontWeight:720"],
+[style*="font-weight: 700"],[style*="font-weight:700"],[style*="fontWeight: 700"],[style*="fontWeight:700"]){
+  font-weight:500 !important;
+}
+
+:where([style*="font-weight: 650"],[style*="font-weight:650"],[style*="fontWeight: 650"],[style*="fontWeight:650"],
+[style*="font-weight: 620"],[style*="font-weight:620"],[style*="fontWeight: 620"],[style*="fontWeight:620"],
+[style*="font-weight: 600"],[style*="font-weight:600"],[style*="fontWeight: 600"],[style*="fontWeight:600"],
+[style*="font-weight: 590"],[style*="font-weight:590"],[style*="fontWeight: 590"],[style*="fontWeight:590"],
+[style*="font-weight: 570"],[style*="font-weight:570"],[style*="fontWeight: 570"],[style*="fontWeight:570"],
+[style*="font-weight: 560"],[style*="font-weight:560"],[style*="fontWeight: 560"],[style*="fontWeight:560"]){
+  font-weight:455 !important;
+}
+
+:where([style*="font-weight: 540"],[style*="font-weight:540"],[style*="fontWeight: 540"],[style*="fontWeight:540"],
+[style*="font-weight: 520"],[style*="font-weight:520"],[style*="fontWeight: 520"],[style*="fontWeight:520"],
+[style*="font-weight: 500"],[style*="font-weight:500"],[style*="fontWeight: 500"],[style*="fontWeight:500"]){
+  font-weight:420 !important;
+}
+
+:where([style*="font-weight: 480"],[style*="font-weight:480"],[style*="fontWeight: 480"],[style*="fontWeight:480"],
+[style*="font-weight: 470"],[style*="font-weight:470"],[style*="fontWeight: 470"],[style*="fontWeight:470"],
+[style*="font-weight: 450"],[style*="font-weight:450"],[style*="fontWeight: 450"],[style*="fontWeight:450"]){
+  font-weight:390 !important;
+}
+
+:where(.tcard-time-big,.tcard-agency,.tcard-amount,.lg-upcoming-time,.lg-mini-time,.lg-period-value,.lg-profit-value,.lg-profit-detail-value,.lg-profit-month-total,.ko-account-stat-total,.ko-account-cell b,.ko-account-firm-card-title b,.ko-account-firm-bucket-total,.ko-arac-job-title,.ko-arac-money-line b,.ko-debt-amount b,.ko-debt-summary-amount){
+  font-weight:435 !important;
+  letter-spacing:-0.006em !important;
+  line-height:1.12 !important;
+  font-variant-numeric:tabular-nums !important;
+  font-feature-settings:"tnum" 1;
+}
+
+:where(.lg-eyebrow,.lg-date,.lg-row,.lg-transfer-date,.tcard-passenger,.tcard-route,.tcard-time,.tcard-time-type,.lg-route,.lg-mini-route,.lg-month-title-sub,.lg-period-sub,.lg-period-panel-count,.lg-month-selected-kicker,.date-hdr-meta,.sub,.muted,.hint,.ko-account-cell,.ko-account-flow,.ko-account-route-cell small,.ko-account-firm-card-copy small,.ko-arac-job-sub,.ko-arac-money-line span,.ko-arac-day-netbox-label,.hdr-subtitle,.ko-smart-phone,.ko-smart-hint,.ko-smart-empty,.tk-item-sub,.tk-item-time){
+  font-weight:350 !important;
+  letter-spacing:0.003em !important;
+  line-height:1.34 !important;
+}
+
+:where(.lbl,.lg-profit-label,.lg-period-label,.ko-account-firm-bucket-title,.x-none,.ko-account-balance-divider,.lg-month-weekdays div,.tk-weekday){
+  font-weight:370 !important;
+  letter-spacing:0.035em !important;
+  line-height:1.22 !important;
+}
+
+:where(button,.hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn,.lg-choice,.ko-passenger-count,.ko-passenger-count-btn,.ko-debt-new-btn,.ko-debt-quick-delete,.tcard-expanded button){
+  font-weight:390 !important;
+  letter-spacing:0.004em !important;
+  line-height:1.22 !important;
+}
+
+:where(input,select,textarea,.inp){
+  font-size:14px !important;
+  font-weight:360 !important;
+  line-height:1.35 !important;
+  letter-spacing:0 !important;
+}
+
+:where(input::placeholder,textarea::placeholder,.inp::placeholder){
+  font-weight:330 !important;
+  letter-spacing:0.002em !important;
+}
+
+:where(.tab,.tab-label){
+  font-size:10.2px !important;
+  font-weight:360 !important;
+  letter-spacing:0.006em !important;
+  line-height:1.1 !important;
+}
+
+.tab-icon{font-weight:300 !important}
+.tab-fab,.tab-fab-plus{font-weight:300 !important;letter-spacing:0 !important}
+
+:where(.tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight,.tcard-pill-flight,.tab-badge,.lg-badge,.ko-payment-to-me-pill){
+  font-size:9.6px !important;
+  font-weight:365 !important;
+  letter-spacing:0.012em !important;
+  line-height:1.12 !important;
+}
+
+:where(.lg-month-day-num,.ko-arac-day-num,.tk-cell-num){
+  font-weight:390 !important;
+  letter-spacing:-0.004em !important;
+  line-height:1 !important;
+}
+
+:where(.lg-month-day-count,.ko-arac-day-count,.tk-cell-count){
+  font-weight:330 !important;
+  letter-spacing:0.002em !important;
+  line-height:1.08 !important;
+}
+
+:where(.lg-month-day-net,.ko-arac-day-net,.view-arac .ko-arac-day-net){
+  font-weight:360 !important;
+  letter-spacing:-0.004em !important;
+  line-height:1.06 !important;
+}
+
+:where(.card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard,.ko-arac-day-panel,.ko-arac-job-card,.ko-debt-card,.ko-contact-card,.ko-real-cal-card,.lg-month-cal-card){
+  letter-spacing:0.002em !important;
+}
+
+@media(max-width:700px){
+  html,body,#root,.app-shell{font-size:13.7px !important}
+  .lg-greeting-title{font-size:16.8px !important}
+  .lg-section-title{font-size:15.9px !important}
+  .lg-month-title-main{font-size:17.4px !important}
+  :where(input,select,textarea,.inp){font-size:13.6px !important}
+  :where(.tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight,.tcard-pill-flight){font-size:9.3px !important}
+}
+</style>
 </body>
 </html>
