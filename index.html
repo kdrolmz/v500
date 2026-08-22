@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="app-icon-512.png">
 <link rel="shortcut icon" type="image/png" href="apple-touch-icon.png">
-<title>KÖ Transfer Takip - Toplu Pasaport MRZ v58</title>
+<title>KÖ Transfer Takip - MRZ Çoklu Okuma v60</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1263,6 +1263,21 @@ const normalizeMrzLine = line => String(line || '')
     .toUpperCase()
     .replace(/[«‹]/g, '<')
     .replace(/[^A-Z0-9<]/g, '');
+const normalizeMrzLineLoose = line => String(line || '')
+    .toUpperCase()
+    .replace(/[«‹≤]/g, '<')
+    .replace(/[({\[_]/g, '<')
+    .replace(/[)\]}]/g, '<')
+    .replace(/[|!]/g, 'I')
+    .replace(/[^A-Z0-9]/g, '<');
+const mrzLikelyLine = line => {
+    const s = String(line || '');
+    if (s.length < 20) return false;
+    if (s.includes('<<') || /^P[A-Z0-9<]/.test(s)) return true;
+    const alnum = (s.match(/[A-Z0-9]/g) || []).length;
+    const digits = (s.match(/[0-9]/g) || []).length;
+    return s.length >= 30 && alnum >= 24 && digits >= 5;
+};
 const mrzClean = v => String(v || '').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
 const parseMrzName = field => {
     const raw = mrzNameish(field).replace(/<+$/g, '');
@@ -1273,15 +1288,33 @@ const parseMrzName = field => {
 };
 const mrzNamePenalty = field => {
     const raw = String(field || '').toUpperCase();
+    const core = raw.replace(/<+$/g, '');
     const digitHits = (raw.match(/[0-9|]/g) || []).length;
     const weirdHits = (raw.replace(/[A-Z0-9<|]/g, '').length || 0);
-    const hasSeparator = raw.includes('<<') ? 0 : 3;
-    return digitHits + weirdHits + hasSeparator;
+    const hasSeparator = core.includes('<<') ? 0 : 3;
+    const nameishCore = mrzNameish(core);
+    const parts = nameishCore.split('<<');
+    const givenWords = mrzClean(parts.slice(1).join(' ')).split(/\s+/).filter(Boolean);
+    const lastGiven = givenWords[givenWords.length - 1] || '';
+    const shortTail = givenWords.length && lastGiven.length <= 2 ? 4 : 0;
+    return digitHits + weirdHits + hasSeparator + shortTail;
 };
-const mrzPassengerRank = p => (p && p.mrzValid ? 1000 : 0) + ((p && p.mrzCheckScore) || 0) * 50 - ((p && p.mrzNamePenalty) || 0) * 8 - ((p && p.mrzPairPenalty) || 0) * 40 + String((p && p.name) || '').length;
+const mrzPassengerRank = p => {
+    const name = String((p && p.name) || '').trim();
+    const words = name ? name.split(/\s+/).filter(Boolean).length : 0;
+    return (p && p.mrzValid ? 1000 : 0)
+        + ((p && p.mrzCheckScore) || 0) * 50
+        + Math.min(4, words) * 35
+        - ((p && p.mrzNamePenalty) || 0) * 12
+        - ((p && p.mrzTruncPenalty) || 0) * 16
+        - ((p && p.mrzPairPenalty) || 0) * 10
+        + name.length;
+};
 const mrzPassengerFromTd3 = (line1, line2) => {
-    const l1 = normalizeMrzLine(line1).padEnd(44, '<').slice(0, 44);
-    const l2 = normalizeMrzLine(line2).padEnd(44, '<').slice(0, 44);
+    const cleanLine1 = normalizeMrzLine(line1);
+    const cleanLine2 = normalizeMrzLine(line2);
+    const l1 = cleanLine1.padEnd(44, '<').slice(0, 44);
+    const l2 = cleanLine2.padEnd(44, '<').slice(0, 44);
     const nameField = l1.slice(5, 44);
     const name = parseMrzName(nameField);
     const docNoField = l2.slice(0, 9);
@@ -1303,9 +1336,10 @@ const mrzPassengerFromTd3 = (line1, line2) => {
         composite: mrzCheckOk(docNoField + docCheck + birth + birthCheck + expiry + expiryCheck + personal + personalCheck, compositeCheck)
     };
     const validCount = Object.values(checks).filter(Boolean).length;
-    const mrzValid = checks.passport && checks.birth && checks.expiry && checks.composite;
+    const mrzValid = checks.passport && checks.birth && checks.expiry;
     if (!name && !passport) return null;
-    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzSource: 'td3' };
+    const truncatedName = cleanLine1.length < 44 && /[A-Z]$/.test(cleanLine1) ? 3 : 0;
+    return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzTruncPenalty: truncatedName, mrzSource: 'td3' };
 };
 const mrzPassengerFromTd1 = (line1, line2, line3) => {
     const l1 = normalizeMrzLine(line1).padEnd(30, '<').slice(0, 30);
@@ -1333,9 +1367,42 @@ const mrzPassengerFromTd1 = (line1, line2, line3) => {
     return { ...emptyPassenger(), name, idNo: passport, pasaport: passport, tc: '', uyruk: uyruk || '', cinsiyet, mrzValid, mrzCheckScore: validCount, mrzNamePenalty: mrzNamePenalty(nameField), mrzSource: 'td1' };
 };
 const parsePassportMrzFromText = text => {
-    const rawLines = String(text || '').split(/\r?\n/)
-        .map(normalizeMrzLine)
-        .filter(x => x.length >= 20 && (x.includes('<<') || (x.match(/</g) || []).length >= 3));
+    const rawLines = [];
+    const addRawLine = x => {
+        const v = String(x || '');
+        if (mrzLikelyLine(v) && !rawLines.includes(v)) rawLines.push(v);
+    };
+    const addRawLineAfter = (x, anchor) => {
+        const v = String(x || '');
+        if (!mrzLikelyLine(v) || rawLines.includes(v)) return;
+        const at = rawLines.indexOf(anchor);
+        if (at >= 0) rawLines.splice(at + 1, 0, v);
+        else rawLines.push(v);
+    };
+    const sourceTextLines = String(text || '').split(/\r?\n/);
+    sourceTextLines.forEach(line => {
+        const tight = normalizeMrzLine(line);
+        const loose = normalizeMrzLineLoose(line);
+        addRawLine(tight);
+        addRawLine(loose);
+        if (/^\s*P[\s<]/i.test(line) && !/^P</.test(tight)) addRawLine(('P<' + tight.replace(/^P+/, '')).slice(0, 88));
+    });
+    for (let i = 0; i < sourceTextLines.length - 1; i++) {
+        const a = normalizeMrzLine(sourceTextLines[i]);
+        const b = normalizeMrzLine(sourceTextLines[i + 1]);
+        if (a.length >= 10 && a.length < 44 && b.length >= 10 && !/^P[A-Z0-9<]/.test(b)) {
+            const joined = (a + b).padEnd(44, '<').slice(0, 44);
+            addRawLineAfter(joined, a);
+            addRawLine((a + b).slice(0, 88));
+        }
+        const al = normalizeMrzLineLoose(sourceTextLines[i]);
+        const bl = normalizeMrzLineLoose(sourceTextLines[i + 1]);
+        if (al.length >= 10 && al.length < 44 && bl.length >= 10 && !/^P[A-Z0-9<]/.test(bl)) {
+            const joinedLoose = (al + bl).padEnd(44, '<').slice(0, 44);
+            addRawLineAfter(joinedLoose, al);
+            addRawLine((al + bl).slice(0, 88));
+        }
+    }
     const splitTd3NameChunks = line => {
         const out = [];
         const pPositions = [];
@@ -1489,9 +1556,22 @@ const buildEnhancedOcrImage = async (file, mode) => {
     const srcW = img.naturalWidth || img.width;
     const srcH = img.naturalHeight || img.height;
     if (!srcW || !srcH) return '';
-    const cropTop = mode === 'mrz-crop' ? Math.round(srcH * 0.54) : 0;
-    const cropH = mode === 'mrz-crop' ? Math.max(1, srcH - cropTop) : srcH;
-    const cropW = srcW;
+    const m = typeof mode === 'object' && mode ? mode : { id: String(mode || 'full') };
+    let cropLeft = 0, cropTop = 0, cropW = srcW, cropH = srcH;
+    if (m.id === 'mrz-crop') { cropTop = Math.round(srcH * 0.48); cropH = srcH - cropTop; }
+    else if (m.id === 'mrz-low') { cropTop = Math.round(srcH * 0.64); cropH = srcH - cropTop; }
+    else if (m.id === 'top-half') { cropH = Math.round(srcH * 0.58); }
+    else if (m.id === 'bottom-half') { cropTop = Math.round(srcH * 0.42); cropH = srcH - cropTop; }
+    else if (m.id === 'left-half') { cropW = Math.round(srcW * 0.56); }
+    else if (m.id === 'right-half') { cropLeft = Math.round(srcW * 0.44); cropW = srcW - cropLeft; }
+    else if (m.id === 'top-left') { cropW = Math.round(srcW * 0.56); cropH = Math.round(srcH * 0.58); }
+    else if (m.id === 'top-right') { cropLeft = Math.round(srcW * 0.44); cropW = srcW - cropLeft; cropH = Math.round(srcH * 0.58); }
+    else if (m.id === 'bottom-left') { cropTop = Math.round(srcH * 0.42); cropW = Math.round(srcW * 0.56); cropH = srcH - cropTop; }
+    else if (m.id === 'bottom-right') { cropLeft = Math.round(srcW * 0.44); cropTop = Math.round(srcH * 0.42); cropW = srcW - cropLeft; cropH = srcH - cropTop; }
+    cropLeft = Math.max(0, Math.min(srcW - 1, cropLeft));
+    cropTop = Math.max(0, Math.min(srcH - 1, cropTop));
+    cropW = Math.max(1, Math.min(srcW - cropLeft, cropW));
+    cropH = Math.max(1, Math.min(srcH - cropTop, cropH));
     const targetW = Math.max(900, Math.min(2200, cropW < 1200 ? cropW * 2 : cropW));
     const scale = targetW / cropW;
     const canvas = document.createElement('canvas');
@@ -1500,13 +1580,15 @@ const buildEnhancedOcrImage = async (file, mode) => {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return '';
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, 0, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, cropLeft, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const threshold = m.threshold !== false && m.id !== 'full-soft';
+    const contrast = m.contrast || (m.id === 'mrz-crop' || m.id === 'mrz-low' ? 2.35 : 1.85);
     for (let i = 0; i < data.data.length; i += 4) {
         const r = data.data[i], g = data.data[i + 1], b = data.data[i + 2];
         let y = 0.299 * r + 0.587 * g + 0.114 * b;
-        y = Math.max(0, Math.min(255, (y - 128) * (mode === 'mrz-crop' ? 2.35 : 1.75) + 128));
-        if (mode === 'mrz-crop') y = y > 142 ? 255 : 0;
+        y = Math.max(0, Math.min(255, (y - 128) * contrast + 128));
+        if (threshold) y = y > (m.cutoff || 142) ? 255 : 0;
         data.data[i] = data.data[i + 1] = data.data[i + 2] = y;
         data.data[i + 3] = 255;
     }
@@ -1516,14 +1598,26 @@ const buildEnhancedOcrImage = async (file, mode) => {
 const buildOcrSources = async (file, mode) => {
     const sources = [{ label: 'orijinal', source: file }];
     if (mode === 'passport') {
-        try {
-            const crop = await buildEnhancedOcrImage(file, 'mrz-crop');
-            if (crop) sources.unshift({ label: 'MRZ net', source: crop });
-        } catch (e) { console.warn('MRZ kırpım hazırlanamadı', e); }
-        try {
-            const full = await buildEnhancedOcrImage(file, 'full');
-            if (full) sources.push({ label: 'tam net', source: full });
-        } catch (e) { console.warn('Tam görüntü hazırlanamadı', e); }
+        const presets = [
+            ['MRZ alt', { id: 'mrz-crop' }],
+            ['MRZ en alt', { id: 'mrz-low' }],
+            ['üst yarı', { id: 'top-half', threshold: false, contrast: 1.6 }],
+            ['alt yarı', { id: 'bottom-half', threshold: false, contrast: 1.6 }],
+            ['sol yarı', { id: 'left-half', threshold: false, contrast: 1.55 }],
+            ['sağ yarı', { id: 'right-half', threshold: false, contrast: 1.55 }],
+            ['sol üst', { id: 'top-left', threshold: false, contrast: 1.55 }],
+            ['sağ üst', { id: 'top-right', threshold: false, contrast: 1.55 }],
+            ['sol alt', { id: 'bottom-left', threshold: false, contrast: 1.55 }],
+            ['sağ alt', { id: 'bottom-right', threshold: false, contrast: 1.55 }],
+            ['tam net', { id: 'full' }],
+            ['tam yumuşak', { id: 'full-soft', threshold: false, contrast: 1.45 }]
+        ];
+        for (const [label, preset] of presets) {
+            try {
+                const img = await buildEnhancedOcrImage(file, preset);
+                if (img) sources.push({ label, source: img });
+            } catch (e) { console.warn(label + ' hazırlanamadı', e); }
+        }
     }
     return sources;
 };
@@ -7505,7 +7599,7 @@ function App() {
         }) : m);
     };
     const safePassportRowsFromText = (text, strictName) => parsePassportMrzFromText(text)
-        .filter(p => p && p.mrzValid && p.name && (p.pasaport || p.idNo) && ((p.mrzNamePenalty || 0) <= (strictName ? 1 : 2)))
+        .filter(p => p && p.mrzValid && p.name && String(p.name).trim().split(/\s+/).length >= 2 && (p.pasaport || p.idNo) && ((p.mrzNamePenalty || 0) <= (strictName ? 1 : 2)))
         .sort((a, b) => mrzPassengerRank(b) - mrzPassengerRank(a));
     const mergePassengerRows = rows => {
         const merged = [...paxReal(), ...(rows || [])].filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
