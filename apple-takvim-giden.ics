@@ -3530,8 +3530,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787407268076_6kjcob@olmeztur
 DTSTAMP:20260822T140200Z
-LAST-MODIFIED:20260822T140100Z
-SEQUENCE:1787407268
+LAST-MODIFIED:20260822T140200Z
+SEQUENCE:1787407366
 DTSTART:20260822T080000
 DTEND:20260822T090000
 SUMMARY:08:00 · Bursa → Sabiha Gökçen  Sprinter
@@ -3539,7 +3539,8 @@ LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Awad Alsaaidi\nŞoför: Cihat Öter\nİşi veren: Gani B
  alta\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Sprinter\nGüzer
  gah: Bursa → Sabiha Gökçen Havalimanı\nNot: 20 Kuveyt dinarı 100 dolar 2
- 00 tl ödeme verdi\nÖdeme: Müşteri: 8.100 TRY | Araç: 7.500 ₺
+ 00 tl ödeme verdi\nÖdeme: Müşteri: 8.100 TRY | Araç: 8.100 ₺ | Alt acent
+ a: 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
