@@ -5042,29 +5042,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1787409023547_g5r8mn@olmeztur
-DTSTAMP:20260822T143000Z
-LAST-MODIFIED:20260822T143000Z
-SEQUENCE:1787409023
-DTSTART:20260822T090000
-DTEND:20260822T100000
-SUMMARY:09:00 · Bursa→SAW
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Rashed S A H C Alenezi\, Salahuldeen A H Sh Alanzi\
- , Muna Alenezi\, Abdulkareem Alenezi\nYolcu detayları:\n1. Rashed S A H 
- C Alenezi | Pasaport: P06543232 | Uyruk: Kuveyt | Cinsiyet: Erkek\n2. Sa
- lahuldeen A H Sh Alanzi | Pasaport: P05342219 | Uyruk: Kuveyt | Cinsiyet
- : Erkek\n3. Muna Alenezi | Pasaport: P05341401 | Uyruk: Kuveyt | Cinsiye
- t: Kadın\n4. Abdulkareem Alenezi | Uyruk: Türkiye\nUyruklar: Kuveyt\, Tü
- rkiye\nŞoför: Şenol Hemitli / +90 (537) 475 41 83\nİşi veren: Trias Turi
- zm\nİşi yapan: Ölmeztur\nAlt acenta: Şenol Hemitli\nAraç: Sprinter\nGüze
- rgah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 168 USD | Araç: 
- 6.950 ₺ | Alt acenta: 6.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1787308220326_qwbczt@olmeztur
 DTSTAMP:20260822T143000Z
 LAST-MODIFIED:20260821T171500Z
