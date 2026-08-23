@@ -8610,8 +8610,22 @@ function App() {
     const scanCancelRef = useRef(false);
     const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
-    const [rstTxt, setRstTxt] = useState('');
+    /* Yedek metni React state'inde TUTULMAZ: megabaytlık JSON'u kontrollü bir
+       textarea'ya bağlamak iPhone'da her tuşta yeniden çizime yol açıp donduruyordu.
+       Metin DOM'da kalır, state'te yalnız küçük bir özet taşınır. */
+    const rstRef = useRef(null);
+    const rstCheckRef = useRef(null);
+    const [rstInfo, setRstInfo] = useState(null);   // { ok, count, arac, date, kb, err }
     const [bkpPreview, setBkpPreview] = useState('');
+    const [bkpTab, setBkpTab] = useState('yedek');  // 'yedek' | 'takvim'
+    const [lastBackupAt, setLastBackupAt] = useState(() => {
+        try { return localStorage.getItem('ko_last_backup_at') || ''; } catch (e) { return ''; }
+    });
+    const markBackupDone = () => {
+        const iso = new Date().toISOString();
+        try { localStorage.setItem('ko_last_backup_at', iso); } catch (e) {}
+        setLastBackupAt(iso);
+    };
     const [crossRates, setCrossRates] = useState(function(){ try { const v = JSON.parse(localStorage.getItem('ko_cross_rates') || 'null'); if (v && moneyValue(v.kopru) > 0 && moneyValue(v.feribot) > 0) return { kopru: moneyValue(v.kopru), feribot: moneyValue(v.feribot) }; } catch (e) {} return { ...DEFAULT_CROSS_RATES }; });
     const [flt, setFlt] = useState({ status: 'all', search: '', collect: 'all', plateView: 'all', plateCollect: 'all' });
     const [showSt, setShowSt] = useState(false);
@@ -10397,6 +10411,7 @@ function App() {
         const ok = await copyText(payload);
         if (ok) {
             setBkpPreview('✓ ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' — Yedek panoya kopyalandı (' + kb + ' KB, ' + T.length + ' transfer). Notlar/Dosyalar uygulamasına yapıştırabilirsin.');
+            markBackupDone();
             tip('Yedek panoya kopyalandı');
         } else {
             setBkpPreview('Pano bu tarayıcıda desteklenmedi — yedek dosya olarak indirildi (' + kb + ' KB).');
@@ -10454,6 +10469,7 @@ function App() {
         const payload = JSON.stringify(snapshotPayload());
         setBkpPreview('✓ Yedek dosyası hazırlandı (' + Math.max(1, Math.round(payload.length / 1024)) + ' KB, ' + T.length + ' transfer).');
         const ok = await downloadText(payload, 'Olmeztur_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
+        if (ok) markBackupDone();
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
     };
     const publishAppleCalendarToGithub = async (silent) => {
@@ -10600,7 +10616,36 @@ function App() {
         tip('Geçerli yedek yapıştırın');
         return false;
     } };
-    const doRestore = () => applyRestoreText(rstTxt);
+    /* Yapıştırılan metni hafifçe inceler: geçerli mi, kaç kayıt var, ne zamandan.
+       Böylece kullanıcı yüklemeden önce doğru yedeği yapıştırdığını görür. */
+    const inspectRestoreText = txt => {
+        const raw = String(txt || '').trim();
+        if (!raw) return null;
+        const kb = Math.max(1, Math.round(raw.length / 1024));
+        let d = null;
+        try { d = JSON.parse(raw); } catch (e) { return { ok: false, kb: kb, err: 'Metin bozuk ya da eksik yapıştırılmış' }; }
+        if (!d || !Array.isArray(d.t)) return { ok: false, kb: kb, err: 'Bu bir Ölmeztur yedeği değil' };
+        let dt = '';
+        try { dt = d.date ? new Date(d.date).toLocaleString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''; } catch (e) {}
+        return { ok: true, kb: kb, count: d.t.length, arac: Array.isArray(d.ak) ? d.ak.length : 0, date: dt };
+    };
+    const onRestoreInput = () => {
+        if (rstCheckRef.current) clearTimeout(rstCheckRef.current);
+        rstCheckRef.current = setTimeout(() => {
+            const el = rstRef.current;
+            setRstInfo(el ? inspectRestoreText(el.value) : null);
+        }, 180);
+    };
+    const clearRestoreBox = () => {
+        if (rstRef.current) rstRef.current.value = '';
+        setRstInfo(null);
+    };
+    const doRestore = () => {
+        const el = rstRef.current;
+        const txt = el ? el.value : '';
+        if (!txt.trim()) { tip('Önce yedeği yapıştır'); return; }
+        if (applyRestoreText(txt)) { clearRestoreBox(); setBkpM(false); }
+    };
     const pasteAndRestore = async () => {
         try {
             if (navigator.clipboard && window.isSecureContext) {
@@ -13312,68 +13357,228 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 18 } },
                     React.createElement("button", { onClick: () => cpTxt(activeMsg), style: { flex: 1, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "\uD83D\uDCCB Kopyala"),
                     ((msgM.tp === 'drv' && msgM.t?.driverPhone) || (msgM.tp === 'cus' && msgM.t?.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone)) && (React.createElement("button", { onClick: () => { const raw = msgM.tp === 'drv' ? msgM.t.driverPhone : ((msgM.t.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone) || ''); const cl = String(raw || '').replace(/\D/g, ''); const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl; if (n) window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(activeMsg), '_blank'); }, style: { background: '#1C1C1E', color: '#FFFFFF', border: 'none', borderRadius: 13, padding: '13px 16px', fontWeight: 450, fontSize: '13px', cursor: 'pointer' } }, "WA")))))),
-        bkpM && (React.createElement("div", { className: "mo", onClick: () => setBkpM(false) },
-            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 30 } },
-                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
-                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
-                    React.createElement("div", { style: { fontWeight: 450, fontSize: 16, color: TX } }, "\uD83D\uDEE1\uFE0F Veri Yedekleme"),
-                    React.createElement("button", { onClick: () => setBkpM(false), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "\u2715")),
-                React.createElement("div", { style: { background: '#F2F2F7', border: '1px solid #D1D1D6', borderRadius: 14, padding: 14, marginBottom: 12 } },
-                    React.createElement("div", { style: { fontWeight: 450, fontSize: 13, color: G, marginBottom: 6 } }, "\uD83D\uDCE4 G\u00FCvenli Yedek"),
-                    React.createElement("div", { style: { fontSize: 11, color: G, marginBottom: 8 } }, "En sa\u011Flam yol: yede\u011Fi dosya olarak indirip Dosyalar / iCloud Drive i\u00E7inde saklamak. Panoya kopyalama sadece h\u0131zl\u0131 alternatif."),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 10, padding: '10px 12px', background: '#fff', borderRadius: 10, border: '1px solid #D1D1D6' } },
-                        React.createElement("div", { style: { textAlign: 'center' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#1C1C1E', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'tam').length),
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: '#5E5F58', marginTop: 2 } }, 'TAM')
-                        ),
-                        React.createElement("div", { style: { textAlign: 'center', borderLeft: '1px solid #E5E5EA', borderRight: '1px solid #E5E5EA' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#1C1C1E', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status !== 'tam' && t.status !== 'iptal').length),
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: '#9E7C2E', marginTop: 2 } }, 'BOŞ')
-                        ),
-                        React.createElement("div", { style: { textAlign: 'center' } },
-                            React.createElement("div", { style: { fontSize: 18, fontWeight: 450, color: '#22252E', fontVariantNumeric: 'tabular-nums' } }, T.filter(t => t.status === 'iptal').length),
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 470, color: SB, marginTop: 2 } }, 'İPTAL')
-                        )
-                    ),
-                    React.createElement("button", { onClick: downloadBackupFile, style: { width: '100%', background: G, color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
-                        "\uD83D\uDCC1 iCloud / Dosyalar'a Yedek \u0130ndir"),
-                    React.createElement("div", { style: { background: '#fff', border: '1px solid #D1D1D6', borderRadius: 12, padding: 10, marginBottom: 8 } },
-                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                            React.createElement("div", { style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "Apple Takvim Otomatik"),
-                            React.createElement("span", { style: { fontSize: 10, color: githubCalendarAuto ? G : SB, fontWeight: 450 } }, githubCalendarAuto ? "Açık" : "Kapalı")),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 78px', gap: 6, marginBottom: 6 } },
-                            React.createElement("input", { type: "text", inputMode: "text", value: githubCalendarToken, onChange: e => setGithubCalendarToken(e.target.value), placeholder: "GitHub token (github_pat_...)", autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false, name: "ko-gh-token-field", "data-1p-ignore": "true", "data-lpignore": "true", "data-form-type": "other", className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 11px', background: '#F9F9FB', WebkitTextSecurity: 'none' } }),
-                            React.createElement("button", { onClick: () => { setGithubCalendarToken(''); setGithubCalendarAuto(false); setGithubCalendarMsg('Token bu cihazdan silindi'); tip('Token silindi'); }, style: { background: '#F2F2F7', color: TX, border: '1px solid #D1D1D6', borderRadius: 10, padding: '10px 5px', fontSize: 10.5, fontWeight: 450, cursor: 'pointer' } }, "Token Sil")),
-                        React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.35, marginBottom: 7 } }, "Token her cihazda ayrı saklanır; iPhone ve MacBook'ta bir kez gir. Yalnızca GitHub'a takvim dosyası yazmak için kullanılır."),
-                        (function(){
+        bkpM && (function () {
+            /* ═══════════════════════════════════════════════════════
+               🛡️ YEDEK & TAKVİM
+               İki ayrı sekme: yedek alma/geri yükleme ile Apple Takvim
+               yayını birbirine karışmasın. Yedek metni hiçbir zaman React
+               state'ine girmez — donmanın sebebi oydu.
+               ═══════════════════════════════════════════════════════ */
+            const TEAL = '#0B7285';
+            const isYedek = bkpTab === 'yedek';
+            const sonYedek = (function () {
+                if (!lastBackupAt) return 'Henüz yedek alınmadı';
+                try {
+                    return new Date(lastBackupAt).toLocaleString('tr-TR',
+                        { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' });
+                } catch (e) { return '—'; }
+            })();
+            const sayac = (n, l, c) => React.createElement("div", { style: { textAlign: 'center', flex: 1, minWidth: 0 } },
+                React.createElement("div", { style: { fontSize: 19, fontWeight: 500, color: c || TX, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 } }, n),
+                React.createElement("div", { style: { fontSize: 9, fontWeight: 500, color: SB, marginTop: 3, letterSpacing: .5 } }, l));
+            const bolumBaslik = t => React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: SB, letterSpacing: .16 + 'em', textTransform: 'uppercase', margin: '2px 0 8px' } }, t);
+            const anaBtn = (label, sub, onClick, bg, disabled) => React.createElement("button", {
+                type: "button", onClick: onClick, disabled: !!disabled,
+                style: {
+                    width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    background: disabled ? '#E7E9EC' : bg, color: disabled ? '#9AA0A6' : '#FFFFFF',
+                    border: 'none', borderRadius: 13, padding: '12px 10px',
+                    cursor: disabled ? 'default' : 'pointer', WebkitTapHighlightColor: 'transparent'
+                }
+            },
+                React.createElement("span", { style: { fontSize: 13.5, fontWeight: 500, lineHeight: 1.2 } }, label),
+                sub && React.createElement("span", { style: { fontSize: 10, opacity: .85, lineHeight: 1.2 } }, sub));
+            const yanBtn = (label, sub, onClick) => React.createElement("button", {
+                type: "button", onClick: onClick,
+                style: {
+                    width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    background: '#FFFFFF', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 13,
+                    padding: '12px 10px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent'
+                }
+            },
+                React.createElement("span", { style: { fontSize: 13, fontWeight: 500, lineHeight: 1.2 } }, label),
+                sub && React.createElement("span", { style: { fontSize: 10, opacity: .6, lineHeight: 1.2 } }, sub));
+
+            return React.createElement("div", { className: "mo", onClick: () => setBkpM(false) },
+                React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 22 } },
+                    /* Başlık */
+                    React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+                        React.createElement("div", { style: { fontWeight: 450, fontSize: 16, color: TX } }, "🛡️ Yedek & Takvim"),
+                        React.createElement("button", { onClick: () => setBkpM(false), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                    /* Sekme seçici */
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: 4, marginBottom: 14 } },
+                        [['yedek', '🛡️ Yedek'], ['takvim', '🗓️ Apple Takvim']].map(([k, l]) =>
+                            React.createElement("button", {
+                                key: k, type: "button", onClick: () => setBkpTab(k),
+                                style: {
+                                    background: bkpTab === k ? NAV : 'transparent',
+                                    color: bkpTab === k ? '#FFFFFF' : SB,
+                                    border: 'none', borderRadius: 9, padding: '9px 6px',
+                                    fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
+                                    WebkitTapHighlightColor: 'transparent'
+                                }
+                            }, l))),
+
+                    /* ══ YEDEK SEKMESİ ══ */
+                    isYedek && React.createElement(React.Fragment, null,
+                        /* Veri özeti */
+                        React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: '12px 10px', marginBottom: 14 } },
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center' } },
+                                sayac(T.length, 'TRANSFER'),
+                                React.createElement("div", { style: { width: 1, alignSelf: 'stretch', background: BOR } }),
+                                sayac(T.filter(t => t.status === 'tam').length, 'TAMAMLANAN', G),
+                                React.createElement("div", { style: { width: 1, alignSelf: 'stretch', background: BOR } }),
+                                sayac(T.filter(t => t.status === 'iptal').length, 'İPTAL', SB)),
+                            React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid ' + BOR } },
+                                "Son yedek: " + sonYedek)),
+
+                        /* Yedek al */
+                        bolumBaslik('Yedek Al'),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
+                            anaBtn('📋 Panoya Kopyala', 'Notlar’a yapıştır', doBackup, NAV),
+                            anaBtn('📁 Dosyaya İndir', 'iCloud / Dosyalar', downloadBackupFile, TEAL)),
+                        React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.45, marginBottom: 16, padding: '8px 11px', background: '#F0F8F4', border: '1px dashed #BFE3CF', borderRadius: 10 } },
+                            bkpPreview || 'Transferler, gelir–giderler, araç işleri, firma hesapları, borçlar ve ayarlar tek parça hâlinde yedeklenir.'),
+
+                        /* Geri yükle */
+                        bolumBaslik('Geri Yükle'),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+                            anaBtn('📥 Panodakini Yükle', 'tek dokunuş', pasteAndRestore, G),
+                            React.createElement("label", {
+                                style: {
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+                                    background: '#FFFFFF', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 13,
+                                    padding: '12px 10px', cursor: 'pointer', textAlign: 'center'
+                                }
+                            },
+                                React.createElement("span", { style: { fontSize: 13, fontWeight: 500, lineHeight: 1.2 } }, "📂 Dosyadan Yükle"),
+                                React.createElement("span", { style: { fontSize: 10, opacity: .6, lineHeight: 1.2 } }, ".json yedeği seç"),
+                                React.createElement("input", { type: "file", accept: ".json,application/json", style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; restoreFromFile(f); } }))),
+
+                        /* Yapıştırma alanı */
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 8px' } },
+                            React.createElement("div", { style: { flex: 1, height: 1, background: BOR } }),
+                            React.createElement("span", { style: { fontSize: 10, color: SB, fontWeight: 450 } }, "ya da yedeği buraya yapıştır"),
+                            React.createElement("div", { style: { flex: 1, height: 1, background: BOR } })),
+                        React.createElement("textarea", {
+                            ref: rstRef, onInput: onRestoreInput, onChange: onRestoreInput,
+                            placeholder: "Notlar’dan kopyaladığın yedeği buraya yapıştır…",
+                            rows: 3, spellCheck: false, autoCapitalize: "off", autoCorrect: "off",
+                            style: {
+                                width: '100%', background: '#FFFFFF', border: '1.5px solid ' + (rstInfo ? (rstInfo.ok ? '#7FC79B' : '#F0A6A2') : BOR),
+                                borderRadius: 11, padding: '10px 12px', fontSize: 12.5, color: TX,
+                                resize: 'none', outline: 'none', display: 'block', marginBottom: 8,
+                                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
+                            }
+                        }),
+                        rstInfo && React.createElement("div", {
+                            style: {
+                                display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 9,
+                                padding: '9px 11px', borderRadius: 10, fontSize: 11.5, lineHeight: 1.4, fontWeight: 450,
+                                background: rstInfo.ok ? '#E7F6EC' : '#FFF4E5',
+                                color: rstInfo.ok ? '#1B5E20' : '#8A5300',
+                                border: '1px solid ' + (rstInfo.ok ? '#B7E1C4' : '#F0C48A')
+                            }
+                        },
+                            React.createElement("span", { style: { fontSize: 13, flexShrink: 0 } }, rstInfo.ok ? '✅' : '⚠️'),
+                            React.createElement("span", null, rstInfo.ok
+                                ? React.createElement(React.Fragment, null,
+                                    React.createElement("div", { style: { fontWeight: 500 } },
+                                        'Geçerli yedek · ' + rstInfo.count + ' transfer' + (rstInfo.arac ? ' · ' + rstInfo.arac + ' araç işi' : '')),
+                                    React.createElement("div", { style: { opacity: .8, marginTop: 1 } },
+                                        (rstInfo.date ? rstInfo.date + ' · ' : '') + rstInfo.kb + ' KB'))
+                                : rstInfo.err)),
+                        React.createElement("div", { style: { display: 'flex', gap: 8 } },
+                            rstInfo && React.createElement("button", {
+                                type: "button", onClick: clearRestoreBox,
+                                style: { flex: 'none', background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: '13px 16px', fontWeight: 450, fontSize: 13, cursor: 'pointer' }
+                            }, "Temizle"),
+                            React.createElement("button", {
+                                type: "button", onClick: doRestore, disabled: !(rstInfo && rstInfo.ok),
+                                style: {
+                                    flex: 1, background: (rstInfo && rstInfo.ok) ? G : '#C7CBD1', color: '#FFFFFF',
+                                    border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: 14,
+                                    cursor: (rstInfo && rstInfo.ok) ? 'pointer' : 'default'
+                                }
+                            }, (rstInfo && rstInfo.ok) ? ('⬆️ ' + rstInfo.count + ' Transferi Geri Yükle') : '⬆️ Yedeği Geri Yükle')),
+                        React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.45, marginTop: 10, textAlign: 'center' } },
+                            "Geri yükleme mevcut verinin üstüne yazar; onay sorulur.")),
+
+                    /* ══ APPLE TAKVİM SEKMESİ ══ */
+                    !isYedek && React.createElement(React.Fragment, null,
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: '12px 13px', marginBottom: 14 } },
+                            React.createElement("div", { style: { minWidth: 0 } },
+                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, "Otomatik yayın"),
+                                React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, "Transfer değişince takvim kendiliğinden güncellenir")),
+                            React.createElement("button", {
+                                type: "button", onClick: () => setGithubCalendarAuto(v => !v),
+                                style: {
+                                    flexShrink: 0, width: 52, height: 30, borderRadius: 999, border: 'none', cursor: 'pointer', padding: 3,
+                                    background: githubCalendarAuto ? G : '#C7CBD1', display: 'flex',
+                                    justifyContent: githubCalendarAuto ? 'flex-end' : 'flex-start', transition: 'all .18s ease'
+                                }
+                            }, React.createElement("span", { style: { width: 24, height: 24, borderRadius: '50%', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,.25)', display: 'block' } }))),
+
+                        bolumBaslik('GitHub Erişimi'),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 7, marginBottom: 7 } },
+                            React.createElement("input", {
+                                type: "text", inputMode: "text", value: githubCalendarToken,
+                                onChange: e => setGithubCalendarToken(e.target.value),
+                                placeholder: "github_pat_…", autoComplete: "off", autoCorrect: "off",
+                                autoCapitalize: "off", spellCheck: false, name: "ko-gh-token-field",
+                                "data-1p-ignore": "true", "data-lpignore": "true", "data-form-type": "other",
+                                className: "inp", style: { width: '100%', fontSize: 12, padding: '11px 12px', background: '#F9F9FB' }
+                            }),
+                            React.createElement("button", {
+                                type: "button",
+                                onClick: () => { setGithubCalendarToken(''); setGithubCalendarAuto(false); setGithubCalendarMsg('Token bu cihazdan silindi'); tip('Token silindi'); },
+                                style: { background: '#FFFFFF', color: SB, border: '1.5px solid ' + BOR, borderRadius: 11, padding: '11px 13px', fontSize: 11.5, fontWeight: 450, cursor: 'pointer', whiteSpace: 'nowrap' }
+                            }, "Sil")),
+                        (function () {
                             const tk = (githubCalendarToken || '').replace(/\s+/g, '');
-                            if (!tk) return null;
+                            if (!tk) return React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.4, marginBottom: 12 } },
+                                "Token her cihazda ayrı saklanır; iPhone ve MacBook’ta bir kez girmen yeterli.");
                             const ok = tk.startsWith('github_pat_') || tk.startsWith('ghp_');
-                            const tail = tk.length > 4 ? tk.slice(-4) : tk;
-                            return React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: ok ? G : R, lineHeight: 1.35, marginBottom: 7, padding: '6px 8px', borderRadius: 8, background: ok ? '#F0F8F4' : '#FFF1F0', border: '1px solid ' + (ok ? '#BFE3CF' : '#FFC4C0') } },
-                                ok ? ('✓ Token girildi · ' + tk.length + ' karakter · ...' + tail)
-                                   : ('⚠ Bu metin token gibi görünmüyor (github_pat_ ile başlamalı). Uzunluk: ' + tk.length));
+                            return React.createElement("div", {
+                                style: {
+                                    fontSize: 10.5, fontWeight: 450, lineHeight: 1.4, marginBottom: 12, padding: '7px 10px', borderRadius: 9,
+                                    color: ok ? '#1B5E20' : '#8A5300', background: ok ? '#E7F6EC' : '#FFF4E5',
+                                    border: '1px solid ' + (ok ? '#B7E1C4' : '#F0C48A')
+                                }
+                            }, ok ? ('✓ Token kayıtlı · ' + tk.length + ' karakter · …' + tk.slice(-4))
+                                  : ('⚠ Bu metin token gibi görünmüyor — github_pat_ ile başlamalı (' + tk.length + ' karakter)'));
                         })(),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 7 } },
-                            React.createElement("button", { onClick: () => setGithubCalendarAuto(v => !v), style: { background: githubCalendarAuto ? G : '#F2F2F7', color: githubCalendarAuto ? '#fff' : TX, border: '1px solid ' + (githubCalendarAuto ? G : '#D1D1D6'), borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 450, cursor: 'pointer' } }, githubCalendarAuto ? "Otomatik Açık" : "Otomatik Kapalı"),
-                            React.createElement("button", { onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy, style: { background: githubCalendarBusy ? '#AEAEB2' : '#1C1C1E', color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '10px 8px', fontSize: 11.5, fontWeight: 450, cursor: githubCalendarBusy ? 'default' : 'pointer' } }, githubCalendarBusy ? "Yayınlanıyor" : "Şimdi Yayınla")),
-                        React.createElement("div", { style: { fontSize: 10.5, color: githubCalendarMsg && /hata|yanlış|eksik|görünmüyor|kabul|Repo|Token/i.test(githubCalendarMsg) ? R : SB, lineHeight: 1.35, marginBottom: 7, fontWeight: githubCalendarMsg ? 700 : 500 } }, githubCalendarMsg || "Renkli Apple takvimleri aşağıdan bir kez aç."),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 } },
-                            APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", { key: meta.id, onClick: () => openAppleCalendarSubscription(meta), style: { background: '#fff', color: '#1C1C1E', border: '1px solid ' + meta.color, borderLeft: '5px solid ' + meta.color, borderRadius: 9, padding: '8px 5px', fontSize: 10.5, fontWeight: 450, cursor: 'pointer', minHeight: 34 } }, meta.id === 'arrival' ? 'Gelen' : meta.id === 'departure' ? 'Giden' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP')))),
-                    React.createElement("button", { onClick: doBackup, style: { width: '100%', background: '#FFFFFF', color: G, border: '1.5px solid #D1D1D6', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } },
-                        "\uD83D\uDCCB Her \u015Eeyi Panoya Kopyala (",
-                        T.length,
-                        " transfer + giderler)"),
-                    React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 8, padding: '6px 10px', background: '#F0F8F4', borderRadius: 8, border: '1px dashed #BFE3CF', lineHeight: 1.4 } },
-                        "Tek dokunu\u015Fla t\u00FCm veri kopyalan\u0131r: transferler, gelirler, giderler, ara\u00E7 i\u015Fleri, hesap kartlar\u0131, bor\u00E7lar ve ayarlar. Geri y\u00FCklerken hepsi tek seferde komple y\u00FCklenir."),
-                    React.createElement("textarea", { readOnly: true, value: bkpPreview, placeholder: "Yedek durumu burada g\u00F6r\u00FCn\u00FCr", rows: 3, style: { width: '100%', background: '#fff', border: '1.5px dashed #D1D1D6', borderRadius: 10, padding: '10px 12px', fontSize: '12px', color: TX, resize: 'none', outline: 'none' } })),
-                React.createElement("div", { style: { background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: 14 } },
-                    React.createElement("div", { style: { fontWeight: 450, fontSize: 13, color: NAV, marginBottom: 6 } }, "\uD83D\uDCE5 Geri Y\u00FCkle"),
-                    React.createElement("div", { style: { fontSize: 11, color: SB, marginBottom: 8 } }, "Dosyalar/iCloud Drive\u2019daki .json yede\u011Fini se\u00E7ebilir veya eski y\u00F6ntemle panodan y\u00FCkleyebilirsin."),
-                    React.createElement("input", { type: "file", accept: ".json,application/json", onChange: e => { const f = e.target.files && e.target.files[0]; restoreFromFile(f); e.target.value = ''; }, className: "inp", style: { width: '100%', fontSize: 12, padding: '10px 12px', marginBottom: 8, background: '#fff' } }),
-                    React.createElement("button", { onClick: pasteAndRestore, style: { width: '100%', background: '#1C1C1E', color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: 'pointer', marginBottom: 8 } }, "\uD83D\uDCCB Panodakini Y\u00FCkle"),
-                    React.createElement("textarea", { value: rstTxt, onChange: e => setRstTxt(e.target.value), onPaste: e => { const pasted = (e.clipboardData || window.clipboardData).getData('text'); if (pasted) setTimeout(() => setRstTxt(pasted), 0); }, placeholder: "Yedek veriyi buraya yap\u0131\u015Ft\u0131r\u0131n", rows: 4, style: { width: '100%', background: 'white', border: '1.5px solid ' + BOR, borderRadius: 10, padding: '10px 12px', fontSize: '13px', color: TX, resize: 'none', outline: 'none', marginBottom: 8, display: 'block' } }),
-                    React.createElement("button", { onClick: doRestore, disabled: !rstTxt.trim(), style: { width: '100%', background: rstTxt.trim() ? NAV : '#AEAEB2', color: '#FFFFFF', border: 'none', borderRadius: 12, padding: '12px', fontWeight: 450, fontSize: '14px', cursor: rstTxt.trim() ? 'pointer' : 'default' } }, "\u2B06\uFE0F Yap\u0131\u015Ft\u0131r\u0131lan Yede\u011Fi Y\u00FCkle")))))));
+                        React.createElement("button", {
+                            type: "button", onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy,
+                            style: {
+                                width: '100%', background: githubCalendarBusy ? '#AEAEB2' : NAV, color: '#FFFFFF',
+                                border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500,
+                                cursor: githubCalendarBusy ? 'default' : 'pointer', marginBottom: 8
+                            }
+                        }, githubCalendarBusy ? "Yayınlanıyor…" : "⟳ Takvimi Şimdi Yayınla"),
+                        React.createElement("div", {
+                            style: {
+                                fontSize: 10.5, lineHeight: 1.4, marginBottom: 16, textAlign: 'center',
+                                color: githubCalendarMsg && /hata|yanlış|eksik|görünmüyor|kabul|Repo|Token/i.test(githubCalendarMsg) ? R : SB,
+                                fontWeight: githubCalendarMsg ? 500 : 450
+                            }
+                        }, githubCalendarMsg || "Yayınladıktan sonra aşağıdaki takvimlere bir kez abone ol."),
+
+                        bolumBaslik('Takvimlere Abone Ol'),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                            APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", {
+                                key: meta.id, type: "button", onClick: () => openAppleCalendarSubscription(meta),
+                                style: {
+                                    display: 'flex', alignItems: 'center', gap: 8, background: '#FFFFFF', color: TX,
+                                    border: '1px solid ' + BOR, borderLeft: '4px solid ' + meta.color, borderRadius: 11,
+                                    padding: '11px 11px', fontSize: 12, fontWeight: 450, cursor: 'pointer', textAlign: 'left'
+                                }
+                            },
+                                React.createElement("span", { style: { width: 9, height: 9, borderRadius: '50%', background: meta.color, flexShrink: 0 } }),
+                                React.createElement("span", null, meta.id === 'arrival' ? 'Gelen Yolcu' : meta.id === 'departure' ? 'Giden Yolcu' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP Tahsis')))),
+                        React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.45, marginTop: 10, textAlign: 'center' } },
+                            "Her takvim Apple Takvim’de kendi rengiyle görünür."))));
+        })()));
 }
 class AppErrorBoundary extends React.Component {
     constructor(props) {
