@@ -1116,6 +1116,18 @@ const ksPairLabel = (t) => {
     return short(t && t.pickup) + '\u2013' + short(t && t.dropoff);
 };
 const koTitleCaseTR = v => String(v || '').replace(/\s+/g, ' ').trim().split(' ').map(w => w ? (w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')) : w).join(' ');
+/* Telefonu okunur gruplara ayırır: 05432870687 → 0543 287 06 87 */
+const koPhonePretty = v => {
+    const raw = String(v || '').trim();
+    let d = raw.replace(/\D/g, '');
+    let pre = '';
+    if (d.length === 12 && d.slice(0, 2) === '90') { pre = '+90 '; d = d.slice(2); }
+    else if (d.length === 13 && d.slice(0, 3) === '090') { pre = '+90 '; d = d.slice(3); }
+    else if (d.length === 10 && d[0] === '5') { d = '0' + d; }
+    if (d.length === 11 && d[0] === '0') return pre + d.slice(0, 4) + ' ' + d.slice(4, 7) + ' ' + d.slice(7, 9) + ' ' + d.slice(9);
+    if (pre && d.length === 10) return pre + d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6, 8) + ' ' + d.slice(8);
+    return raw;
+};
 /* Konum metninden gömülü harita linkini ayıklar: {name, url} */
 const koExtractMapsUrl = v => {
     const str = String(v || '').trim();
@@ -9207,39 +9219,52 @@ function App() {
         tip('Transfer silindi');
     };
     const getQ = locName => { const l = LOCS.find(x => x.n === locName); return l && l.q ? l.q : locName; };
+    /* ═══════════════════════════════════════════════════════════
+       ✉️ MESAJ ŞABLONLARI — kurumsal düzen
+       WhatsApp orantılı yazı tipi kullandığı için sütun hizalaması
+       (nokta nokta boşluk) dağınık görünür; bunun yerine kalın etiket +
+       değer, bölüm başlıkları ve ince ayraç kullanılır.
+       ═══════════════════════════════════════════════════════════ */
+    const MSG_RULE = '──────────────────────';
+    /* Kaptana giden görev fişi.
+       Misafir satırında yalnız ad soyad ve varsa pasaport/TC numarası bulunur;
+       uyruk tek tek yazılmaz, en altta özet satırı olarak bir kez geçer. */
     const drvMsg = (t, withMaps) => {
         withMaps = false;
         const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        const px = (t.passengers || []).filter(p => p && ((p.name || '').trim() || (p.phone || '').trim() || passengerIdDisplay(p))).map((p, i) => {
-            let line = (i + 1) + '. 👤 ' + (p.name || 'Misafir');
-            if (p.phone) line += '  📞 ' + p.phone;
-            // Kimlik: TC varsa TC, pasaport varsa pasaport numarası (ikisi de varsa ikisi de)
-            if (p.tc) line += '  • TC: ' + p.tc;
-            if (p.pasaport) line += '  • Pasaport: ' + p.pasaport;
-            if (!p.tc && !p.pasaport && p.idNo) line += '  • Kimlik: ' + p.idNo;
-            const sif = uyrukSifat(p.uyruk);
-            if (sif) line += '  • ' + sif;
+        const paxList = (t.passengers || []).filter(p => p && ((p.name || '').trim() || passengerIdDisplay(p)));
+        const px = paxList.map((p, i) => {
+            let line = (i + 1) + '. ' + ((p.name || '').trim() || 'Misafir');
+            const id = p.pasaport || p.tc || p.idNo || '';
+            if (id) line += ' · 🪪 ' + id;
             return line;
         }).join('\n');
-        let msg = 'Misafir Bilgileri\n\n';
-        msg += 'Tarih: ' + dt + '\n';
-        msg += '🕒 Saat: ' + t.time + '\n';
-        if (t.flightCode) msg += '✈️ Uçuş: ' + t.flightCode + '\n';
-        if (t.plate) msg += '🚐 Plaka: ' + t.plate + '\n';
-        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 Alış: ' + plm.name + '\n'; if (plm.url) msg += '🗺️ Alış konumu: ' + plm.url + '\n'; }
-        (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 Ara Durak ' + (i + 1) + ': ' + s2 + '\n'; });
-        // Rota bilgisi — Alış ile Varış arasında (form'da seçilen rota)
+
+        let msg = '🗓 *Tarih:* ' + dt + '\n';
+        msg += '🕒 *Saat:* ' + (t.time || '—') + '\n';
+        if (t.flightCode) msg += '✈️ *Uçuş:* ' + t.flightCode + '\n';
+        if (t.plate) msg += '🚐 *Plaka:* ' + t.plate + '\n';
+
+        msg += '\n*GÜZERGÂH*\n';
+        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
+        (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 *Ara Durak ' + (i + 1) + ':* ' + s2 + '\n'; });
         if (t.route && t.route !== 'free') {
             const rotaItem = ROTALAR.find(r => r.id === t.route);
-            if (rotaItem) msg += rotaItem.ico + ' Rota: ' + rotaItem.n + '\n';
+            if (rotaItem) msg += '🛣 *Rota:* ' + rotaItem.n + '\n';
         }
-        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🎯 Varış: ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ Varış konumu: ' + dlm.url + '\n'; }
-        msg += '\n👥 Misafirler (' + t.passengerCount + ')\n' + px;
-        if (t.paymentToMe) msg += '\n\n💳 Tahsilat: Hesap/ödeme bana geldi';
-        else if (t.paymentCollect === 'no') msg += '\n\n💳 Tahsilat: Yok';
-        else if (t.paymentAmount) msg += '\n\n💳 Tahsilat: ' + t.paymentAmount + ' ' + t.paymentCurrency;
-        if (t.notes) msg += '\n\n📝 Not: ' + t.notes;
-        { const uz = uyrukOzeti(t.passengers); if (uz) msg += '\n\n🌍 Uyruk: ' + uz; }
+        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
+
+        const kisi = paxList.length || t.passengerCount || 0;
+        if (px) msg += '\n*MİSAFİRLER · ' + kisi + ' kişi*\n' + px + '\n';
+        else if (kisi) msg += '\n*MİSAFİRLER · ' + kisi + ' kişi*\n';
+
+        const foot = [];
+        if (t.paymentToMe) foot.push('💳 *Tahsilat:* Hesap/ödeme bana geldi');
+        else if (t.paymentCollect === 'no') foot.push('💳 *Tahsilat:* Yok');
+        else if (t.paymentAmount) foot.push('💳 *Tahsilat:* ' + t.paymentAmount + ' ' + t.paymentCurrency);
+        { const uz = uyrukOzeti(t.passengers); if (uz) foot.push('🌍 *Uyruk:* ' + uz); }
+        if (t.notes) foot.push('📝 *Not:* ' + t.notes);
+        if (foot.length) msg += '\n' + MSG_RULE + '\n' + foot.join('\n');
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
@@ -9254,52 +9279,69 @@ function App() {
         const rotaItem = ROTALAR.find(r => r.id === (t.route || 'free'));
         const guzergah = rotaItem ? rotaItem.n : (t.routeBridge || '');
         const stops = (t.extraStops || []).filter(Boolean);
+        const tel = koPhonePretty(telefon);
         if (lang === 'en') {
-            let msg = '*Dear* ' + name + ',\n';
-            msg += 'Thank you for choosing us. Your reservation details are below:\n\n';
-            msg += '👨🏻‍✈️ *Captain      :* ' + kaptan + '\n';
-            msg += '📞 *Phone        :* ' + telefon + '\n';
-            msg += '🚘 *Plate        :* ' + plaka + '\n';
-            msg += '🗓️ *Date / Pickup time :* ' + (dmyEn + ' ' + saat).trim() + '\n';
-            if (t.flightCode) msg += '✈️ *Flight code  :* ' + t.flightCode + '\n';
-            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Pickup       :* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *Pickup map   :* ' + plm.url + '\n'; }
-            stops.forEach((s2, i) => { msg += '🛑 *Stop ' + (i + 1) + '       :* ' + s2 + '\n'; });
-            if (guzergah) msg += '🛣️ *Route        :* ' + guzergah + '\n';
-            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *>> Drop-off  :* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *Drop-off map :* ' + dlm.url + '\n'; }
-            msg += '\n';
+            let msg = 'Dear *' + name + '*,\n';
+            msg += 'Thank you for choosing us. Your transfer details are below.\n';
+            msg += '\n*YOUR JOURNEY*\n';
+            msg += '🗓 *Date:* ' + dmyEn + '\n';
+            msg += '🕒 *Pickup time:* ' + saat + '\n';
+            if (t.flightCode) msg += '✈️ *Flight:* ' + t.flightCode + '\n';
+            msg += '\n*ROUTE*\n';
+            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Pickup:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
+            stops.forEach((s2, i) => { msg += '🛑 *Stop ' + (i + 1) + ':* ' + s2 + '\n'; });
+            if (guzergah) msg += '🛣 *Via:* ' + guzergah + '\n';
+            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Drop-off:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
+            msg += '\n*YOUR VEHICLE*\n';
+            msg += '👨🏻‍✈️ *Captain:* ' + kaptan + '\n';
+            msg += '📞 *Phone:* ' + tel + '\n';
+            msg += '🚘 *Plate:* ' + plaka + '\n';
+            msg += '\n' + MSG_RULE + '\n';
             msg += 'We wish you a pleasant and comfortable journey.\n';
             msg += 'Best regards';
             return msg.trim();
         }
         if (lang === 'ar') {
-            let msg = '*السيد/السيدة* ' + name + '،\n';
-            msg += 'نشكركم لاختياركم لنا. تفاصيل حجزكم موضحة أدناه:\n\n';
-            msg += '👨🏻‍✈️ *الكابتن       :* ' + kaptan + '\n';
-            msg += '📞 *الهاتف        :* ' + telefon + '\n';
-            msg += '🚘 *اللوحة        :* ' + plaka + '\n';
-            msg += '🗓️ *التاريخ / وقت الانطلاق :* ' + (dmyEn + ' ' + saat).trim() + '\n';
-            if (t.flightCode) msg += '✈️ *رقم الرحلة   :* ' + t.flightCode + '\n';
-            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *نقطة الانطلاق :* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *موقع الانطلاق :* ' + plm.url + '\n'; }
-            stops.forEach((s2, i) => { msg += '🛑 *محطة ' + (i + 1) + '      :* ' + s2 + '\n'; });
-            if (guzergah) msg += '🛣️ *المسار        :* ' + guzergah + '\n';
-            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *>> نقطة الوصول :* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *موقع الوصول  :* ' + dlm.url + '\n'; }
-            msg += '\n';
+            /* Arapça satırlar sağdan sola akar; içindeki Latin/rakam değerler
+               yalıtılmazsa ters sıralanır ("16 LMZ 55" → "LMZ 55 16").
+               U+2066/U+2069 (LRI/PDI) her değeri kendi yönünde tutar. */
+            const ltr = v => '⁦' + String(v == null ? '' : v) + '⁩';
+            let msg = 'السيد/السيدة *' + name + '*،\n';
+            msg += 'نشكركم لاختياركم لنا. تفاصيل نقلكم موضحة أدناه.\n';
+            msg += '\n*رحلتكم*\n';
+            msg += '🗓 *التاريخ:* ' + ltr(dmyEn) + '\n';
+            msg += '🕒 *وقت الانطلاق:* ' + ltr(saat) + '\n';
+            if (t.flightCode) msg += '✈️ *رقم الرحلة:* ' + ltr(t.flightCode) + '\n';
+            msg += '\n*المسار*\n';
+            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *نقطة الانطلاق:* ' + ltr(plm.name) + '\n'; if (plm.url) msg += '🗺 ' + ltr(plm.url) + '\n'; }
+            stops.forEach((s2, i) => { msg += '🛑 *محطة ' + (i + 1) + ':* ' + ltr(s2) + '\n'; });
+            if (guzergah) msg += '🛣 *عبر:* ' + ltr(guzergah) + '\n';
+            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *نقطة الوصول:* ' + ltr(dlm.name) + '\n'; if (dlm.url) msg += '🗺 ' + ltr(dlm.url) + '\n'; }
+            msg += '\n*مركبتكم*\n';
+            msg += '👨🏻‍✈️ *الكابتن:* ' + ltr(kaptan) + '\n';
+            msg += '📞 *الهاتف:* ' + ltr(tel) + '\n';
+            msg += '🚘 *اللوحة:* ' + ltr(plaka) + '\n';
+            msg += '\n' + MSG_RULE + '\n';
             msg += 'نتمنى لكم رحلة ممتعة ومريحة.\n';
             msg += 'مع خالص التقدير';
             return msg.trim();
         }
-        let msg = '*Sayın* ' + name + ',\n';
-        msg += 'Bizi tercih ettiğiniz için teşekkür ederiz. Rezervasyon detaylarınız aşağıda yer almaktadır:\n\n';
-        msg += '👨🏻‍✈️ *Kaptan       :* ' + kaptan + '\n';
-        msg += '📞 *Telefon      :* ' + telefon + '\n';
-        msg += '🚘 *Plaka        :* ' + plaka + '\n';
-        msg += '🗓️ *Tarih / Alış saati :* ' + (dmyTr + ' ' + saat).trim() + '\n';
-        if (t.flightCode) msg += '✈️ *Uçuş Kodu    :* ' + t.flightCode + '\n';
-        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış yeri    :* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *Alış konumu  :* ' + plm.url + '\n'; }
-        stops.forEach((s2, i) => { msg += '🛑 *Ara Durak ' + (i + 1) + '  :* ' + s2 + '\n'; });
-        if (guzergah) msg += '🛣️ *Güzergah     :* ' + guzergah + '\n';
-        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *>> Varış yeri :* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *Varış konumu :* ' + dlm.url + '\n'; }
-        msg += '\n';
+        let msg = 'Sayın *' + name + '*,\n';
+        msg += 'Bizi tercih ettiğiniz için teşekkür ederiz. Transfer detaylarınız aşağıda yer almaktadır.\n';
+        msg += '\n*YOLCULUĞUNUZ*\n';
+        msg += '🗓 *Tarih:* ' + dmyTr + '\n';
+        msg += '🕒 *Alış saati:* ' + saat + '\n';
+        if (t.flightCode) msg += '✈️ *Uçuş kodu:* ' + t.flightCode + '\n';
+        msg += '\n*GÜZERGÂH*\n';
+        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
+        stops.forEach((s2, i) => { msg += '🛑 *Ara durak ' + (i + 1) + ':* ' + s2 + '\n'; });
+        if (guzergah) msg += '🛣 *Rota:* ' + guzergah + '\n';
+        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
+        msg += '\n*ARACINIZ*\n';
+        msg += '👨🏻‍✈️ *Kaptan:* ' + kaptan + '\n';
+        msg += '📞 *Telefon:* ' + tel + '\n';
+        msg += '🚘 *Plaka:* ' + plaka + '\n';
+        msg += '\n' + MSG_RULE + '\n';
         msg += 'Keyifli ve konforlu bir yolculuk geçirmenizi dileriz.\n';
         msg += 'Saygılarımızla';
         return msg.trim();
