@@ -3212,11 +3212,19 @@ async function copyText(text) {
     return false;
 }
 async function saveBlob(blob, filename) {
+    /* iOS'ta tek güvenilir yol paylaş sayfasıdır. navigator.canShare bazı iOS
+       sürümlerinde .xlsx gibi dosyalar için hatalı biçimde false döndürüyor;
+       bu yüzden kapı kaldırıldı, doğrudan denenip hata yakalanıyor. */
     try {
         const file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: filename });
-            return true;
+        if (navigator.share) {
+            try {
+                await navigator.share({ files: [file], title: filename });
+                return true;
+            } catch (err) {
+                if (err && err.name === 'AbortError') return true;   // kullanıcı kapattı
+                throw err;
+            }
         }
     }
     catch (e) { }
@@ -3256,6 +3264,504 @@ async function shareTextFiles(files, title) {
         ok = (await shareTextFile(f.filename, f.text, f.mime || 'text/calendar;charset=utf-8')) || ok;
     }
     return ok;
+}
+/* ═══════════════════════════════════════════════════════════════
+   📗 BİÇİMLENDİRMELİ XLSX YAZICI (bağımsız)
+   SheetJS'in ücretsiz sürümü hücre stillerini (.s) yok sayar; bu yüzden
+   renkli başlık, bölüm bandı ve toplam satırı dosyaya hiç işlenmiyordu.
+   Burada dosya sıfırdan üretilir: sıkıştırmasız ZIP + OOXML.
+   Numbers, Excel ve Google Sheets bu dosyayı biçimiyle birlikte açar.
+   ═══════════════════════════════════════════════════════════════ */
+/* ── ZIP (store) ────────────────────────────────────────────── */
+const KOZIP_CRC_TABLE = (function () {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        t[n] = c >>> 0;
+    }
+    return t;
+})();
+function kozipCrc32(buf) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < buf.length; i++) c = KOZIP_CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+}
+/* files: [{ name, data:Uint8Array }] → Uint8Array (geçerli ZIP) */
+function kozipBuild(files) {
+    const enc = new TextEncoder();
+    const locals = [], centrals = [];
+    let offset = 0, cdSize = 0;
+    files.forEach(f => {
+        const nameBytes = enc.encode(f.name);
+        const data = f.data;
+        const crc = kozipCrc32(data);
+        const lh = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(lh.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0x0800, true);   // UTF-8 dosya adı
+        lv.setUint16(8, 0, true);        // yöntem: store
+        lv.setUint16(10, 0, true);
+        lv.setUint16(12, 0x2821, true);  // sabit tarih (2000-01-01)
+        lv.setUint32(14, crc, true);
+        lv.setUint32(18, data.length, true);
+        lv.setUint32(22, data.length, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        lh.set(nameBytes, 30);
+        locals.push(lh, data);
+
+        const ch = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(ch.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0x0800, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, 0, true);
+        cv.setUint16(14, 0x2821, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, data.length, true);
+        cv.setUint32(24, data.length, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint32(42, offset, true);
+        ch.set(nameBytes, 46);
+        centrals.push(ch);
+        cdSize += ch.length;
+        offset += lh.length + data.length;
+    });
+    const eocd = new Uint8Array(22);
+    const ev = new DataView(eocd.buffer);
+    ev.setUint32(0, 0x06054b50, true);
+    ev.setUint16(8, files.length, true);
+    ev.setUint16(10, files.length, true);
+    ev.setUint32(12, cdSize, true);
+    ev.setUint32(16, offset, true);
+    const out = new Uint8Array(offset + cdSize + 22);
+    let p = 0;
+    locals.forEach(b => { out.set(b, p); p += b.length; });
+    centrals.forEach(b => { out.set(b, p); p += b.length; });
+    out.set(eocd, p);
+    return out;
+}
+/* ── OOXML yardımcıları ─────────────────────────────────────── */
+const koxEsc = v => String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+const koxColName = n => {
+    let s = '';
+    n = n + 1;
+    while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = ((n - m) / 26) | 0; }
+    return s;
+};
+/* Stil kataloğu — s numaraları aşağıdaki KOX sabitleriyle kullanılır */
+const KOX_NAVY = '1F3864', KOX_BAND = 'D9D9D9', KOX_ZEBRA = 'F5F7FA',
+      KOX_LINE = 'BFC6D0', KOX_INK = '1F2733', KOX_MUT = '6B7480';
+const KOX = {
+    BLANK: 0, HEAD: 1, SECTION: 2, SECTION_FILL: 3,
+    TXT: 4, MONEY: 5, TXT_Z: 6, MONEY_Z: 7,
+    SUB_TXT: 8, SUB_MONEY: 9, BAND: 10,
+    TOTAL_TXT: 11, TOTAL_MONEY: 12,
+    TITLE: 13, SUBTITLE: 14, NOTE: 15, TXT_L: 16, TXT_L_Z: 17
+};
+function koxStylesXml() {
+    const border = '<border><left style="thin"><color rgb="FF' + KOX_LINE + '"/></left><right style="thin"><color rgb="FF' + KOX_LINE + '"/></right><top style="thin"><color rgb="FF' + KOX_LINE + '"/></top><bottom style="thin"><color rgb="FF' + KOX_LINE + '"/></bottom><diagonal/></border>';
+    const fonts = [
+        '<font><sz val="10"/><color rgb="FF' + KOX_INK + '"/><name val="Calibri"/></font>',                       /* 0 gövde */
+        '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>',                            /* 1 beyaz kalın */
+        '<font><b/><sz val="10"/><color rgb="FF' + KOX_INK + '"/><name val="Calibri"/></font>',                   /* 2 koyu kalın */
+        '<font><sz val="9"/><color rgb="FF' + KOX_MUT + '"/><name val="Calibri"/></font>',                        /* 3 küçük gri */
+        '<font><b/><sz val="18"/><color rgb="FF' + KOX_NAVY + '"/><name val="Calibri"/></font>',                  /* 4 logo */
+        '<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'                             /* 5 toplam */
+    ];
+    const fills = [
+        '<fill><patternFill patternType="none"/></fill>',
+        '<fill><patternFill patternType="gray125"/></fill>',
+        '<fill><patternFill patternType="solid"><fgColor rgb="FF' + KOX_NAVY + '"/><bgColor indexed="64"/></patternFill></fill>',   /* 2 lacivert */
+        '<fill><patternFill patternType="solid"><fgColor rgb="FF' + KOX_BAND + '"/><bgColor indexed="64"/></patternFill></fill>',   /* 3 gri bant */
+        '<fill><patternFill patternType="solid"><fgColor rgb="FF' + KOX_ZEBRA + '"/><bgColor indexed="64"/></patternFill></fill>',  /* 4 zebra */
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFEDF1F6"/><bgColor indexed="64"/></patternFill></fill>'              /* 5 ara toplam */
+    ];
+    /* hizalama kısayolları */
+    const C = ' applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>';
+    const L = ' applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>';
+    const xfs = [];
+    xfs[KOX.BLANK]        = '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>';
+    xfs[KOX.HEAD]         = '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.SECTION]      = '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.SECTION_FILL] = '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"' + C;
+    xfs[KOX.TXT]          = '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"' + C;
+    xfs[KOX.MONEY]        = '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"' + C;
+    xfs[KOX.TXT_Z]        = '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.MONEY_Z]      = '<xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.SUB_TXT]      = '<xf numFmtId="0" fontId="2" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.SUB_MONEY]    = '<xf numFmtId="164" fontId="2" fillId="5" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.BAND]         = '<xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/>';
+    xfs[KOX.TOTAL_TXT]    = '<xf numFmtId="0" fontId="5" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.TOTAL_MONEY]  = '<xf numFmtId="164" fontId="5" fillId="2" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"' + C;
+    xfs[KOX.TITLE]        = '<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"' + L;
+    xfs[KOX.SUBTITLE]     = '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"' + L;
+    xfs[KOX.NOTE]         = '<xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"' + L;
+    xfs[KOX.TXT_L]        = '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"' + L;
+    xfs[KOX.TXT_L_Z]      = '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + L;
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;₺&quot;#,##0;[Red]\\-&quot;₺&quot;#,##0"/></numFmts>'
+        + '<fonts count="' + fonts.length + '">' + fonts.join('') + '</fonts>'
+        + '<fills count="' + fills.length + '">' + fills.join('') + '</fills>'
+        + '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>' + border + '</borders>'
+        + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        + '<cellXfs count="' + xfs.length + '">' + xfs.join('') + '</cellXfs>'
+        + '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
+        + '</styleSheet>';
+}
+/* sheet: { name, cols:[{w}], rows:[{h, cells:[{v, s, n:true} | null]}], merges:['A1:C1'], freeze:2 } */
+function koxSheetXml(sheet) {
+    const rows = sheet.rows || [];
+    const maxC = Math.max(1, ...rows.map(r => (r.cells || []).length));
+    const cols = (sheet.cols || []).map((c, i) =>
+        '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + (c.w || 12) + '" customWidth="1"/>').join('');
+    const body = rows.map((r, ri) => {
+        const cells = (r.cells || []).map((c, ci) => {
+            if (!c) return '';
+            const ref = koxColName(ci) + (ri + 1);
+            const s = ' s="' + (c.s || 0) + '"';
+            if (c.n) {
+                const num = Number(c.v);
+                if (!isFinite(num)) return '<c r="' + ref + '"' + s + '/>';
+                return '<c r="' + ref + '"' + s + '><v>' + num + '</v></c>';
+            }
+            if (c.v === '' || c.v == null) return '<c r="' + ref + '"' + s + '/>';
+            return '<c r="' + ref + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + koxEsc(c.v) + '</t></is></c>';
+        }).join('');
+        const ht = r.h ? ' ht="' + r.h + '" customHeight="1"' : '';
+        return '<row r="' + (ri + 1) + '"' + ht + '>' + cells + '</row>';
+    }).join('');
+    const merges = (sheet.merges || []).length
+        ? '<mergeCells count="' + sheet.merges.length + '">' + sheet.merges.map(m => '<mergeCell ref="' + m + '"/>').join('') + '</mergeCells>'
+        : '';
+    const pane = sheet.freeze
+        ? '<pane ySplit="' + sheet.freeze + '" topLeftCell="A' + (sheet.freeze + 1) + '" activePane="bottomLeft" state="frozen"/>'
+        : '';
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        + '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>'
+        + '<dimension ref="A1:' + koxColName(maxC - 1) + Math.max(1, rows.length) + '"/>'
+        + '<sheetViews><sheetView showGridLines="0" workbookViewId="0">' + pane + '</sheetView></sheetViews>'
+        + '<sheetFormatPr defaultRowHeight="15"/>'
+        + (cols ? '<cols>' + cols + '</cols>' : '')
+        + '<sheetData>' + body + '</sheetData>'
+        + merges
+        + '<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/>'
+        + '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>'
+        + '</worksheet>';
+}
+/* Tek sayfalık, biçimlendirilmiş XLSX üretir → Blob */
+function koxBuildWorkbook(sheet) {
+    const enc = new TextEncoder();
+    const name = koxEsc(String(sheet.name || 'Hesap').replace(/[\\\/\?\*\[\]:]/g, ' ').slice(0, 28) || 'Hesap');
+    const files = [
+        { name: '[Content_Types].xml', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>') },
+        { name: '_rels/.rels', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>') },
+        { name: 'xl/workbook.xml', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + name + '" sheetId="1" r:id="rId1"/></sheets></workbook>') },
+        { name: 'xl/_rels/workbook.xml.rels', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>') },
+        { name: 'xl/styles.xml', data: enc.encode(koxStylesXml()) },
+        { name: 'xl/worksheets/sheet1.xml', data: enc.encode(koxSheetXml(sheet)) }
+    ];
+    return new Blob([kozipBuild(files)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+/* ═══════════════════════════════════════════════════════════════
+   📄 PDF YAZICI (bağımsız, kütüphanesiz)
+   Hesap tablosunu doğrudan PDF'e çizer. Numbers/Excel'e hiç uğramadan
+   iPhone'da anında açılan, paylaşılabilen bir dosya üretir.
+   Türkçe harfler standart Helvetica'nın glif adlarıyla (/Differences)
+   eşlenir; böylece dosyaya font gömmeye gerek kalmaz, boyut ~20 KB.
+   ═══════════════════════════════════════════════════════════════ */
+/* WinAnsi dışındaki karakterler → 0x80-0x9F aralığındaki boş kodlara */
+const KOPDF_DIFF = [
+    ['Ğ', 0x81, 'Gbreve'], ['ğ', 0x82, 'gbreve'],
+    ['İ', 0x83, 'Idotaccent'], ['ı', 0x84, 'dotlessi'],
+    ['Ş', 0x85, 'Scedilla'], ['ş', 0x86, 'scedilla'],
+    ['·', 0x88, 'periodcentered'], ['—', 0x89, 'emdash'], ['–', 0x8A, 'endash'],
+    ['’', 0x8B, 'quoteright'], ['“', 0x8C, 'quotedblleft'], ['”', 0x8D, 'quotedblright']
+];
+/* WinAnsi'de doğrudan karşılığı olan Latin-1 üstü karakterler */
+const KOPDF_WINANSI = {
+    'Ç': 0xC7, 'ç': 0xE7, 'Ö': 0xD6, 'ö': 0xF6, 'Ü': 0xDC, 'ü': 0xFC,
+    'Â': 0xC2, 'â': 0xE2, 'Î': 0xCE, 'î': 0xEE, 'Û': 0xDB, 'û': 0xFB,
+    'É': 0xC9, 'é': 0xE9, 'Á': 0xC1, 'á': 0xE1, 'Ñ': 0xD1, 'ñ': 0xF1
+};
+const KOPDF_MAP = (function () {
+    const m = {};
+    Object.keys(KOPDF_WINANSI).forEach(ch => { m[ch] = KOPDF_WINANSI[ch]; });
+    KOPDF_DIFF.forEach(d => { m[d[0]] = d[1]; });
+    return m;
+})();
+/* Helvetica genişlikleri (1/1000 em), kod 32-126 */
+const KOPDF_W = [
+    278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
+    556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556,
+    1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
+    667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556,
+    333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
+    556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584
+];
+function kopdfCharWidth(ch, bold) {
+    const c = ch.charCodeAt(0);
+    let w;
+    if (c >= 32 && c <= 126) w = KOPDF_W[c - 32];
+    else if (ch === 'İ' || ch === 'Ğ' || ch === 'Ş') w = 667;
+    else if (ch === 'ı') w = 222;
+    else w = 556;
+    return (bold ? w * 1.05 : w) / 1000;
+}
+function kopdfTextWidth(s, size, bold) {
+    let w = 0;
+    for (let i = 0; i < s.length; i++) w += kopdfCharWidth(s[i], bold);
+    return w * size;
+}
+/* Metni PDF dizgesine çevir: karakter eşlemesi + kaçışlar */
+function kopdfStr(s) {
+    let out = '';
+    /* Standart Helvetica'da bulunmayan işaretler okunur karşılıklarına çevrilir */
+    const str = String(s == null ? '' : s).replace(/₺/g, 'TL').replace(/→/g, '>').replace(/✓/g, '').replace(/…/g, '..');
+    for (let i = 0; i < str.length; i++) {
+        const ch = str[i];
+        let code = KOPDF_MAP[ch];
+        if (code === undefined) {
+            const c = ch.charCodeAt(0);
+            code = (c >= 32 && c <= 255) ? c : 63;   // bilinmeyen → '?'
+        }
+        if (code === 40 || code === 41 || code === 92) out += '\\' + String.fromCharCode(code);
+        else if (code < 32) out += ' ';
+        else out += (code > 126 ? '\\' + ('000' + code.toString(8)).slice(-3) : String.fromCharCode(code));
+    }
+    return out;
+}
+/* Hücre metnini sütuna sığacak satırlara böl (en fazla maxLines) */
+function kopdfWrap(text, width, size, bold, maxLines) {
+    const s = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+    if (!s) return [];
+    /* Boşluksuz uzun kelimeleri (uzun konum adları) parçalara ayır */
+    const words = [];
+    s.split(' ').forEach(w => {
+        if (kopdfTextWidth(w, size, bold) <= width || width <= 0) { words.push(w); return; }
+        let piece = '';
+        for (const ch of w) {
+            if (kopdfTextWidth(piece + ch, size, bold) > width && piece) { words.push(piece); piece = ch; }
+            else piece += ch;
+        }
+        if (piece) words.push(piece);
+    });
+    const lines = [];
+    let cur = '';
+    for (const w of words) {
+        const test = cur ? cur + ' ' + w : w;
+        if (kopdfTextWidth(test, size, bold) <= width || !cur) cur = test;
+        else { lines.push(cur); cur = w; }
+        if (lines.length >= maxLines) break;
+    }
+    if (lines.length < maxLines && cur) lines.push(cur);
+    if (lines.length > maxLines) lines.length = maxLines;
+    /* Son satır hâlâ taşıyorsa kısalt */
+    const last = lines.length - 1;
+    if (last >= 0 && kopdfTextWidth(lines[last], size, bold) > width) {
+        let t = lines[last];
+        while (t.length > 1 && kopdfTextWidth(t + '…', size, bold) > width) t = t.slice(0, -1);
+        lines[last] = t + '…';
+    }
+    return lines;
+}
+const kopdfRgb = hex => {
+    const h = String(hex).replace('#', '');
+    return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255]
+        .map(v => v.toFixed(3)).join(' ');
+};
+/* ── Çizim yardımcıları ─────────────────────────────────────── */
+function kopdfPage(W, H) {
+    return {
+        W: W, H: H, ops: [],
+        rect(x, y, w, h, fill) { this.ops.push(kopdfRgb(fill) + ' rg ' + x.toFixed(2) + ' ' + (y - h).toFixed(2) + ' ' + w.toFixed(2) + ' ' + h.toFixed(2) + ' re f'); },
+        line(x1, y1, x2, y2, color, lw) {
+            this.ops.push(kopdfRgb(color) + ' RG ' + (lw || 0.4).toFixed(2) + ' w ' +
+                x1.toFixed(2) + ' ' + y1.toFixed(2) + ' m ' + x2.toFixed(2) + ' ' + y2.toFixed(2) + ' l S');
+        },
+        text(x, y, s, size, bold, color) {
+            this.ops.push('BT ' + kopdfRgb(color || '#1F2733') + ' rg /' + (bold ? 'F2' : 'F1') + ' ' +
+                size + ' Tf ' + x.toFixed(2) + ' ' + y.toFixed(2) + ' Td (' + kopdfStr(s) + ') Tj ET');
+        },
+        textCenter(cx, y, s, size, bold, color) {
+            this.text(cx - kopdfTextWidth(String(s), size, bold) / 2, y, s, size, bold, color);
+        },
+        textRight(rx, y, s, size, bold, color) {
+            this.text(rx - kopdfTextWidth(String(s), size, bold), y, s, size, bold, color);
+        }
+    };
+}
+/* doc: { pages:[page], title } → Blob */
+function kopdfBuild(pages, title) {
+    const objs = [];
+    const add = body => { objs.push(body); return objs.length; };   // 1 tabanlı nesne no
+
+    const fontEnc = add('<< /Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [' +
+        KOPDF_DIFF.map(d => d[1] + ' /' + d[2]).join(' ') + '] >>');
+    const f1 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding ' + fontEnc + ' 0 R >>');
+    const f2 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding ' + fontEnc + ' 0 R >>');
+
+    const pagesObjNo = objs.length + 1 + pages.length * 2;   // içerik + sayfa nesneleri sonrası
+    const pageNos = [];
+    pages.forEach(p => {
+        const stream = p.ops.join('\n');
+        const contentNo = add('<< /Length ' + stream.length + ' >>\nstream\n' + stream + '\nendstream');
+        pageNos.push(add('<< /Type /Page /Parent ' + pagesObjNo + ' 0 R /MediaBox [0 0 ' +
+            p.W + ' ' + p.H + '] /Resources << /Font << /F1 ' + f1 + ' 0 R /F2 ' + f2 +
+            ' 0 R >> >> /Contents ' + contentNo + ' 0 R >>'));
+    });
+    const pagesNo = add('<< /Type /Pages /Kids [' + pageNos.map(n => n + ' 0 R').join(' ') +
+        '] /Count ' + pageNos.length + ' >>');
+    const catalogNo = add('<< /Type /Catalog /Pages ' + pagesNo + ' 0 R >>');
+    const infoNo = add('<< /Title (' + kopdfStr(title || 'Hesap') + ') /Producer (Olmeztur) >>');
+
+    let out = '%PDF-1.4\n';
+    const offsets = [0];
+    objs.forEach((body, i) => {
+        offsets.push(out.length);
+        out += (i + 1) + ' 0 obj\n' + body + '\nendobj\n';
+    });
+    const xref = out.length;
+    out += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n';
+    for (let i = 1; i <= objs.length; i++) out += ('0000000000' + offsets[i]).slice(-10) + ' 00000 n \n';
+    out += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root ' + catalogNo + ' 0 R /Info ' + infoNo +
+        ' 0 R >>\nstartxref\n' + xref + '\n%%EOF';
+
+    /* Latin-1 bayta çevir: içerik akışında yalnız tek baytlık kodlar var */
+    const bytes = new Uint8Array(out.length);
+    for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xFF;
+    return new Blob([bytes], { type: 'application/pdf' });
+}
+/* Sayfa yerleşimi (yatay A4, punto) */
+const KOPDF_PAGE = { W: 842, H: 595, ML: 22, MR: 22, MT: 30, MB: 26 };
+/* buildHesapSheet çıktısını PDF'e çizer — böylece PDF ile XLSX hep aynı kalır */
+function kopdfRenderSheet(sheet, meta) {
+    const usable = KOPDF_PAGE.W - KOPDF_PAGE.ML - KOPDF_PAGE.MR;
+    const rawW = (sheet.cols || []).map(c => Math.max(4, c.w || 10));
+    const sumW = rawW.reduce((a, b) => a + b, 0) || 1;
+    const colW = rawW.map(w => w / sumW * usable);
+    const colX = [];
+    let acc = KOPDF_PAGE.ML;
+    colW.forEach(w => { colX.push(acc); acc += w; });
+    const nCol = colW.length;
+
+    /* Birleştirilmiş hücreler: satır no → son sütun */
+    const mergeTo = {};
+    (sheet.merges || []).forEach(m => {
+        const mm = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(m);
+        if (!mm) return;
+        const colNum = s => { let n = 0; for (let i = 0; i < s.length; i++) n = n * 26 + (s.charCodeAt(i) - 64); return n - 1; };
+        mergeTo[parseInt(mm[2], 10)] = colNum(mm[3]);
+    });
+
+    const S = KOX;
+    const NAVY = '#1F3864', BAND = '#D9D9D9', ZEBRA = '#F5F7FA',
+          LINE = '#BFC6D0', INK = '#1F2733', MUT = '#6B7480',
+          SUBFILL = '#EDF1F6', RED = '#B3261E', WHITE = '#FFFFFF';
+    const styleOf = s => {
+        switch (s) {
+            case S.HEAD:        return { bg: NAVY, fg: WHITE, bold: true, size: 7.2, align: 'c', border: true };
+            case S.SECTION:     return { bg: NAVY, fg: WHITE, bold: true, size: 8.4, align: 'l', border: true };
+            case S.SECTION_FILL:return { bg: WHITE, fg: INK, bold: false, size: 7.4, align: 'c', border: false };
+            case S.TXT:         return { bg: WHITE, fg: INK, bold: false, size: 7.4, align: 'c', border: true };
+            case S.TXT_Z:       return { bg: ZEBRA, fg: INK, bold: false, size: 7.4, align: 'c', border: true };
+            case S.MONEY:       return { bg: WHITE, fg: INK, bold: false, size: 7.4, align: 'c', border: true, money: true };
+            case S.MONEY_Z:     return { bg: ZEBRA, fg: INK, bold: false, size: 7.4, align: 'c', border: true, money: true };
+            case S.SUB_TXT:     return { bg: SUBFILL, fg: INK, bold: true, size: 7.4, align: 'c', border: true };
+            case S.SUB_MONEY:   return { bg: SUBFILL, fg: INK, bold: true, size: 7.4, align: 'c', border: true, money: true };
+            case S.BAND:        return { bg: BAND, fg: INK, bold: false, size: 6, align: 'c', border: false };
+            case S.TOTAL_TXT:   return { bg: NAVY, fg: WHITE, bold: true, size: 8.6, align: 'c', border: true };
+            case S.TOTAL_MONEY: return { bg: NAVY, fg: WHITE, bold: true, size: 8.6, align: 'c', border: true, money: true };
+            case S.TITLE:       return { bg: null, fg: NAVY, bold: true, size: 15, align: 'l', border: false };
+            case S.SUBTITLE:    return { bg: null, fg: MUT, bold: false, size: 8, align: 'l', border: false };
+            case S.NOTE:        return { bg: WHITE, fg: MUT, bold: false, size: 6.6, align: 'l', border: true };
+            default:            return { bg: null, fg: INK, bold: false, size: 7.4, align: 'c', border: false };
+        }
+    };
+    const fmtMoney = v => {
+        const n = Math.round(Number(v) || 0);
+        const s = Math.abs(n).toLocaleString('tr-TR');
+        return (n < 0 ? '-' : '') + s;
+    };
+
+    const pages = [];
+    let page = null, y = 0;
+    const headRow = sheet.rows[(sheet.freeze || 1) - 1];
+    const newPage = (withHead) => {
+        page = kopdfPage(KOPDF_PAGE.W, KOPDF_PAGE.H);
+        page.rect(0, KOPDF_PAGE.H, KOPDF_PAGE.W, KOPDF_PAGE.H, WHITE);
+        pages.push(page);
+        y = KOPDF_PAGE.H - KOPDF_PAGE.MT;
+        if (withHead && headRow) drawRow(headRow, 0, true);
+    };
+    /* Bir satırı çizer; sayfa sonuna sığmıyorsa yeni sayfaya geçer */
+    function drawRow(row, rowNo, noBreak) {
+        const cells = row.cells || [];
+        const lastMerge = mergeTo[rowNo];
+        /* satır yüksekliği: sarılan metne göre */
+        let lines = 1;
+        const wrapped = new Array(nCol).fill(null);
+        for (let c = 0; c < nCol; c++) {
+            const cell = cells[c];
+            if (!cell) continue;
+            const st = styleOf(cell.s);
+            const span = (c === 0 && lastMerge != null) ? lastMerge : c;
+            let w = 0; for (let k = c; k <= span; k++) w += colW[k];
+            const txt = cell.n ? fmtMoney(cell.v) : String(cell.v == null ? '' : cell.v);
+            const ls = txt ? kopdfWrap(txt, w - 6, st.size, st.bold, 3) : [];
+            wrapped[c] = { st: st, lines: ls, span: span, w: w, money: !!cell.n, val: cell.v };
+            if (ls.length > lines) lines = ls.length;
+            if (span > c) c = span;   // birleştirilen sütunlar atlanır
+        }
+        const pad = (row.h && row.h <= 8) ? 0 : 5;
+        const h = Math.max(row.h && row.h <= 8 ? 5 : 14, lines * 8.2 + pad);
+        if (!noBreak && y - h < KOPDF_PAGE.MB) newPage(true);
+
+        for (let c = 0; c < nCol; c++) {
+            const w0 = wrapped[c];
+            if (!w0) { continue; }
+            const x = colX[c], w = w0.w, st = w0.st;
+            if (st.bg) page.rect(x, y, w, h, st.bg);
+            if (st.border) {
+                page.line(x, y, x + w, y, LINE, 0.35);
+                page.line(x, y - h, x + w, y - h, LINE, 0.35);
+                page.line(x, y, x, y - h, LINE, 0.35);
+                page.line(x + w, y, x + w, y - h, LINE, 0.35);
+            }
+            const total = w0.lines.length;
+            const startY = y - (h - total * 8.2) / 2 - st.size - 0.5;
+            w0.lines.forEach((ln, i) => {
+                const ly = startY - i * 8.2;
+                const fg = (w0.money && Number(w0.val) < 0 && st.fg === INK) ? RED : st.fg;
+                if (st.align === 'l') page.text(x + 4, ly, ln, st.size, st.bold, fg);
+                else page.textCenter(x + w / 2, ly, ln, st.size, st.bold, fg);
+            });
+            if (w0.span > c) c = w0.span;
+        }
+        y -= h;
+    }
+
+    newPage(false);
+    sheet.rows.forEach((row, i) => {
+        const rowNo = i + 1;
+        if (!row.cells || !row.cells.length) { y -= (row.h ? Math.min(row.h, 10) : 6); return; }
+        drawRow(row, rowNo, false);
+    });
+    /* Sayfa altbilgileri */
+    pages.forEach((p, i) => {
+        p.text(KOPDF_PAGE.ML, 14, (meta && meta.footer) || '', 6.6, false, MUT);
+        p.textRight(KOPDF_PAGE.W - KOPDF_PAGE.MR, 14, 'Sayfa ' + (i + 1) + ' / ' + pages.length, 6.6, false, MUT);
+    });
+    return pages;
 }
 async function downloadWorkbook(wb, filename) {
     try {
@@ -5975,130 +6481,281 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const fname = 'Olmeztur_' + firm.replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.csv';
         saveBlob(blob, fname).then(ok => tip(ok ? (IS_IOS ? 'Numbers\'da aç' : 'CSV indirildi') : 'CSV oluşturulamadı'));
     };
-    const numbersExport = firm => {
-        const { ts } = hesapData(firm);
-        const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : String(a.time || '').localeCompare(String(b.time || '')));
+    /* ═══════════════════════════════════════════════════════════
+       📗 FİRMA HESABI DIŞA AKTARIMI
+       Tek bir tablo üretilir, iki yerden kullanılır:
+         📊 Numbers  → dosya iOS paylaş sayfasına verilir, Numbers seçilir
+         📗 Excel    → aynı tablo, üstünde logolu başlık bloğu
+       Bölüm düzeni: ÖLMEZTUR-FİRMA · FİRMA-ÖLMEZTUR · TOPLAM HESAP
+       Alt acenta satırları ayrı bölüm değildir; işi o firmadan aldığımız
+       için FİRMA-ÖLMEZTUR bloğuna girer. "İŞİ YAPAN" sütunu işi kimin
+       götürdüğünü yazar; böylece aynı iş diğer firmanın hesabında da
+       aranabilir.
+       ═══════════════════════════════════════════════════════════ */
+    const HESAP_COLS = [
+        { t: 'TARİH', w: 12 }, { t: 'SAAT', w: 7 }, { t: 'MÜŞTERİ ADI', w: 22 },
+        { t: 'ALIŞ NOKTASI', w: 22 }, { t: 'GÜZERGAH', w: 24 }, { t: 'VARIŞ NOKTASI', w: 22 },
+        { t: 'MÜŞTERİ ÜCRETİ ₺', w: 14 }, { t: 'ARABA ÜCRETİ ₺', w: 14 }, { t: 'KOMİSYON ₺', w: 13 },
+        { t: 'KALAN ₺', w: 13 }, { t: 'NOTLAR', w: 24 }, { t: 'İŞİ YAPAN', w: 17 }
+    ];
+    const HESAP_NCOL = HESAP_COLS.length;
+    /* Firma hesabını, biçimlendirilmiş tek sayfalık tabloya çevirir */
+    const buildHesapSheet = (firm, opts) => {
+        opts = opts || {};
+        const { ts: allTs } = hesapData(firm);
+        /* Kapanmış kayıtlar tabloya girmez — hesabı görülmüş işi tekrar
+           listelemeye gerek yok. Uygulama içindeki firma kartlarında durmaya
+           devam ederler; orası bilerek değiştirilmedi. */
+        const ts = allTs.filter(t => !t.firmSettled);
+        const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1
+            : String(a.time || '').localeCompare(String(b.time || '')));
         const normalTs = ts.filter(t => t.kaynak !== 'odelo');
         const manualGrup = normalTs.filter(t => t.kaynak === 'manual').slice().sort(sortByDate);
         const transferTs = normalTs.filter(t => t.kaynak !== 'manual');
-        const oVerdi = transferTs.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);
         const benVerdim = transferTs.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate);
-        const altGrup = transferTs.filter(t => t.yon === 'alt').slice().sort(sortByDate);
+        /* Alt acenta satırları firmadan alınan işlerle aynı bloğa girer */
+        const oVerdi = transferTs.filter(t => t.yon === 'oVerdi' || t.yon === 'alt').slice().sort(sortByDate);
         const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
-        const clean = v => String(v || '').replace(/\s+/g, ' ').trim();
+
+        const clean = v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
         const up = v => clean(v).toLocaleUpperCase('tr-TR');
-        const money = n => {
-            const v = Math.round(moneyValue(n));
-            return (v < 0 ? '-' : '') + '₺' + fr(v);
-        };
+        const money = n => Math.round(moneyValue(n) || 0);
         const dateTxt = d => d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
         const paxTxt = t => {
             const ps = (t.passengers || []).map(p => p.name || p.fullName || '').filter(Boolean);
-            return up(ps[0] || t.passengerName || '');
+            return up(ps[0] || t.passengerName || t.yolcu || '');
         };
         const placeTxt = v => up(String(v || '').replace(/^İstanbul\s*\/\s*/i, '').replace(/^Bursa\s*\/\s*/i, ''));
         const routeTxt = t => {
             const id = t.route || t.routeBridge || '';
-            if (id === 'br' || id === 'brhw') return id === 'brhw' ? 'OSMANGAZİ KÖPRÜSÜ + OTOBAN' : 'OSMANGAZİ KÖPRÜSÜ';
-            if (id === 'yoa') return 'YAV.SUL.SEL.KÖP.OSM.KÖP.';
+            if (id === 'brhw') return 'OSMANGAZİ KÖPRÜSÜ + OTOBAN';
+            if (id === 'br') return 'OSMANGAZİ KÖPRÜSÜ';
+            if (id === 'yoa') return 'YAV.SUL.SEL.KÖP.-OSM.KÖP.';
             if (id === 'fy') return 'FERİBOT';
             if (id === 'hw') return 'OTOBAN';
             const r = ROTALAR.find(x => x.id === id);
             return up(r ? r.n : '');
         };
-        const rows = [];
-        rows.push([]);
-        rows.push(['TARİH', 'SAAT', 'MÜŞTERİ ADI', 'ALIŞ NOKTASI', 'GÜZERGAH', 'VARIŞ NOKTASI', 'MÜŞTERİ ÜCRETİ', 'ARABA ÜCRETİ', "KDV'SİZ", 'KDV', 'KDV DAHİL / KALAN', 'NOTLAR']);
-        const sectionRows = [];
-        const addSection = (title, list, type) => {
-            sectionRows.push(rows.length);
-            rows.push([up(title), '', '', '', '', '', '', '', '', '', '', '']);
-            list.forEach(t => {
-                const odeloGross = Math.round(moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t));
-                const odeloCar = t.yon === 'odeloBalentur' ? Math.round(moneyValue(t.balenturCost || t.driverPayment || t.altAcentaUcreti || 0)) : 0;
-                const musteri = type === 'odelo' ? odeloGross : (transferHasCustomerPayment(t) ? Math.round(transferCustomerTRYValue(t)) : 0);
-                const araba = type === 'odelo' ? odeloCar : Math.round(moneyValue(t.driverPayment));
-                const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
-                const kalan = hasNet ? moneyValue(t.netOl) : (musteri - araba);
-                const kdv = accountKdvInfoForRow(t);
-                rows.push([
-                    dateTxt(t.date),
-                    t.time || '',
-                    paxTxt(t),
-                    placeTxt(t.pickup),
-                    routeTxt(t),
-                    placeTxt(t.dropoff),
-                    money(musteri),
-                    money(araba),
-                    kdv.active ? money(kdv.base) : '',
-                    kdv.active ? money(kdv.amount) : '',
-                    money(kalan),
-                    clean(t.notes || t.tourCommissionShop || '')
-                ]);
-            });
-            if (!list.length) rows.push(['', '', 'KAYIT YOK', '', '', '', '', '', '', '', '', '']);
+        /* İşi kim götürdü? Alt acentaya devredildiyse onun adı yazılır. */
+        const doerTxt = t => {
+            const alt = clean(t.altAcenta);
+            if (alt) return up(alt);
+            const asg = clean(t.assignedTo);
+            return up(asg || OL);
         };
-        if (isBalenturFirm(firm)) {
-            addSection(OL + ' - ' + firm, benVerdim, 'normal');
-            addSection(firm + ' - ' + OL, oVerdi, 'normal');
-            if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
-            addSection('Odelo', odeloGrup, 'odelo');
+        const noteTxt = t => {
+            const bits = [];
+            const kdv = accountKdvInfoForRow(t);
+            if (kdv && kdv.active) bits.push('KDV %' + kdv.rate + ': ' + fr(kdv.amount) + '₺');
+            const shop = clean(t.tourCommissionShop);
+            if (shop) bits.push(shop);
+            const n = clean(t.notes);
+            if (n) bits.push(n);
+            return bits.join(' · ');
+        };
+
+        const rows = [];
+        const merges = [];
+        const blankRow = () => rows.push({ h: 7, cells: [] });
+        const rowNo = () => rows.length;   // eklenecek satırın 1 tabanlı numarası
+
+        /* Logolu başlık (yalnız Excel çıktısında) */
+        if (opts.logo) {
+            const pad = n => Array.from({ length: n }, () => null);
+            rows.push({ h: 26, cells: [{ v: 'ÖLMEZTUR TURİZM', s: KOX.TITLE }].concat(pad(HESAP_NCOL - 1)) });
+            merges.push('A' + rowNo() + ':F' + rowNo());
+            rows.push({
+                h: 16, cells: [{
+                    v: up(firm) + '  ·  ' + PLAKA + '  ·  ' + new Date().toLocaleDateString('tr-TR'),
+                    s: KOX.SUBTITLE
+                }].concat(pad(HESAP_NCOL - 1))
+            });
+            merges.push('A' + rowNo() + ':F' + rowNo());
+            blankRow();
         } else {
-            addSection(OL + ' - ' + firm, benVerdim, 'normal');
-            addSection(firm + ' - ' + OL, oVerdi, 'normal');
-            if (altGrup.length) addSection('Alt acenta', altGrup, 'normal');
-            if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
+            blankRow();
         }
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws['!cols'] = [
-            { wch: 13 }, { wch: 8 }, { wch: 20 }, { wch: 22 }, { wch: 24 },
-            { wch: 22 }, { wch: 13 }, { wch: 13 }, { wch: 12 }, { wch: 11 },
-            { wch: 15 }, { wch: 28 }
-        ];
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        for (let Rw = range.s.r; Rw <= range.e.r; Rw++) {
-            for (let C = range.s.c; C <= range.e.c; C++) {
-                const ref = XLSX.utils.encode_cell({ r: Rw, c: C });
-                if (!ws[ref]) continue;
-                ws[ref].s = ws[ref].s || {};
-                ws[ref].s.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
-                ws[ref].s.border = {
-                    top: { style: 'thin', color: { rgb: '888888' } },
-                    bottom: { style: 'thin', color: { rgb: '888888' } },
-                    left: { style: 'thin', color: { rgb: '888888' } },
-                    right: { style: 'thin', color: { rgb: '888888' } }
-                };
+
+        /* Başlık satırı */
+        rows.push({ h: 32, cells: HESAP_COLS.map(c => ({ v: c.t, s: KOX.HEAD })) });
+        const headRow = rowNo();
+
+        const grand = { musteri: 0, araba: 0, komisyon: 0, kalan: 0 };
+        const addSection = (title, list, type) => {
+            if (!list.length) return;
+            /* Bölüm etiketi */
+            const label = [{ v: up(title), s: KOX.SECTION }, { v: '', s: KOX.SECTION }, { v: '', s: KOX.SECTION }];
+            for (let i = 3; i < HESAP_NCOL; i++) label.push({ v: '', s: KOX.SECTION_FILL });
+            rows.push({ h: 22, cells: label });
+            merges.push('A' + rowNo() + ':C' + rowNo());
+
+            const sum = { musteri: 0, araba: 0, komisyon: 0, kalan: 0 };
+            list.forEach((t, i) => {
+                const z = i % 2 === 1;
+                const sT = z ? KOX.TXT_Z : KOX.TXT;
+                const sM = z ? KOX.MONEY_Z : KOX.MONEY;
+                const odeloGross = money(t.odelloGross || t.odeloGross) || money(transferCustomerTRYValue(t));
+                const odeloCar = t.yon === 'odeloBalentur' ? money(t.balenturCost || t.driverPayment || t.altAcentaUcreti) : 0;
+                const musteri = type === 'odelo' ? odeloGross
+                    : (transferHasCustomerPayment(t) ? money(transferCustomerTRYValue(t)) : 0);
+                const araba = type === 'odelo' ? odeloCar : money(t.driverPayment);
+                const komisyon = money(tourCommissionShare(t));
+                const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
+                const kalan = hasNet ? money(t.netOl) : (musteri - araba);
+                const manual = t.kaynak === 'manual';
+                const meta = manual ? accountAdjustmentTypeMeta(t.adjustmentType) : null;
+                sum.musteri += musteri; sum.araba += araba; sum.komisyon += komisyon; sum.kalan += kalan;
+                /* Satır yüksekliği verilmez: sarılan uzun konum adları kırpılmasın */
+                rows.push({
+                    cells: [
+                        { v: dateTxt(t.date), s: sT },
+                        { v: t.time || '', s: sT },
+                        { v: manual ? up(meta ? meta.label : 'ÖDEME / BAKİYE') : (paxTxt(t) || '—'), s: sT },
+                        { v: manual ? '' : (placeTxt(t.pickup) || '—'), s: sT },
+                        { v: manual ? '' : (routeTxt(t) || '—'), s: sT },
+                        { v: manual ? '' : (placeTxt(t.dropoff) || '—'), s: sT },
+                        { v: musteri, s: sM, n: true },
+                        { v: araba, s: sM, n: true },
+                        { v: komisyon, s: sM, n: true },
+                        { v: kalan, s: sM, n: true },
+                        { v: noteTxt(t), s: KOX.NOTE },
+                        { v: manual ? '' : doerTxt(t), s: sT }
+                    ]
+                });
+            });
+            /* Ara toplam */
+            const sub = [];
+            for (let i = 0; i < HESAP_NCOL; i++) sub.push({ v: '', s: KOX.SUB_TXT });
+            sub[5] = { v: 'ARA TOPLAM', s: KOX.SUB_TXT };
+            sub[6] = { v: sum.musteri, s: KOX.SUB_MONEY, n: true };
+            sub[7] = { v: sum.araba, s: KOX.SUB_MONEY, n: true };
+            sub[8] = { v: sum.komisyon, s: KOX.SUB_MONEY, n: true };
+            sub[9] = { v: sum.kalan, s: KOX.SUB_MONEY, n: true };
+            rows.push({ h: 20, cells: sub });
+            rows.push({ h: 7, cells: Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.BAND })) });
+            blankRow();
+            grand.musteri += sum.musteri; grand.araba += sum.araba;
+            grand.komisyon += sum.komisyon; grand.kalan += sum.kalan;
+        };
+
+        addSection(OL + ' - ' + firm, benVerdim, 'normal');
+        addSection(firm + ' - ' + OL, oVerdi, 'normal');
+        if (odeloGrup.length) addSection('Odelo', odeloGrup, 'odelo');
+        if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
+
+        /* Kayıt yoksa bilgilendirici tek satır */
+        if (rows.length === headRow) {
+            const empty = Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.TXT }));
+            empty[2] = { v: 'AÇIK KAYIT YOK', s: KOX.TXT };
+            rows.push({ h: 19, cells: empty });
+        }
+
+        /* Toplam hesap */
+        const tot = [];
+        for (let i = 0; i < HESAP_NCOL; i++) tot.push({ v: '', s: KOX.TOTAL_TXT });
+        tot[0] = { v: 'TOPLAM HESAP', s: KOX.TOTAL_TXT };
+        tot[6] = { v: grand.musteri, s: KOX.TOTAL_MONEY, n: true };
+        tot[7] = { v: grand.araba, s: KOX.TOTAL_MONEY, n: true };
+        tot[8] = { v: grand.komisyon, s: KOX.TOTAL_MONEY, n: true };
+        tot[9] = { v: grand.kalan, s: KOX.TOTAL_MONEY, n: true };
+        rows.push({ h: 26, cells: tot });
+        merges.push('A' + rowNo() + ':F' + rowNo());
+
+        return {
+            name: clean(firm).slice(0, 28) || 'Hesap',
+            cols: HESAP_COLS.map(c => ({ w: c.w })),
+            rows: rows,
+            merges: merges,
+            freeze: headRow
+        };
+    };
+    const hesapFileName = (firm, tag) => {
+        const f = String(firm || '').replace(/\s+/g, '_').replace(/[^\wÇĞİÖŞÜçğıöşü_-]/g, '');
+        return 'Olmeztur_' + (f || 'Hesap') + '_' + new Date().toISOString().split('T')[0] + (tag ? '_' + tag : '') + '.xlsx';
+    };
+    /* 📊 Numbers — dosyayı iOS paylaş sayfasına verir, oradan Numbers seçilir */
+    /* Dosyayı yeni sekmede açar — iPhone'da PDF anında görünür, oradan
+       paylaş düğmesiyle kaydedilir. Açılır pencere engellenirse indirir. */
+    /* Klasik indirme — masaüstü ve iOS Safari indirmeleri için */
+    const koDownloadBlob = (blob, fname) => {
+        try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = fname; a.rel = 'noopener';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 120000);
+            return true;
+        } catch (e) { return false; }
+    };
+    const openBlobPreview = (blob, fname) => {
+        const url = URL.createObjectURL(blob);
+        let opened = null;
+        try { opened = window.open(url, '_blank'); } catch (e) { opened = null; }
+        if (!opened) {
+            const a = document.createElement('a');
+            a.href = url; a.download = fname; a.rel = 'noopener';
+            document.body.appendChild(a); a.click(); a.remove();
+        }
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 120000);
+        return !!opened;
+    };
+    /* 📄 PDF — hesap tablosunu doğrudan PDF olarak üretir.
+       Numbers/Excel'e hiç uğramaz: dosya yeni sekmede açılır, iPhone'da
+       paylaş düğmesinden "Dosyalara Kaydet" ile saklanır. */
+    /* 📄 PDF — hesap tablosunu PDF olarak üretir ve KAYDETME yolunu açar.
+       iPhone'da blob adresli bir sekmede PDF görünür ama indirilemez; tek
+       gerçek kaydetme yolu paylaş sayfasındaki "Dosyalara Kaydet"tir.
+       Bu yüzden önce paylaşım denenir, olmazsa önizleme + indirmeye düşülür. */
+    const pdfExport = firm => {
+        let blob, fname;
+        try {
+            const sheet = buildHesapSheet(firm, { logo: true });
+            const pages = kopdfRenderSheet(sheet, {
+                footer: OL + ' · ' + String(firm || '') + ' · ' + new Date().toLocaleDateString('tr-TR')
+            });
+            blob = kopdfBuild(pages, String(firm || 'Hesap') + ' hesabi');
+            fname = hesapFileName(firm).replace(/\.xlsx$/, '.pdf');
+        } catch (e) {
+            console.error('PDF hatasi', e);
+            tip('PDF oluşturulamadı');
+            return;
+        }
+        /* 1) Paylaş sayfası — "Dosyalara Kaydet" buradan çıkar */
+        let file = null;
+        try { file = new File([blob], fname, { type: 'application/pdf' }); } catch (e) { file = null; }
+        if (file && navigator.share) {
+            let p = null;
+            try { p = navigator.share({ files: [file], title: fname }); } catch (e) { p = null; }
+            if (p && typeof p.then === 'function') {
+                p.then(() => tip('PDF kaydedildi ✓')).catch(err => {
+                    if (err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return;
+                    console.warn('PDF paylaşımı başarısız, indirmeye düşülüyor', err);
+                    koDownloadBlob(blob, fname);
+                    tip('PDF indirildi');
+                });
+                return;
             }
         }
-        rows[1].forEach((_, C) => {
-            const ref = XLSX.utils.encode_cell({ r: 1, c: C });
-            if (!ws[ref]) return;
-            ws[ref].s = {
-                font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
-                fill: { fgColor: { rgb: '183B5B' } },
-                alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-                border: {
-                    top: { style: 'thin', color: { rgb: '6F8294' } },
-                    bottom: { style: 'thin', color: { rgb: '6F8294' } },
-                    left: { style: 'thin', color: { rgb: '6F8294' } },
-                    right: { style: 'thin', color: { rgb: '6F8294' } }
-                }
-            };
-        });
-        sectionRows.forEach(r => {
-            const ref = XLSX.utils.encode_cell({ r, c: 0 });
-            if (!ws[ref]) return;
-            ws[ref].s = {
-                font: { bold: true, color: { rgb: '183B5B' }, sz: 10 },
-                fill: { fgColor: { rgb: 'EAF0F6' } },
-                alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
-            };
-        });
-        ws['!rows'] = rows.map((_, i) => ({ hpt: i === 1 ? 34 : sectionRows.includes(i) ? 24 : 20 }));
-        XLSX.utils.book_append_sheet(wb, ws, clean(firm).slice(0, 28) || 'Hesap');
-        const fname = 'Olmeztur_' + clean(firm).replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
-        downloadWorkbook(wb, fname).then(ok => tip(ok ? (IS_IOS ? 'Numbers dosyası hazır' : 'Numbers dosyası indirildi') : 'Numbers dosyası oluşturulamadı'));
+        /* 2) Paylaşım yoksa: indir + yeni sekmede göster */
+        koDownloadBlob(blob, fname);
+        openBlobPreview(blob, fname);
+        tip('PDF indirildi');
+    };
+    /* 📗 Excel — aynı tablo, üstünde logolu başlık bloğu */
+    const excelExport = async firm => {
+        let blob, fname;
+        try {
+            blob = koxBuildWorkbook(buildHesapSheet(firm, { logo: true }));
+            fname = hesapFileName(firm, 'excel');
+        } catch (e) {
+            console.error('Excel tablo hatası', e);
+            tip('Excel dosyası oluşturulamadı');
+            return;
+        }
+        let ok = false;
+        try { ok = await saveBlob(blob, fname); } catch (e) { ok = false; }
+        if (!ok) ok = koDownloadBlob(blob, fname);   // xlsx sekmede açılmaz, indirilir
+        tip(ok ? 'Excel dosyası hazır' : 'Excel dosyası oluşturulamadı');
     };
 
     const sortHesapTs = (a, b) => {
@@ -6661,9 +7318,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const sirali = ts.slice().sort(sortHesapTs);
                 const manualKayitlar = sirali.filter(t => t.kaynak === 'manual');
                 const normalSirali = sirali.filter(t => t.kaynak !== 'odelo' && t.kaynak !== 'manual');
-                const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi');
+                /* Alt acenta satırları ayrı bölüm değil: işi bu firmadan aldığımız için
+                   FİRMA - Ölmeztur bloğuna girer (dışa aktarımla aynı mantık). */
+                const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi' || t.yon === 'alt');
                 const benimVerdiklerim = normalSirali.filter(t => t.yon === 'benVerdim');
-                const altKayitlar = normalSirali.filter(t => t.yon === 'alt');
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
                 const isBalenturAccount = isBalenturFirm(sel);
                 const jabir = isJabirFirm(sel);
@@ -6760,18 +7418,35 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             manualKayitlar.length > 0 && renderHesapBolum("Ödeme / Bakiye", manualKayitlar, NAV),
                             renderHesapBolum("\u00D6lmeztur - " + sel, benimVerdiklerim, R),
                             renderHesapBolum(sel + " - \u00D6lmeztur", onunVerdikleri, NAV),
-                            renderHesapBolum('Alt acenta işleri', altKayitlar, O),
                             (isBalenturAccount || odeloKayitlar.length > 0) && renderHesapBolum('Odelo', odeloKayitlar, G))
                     ),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } },
-                        React.createElement("button", { onClick: () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCE4 \u015Eirkete\nKopyala"),
-                        React.createElement("button", { onClick: () => numbersExport(sel), style: { background: G, color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCA Numbers\nA\u00E7"),
-                        React.createElement("button", { onClick: () => {
-                                const { ts: ts2, al: al2, ver: ver2, net: net2 } = hData;
-                                const rows2 = ts2.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => { const kar2 = transferNetAmount({ ...t }); return (i + 1) + '. ' + t.date + ' ' + t.time + ' | ' + (t.pickup || '\u2014') + ' \u2192 ' + (t.dropoff || '\u2014') + '\n   Ara\u00E7:' + fr(t.driverPayment) + '\u20BA K\u00E2r:' + (kar2 >= 0 ? '+' : '') + fr(kar2) + '\u20BA ' + (t.firmSettled ? '[KAPALI]' : '[A\u00C7IK]'); }).join('\n\n');
-                                copyText('KEND\u0130 HESABIM \u2014 ' + sel + '\nAlacak:' + fr(al2) + '\u20BA Borç:' + fr(ver2) + '\u20BA Net:' + (net2 >= 0 ? '+' : '') + fr(net2) + '\u20BA\n' + '\u2500'.repeat(24) + '\n\n' + rows2);
-                                tip('Kopyaland\u0131!');
-                            }, style: { background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: '#FFFFFF', border: 'none', borderRadius: 11, padding: '10px 4px', fontWeight: 470, fontSize: '10px', cursor: 'pointer', lineHeight: 1.4 } }, "\uD83D\uDCCB Kendi\nHesab\u0131m")),
+                    /* Dışa aktarma / kopyalama — dört buton, hepsi okunur */
+                    (function () {
+                        const actBtn = (icon, label, sub, onClick, solid) => React.createElement("button", {
+                            type: "button", onClick: onClick,
+                            style: {
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+                                background: solid ? NAV : '#FFFFFF',
+                                color: solid ? '#FFFFFF' : NAV,
+                                border: solid ? 'none' : '1.5px solid ' + BOR,
+                                borderRadius: 12, padding: '11px 6px', cursor: 'pointer',
+                                WebkitTapHighlightColor: 'transparent'
+                            }
+                        },
+                            React.createElement("span", { style: { fontSize: 13, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap' } }, icon + ' ' + label),
+                            React.createElement("span", { style: { fontSize: 9.5, opacity: solid ? .82 : .62, lineHeight: 1.2, whiteSpace: 'nowrap' } }, sub));
+                        const kendiHesabim = () => {
+                            const { ts: ts2, al: al2, ver: ver2, net: net2 } = hData;
+                            const rows2 = ts2.slice().sort((a, b) => a.date < b.date ? -1 : 1).map((t, i) => { const kar2 = transferNetAmount({ ...t }); return (i + 1) + '. ' + t.date + ' ' + t.time + ' | ' + (t.pickup || '\u2014') + ' \u2192 ' + (t.dropoff || '\u2014') + '\n   Ara\u00E7:' + fr(t.driverPayment) + '\u20BA K\u00E2r:' + (kar2 >= 0 ? '+' : '') + fr(kar2) + '\u20BA ' + (t.firmSettled ? '[KAPALI]' : '[A\u00C7IK]'); }).join('\n\n');
+                            copyText('KEND\u0130 HESABIM \u2014 ' + sel + '\nAlacak:' + fr(al2) + '\u20BA Bor\u00E7:' + fr(ver2) + '\u20BA Net:' + (net2 >= 0 ? '+' : '') + fr(net2) + '\u20BA\n' + '\u2500'.repeat(24) + '\n\n' + rows2);
+                            tip('Kopyaland\u0131!');
+                        };
+                        return React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                            actBtn('\uD83D\uDCC4', 'PDF Olu\u015Ftur', 'kaydet / payla\u015F', () => pdfExport(sel), true),
+                            actBtn('\uD83D\uDCD7', 'Excel', 'logolu .xlsx dosyas\u0131', () => excelExport(sel), true),
+                            actBtn('\uD83D\uDCE4', '\u015Eirkete Kopyala', 'mesaj olarak panoya', () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, false),
+                            actBtn('\uD83D\uDCCB', 'Kendi Hesab\u0131m', 'k\u00E2r \u00F6zeti panoya', kendiHesabim, false));
+                    })(),
                     renderHesapDetayModal());
 	            })()
 		            : (function() {
