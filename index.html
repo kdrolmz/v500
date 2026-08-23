@@ -2404,7 +2404,7 @@ function nlParseLine(rawLine) {
     if (!s.trim()) return [];
     // 0) Emoji / ok / sembol blokları ve vekil çiftleri
     s = s.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ');
-    s = s.replace(/[←-⇿⌀-➿⬀-⯿■-◿️‍•]/g, ' ');
+    s = s.replace(/[\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF\u25A0-\u25FF\uFE0F\u200D\u2022]/g, ' ');
     // 1) WhatsApp dışa aktarım öneki: [14:32, 23.08.2026]
     s = s.replace(/^\s*[\[\(]\s*\d{1,2}[:.]\d{2}[^\]\)]*[\]\)]\s*/, '');
     // 2) Sondaki saat damgası (mesaj balonu)
@@ -9305,7 +9305,9 @@ function App() {
             /* Arapça satırlar sağdan sola akar; içindeki Latin/rakam değerler
                yalıtılmazsa ters sıralanır ("16 LMZ 55" → "LMZ 55 16").
                U+2066/U+2069 (LRI/PDI) her değeri kendi yönünde tutar. */
-            const ltr = v => '⁦' + String(v == null ? '' : v) + '⁩';
+            // U+2066 (LRI) / U+2069 (PDI) kaçış diziyle yazılır: dosyada ham yön
+            // kontrol karakteri bırakmaz, çalışma anında etkisi aynıdır.
+            const ltr = v => '\u2066' + String(v == null ? '' : v) + '\u2069';
             let msg = 'السيد/السيدة *' + name + '*،\n';
             msg += 'نشكركم لاختياركم لنا. تفاصيل نقلكم موضحة أدناه.\n';
             msg += '\n*رحلتكم*\n';
