@@ -974,12 +974,46 @@ const LOCS = [
     { n: 'Bilecik', i: '📍', q: 'Bilecik Turkey' },
 ];
 const ULKELER = [
+    /* Sık kullanılanlar önde — pasaport MRZ'sinden gelen uyruk buraya eşlenir */
     { k: 'TR', n: 'Türkiye' }, { k: 'DE', n: 'Almanya' }, { k: 'GB', n: 'İngiltere' },
     { k: 'US', n: 'ABD' }, { k: 'FR', n: 'Fransa' }, { k: 'NL', n: 'Hollanda' },
     { k: 'BE', n: 'Belçika' }, { k: 'AT', n: 'Avusturya' }, { k: 'CH', n: 'İsviçre' },
     { k: 'SA', n: 'S.Arabistan' }, { k: 'AE', n: 'BAE' }, { k: 'RU', n: 'Rusya' },
     { k: 'KW', n: 'Kuveyt' }, { k: 'QA', n: 'Katar' }, { k: 'IT', n: 'İtalya' },
     { k: 'ES', n: 'İspanya' }, { k: 'PL', n: 'Polonya' }, { k: 'GR', n: 'Yunanistan' },
+    /* Körfez / Orta Doğu */
+    { k: 'BH', n: 'Bahreyn' }, { k: 'OM', n: 'Umman' }, { k: 'IQ', n: 'Irak' },
+    { k: 'IR', n: 'İran' }, { k: 'JO', n: 'Ürdün' }, { k: 'LB', n: 'Lübnan' },
+    { k: 'SY', n: 'Suriye' }, { k: 'YE', n: 'Yemen' }, { k: 'PS', n: 'Filistin' },
+    { k: 'IL', n: 'İsrail' },
+    /* Kuzey Afrika */
+    { k: 'EG', n: 'Mısır' }, { k: 'LY', n: 'Libya' }, { k: 'DZ', n: 'Cezayir' },
+    { k: 'MA', n: 'Fas' }, { k: 'TN', n: 'Tunus' }, { k: 'SD', n: 'Sudan' },
+    /* Avrupa */
+    { k: 'SE', n: 'İsveç' }, { k: 'NO', n: 'Norveç' }, { k: 'DK', n: 'Danimarka' },
+    { k: 'FI', n: 'Finlandiya' }, { k: 'IE', n: 'İrlanda' }, { k: 'PT', n: 'Portekiz' },
+    { k: 'CZ', n: 'Çekya' }, { k: 'SK', n: 'Slovakya' }, { k: 'HU', n: 'Macaristan' },
+    { k: 'RO', n: 'Romanya' }, { k: 'BG', n: 'Bulgaristan' }, { k: 'HR', n: 'Hırvatistan' },
+    { k: 'SI', n: 'Slovenya' }, { k: 'RS', n: 'Sırbistan' }, { k: 'BA', n: 'Bosna Hersek' },
+    { k: 'MK', n: 'K.Makedonya' }, { k: 'AL', n: 'Arnavutluk' }, { k: 'XK', n: 'Kosova' },
+    { k: 'ME', n: 'Karadağ' }, { k: 'UA', n: 'Ukrayna' }, { k: 'BY', n: 'Belarus' },
+    { k: 'MD', n: 'Moldova' }, { k: 'LT', n: 'Litvanya' }, { k: 'LV', n: 'Letonya' },
+    { k: 'EE', n: 'Estonya' }, { k: 'LU', n: 'Lüksemburg' }, { k: 'CY', n: 'Kıbrıs' },
+    { k: 'MT', n: 'Malta' },
+    /* Kafkasya / Orta Asya */
+    { k: 'AZ', n: 'Azerbaycan' }, { k: 'GE', n: 'Gürcistan' }, { k: 'AM', n: 'Ermenistan' },
+    { k: 'KZ', n: 'Kazakistan' }, { k: 'UZ', n: 'Özbekistan' }, { k: 'KG', n: 'Kırgızistan' },
+    { k: 'TM', n: 'Türkmenistan' }, { k: 'TJ', n: 'Tacikistan' },
+    /* Asya / Pasifik */
+    { k: 'CN', n: 'Çin' }, { k: 'JP', n: 'Japonya' }, { k: 'KR', n: 'G.Kore' },
+    { k: 'IN', n: 'Hindistan' }, { k: 'PK', n: 'Pakistan' }, { k: 'BD', n: 'Bangladeş' },
+    { k: 'AF', n: 'Afganistan' }, { k: 'ID', n: 'Endonezya' }, { k: 'MY', n: 'Malezya' },
+    { k: 'SG', n: 'Singapur' }, { k: 'TH', n: 'Tayland' }, { k: 'PH', n: 'Filipinler' },
+    { k: 'VN', n: 'Vietnam' }, { k: 'AU', n: 'Avustralya' }, { k: 'NZ', n: 'Y.Zelanda' },
+    /* Amerika / Afrika */
+    { k: 'CA', n: 'Kanada' }, { k: 'MX', n: 'Meksika' }, { k: 'BR', n: 'Brezilya' },
+    { k: 'AR', n: 'Arjantin' }, { k: 'ZA', n: 'G.Afrika' }, { k: 'NG', n: 'Nijerya' },
+    { k: 'KE', n: 'Kenya' }, { k: 'SO', n: 'Somali' }, { k: 'ET', n: 'Etiyopya' },
     { k: 'OTHER', n: 'Diğer' },
 ];
 /* Uyruk kodundan Türkçe sıfat: kaptan mesajında "Misafirler Kuveytli" gibi
@@ -989,7 +1023,24 @@ const UYRUK_SIFAT = {
     NL: 'Hollandalı', BE: 'Belçikalı', AT: 'Avusturyalı', CH: 'İsviçreli',
     SA: 'Suudi Arabistanlı', AE: 'Birleşik Arap Emirlikleri’nden', RU: 'Rus',
     KW: 'Kuveytli', QA: 'Katarlı', IT: 'İtalyan', ES: 'İspanyol',
-    PL: 'Polonyalı', GR: 'Yunan'
+    PL: 'Polonyalı', GR: 'Yunan',
+    BH: 'Bahreynli', OM: 'Ummanlı', IQ: 'Iraklı', IR: 'İranlı', JO: 'Ürdünlü',
+    LB: 'Lübnanlı', SY: 'Suriyeli', YE: 'Yemenli', PS: 'Filistinli', IL: 'İsrailli',
+    EG: 'Mısırlı', LY: 'Libyalı', DZ: 'Cezayirli', MA: 'Faslı', TN: 'Tunuslu',
+    SD: 'Sudanlı', SE: 'İsveçli', NO: 'Norveçli', DK: 'Danimarkalı', FI: 'Finlandiyalı',
+    IE: 'İrlandalı', PT: 'Portekizli', CZ: 'Çek', SK: 'Slovak', HU: 'Macar',
+    RO: 'Romanyalı', BG: 'Bulgar', HR: 'Hırvat', SI: 'Sloven', RS: 'Sırp',
+    BA: 'Bosnalı', MK: 'Makedon', AL: 'Arnavut', XK: 'Kosovalı', ME: 'Karadağlı',
+    UA: 'Ukraynalı', BY: 'Belaruslu', MD: 'Moldovalı', LT: 'Litvanyalı',
+    LV: 'Letonyalı', EE: 'Estonyalı', LU: 'Lüksemburglu', CY: 'Kıbrıslı', MT: 'Maltalı',
+    AZ: 'Azerbaycanlı', GE: 'Gürcü', AM: 'Ermeni', KZ: 'Kazak', UZ: 'Özbek',
+    KG: 'Kırgız', TM: 'Türkmen', TJ: 'Tacik',
+    CN: 'Çinli', JP: 'Japon', KR: 'Koreli', IN: 'Hintli', PK: 'Pakistanlı',
+    BD: 'Bangladeşli', AF: 'Afgan', ID: 'Endonezyalı', MY: 'Malezyalı',
+    SG: 'Singapurlu', TH: 'Taylandlı', PH: 'Filipinli', VN: 'Vietnamlı',
+    AU: 'Avustralyalı', NZ: 'Yeni Zelandalı',
+    CA: 'Kanadalı', MX: 'Meksikalı', BR: 'Brezilyalı', AR: 'Arjantinli',
+    ZA: 'Güney Afrikalı', NG: 'Nijeryalı', KE: 'Kenyalı', SO: 'Somalili', ET: 'Etiyopyalı'
 };
 const uyrukSifat = k => UYRUK_SIFAT[String(k || '').toUpperCase()] || '';
 /* Yolcu listesinden "Misafirler Kuveytli" / "2 Kuveytli · 1 Türk" satırı üretir */
@@ -1140,8 +1191,24 @@ const MRZ_ISO3_TO_APP = {
     TUR: 'TR', DEU: 'DE', GBR: 'GB', USA: 'US', FRA: 'FR', NLD: 'NL',
     BEL: 'BE', AUT: 'AT', CHE: 'CH', SAU: 'SA', ARE: 'AE', RUS: 'RU',
     KWT: 'KW', QAT: 'QA', ITA: 'IT', ESP: 'ES', POL: 'PL', GRC: 'GR',
-    // Sık karşılaşılan diğer uyruklar → 'OTHER' (uygulamada karşılığı yok)
-    D: 'DE', GBD: 'GB', GBN: 'GB', GBO: 'GB', GBP: 'GB', GBS: 'GB'
+    BHR: 'BH', OMN: 'OM', IRQ: 'IQ', IRN: 'IR', JOR: 'JO', LBN: 'LB',
+    SYR: 'SY', YEM: 'YE', PSE: 'PS', ISR: 'IL',
+    EGY: 'EG', LBY: 'LY', DZA: 'DZ', MAR: 'MA', TUN: 'TN', SDN: 'SD',
+    SWE: 'SE', NOR: 'NO', DNK: 'DK', FIN: 'FI', IRL: 'IE', PRT: 'PT',
+    CZE: 'CZ', SVK: 'SK', HUN: 'HU', ROU: 'RO', BGR: 'BG', HRV: 'HR',
+    SVN: 'SI', SRB: 'RS', BIH: 'BA', MKD: 'MK', ALB: 'AL', RKS: 'XK',
+    MNE: 'ME', UKR: 'UA', BLR: 'BY', MDA: 'MD', LTU: 'LT', LVA: 'LV',
+    EST: 'EE', LUX: 'LU', CYP: 'CY', MLT: 'MT',
+    AZE: 'AZ', GEO: 'GE', ARM: 'AM', KAZ: 'KZ', UZB: 'UZ', KGZ: 'KG',
+    TKM: 'TM', TJK: 'TJ',
+    CHN: 'CN', JPN: 'JP', KOR: 'KR', IND: 'IN', PAK: 'PK', BGD: 'BD',
+    AFG: 'AF', IDN: 'ID', MYS: 'MY', SGP: 'SG', THA: 'TH', PHL: 'PH',
+    VNM: 'VN', AUS: 'AU', NZL: 'NZ',
+    CAN: 'CA', MEX: 'MX', BRA: 'BR', ARG: 'AR', ZAF: 'ZA', NGA: 'NG',
+    KEN: 'KE', SOM: 'SO', ETH: 'ET',
+    // Eski / özel kodlar
+    D: 'DE', GBD: 'GB', GBN: 'GB', GBO: 'GB', GBP: 'GB', GBS: 'GB',
+    ROM: 'RO', YUG: 'RS', UNK: 'XK', KOS: 'XK'
 };
 /* MRZ karakter değeri: 0-9 => 0-9, A-Z => 10-35, '<' => 0 */
 function mrzCharVal(c) {
@@ -2103,6 +2170,436 @@ async function mrzReadFromFile(file, onProgress) {
             readings: results.length,
             distinctReadings: distinct
         });
+    } finally {
+        try { URL.revokeObjectURL(img.__url); } catch (e) {}
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📝 İSİM LİSTESİ / BİLET OKUMA — Galeriden yolcu adlarını ayıkla
+   WhatsApp ekran görüntüsü, e-bilet, rezervasyon ya da tablo
+   görüntüsünden yolcu adlarını göründükleri sırayla çıkarır.
+
+   Tasarım notu: tek bir OCR okumasına güvenilmez. Görüntü farklı
+   ölçek ve sayfa-analizi modlarıyla birkaç kez okunur; her satır
+   ayrı ayrı ayrıştırılır, birden fazla okumada aynı çıkan isimler
+   "doğrulanmış" işaretlenir. Şüpheli satırlar atılmak yerine onay
+   listesinde kullanıcıya gösterilir.
+   ═══════════════════════════════════════════════════════════════ */
+/* Türkçe harfleri sadeleştirip yalnız A-Z bırakan karşılaştırma anahtarı.
+   Kelime listeleri bu biçimde tutulur; "Uçuş/UCUS/uçuş" hepsi eşleşir. */
+const NL_TR_MAP = { 'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'I': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U' };
+const nlUp = s => String(s || '').toLocaleUpperCase('tr-TR');
+const nlKey = s => nlUp(s).replace(/[ÇĞİIÖŞÜ]/g, m => NL_TR_MAP[m] || m).replace(/[^A-Z]/g, '');
+/* Unvan / sıfat kelimeleri — isimden temizlenir (bilet: "YILMAZ/AHMET MR") */
+const NL_TITLES = new Set([
+    'MR', 'MRS', 'MS', 'MISS', 'MSTR', 'MASTER', 'MX', 'DR', 'PROF', 'SIR', 'MADAM', 'MDM',
+    'CHD', 'CHILD', 'INF', 'INFANT', 'ADT', 'ADULT', 'SR', 'JR', 'LADY', 'LORD',
+    'HERR', 'FRAU', 'BAY', 'BAYAN', 'SN', 'SAYIN', 'YETISKIN', 'COCUK', 'BEBEK'
+]);
+/* Bu kelimelerden biri geçtiğinde o kelime isim değildir (bilet/otel/ödeme satırı) */
+const NL_NOISE = new Set([
+    'FLIGHT', 'FLIGHTS', 'UCUS', 'UCUSU', 'PNR', 'TICKET', 'TICKETS', 'BILET', 'BILETI',
+    'ETICKET', 'TKT', 'TERMINAL', 'GATE', 'SEAT', 'SEATS', 'KOLTUK', 'BAGGAGE', 'BAGAJ',
+    'CABIN', 'KABIN', 'DEPARTURE', 'ARRIVAL', 'KALKIS', 'VARIS', 'INIS', 'BOARDING',
+    'CHECKIN', 'ECONOMY', 'BUSINESS', 'CLASS', 'SINIF', 'FARE', 'TOTAL', 'TOPLAM',
+    'TUTAR', 'PRICE', 'FIYAT', 'AMOUNT', 'CURRENCY', 'VERGI', 'TAX', 'HOTEL', 'OTEL',
+    'ROOM', 'ODA', 'NIGHT', 'GECE', 'RESERVATION', 'REZERVASYON', 'BOOKING',
+    'CONFIRMATION', 'VOUCHER', 'INVOICE', 'FATURA', 'AIRLINES', 'AIRWAYS',
+    'HAVAYOLLARI', 'HAVAYOLU', 'AIRPORT', 'HAVALIMANI', 'ADRES', 'ADDRESS', 'TELEFON',
+    'PHONE', 'GSM', 'EMAIL', 'MAIL', 'WHATSAPP', 'PLAKA', 'SOFOR', 'KAPTAN', 'DRIVER',
+    'PICKUP', 'DROPOFF', 'TARIH', 'DATE', 'SAAT', 'TIME', 'KISI', 'PAX', 'PERSON',
+    'PERSONS', 'GRUP', 'GROUP', 'ODEME', 'PAYMENT', 'NAKIT', 'IBAN', 'FIRMA', 'ACENTA',
+    'ACENTE', 'AGENCY', 'COMPANY', 'SIRKET', 'WWW', 'HTTP', 'HTTPS', 'FAX', 'TCKN',
+    'VKN', 'MERSIS', 'TRANSFER', 'VITO', 'SPRINTER', 'MINIBUS', 'STATUS', 'DURUM',
+    'NUMBER', 'NUMARA', 'IATA', 'CANCEL', 'IPTAL', 'PASAPORT', 'PASSPORT', 'KIMLIK',
+    'NATIONALITY', 'UYRUK', 'ULKE', 'COUNTRY', 'SOYAD', 'SOYADI', 'SURNAME', 'LASTNAME',
+    'FIRSTNAME', 'GIVEN', 'YOLCU', 'YOLCULAR', 'MISAFIR', 'MISAFIRLER', 'PASSENGER',
+    'PASSENGERS', 'GUEST', 'GUESTS', 'ISIM', 'ISIMLER', 'NAME', 'NAMES',
+    'AD', 'ADI', 'SIRA', 'ROW', 'NO', 'NR', 'REF', 'KOD', 'CODE',
+    /* Sık geçen havalimanı / şehir sözcükleri — isim sanılmasın */
+    'ISTANBUL', 'ANKARA', 'IZMIR', 'ANTALYA', 'GOKCEN', 'ATATURK', 'ESENBOGA',
+    'DALAMAN', 'BODRUM', 'TRABZON', 'KAYSERI', 'GAZIANTEP', 'HAVAALANI',
+    /* Ülke kodları — tablo satırlarının sonunda isme yapışmasın */
+    'TR', 'DE', 'GB', 'US', 'FR', 'NL', 'BE', 'AT', 'CH', 'SA', 'AE', 'RU',
+    'KW', 'QA', 'IT', 'ES', 'PL', 'GR', 'IQ', 'IR', 'JO', 'LB', 'SY', 'EG',
+    'TUR', 'DEU', 'GBR', 'USA', 'FRA', 'NLD', 'BEL', 'AUT', 'CHE', 'SAU',
+    'ARE', 'RUS', 'KWT', 'QAT', 'ITA', 'ESP', 'POL', 'GRC', 'IRQ', 'IRN',
+    'JOR', 'LBN', 'SYR', 'EGY', 'AZE', 'UKR', 'BGR', 'ROU',
+    /* Mesajlaşma kalıpları — WhatsApp ekranlarında isim sanılmasın */
+    'MERHABA', 'SELAM', 'SELAMUNALEYKUM', 'GUNAYDIN', 'IYI', 'GUNLER',
+    'AKSAMLAR', 'GECELER', 'KOLAY', 'GELSIN', 'TESEKKUR', 'TESEKKURLER',
+    'TESEKKURLER', 'SAGOL', 'SAGOLUN', 'EYVALLAH', 'RICA', 'EDERIM',
+    'HOCAM', 'USTAM', 'KARDESIM', 'TAMAM', 'TAMAMDIR', 'ANLADIM', 'PEKI',
+    'EVET', 'HAYIR', 'OLUR', 'OLDU', 'LUTFEN', 'ICIN', 'ILE', 'AMA', 'VEYA',
+    'YARIN', 'BUGUN', 'DUN', 'SABAH', 'OGLEN', 'AKSAM', 'SIMDI', 'HEMEN',
+    'SONRA', 'ONCE', 'NASIL', 'NEREDE', 'NEZAMAN', 'HANGI', 'GEREK',
+    'GEREKLI', 'MUSAIT', 'UYGUN', 'HAZIR', 'BEKLIYORUM', 'GONDER',
+    'GONDERDIM', 'GONDERIYORUM', 'ATIYORUM', 'ALDIM', 'LOKASYON', 'KONUM',
+    'BILGI', 'BILGILER', 'LISTE', 'LISTESI', 'ASAGIDA', 'YUKARIDA', 'EKTE',
+    'EKLI', 'DETAY', 'DETAYLAR', 'NOT', 'NOTU', 'PLEASE', 'THANKS', 'HELLO',
+    'REGARDS', 'DEAR', 'BELOW', 'ATTACHED', 'DETAILS', 'INFO',
+    /* Ülke adları — tablo/bilet satırlarında isme yapışmasın */
+    'TURKIYE', 'TURKEY', 'KUVEYT', 'KUWAIT', 'ALMANYA', 'GERMANY', 'INGILTERE',
+    'ENGLAND', 'BRITAIN', 'SUUDI', 'ARABISTAN', 'KATAR', 'BAE', 'EMIRATES',
+    'RUSYA', 'RUSSIA', 'IRAK', 'IRAN', 'MISIR', 'EGYPT', 'LUBNAN', 'LEBANON',
+    'URDUN', 'JORDAN', 'FRANSA', 'FRANCE', 'HOLLANDA', 'ITALYA', 'ITALY',
+    'ISPANYA', 'SPAIN', 'YUNANISTAN', 'GREECE', 'AMERIKA', 'AVUSTURYA',
+    'AUSTRIA', 'BELCIKA', 'BELGIUM', 'ISVICRE', 'POLONYA', 'POLAND',
+    'UKRAYNA', 'UKRAINE', 'AZERBAYCAN', 'SURIYE', 'SYRIA', 'UMMAN', 'OMAN',
+    'BAHREYN', 'BAHRAIN', 'KATARI', 'SUUDIARABISTAN'
+]);
+/* Türkçe ek almış hâlleri de yakalamak için gövde eşleşmesi ("Havalimanından",
+   "alacaksın", "biletiniz"). Yalnız yanlış eşleşme riski düşük, uzun gövdeler. */
+const NL_NOISE_STEMS = [
+    'HAVALIMAN', 'HAVAALAN', 'REZERVASYON', 'PASAPORT', 'TESEKKUR', 'MERHABA',
+    'TRANSFER', 'LOKASYON', 'TELEFON', 'ADRES', 'MISAFIR', 'YOLCU', 'UCUS',
+    'BILET', 'TOPLAM', 'ODEME', 'KOLTUK', 'BAGAJ', 'KONAKLAMA', 'GONDER',
+    'BEKLIYOR', 'ALACAK', 'TESLIM', 'MUSTERI', 'TURIZM', 'SEYAHAT', 'HAVAYOL',
+    'MINIBUS', 'OTOBUS', 'KARSILAMA', 'ISTANBUL', 'ANTALYA'
+];
+/* Bir kelime gürültü mü? (tam eşleşme ya da Türkçe ekli gövde eşleşmesi) */
+function nlIsNoise(k) {
+    if (!k) return false;
+    if (NL_NOISE.has(k)) return true;
+    for (const st of NL_NOISE_STEMS) if (k.length >= st.length && k.indexOf(st) === 0) return true;
+    return false;
+}
+/* Yolcu etiketi sayılan kelimeler — "Yolcu: X" gibi öneklerde ismi eler,
+   "Otel: X" gibi başka alan etiketlerinde ise satır tümden atılır. */
+const NL_PAX_LABELS = new Set([
+    'YOLCU', 'YOLCULAR', 'MISAFIR', 'MISAFIRLER', 'PASSENGER', 'PASSENGERS',
+    'GUEST', 'GUESTS', 'NAME', 'NAMES', 'ISIM', 'ISIMLER', 'AD', 'ADI',
+    'SOYAD', 'SOYADI', 'SURNAME', 'PAX', 'CUSTOMER', 'TRAVELLER', 'TRAVELER',
+    'FULLNAME', 'MUSTERI', 'KISI'
+]);
+/* Satır başındaki etiket ("Yolcu:", "Passenger Name -") */
+const NL_LABEL_RE = /^\s*(yolcu(?:lar)?(?:\s*ad[ıi](?:\s*soyad[ıi])?)?|misafir(?:ler)?|ad\s*[\-\/]?\s*soyad[ıi]?|ad[ıi]\s*soyad[ıi]|isim(?:ler)?|ismi|passenger(?:\s*name)?|pax(?:\s*name)?|guest(?:\s*name)?|traveller?|full\s*name|customer|name)\s*[:\-–—]\s*/i;
+const NL_VOWEL_RE = /[AEIOUÂÎÛIİÖÜaeıioöuüâîû]/;
+const NL_LETTER_CLASS = "A-Za-zÇĞİIÖŞÜçğıöşü";
+/* Pasaport no: harf(ler) + 6-9 rakam. Sınırlar Türkçe harfleri de kapsar, yoksa
+   "DEMİR 123456789" satırında 'R' harfi numaraya yapışır. */
+const NL_ID_LETTERS_RE = new RegExp(
+    '(^|[^' + NL_LETTER_CLASS + '0-9])([A-Za-z]{1,2})\\s?(\\d{6,9})(?![0-9' + NL_LETTER_CLASS + '])'
+);
+const NL_LETTERS_ONLY_RE = /[^A-Za-zÇĞİIÖŞÜçğıöşü]/g;
+/* Türk cep telefonu: +90 / 0 önekli ya da doğrudan 5xx ile başlayan, aralarında
+   boşluk-tire-nokta bulunabilen numara. İsimden ayrılıp yolcu telefonuna yazılır. */
+const NL_PHONE_RE = /(^|[^\d])((?:\+?\s?9\s?0[\s\-.]*)?0?[\s\-.]*5\d{2}[\s\-.]*\d{3}[\s\-.]*\d{2}[\s\-.]*\d{2})(?!\d)/;
+
+/* Bir kelime isim parçası olabilir mi? (rakam içermez, harfle başlar) */
+function nlNameToken(t) {
+    if (!t || /\d/.test(t)) return false;
+    return /^[A-Za-zÇĞİIÖŞÜçğıöşü][A-Za-zÇĞİIÖŞÜçğıöşü'’\-\.]*$/.test(t);
+}
+const nlLetterCount = t => String(t || '').replace(NL_LETTERS_ONLY_RE, '').length;
+/* OCR'ın harf yerine okuduğu rakamları düzelt (yalnız isim gibi görünen kelimelerde) */
+function nlFixDigitsInWord(t) {
+    const digits = (String(t).match(/\d/g) || []).length;
+    const letters = nlLetterCount(t);
+    if (!digits || letters < 2 || digits > Math.max(1, Math.floor(letters / 2))) return t;
+    return String(t).replace(/0/g, 'O').replace(/1/g, 'I').replace(/5/g, 'S')
+        .replace(/8/g, 'B').replace(/6/g, 'G');
+}
+/* Unvanları at */
+function nlStripTitles(s) {
+    const out = [];
+    let title = '';
+    String(s || '').trim().split(/\s+/).filter(Boolean).forEach(w => {
+        const k = nlKey(w);
+        if (k && NL_TITLES.has(k)) { if (!title) title = k; return; }
+        out.push(w);
+    });
+    return { text: out.join(' ').trim(), title };
+}
+/* Temizlenmiş bir metin geçerli bir ad soyad mı? */
+function nlLooksLikeName(s) {
+    const parts = String(s || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2 || parts.length > 5) return false;
+    if (String(s).length > 52) return false;
+    let strong = 0, longest = 0, letters = 0;
+    for (const p of parts) {
+        const lc = nlLetterCount(p);
+        if (lc === 1 && /^[A-Za-zÇĞİIÖŞÜçğıöşü]\.?$/.test(p)) continue; // baş harf
+        if (!nlNameToken(p)) return false;
+        const k = nlKey(p);
+        if (nlIsNoise(k)) return false;
+        if (lc >= 2) strong++;
+        if (lc > longest) longest = lc;
+        letters += lc;
+    }
+    if (strong < 2) return false;
+    // "IST AYT OK" gibi kod dizilerini eler; iki kelimelik kısa adlara ("Ali Ak") izin verir
+    if (longest < 4 && !(parts.length === 2 && letters >= 5)) return false;
+    if (letters < 5) return false;
+    if (!NL_VOWEL_RE.test(s)) return false;
+    return true;
+}
+/* Satırdaki en uzun ardışık "isim kelimeleri" dizisini bulur.
+   Bilet satırlarında ismin yanındaki uçuş kodu / tarih / kod alanları böylece
+   satırı çöpe atmak yerine kırpılır. */
+function nlNameRun(body) {
+    const toks = String(body || '').trim().split(/\s+/).filter(Boolean);
+    let best = [], cur = [];
+    const flush = () => { if (cur.length > best.length) best = cur; cur = []; };
+    for (const t of toks) {
+        const k = nlKey(t);
+        if (!nlNameToken(t) || nlIsNoise(k)) { flush(); continue; }
+        cur.push(t);
+        if (cur.length >= 5) flush();
+    }
+    flush();
+    while (best.length > 5) best = best.slice(0, 5);
+    const cand = best.join(' ');
+    return nlLooksLikeName(cand) ? cand : '';
+}
+/* Bilet formatı: "SOYAD/AD MR" → "Ad Soyad"
+   Bilet satırında ismin sağında uçuş kodu/tarih/kod alanları bulunur; bu yüzden
+   ada yalnız gerçekten isim gibi duran komşu kelimeler katılır. */
+function nlSlashName(s) {
+    const toks = String(s || '').trim().split(/\s+/).filter(Boolean);
+    const i = toks.findIndex(t => t.indexOf('/') !== -1);
+    if (i === -1) return '';
+    const bits = toks[i].split('/');
+    if (bits.length > 2) return '';
+    const usable = t => !!t && nlNameToken(t) && !NL_TITLES.has(nlKey(t)) && !nlIsNoise(nlKey(t));
+    let surname = (bits[0] || '').trim();
+    let given = (bits[1] || '').trim();
+    // "SOYAD / AD" — boşluklu yazım: komşu kelimelerden tamamla
+    if (!surname && i > 0 && usable(toks[i - 1])) surname = toks[i - 1];
+    if (!given && i + 1 < toks.length && usable(toks[i + 1])) given = toks[i + 1];
+    if (!usable(surname) || !usable(given)) return '';
+    // Çok kelimeli soyad: "VAN DER BERG/JOHN"
+    const pre = [];
+    const sIdx = bits[0] ? i : i - 1;   // soyadın geldiği kelimenin sırası
+    for (let j = sIdx - 1; j >= 0 && pre.length < 2; j--) {
+        if (!usable(toks[j])) break;
+        pre.unshift(toks[j]);
+    }
+    // İkinci ad: yalnız 4+ harfli, kod olmayan tek bir komşu kelime ("YILMAZ/AHMET MEHMET")
+    let second = '';
+    if (bits[1] && i + 1 < toks.length && usable(toks[i + 1]) && nlLetterCount(toks[i + 1]) >= 4) {
+        second = toks[i + 1];
+    }
+    const full = [given, second].filter(Boolean).concat(pre, [surname]).join(' ').replace(/\s+/g, ' ').trim();
+    if (nlLooksLikeName(full)) return full;
+    const plain = (given + ' ' + surname).replace(/\s+/g, ' ').trim();
+    return nlLooksLikeName(plain) ? plain : '';
+}
+/* Bir ham OCR satırından yolcu adayı/adayları üretir */
+function nlParseLine(rawLine) {
+    let s = String(rawLine || '');
+    if (!s.trim()) return [];
+    // 0) Emoji / ok / sembol blokları ve vekil çiftleri
+    s = s.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ');
+    s = s.replace(/[←-⇿⌀-➿⬀-⯿■-◿️‍•]/g, ' ');
+    // 1) WhatsApp dışa aktarım öneki: [14:32, 23.08.2026]
+    s = s.replace(/^\s*[\[\(]\s*\d{1,2}[:.]\d{2}[^\]\)]*[\]\)]\s*/, '');
+    // 2) Sondaki saat damgası (mesaj balonu)
+    s = s.replace(/\s+\d{1,2}[:.]\d{2}\s*(AM|PM|ÖÖ|ÖS)?\s*$/i, ' ');
+    // 3) Tarihler
+    s = s.replace(/\b\d{1,2}[.\/\-]\d{1,2}[.\/\-]\d{2,4}\b/g, ' ');
+    // 4) Etiket öneki ("Yolcu:", "Passenger Name -")
+    s = s.replace(NL_LABEL_RE, '');
+    // 5) Genel "Etiket: içerik" öneki. Sol taraf "Otel/Uçuş/Toplam" gibi başka bir
+    //    alan adıysa satırın tamamı atılır; "Mehmet:" gibi bir gönderen adıysa atılır.
+    const colon = s.match(/^\s*([^:]{2,30}):\s*(\S.*)$/);
+    if (colon && !nlLooksLikeName(colon[1].trim())) {
+        const leftKeys = colon[1].trim().split(/\s+/).map(nlKey).filter(Boolean);
+        const fieldLabel = leftKeys.some(k => nlIsNoise(k) && !NL_PAX_LABELS.has(k));
+        if (fieldLabel) return [];
+        s = colon[2];
+    }
+    // 6) Satır başı numaralandırma / madde işareti
+    s = s.replace(new RegExp('^\\s*[\\(\\[]?\\s*\\d{1,2}\\s*[\\)\\].:\\-–]\\s*(?=[' + NL_LETTER_CLASS + '])'), '');
+    s = s.replace(/^\s*[-*·▪●◦→>»–—]+\s*/, '');
+    // 7) Telefon ve kimlik numaralarını ayıkla, sonra tek başına duran sayıları sil
+    let tc = '', pas = '', phone = '';
+    const ph = s.match(NL_PHONE_RE);
+    if (ph) { phone = ph[2].replace(/\D/g, ''); s = s.replace(ph[0], (ph[1] || '') + ' '); }
+    const pm = s.match(NL_ID_LETTERS_RE);
+    if (pm) {
+        pas = nlUp(pm[2]) + pm[3];
+        s = s.replace(pm[0], (pm[1] || '') + ' ');
+    }
+    const runs = s.match(/\d+/g) || [];
+    // TC kimlik no 11 hanedir ve asla 0 ile başlamaz (0 ile başlayan 11 hane telefondur)
+    for (const r of runs) if (r.length === 11 && r[0] !== '0') { tc = r; break; }
+    if (!phone) for (const r of runs) if ((r.length === 11 && r[0] === '0') || (r.length === 10 && r[0] === '5')) { phone = r; break; }
+    if (!tc && !pas) for (const r of runs) if (r.length >= 6 && r.length <= 9) { pas = r; break; }
+    // Yalnız tek başına duran sayı öbekleri silinir; "TK1934" gibi kodlar bozulmaz
+    s = s.replace(new RegExp('(^|[^' + NL_LETTER_CLASS + '0-9])\\d+(?=$|[^' + NL_LETTER_CLASS + '0-9])', 'g'), '$1 ');
+    // 8) Kalan sembolleri sadeleştir ('/' bilet formatı için korunur)
+    s = s.replace(/[|\\]/g, '/');
+    s = s.replace(/[^A-Za-zÇĞİIÖŞÜçğıöşü0-9'’\-.,&+\/ ]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!s || s.length > 110) return [];
+    // 9) Bilet formatı
+    if (s.indexOf('/') !== -1) {
+        const slash = nlSlashName(nlStripTitles(s).text);
+        return slash ? [{ name: slash, tc, pas, phone }] : [];
+    }
+    const st = nlStripTitles(s);
+    let body = st.text.split(' ').map(nlFixDigitsInWord).join(' ').replace(/\s+/g, ' ').trim();
+    if (!body) return [];
+    // 10) Tek satırda birden çok isim: "Ahmet Yılmaz, Ayşe Kaya" / "Ali Ak ve Veli Ak"
+    const multi = body.split(/\s*[,;&+]\s*|\s+(?:ve|VE|and|AND)\s+/).map(x => x.trim()).filter(Boolean);
+    if (multi.length >= 2) {
+        const valid = [];
+        multi.forEach(part => { const r = nlNameRun(part); if (r) valid.push(r); });
+        if (valid.length >= 2) return valid.map(n => ({ name: n, tc: '', pas: '', phone: '' }));
+        if (valid.length === 1) return [{ name: valid[0], tc, pas, phone }];
+        if (multi.length === 2) { // "SOYAD, AD" biçimi
+            const flip = nlNameRun((multi[1] + ' ' + multi[0]).replace(/\s+/g, ' ').trim());
+            if (flip) return [{ name: flip, tc, pas, phone }];
+        }
+        return [];
+    }
+    const run = nlNameRun(body.replace(/[,;&+]/g, ' '));
+    return run ? [{ name: run, tc, pas, phone }] : [];
+}
+/* Bir OCR okumasının tüm satırlarını yolcu listesine çevirir (sıra korunur) */
+function nlNamesFromLines(lines) {
+    const out = [];
+    const seen = new Set();
+    (lines || []).forEach(ln => {
+        nlParseLine(ln.text).forEach(hit => {
+            const key = nlKey(hit.name);
+            if (!key || seen.has(key)) return;
+            seen.add(key);
+            out.push({ name: hit.name, tc: hit.tc || '', pas: hit.pas || '', phone: hit.phone || '', conf: ln.conf || 0, key: key });
+        });
+    });
+    return out.slice(0, 25);
+}
+
+/* ── Görsel ön işleme ─────────────────────────────────────────── */
+/* Ölçekle, griye çevir, kontrastı ger, koyu tema ekranını ters çevir */
+function nlPrepCanvas(img, targetW) {
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    if (!iw || !ih) return null;
+    const scale = Math.max(0.4, Math.min(4, targetW / iw));
+    const w = Math.max(50, Math.round(iw * scale)), h = Math.max(50, Math.round(ih * scale));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = true;
+    try { ctx.imageSmoothingQuality = 'high'; } catch (e) {}
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    let d;
+    try { d = ctx.getImageData(0, 0, w, h); } catch (e) { return c; }
+    const px = d.data;
+    const gray = new Uint8Array(w * h);
+    let sum = 0;
+    for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+        const g = (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) | 0;
+        gray[j] = g; sum += g;
+    }
+    const invert = (sum / gray.length) < 118;   // koyu tema ekran görüntüsü
+    const hist = new Uint32Array(256);
+    for (let j = 0; j < gray.length; j++) hist[gray[j]]++;
+    const total = gray.length;
+    let lo = 0, hi = 255, acc = 0;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc > total * 0.02) { lo = v; break; } }
+    acc = 0;
+    for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc > total * 0.02) { hi = v; break; } }
+    if (hi - lo < 24) { lo = 0; hi = 255; }
+    const span = Math.max(1, hi - lo);
+    for (let i = 0, j = 0; i < px.length; i += 4, j++) {
+        let g = Math.max(0, Math.min(255, ((gray[j] - lo) * 255 / span) | 0));
+        if (invert) g = 255 - g;
+        px[i] = px[i + 1] = px[i + 2] = g;
+        px[i + 3] = 255;
+    }
+    ctx.putImageData(d, 0, 0);
+    return c;
+}
+/* Tesseract worker'ı — düz metin okuma için (Türkçe + İngilizce) */
+let __nlWorker = null;
+let __nlWorkerPromise = null;
+async function nlGetWorker() {
+    if (__nlWorker) return __nlWorker;
+    if (__nlWorkerPromise) return __nlWorkerPromise;
+    if (!window.Tesseract) throw new Error('OCR kütüphanesi yüklenemedi (internet gerekli).');
+    __nlWorkerPromise = (async () => {
+        let worker = null;
+        // Türkçe modeli Ç Ğ İ Ö Ş Ü harflerini doğru okur; indirilemezse İngilizce'ye düşülür.
+        try { worker = await Tesseract.createWorker(['tur', 'eng'], 1, {}); }
+        catch (e) { worker = await Tesseract.createWorker('eng', 1, {}); }
+        await worker.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1' });
+        __nlWorker = worker;
+        return worker;
+    })();
+    try { return await __nlWorkerPromise; }
+    catch (e) { __nlWorkerPromise = null; throw e; }
+}
+async function nlOcr(worker, canvas, psm) {
+    try {
+        if (psm) { try { await worker.setParameters({ tessedit_pageseg_mode: String(psm) }); } catch (e) {} }
+        const res = await worker.recognize(canvas, {}, { text: true, blocks: true });
+        return (res && res.data) || null;
+    } catch (e) { return null; }
+}
+/* OCR çıktısını satırlara böl (satır güven puanıyla) */
+function nlTextLines(data) {
+    const out = [];
+    ((data && data.blocks) || []).forEach(b => (b.paragraphs || []).forEach(p => (p.lines || []).forEach(l => {
+        const t = String((l && l.text) || '').replace(/\s+/g, ' ').trim();
+        if (t) out.push({ text: t, conf: typeof l.confidence === 'number' ? l.confidence : 0 });
+    })));
+    if (out.length) return out;
+    return String((data && data.text) || '')
+        .split('\n')
+        .map(t => ({ text: t.replace(/\s+/g, ' ').trim(), conf: 0 }))
+        .filter(r => r.text);
+}
+/* Bir görselden yolcu adlarını oku — birden çok okuma, sonra oy birliği */
+async function nlReadNamesFromFile(file, onProgress) {
+    const note = m => { try { if (onProgress) onProgress(m); } catch (e) {} };
+    note('Okuma motoru hazırlanıyor…');
+    const worker = await nlGetWorker();
+    let img;
+    try { img = await mrzLoadImage(file); }
+    catch (e) { return { names: [], failed: true }; }
+    try {
+        const passes = [];
+        const plans = [
+            { w: 1600, psm: 6, label: 'Görüntü okunuyor…' },
+            { w: 2300, psm: 4, label: 'İsimler ayıklanıyor…' }
+        ];
+        for (const plan of plans) {
+            note(plan.label);
+            let canvas = null;
+            try { canvas = nlPrepCanvas(img, plan.w); } catch (e) { continue; }
+            if (!canvas) continue;
+            const data = await nlOcr(worker, canvas, plan.psm);
+            if (!data) continue;
+            const names = nlNamesFromLines(nlTextLines(data));
+            if (names.length) passes.push(names);
+        }
+        if (!passes.length) {   // tablo / kart görünümleri için seyrek metin modu
+            note('Farklı bir okuma deneniyor…');
+            let canvas = null;
+            try { canvas = nlPrepCanvas(img, 2600); } catch (e) { canvas = null; }
+            if (canvas) {
+                const data = await nlOcr(worker, canvas, 11);
+                const names = data ? nlNamesFromLines(nlTextLines(data)) : [];
+                if (names.length) passes.push(names);
+            }
+        }
+        if (!passes.length) return { names: [], failed: false };
+        passes.sort((a, b) => b.length - a.length);
+        const base = passes[0], others = passes.slice(1);
+        const merged = base.map(n => {
+            let hits = 1, tc = n.tc, pas = n.pas, phone = n.phone;
+            others.forEach(list => {
+                const m = list.find(x => x.key === n.key);
+                if (m) { hits++; if (!tc) tc = m.tc; if (!pas) pas = m.pas; if (!phone) phone = m.phone; }
+            });
+            return { name: n.name, tc: tc, pas: pas, phone: phone, conf: n.conf, agreed: hits >= 2 };
+        });
+        return { names: merged, failed: false, passes: passes.length };
     } finally {
         try { URL.revokeObjectURL(img.__url); } catch (e) {}
     }
@@ -7419,8 +7916,11 @@ function App() {
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
     const [paxModal, setPaxModal] = useState(null);
-    const [passportScan, setPassportScan] = useState(null); // {status:'loading'|'reading', msg} tarama sırasında
+    const [passportScan, setPassportScan] = useState(null); // {kind, msg, cur, total} tarama sürerken
+    const [paxBatch, setPaxBatch] = useState(null);          // okunanların onay listesi
     const passportFileRef = useRef(null);
+    const nameShotRef = useRef(null);
+    const scanCancelRef = useRef(false);
     const [quickEditT, setQuickEditT] = useState(null);
     const [bkpM, setBkpM] = useState(false);
     const [rstTxt, setRstTxt] = useState('');
@@ -8052,44 +8552,178 @@ function App() {
         setPaxModal({ idx, name: p.name || '', phone: p.phone || '', id: passengerIdDisplay(p), uyruk: p.uyruk || 'TR' });
     };
     const setPaxField = (f, v) => setPaxModal(m => m ? ({ ...m, [f]: v }) : m);
-    /* 📷 Galeriden pasaport tara → MRZ oku → paxModal'ı doldurup onaya sun */
+    /* ═══════════════════════════════════════════════════════════
+       📷 GALERİDEN YOLCU EKLEME
+       İki giriş var, ikisi de aynı onay listesinde bitiyor:
+         🪪 Pasaport — bir ya da birden çok pasaport fotoğrafı, MRZ'den
+            ad soyad + pasaport no + uyruk (kontrol haneleriyle doğrulanır)
+         📝 İsim listesi — WhatsApp / bilet ekran görüntüsündeki isimler
+       Tek pasaportta doğrudan tanıdık yolcu kartı açılır; çoklu seçimde
+       ve isim listesinde onay listesi gösterilir.
+       ═══════════════════════════════════════════════════════════ */
+    const ocrReady = () => {
+        if (!window.Tesseract) { tip('Okuma motoru yüklenemedi — internet bağlantısı gerekli'); return false; }
+        if (passportScan) return false;   // zaten tarama sürüyor
+        return true;
+    };
     const openPassportPicker = () => {
-        if (passportScan) return; // zaten tarıyor
+        if (!ocrReady()) return;
         if (passportFileRef.current) { passportFileRef.current.value = ''; passportFileRef.current.click(); }
     };
-    const handlePassportFile = async (file) => {
-        if (!file) return;
-        if (!window.Tesseract) { tip('OCR yüklenemedi — internet bağlantısı gerekli'); return; }
-        setPassportScan({ status: 'reading', msg: 'Pasaport okunuyor…' });
-        let parsed = null;
-        try {
-            parsed = await mrzReadFromFile(file);
-        } catch (e) {
-            console.error('MRZ okuma hatası', e);
+    const openNameShotPicker = () => {
+        if (!ocrReady()) return;
+        if (nameShotRef.current) { nameShotRef.current.value = ''; nameShotRef.current.click(); }
+    };
+    const cancelScan = () => { scanCancelRef.current = true; };
+    /* Okunan bir kaydı onay listesi satırına çevirir */
+    const batchRow = (o) => ({
+        name: o.name || '', id: o.id || '', phone: o.phone || '',
+        uyruk: o.uyruk || 'TR', verified: !!o.verified, note: o.note || '', sel: true
+    });
+    /* 🪪 Pasaport(lar) — tek dosyada yolcu kartı, çoklu dosyada onay listesi */
+    const handlePassportFiles = async (files) => {
+        const list = Array.from(files || []).filter(Boolean).slice(0, 12);
+        if (!list.length) return;
+        scanCancelRef.current = false;
+        const results = [];
+        let unread = 0;
+        for (let i = 0; i < list.length; i++) {
+            if (scanCancelRef.current) break;
+            setPassportScan({
+                kind: 'passport', cur: i + 1, total: list.length,
+                msg: list.length > 1 ? ('Pasaport ' + (i + 1) + '/' + list.length + ' okunuyor…') : 'Pasaport okunuyor…'
+            });
+            let parsed = null;
+            try {
+                parsed = await mrzReadFromFile(list[i], m => setPassportScan(s => (s ? { ...s, msg: (list.length > 1 ? (i + 1) + '/' + list.length + ' · ' : '') + m } : s)));
+            } catch (e) { console.error('MRZ okuma hatası', e); }
+            if (parsed && (parsed.passportNo || parsed.name)) {
+                results.push({
+                    name: parsed.name ? mrzTitleCase(parsed.name) : '',
+                    id: parsed.passportNo || '',
+                    uyruk: parsed.nationality || 'TR',
+                    verified: !!parsed.passportVerified && (parsed.checks || 0) >= 3,
+                    checks: parsed.checks || 0,
+                    agreed: !!parsed.agreed
+                });
+            } else unread++;
         }
         setPassportScan(null);
-        if (parsed && (parsed.passportNo || parsed.name)) {
-            const solid = !!parsed.passportVerified && (parsed.checks || 0) >= 3;
-            setPaxModal({
-                idx: -1,
-                name: parsed.name ? mrzTitleCase(parsed.name) : '',
-                phone: '',
-                id: parsed.passportNo || '',
-                uyruk: parsed.nationality || 'TR',
-                scan: {
-                    verified: solid,
-                    checks: parsed.checks || 0,
-                    agreed: !!parsed.agreed,
-                    hadName: !!parsed.name,
-                    hadNo: !!parsed.passportNo
-                }
-            });
-            tip(solid ? 'Pasaport okundu ✓' : 'Pasaport okundu — lütfen kontrol edin');
-        } else {
-            // Okunamadı: boş modalı aç, kullanıcı elle girsin (stabil davranış)
+        const cancelled = scanCancelRef.current;
+        scanCancelRef.current = false;
+        if (!results.length) {
+            if (cancelled) { tip('Tarama durduruldu'); return; }
+            // Okunamadı: boş yolcu kartını aç, elle girilsin (stabil davranış)
             setPaxModal({ idx: -1, name: '', phone: '', id: '', uyruk: 'TR', scan: { verified: false, hadName: false, hadNo: false, failed: true } });
             tip('Pasaport net okunamadı — bilgileri elle girebilirsiniz');
+            return;
         }
+        if (results.length === 1 && list.length === 1) {
+            const r = results[0];
+            setPaxModal({
+                idx: -1, name: r.name, phone: '', id: r.id, uyruk: r.uyruk,
+                scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, hadName: !!r.name, hadNo: !!r.id }
+            });
+            tip(r.verified ? 'Pasaport okundu ✓' : 'Pasaport okundu — lütfen kontrol edin');
+            return;
+        }
+        setPaxBatch({ kind: 'passport', items: results.map(batchRow), unread: unread, cancelled: cancelled });
+    };
+    /* 📝 İsim listesi ekran görüntüsü — bulunan isimler sırayla onaya sunulur */
+    const handleNameShotFiles = async (files) => {
+        const list = Array.from(files || []).filter(Boolean).slice(0, 6);
+        if (!list.length) return;
+        scanCancelRef.current = false;
+        const rows = [];
+        const seen = new Set();
+        let engineError = false;
+        for (let i = 0; i < list.length; i++) {
+            if (scanCancelRef.current) break;
+            setPassportScan({
+                kind: 'names', cur: i + 1, total: list.length,
+                msg: list.length > 1 ? ('Görüntü ' + (i + 1) + '/' + list.length + ' okunuyor…') : 'Görüntü okunuyor…'
+            });
+            let res = null;
+            try {
+                res = await nlReadNamesFromFile(list[i], m => setPassportScan(s => (s ? { ...s, msg: (list.length > 1 ? (i + 1) + '/' + list.length + ' · ' : '') + m } : s)));
+            } catch (e) {
+                console.error('İsim okuma hatası', e);
+                engineError = true;
+            }
+            ((res && res.names) || []).forEach(n => {
+                const key = nlKey(n.name);
+                if (!key || seen.has(key)) return;
+                seen.add(key);
+                rows.push(batchRow({
+                    name: koTitleCaseTR(n.name),
+                    id: n.tc || n.pas || '',
+                    phone: n.phone || '',
+                    uyruk: 'TR',
+                    verified: !!n.agreed
+                }));
+            });
+        }
+        setPassportScan(null);
+        const cancelled = scanCancelRef.current;
+        scanCancelRef.current = false;
+        if (!rows.length) {
+            tip(cancelled ? 'Tarama durduruldu'
+                : engineError ? 'Okuma motoru yüklenemedi — internet bağlantınızı kontrol edin'
+                : 'Ekran görüntüsünde isim bulunamadı — daha net bir görüntü deneyin');
+            return;
+        }
+        setPaxBatch({ kind: 'names', items: rows, unread: 0, cancelled: cancelled });
+    };
+    /* Onay listesi düzenleme */
+    const batchSet = (i, f, v) => setPaxBatch(b => b ? { ...b, items: b.items.map((it, k) => k === i ? { ...it, [f]: v } : it) } : b);
+    const batchDel = i => setPaxBatch(b => { if (!b) return b; const items = b.items.filter((_, k) => k !== i); return items.length ? { ...b, items } : null; });
+    const batchToggleAll = () => setPaxBatch(b => { if (!b) return b; const on = !b.items.every(it => it.sel); return { ...b, items: b.items.map(it => ({ ...it, sel: on })) }; });
+    /* Seçilenleri sırasıyla yolcu listesine ekler.
+       Aynı isim listedeyse yeni satır açılmaz, eksik alanları tamamlanır — böylece
+       önce bilet isimleri, sonra pasaportlar okutulduğunda numaralar yerine oturur.
+       25 kişi sınırı korunur. */
+    const batchCommit = () => {
+        const b = paxBatch; if (!b) return;
+        const picked = b.items.filter(it => it.sel && (it.name || '').trim());
+        if (!picked.length) { tip('Eklenecek yolcu seçilmedi'); return; }
+        const isPass = b.kind === 'passport';
+        const list = paxReal();
+        let added = 0, merged = 0, same = 0, full = 0;
+        picked.forEach(it => {
+            const nameTxt = koTitleCaseTR((it.name || '').trim());
+            const key = nlKey(nameTxt);
+            const idTxt = (it.id || '').trim();
+            const phTxt = (it.phone || '').trim();
+            const at = key ? list.findIndex(p => nlKey(p.name || '') === key) : -1;
+            if (at >= 0) {
+                const cur = list[at];
+                const next = { ...cur };
+                let touched = false;
+                if (idTxt && !passengerIdDisplay(cur)) { Object.assign(next, splitPassengerId(idTxt)); touched = true; }
+                if (phTxt && !(cur.phone || '').trim()) { next.phone = phTxt; touched = true; }
+                // Uyruk yalnız pasaporttan geldiğinde güncellenir — MRZ bu konuda kesindir.
+                if (isPass && it.uyruk && it.uyruk !== cur.uyruk) { next.uyruk = it.uyruk; touched = true; }
+                if (touched) { list[at] = next; merged++; } else same++;
+                return;
+            }
+            if (list.length >= 25) { full++; return; }
+            list.push({
+                ...emptyPassenger(),
+                name: nameTxt,
+                phone: phTxt,
+                uyruk: it.uyruk || 'TR',
+                ...splitPassengerId(idTxt)
+            });
+            added++;
+        });
+        sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
+        setPaxBatch(null);
+        const bits = [];
+        if (added) bits.push(added + ' yolcu eklendi');
+        if (merged) bits.push(merged + ' yolcunun bilgisi tamamlandı');
+        if (same) bits.push(same + ' zaten listedeydi');
+        if (full) bits.push(full + ' sığmadı (25 sınırı)');
+        tip((added || merged ? '✓ ' : '') + (bits.length ? bits.join(' · ') : 'Değişiklik yok'));
     };
     const savePaxModal = () => {
         const m = paxModal; if (!m) return;
@@ -11424,14 +12058,42 @@ function App() {
                             }
                         }, "🚐 ", PLAKA)))),
                 React.createElement("div", { className: "card ko-passenger-card" },
-                    React.createElement("div", { className: "ko-passenger-head", style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
-                        React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
-                        React.createElement("input", { ref: passportFileRef, type: "file", accept: "image/*", style: { display: 'none' }, onChange: e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handlePassportFile(f); } }),
-                        React.createElement("button", { type: "button", onClick: openPassportPicker, disabled: !!passportScan, title: "Galeriden pasaport foto\u011Fraf\u0131 se\u00E7 \u2014 ad soyad ve pasaport no otomatik okunur", style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, background: passportScan ? '#8E8E93' : '#0B7285', color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: passportScan ? 'default' : 'pointer' } }, passportScan ? "\u23F3 Okunuyor\u2026" : "\uD83D\uDCF7 Pasaport (Galeri)"),
-                        React.createElement("button", { type: "button", onClick: () => openPaxModal(null), style: { display: 'flex', alignItems: 'center', gap: 6, background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, padding: '8px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' } }, "+ Yolcu Ekle")),
+                    (function () {
+                        const busy = !!passportScan;
+                        const count = paxReal().length;
+                        const photoBtn = (icon, label, sub, onClick) => React.createElement("button", {
+                            type: "button", onClick: onClick, disabled: busy,
+                            style: {
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
+                                background: busy ? '#EDEFF2' : '#0B7285',
+                                color: busy ? '#9AA0A6' : '#FFFFFF', border: 'none', borderRadius: 12,
+                                padding: '10px 6px', cursor: busy ? 'default' : 'pointer',
+                                boxShadow: busy ? 'none' : '0 2px 8px rgba(11,114,133,.22)',
+                                transition: 'all .15s ease', WebkitTapHighlightColor: 'transparent'
+                            }
+                        },
+                            React.createElement("span", { style: { fontSize: 13, fontWeight: 500, lineHeight: 1.25, whiteSpace: 'nowrap' } }, icon + ' ' + label),
+                            React.createElement("span", { style: { fontSize: 9.5, opacity: .82, lineHeight: 1.2, whiteSpace: 'nowrap' } }, sub));
+                        return React.createElement("div", { className: "ko-passenger-head", style: { display: 'block', marginBottom: 11 } },
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 } },
+                                React.createElement("span", { className: "ko-passenger-title", style: { fontWeight: 450, fontSize: 12.5, color: TX } }, "\uD83D\uDC65 Yolcular"),
+                                count > 0 && React.createElement("span", { style: { fontSize: 10.5, fontWeight: 500, color: '#0B7285', background: '#E6F2F4', border: '1px solid #BFDDE3', borderRadius: 999, padding: '2px 8px' } }, count + ' ki\u015Fi'),
+                                busy && React.createElement("span", { style: { marginLeft: 'auto', fontSize: 10.5, color: SB } }, "\u23F3 okunuyor\u2026")),
+                            React.createElement("input", { ref: passportFileRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handlePassportFiles(arr); } }),
+                            React.createElement("input", { ref: nameShotRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handleNameShotFiles(arr); } }),
+                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
+                                photoBtn('\uD83E\uDEAA', 'Pasaport', '\u00E7oklu se\u00E7ilebilir', openPassportPicker),
+                                photoBtn('\uD83D\uDCDD', '\u0130sim Listesi', 'WhatsApp / bilet', openNameShotPicker)),
+                            React.createElement("div", { style: { fontSize: 9.8, color: SB, textAlign: 'center', margin: '6px 0 7px', lineHeight: 1.35 } },
+                                "Galeriden se\u00E7 \u2014 okunanlar onay listesinde g\u00F6sterilir, onaylay\u0131nca s\u0131rayla eklenir."),
+                            React.createElement("button", {
+                                type: "button", onClick: () => openPaxModal(null),
+                                style: { width: '100%', background: '#FFFFFF', color: NAV, border: '1.5px solid ' + NAV, borderRadius: 11, padding: '9px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }
+                            }, "\uFF0B Elle Yolcu Ekle"));
+                    })(),
                     (function () {
                         const list = paxReal();
-                        if (!list.length) return React.createElement("div", { style: { fontSize: 12, color: SB, textAlign: 'center', padding: '14px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR } }, "Hen\u00FCz yolcu eklenmedi. \u201C+ Yolcu Ekle\u201D ile ekleyin.");
+                        if (!list.length) return React.createElement("div", { style: { fontSize: 11.5, color: SB, textAlign: 'center', padding: '13px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR, lineHeight: 1.45 } }, "Hen\u00FCz yolcu eklenmedi.");
                         return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, list.map((p, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'stretch', gap: 8, background: INP, borderRadius: 10, padding: '9px 11px', border: '1px solid ' + BOR } },
                             React.createElement("div", { style: { flex: 1, minWidth: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 12px' } },
                                 React.createElement("span", { style: { fontSize: 13, fontWeight: 500, color: TX } }, p.name || 'Misafir'),
@@ -11781,12 +12443,103 @@ function App() {
             )
         ),
         quickEditT && renderQuickEditModal(),
-        passportScan && React.createElement("div", { style: { position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(20,22,28,.55)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-            React.createElement("div", { style: { background: '#fff', borderRadius: 16, padding: '22px 26px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, boxShadow: '0 18px 48px rgba(0,0,0,.28)', maxWidth: 260, textAlign: 'center' } },
-                React.createElement("div", { style: { width: 34, height: 34, border: '3px solid #D6E4E8', borderTopColor: '#0B7285', borderRadius: '50%', animation: 'koSpin .8s linear infinite' } }),
-                React.createElement("div", { style: { fontSize: 13.5, fontWeight: 500, color: TX } }, "🪪 Pasaport okunuyor…"),
-                React.createElement("div", { style: { fontSize: 11, color: SB, lineHeight: 1.4 } }, "Ad soyad ve pasaport numarası çıkarılıyor. İlk seferde okuma verisi indirilebilir, birkaç saniye sürebilir.")),
-            React.createElement("style", null, "@keyframes koSpin{to{transform:rotate(360deg)}}")),
+        passportScan && (function () {
+            const isNames = passportScan.kind === 'names';
+            const total = passportScan.total || 1, cur = passportScan.cur || 1;
+            const pct = total > 1 ? Math.round(((cur - 1) / total) * 100) : null;
+            return React.createElement("div", { style: { position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(20,22,28,.55)', backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 } },
+                React.createElement("div", { style: { background: '#fff', borderRadius: 18, padding: '22px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 11, boxShadow: '0 18px 48px rgba(0,0,0,.28)', maxWidth: 280, width: '100%', textAlign: 'center' } },
+                    React.createElement("div", { style: { width: 34, height: 34, border: '3px solid #D6E4E8', borderTopColor: '#0B7285', borderRadius: '50%', animation: 'koSpin .8s linear infinite' } }),
+                    React.createElement("div", { style: { fontSize: 13.5, fontWeight: 500, color: TX } }, isNames ? "📝 İsimler okunuyor…" : "🪪 Pasaport okunuyor…"),
+                    pct !== null && React.createElement("div", { style: { width: '100%', height: 5, background: '#EDEFF2', borderRadius: 3, overflow: 'hidden' } },
+                        React.createElement("div", { style: { width: Math.max(6, pct) + '%', height: '100%', background: '#0B7285', borderRadius: 3, transition: 'width .3s ease' } })),
+                    React.createElement("div", { style: { fontSize: 11, color: SB, lineHeight: 1.4 } }, passportScan.msg || 'Okunuyor…'),
+                    React.createElement("div", { style: { fontSize: 10, color: '#9AA0A6', lineHeight: 1.35 } }, "İlk kullanımda okuma verisi indirilir, birkaç saniye sürebilir."),
+                    React.createElement("button", { type: "button", onClick: cancelScan, style: { marginTop: 2, background: 'none', border: 'none', color: SB, fontSize: 11.5, fontWeight: 450, cursor: 'pointer', textDecoration: 'underline', padding: 4 } }, "Durdur")),
+                React.createElement("style", null, "@keyframes koSpin{to{transform:rotate(360deg)}}"));
+        })(),
+        paxBatch && (function () {
+            const isNames = paxBatch.kind === 'names';
+            const items = paxBatch.items || [];
+            const picked = items.filter(it => it.sel && (it.name || '').trim()).length;
+            const allOn = items.length > 0 && items.every(it => it.sel);
+            const okCount = items.filter(it => it.verified).length;
+            const head = isNames
+                ? (items.length + ' isim bulundu')
+                : (items.length + ' pasaport okundu');
+            const banner = isNames
+                ? (okCount === items.length
+                    ? 'Tüm isimler iki ayrı okumada aynı çıktı. Sırayı ve yazımı kontrol edip ekleyin.'
+                    : 'İsimler ekran görüntüsünden okundu. ⚠︎ işaretli olanları kontrol edin, gereksizleri kaldırın.')
+                : (okCount === items.length
+                    ? 'Pasaport numaraları MRZ kontrol haneleriyle doğrulandı. Ad soyadları kontrol edip ekleyin.'
+                    : 'Bazı pasaportlar kesin doğrulanamadı (⚠︎). Numara ve ad soyadı kontrol edip ekleyin.');
+            const good = okCount === items.length;
+            return React.createElement("div", { className: "mo", onClick: () => setPaxBatch(null) },
+                React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 20 } },
+                    React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+                        React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, (isNames ? '📝 ' : '🪪 ') + head),
+                        React.createElement("button", { onClick: () => setPaxBatch(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10, padding: '9px 11px', borderRadius: 10, fontSize: 11.5, fontWeight: 450, lineHeight: 1.4, background: good ? '#E7F6EC' : '#FFF8E1', color: good ? '#1B5E20' : '#7A5B00', border: '1px solid ' + (good ? '#B7E1C4' : '#EAD08A') } },
+                        React.createElement("span", { style: { fontSize: 14, flexShrink: 0 } }, good ? '✅' : '📷'),
+                        React.createElement("span", null, banner)),
+                    (paxBatch.unread > 0) && React.createElement("div", { style: { fontSize: 11, color: '#8A5300', background: '#FFF4E5', border: '1px solid #F0C48A', borderRadius: 9, padding: '7px 10px', marginBottom: 10, lineHeight: 1.4 } },
+                        '⚠️ ' + paxBatch.unread + ' fotoğraf okunamadı — o yolcuları elle eklemeniz gerekiyor.'),
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 } },
+                        React.createElement("span", { style: { fontSize: 11, color: SB } }, picked + ' / ' + items.length + ' seçili'),
+                        React.createElement("button", { type: "button", onClick: batchToggleAll, style: { background: 'none', border: 'none', color: NAV, fontSize: 11.5, fontWeight: 470, cursor: 'pointer', padding: 2 } }, allOn ? 'Tümünü kaldır' : 'Tümünü seç')),
+                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '46vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingRight: 2 } },
+                        items.map((it, i) => React.createElement("div", {
+                            key: i,
+                            style: {
+                                background: it.sel ? '#FFFFFF' : '#F7F8FA', border: '1.5px solid ' + (it.sel ? '#BFDDE3' : BOR),
+                                borderRadius: 12, padding: '9px 10px', opacity: it.sel ? 1 : .62, transition: 'all .15s ease'
+                            }
+                        },
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: it.sel ? 7 : 0 } },
+                                React.createElement("button", {
+                                    type: "button", onClick: () => batchSet(i, 'sel', !it.sel), title: it.sel ? 'Bu yolcuyu ekleme' : 'Bu yolcuyu ekle',
+                                    style: { flexShrink: 0, width: 22, height: 22, borderRadius: 7, cursor: 'pointer', border: '1.5px solid ' + (it.sel ? '#0B7285' : '#C7CBD1'), background: it.sel ? '#0B7285' : '#FFFFFF', color: '#FFFFFF', fontSize: 12, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }
+                                }, it.sel ? '✓' : ''),
+                                React.createElement("span", { style: { flexShrink: 0, fontSize: 10.5, fontWeight: 500, color: SB, minWidth: 14 } }, (i + 1) + '.'),
+                                it.sel
+                                    ? React.createElement("input", {
+                                        type: "text", value: it.name, onChange: e => batchSet(i, 'name', e.target.value),
+                                        placeholder: "Ad Soyad", className: "inp", autoCapitalize: "words",
+                                        style: { flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 500, padding: '7px 9px' }
+                                    })
+                                    : React.createElement("span", { style: { flex: 1, minWidth: 0, fontSize: 13, color: SB, textDecoration: 'line-through', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, it.name || 'Misafir'),
+                                React.createElement("span", { title: it.verified ? 'İki ayrı okuma aynı sonucu verdi' : 'Kontrol edin', style: { flexShrink: 0, fontSize: 12 } }, it.verified ? '✅' : '⚠️'),
+                                React.createElement("button", { type: "button", onClick: () => batchDel(i), title: "Listeden çıkar", style: { flexShrink: 0, background: 'none', border: 'none', color: '#B0B4BA', fontSize: 15, cursor: 'pointer', padding: '0 2px', lineHeight: 1 } }, "✕")),
+                            /* İkinci satır: pasaportta numara hep görünür; isim listesinde
+                               liste sade kalsın diye numara alanı istendiğinde açılır. */
+                            it.sel && React.createElement("div", { style: { display: 'flex', gap: 6, paddingLeft: 30, alignItems: 'center' } },
+                                (!isNames || it.showId || it.id)
+                                    ? React.createElement("input", {
+                                        type: "text", value: it.id, onChange: e => batchSet(i, 'id', e.target.value),
+                                        placeholder: isNames ? "TC / Pasaport No" : "Pasaport No", className: "inp",
+                                        autoCapitalize: "characters", inputMode: "text",
+                                        style: { flex: 1, minWidth: 0, fontSize: 12, padding: '6px 8px', letterSpacing: .4 }
+                                    })
+                                    : React.createElement("button", {
+                                        type: "button", onClick: () => batchSet(i, 'showId', true),
+                                        style: { flex: 1, minWidth: 0, background: 'none', border: '1px dashed ' + BOR, borderRadius: 9, color: SB, fontSize: 11.5, fontWeight: 450, cursor: 'pointer', padding: '6px 8px', textAlign: 'left' }
+                                    }, "＋ TC / Pasaport no"),
+                                React.createElement("select", {
+                                    value: it.uyruk || 'TR', onChange: e => batchSet(i, 'uyruk', e.target.value), className: "inp",
+                                    style: { width: 118, flexShrink: 0, fontSize: 12, padding: '6px 4px' }
+                                }, ULKELER.map(u => React.createElement("option", { key: u.k, value: u.k }, u.n))),
+                                it.phone && React.createElement("span", { title: "Ekran görüntüsünden okunan telefon", style: { flexShrink: 0, fontSize: 10.5, color: SB, whiteSpace: 'nowrap' } }, "📞 " + it.phone))))),
+                    React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 14 } },
+                        React.createElement("button", {
+                            onClick: () => { setPaxBatch(null); setTimeout(isNames ? openNameShotPicker : openPassportPicker, 60); },
+                            style: { flex: 1, background: '#FFFFFF', color: '#0B7285', border: '1.5px solid #0B7285', borderRadius: 13, padding: 13, fontWeight: 470, fontSize: '13.5px', cursor: 'pointer' }
+                        }, "📷 Tekrar Seç"),
+                        React.createElement("button", {
+                            onClick: batchCommit, disabled: !picked,
+                            style: { flex: 2, background: picked ? NAV : '#C7CBD1', color: '#FFFFFF', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: picked ? 'pointer' : 'default' }
+                        }, picked ? ('✓ ' + picked + ' Yolcuyu Ekle') : 'Yolcu seçilmedi'))));
+        })(),
         paxModal && (React.createElement("div", { className: "mo", onClick: () => setPaxModal(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
