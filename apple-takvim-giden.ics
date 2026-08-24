@@ -2135,8 +2135,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1784400800473_y7wv9e@olmeztur
 DTSTAMP:20260824T190300Z
-LAST-MODIFIED:20260724T173600Z
-SEQUENCE:1784914597
+LAST-MODIFIED:20260824T185300Z
+SEQUENCE:1787597604
 DTSTART:20260719T100000
 DTEND:20260719T110000
 SUMMARY:10:00 · Bursa→İstanbul
@@ -3247,8 +3247,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786781648692_ei5j17@olmeztur
 DTSTAMP:20260824T190300Z
-LAST-MODIFIED:20260818T210400Z
-SEQUENCE:1787087042
+LAST-MODIFIED:20260824T184900Z
+SEQUENCE:1787597347
 DTSTART:20260815T153000
 DTEND:20260815T163000
 SUMMARY:15:30 · Almira Hotel→SAW
@@ -3256,7 +3256,7 @@ LOCATION:Almira Hotel → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Mahmoud Hecham Wahbi\, Mona Assil\nŞoför: -\nİşi ve
  ren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Nihat Abi\nAraç: 
  Vito\nGüzergah: Almira Hotel → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri:
-  150 USD | Araç: 6.000 ₺ | Alt acenta: 6.500 ₺
+  150 USD | Araç: 6.500 ₺ | Alt acenta: 6.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -3281,8 +3281,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786869075164_t335gi@olmeztur
 DTSTAMP:20260824T190300Z
-LAST-MODIFIED:20260816T131800Z
-SEQUENCE:1786886323
+LAST-MODIFIED:20260824T184300Z
+SEQUENCE:1787597021
 DTSTART:20260816T100000
 DTEND:20260816T110000
 SUMMARY:10:00 · Bursa→SAW
@@ -3290,7 +3290,7 @@ LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Waleed Al Hallak\nŞoför: Cihat Öter\nİşi veren: Sad
  ettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nG
  üzergah: Bursa → Sabiha Gökçen Havalimanı\nNot: no show\nÖdeme: Müşteri 
- ödemez | Araç: 5.000 ₺ | Alt acenta: 5.000 ₺
+ ödemez | Araç: 4.500 ₺ | Alt acenta: 5.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -3341,6 +3341,23 @@ LOCATION:Bursa → İstanbul Otel
 DESCRIPTION:Müşteri: Abdulrahman Alenezi\nŞoför: Burak Bozkuş\nİşi veren
  : Ölmeztur\nİşi yapan: Burak Bozkuş\nAlt acenta: -\nAraç: Vito\nGüzergah
  : Bursa → İstanbul Otel\nÖdeme: Müşteri: 210 USD | Araç: 9.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1787595004095_d4mzu9@olmeztur
+DTSTAMP:20260824T190300Z
+LAST-MODIFIED:20260824T181000Z
+SEQUENCE:1787595004
+DTSTART:20260817T120000
+DTEND:20260817T130000
+SUMMARY:12:00 · Bursa→İstanbul
+LOCATION:Bursa → Fatih İstanbul
+DESCRIPTION:Müşteri: Morsli Mohammad Amine\nŞoför: Diğer Kaptanlar\nİşi 
+ veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Abdullah Özçeli
+ k\nAraç: Vito\nGüzergah: Bursa → Fatih İstanbul\nÖdeme: Müşteri: 5.500 T
+ RY | Araç: 7.500 ₺ | Alt acenta: 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -3708,13 +3725,31 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1787593510837_qxna9o@olmeztur
+DTSTAMP:20260824T190300Z
+LAST-MODIFIED:20260824T175900Z
+SEQUENCE:1787594377
+DTSTART:20260825T084500
+DTEND:20260825T094500
+SUMMARY:08:45 · Rızvanoğlu Prestij Park 21 Nisan Mah.→IST
+LOCATION:Rızvanoğlu Prestij Park 21 Nisan Mah. → İstanbul Havalimanı
+DESCRIPTION:Müşteri: İsmail Muhammed El Kendari\, Tihani Muhammed El Bağ
+ dadi\, Ömer İsmail El Kendari\nŞoför: Sadettin Darkal\nİşi veren: Salah\
+ nİşi yapan: Ölmeztur\nAlt acenta: Sadettin Darkal\nAraç: Vito\nGüzergah:
+  Rızvanoğlu Prestij Park 21 Nisan Mah. → İstanbul Havalimanı\nÖdeme: Müş
+ teri ödemez | Araç: 8.500 ₺ | Alt acenta: 8.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1787497838547_43g6y8@olmeztur
 DTSTAMP:20260824T190300Z
-LAST-MODIFIED:20260823T151000Z
-SEQUENCE:1787497838
-DTSTART:20260826T093000
-DTEND:20260826T103000
-SUMMARY:09:30 · Alpiş Tuana Evleri 1.etap Ve 2.etap→SAW
+LAST-MODIFIED:20260824T175100Z
+SEQUENCE:1787593879
+DTSTART:20260826T090000
+DTEND:20260826T100000
+SUMMARY:09:00 · Alpiş Tuana Evleri 1.etap Ve 2.etap→SAW
 LOCATION:Alpiş Tuana Evleri 1.etap Ve 2.etap → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Balgees Mohammad\, Haya Zuraij\, Ali Abdulla\, Balg
  ees Abdullah\, Ailyn Encarguez\, Mimi Gemeda Hne\, Abdulgader Mohammad\,
@@ -3729,11 +3764,11 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787497752413_17n2wv@olmeztur
 DTSTAMP:20260824T190300Z
-LAST-MODIFIED:20260823T151000Z
-SEQUENCE:1787497848
-DTSTART:20260826T093000
-DTEND:20260826T103000
-SUMMARY:09:30 · Bursa→SAW
+LAST-MODIFIED:20260824T175100Z
+SEQUENCE:1787593887
+DTSTART:20260826T090000
+DTEND:20260826T100000
+SUMMARY:09:00 · Bursa→SAW
 LOCATION:Bursa Alpiş Tuana Evleri 2.etap → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Maryam Abdullah\, Fatema Abdullah\, Noura Alkandari
  \, Khaled Alkandari\, Ahmad Alkandari\, Mariam Alkandari\, Ali Alkandari
