@@ -671,14 +671,15 @@ BEGIN:VEVENT
 UID:ko-transfer-1787593620182_c5ibl7@olmeztur
 DTSTAMP:20260824T174700Z
 LAST-MODIFIED:20260824T174700Z
-SEQUENCE:1787593620
+SEQUENCE:1787593650
 DTSTART:20260822T090000
 DTEND:20260822T100000
 SUMMARY:09:00 · Aydın→Efes Antik Kenti Ve Ekstra
 LOCATION:Aydın → Efes Antik Kenti Ve Ekstra
 DESCRIPTION:Müşteri: -\nŞoför: Halil İbrahim Köse / +905422530537\nİşi v
  eren: Jica Nippon\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Sprinter\nG
- üzergah: Aydın → Efes Antik Kenti Ve Ekstra\nÖdeme: Müşteri ödemez
+ üzergah: Aydın → Efes Antik Kenti Ve Ekstra\nÖdeme: Müşteri ödemez | Ara
+ ç: 8.000 ₺
 CATEGORIES:KÖ VIP Tahsis
 STATUS:CONFIRMED
 TRANSP:OPAQUE
