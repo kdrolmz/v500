@@ -3710,11 +3710,11 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787593510837_qxna9o@olmeztur
 DTSTAMP:20260824T175900Z
-LAST-MODIFIED:20260824T174500Z
-SEQUENCE:1787593510
-DTSTART:20260825T091500
-DTEND:20260825T101500
-SUMMARY:09:15 · Rızvanoğlu Prestij Park 21 Nisan Mah.→IST
+LAST-MODIFIED:20260824T175900Z
+SEQUENCE:1787594377
+DTSTART:20260825T084500
+DTEND:20260825T094500
+SUMMARY:08:45 · Rızvanoğlu Prestij Park 21 Nisan Mah.→IST
 LOCATION:Rızvanoğlu Prestij Park 21 Nisan Mah. → İstanbul Havalimanı
 DESCRIPTION:Müşteri: İsmail Muhammed El Kendari\, Tihani Muhammed El Bağ
  dadi\, Ömer İsmail El Kendari\nŞoför: Sadettin Darkal\nİşi veren: Salah\
