@@ -4800,8 +4800,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787473747488_5lrjjv@olmeztur
 DTSTAMP:20260824T060300Z
-LAST-MODIFIED:20260824T044000Z
-SEQUENCE:1787546451
+LAST-MODIFIED:20260824T060300Z
+SEQUENCE:1787551436
 DTSTART:20260824T113500
 DTEND:20260824T123500
 SUMMARY:11:35 · IST→Bursa
@@ -4809,7 +4809,7 @@ LOCATION:İstanbul Havalimanı → Bursa
 DESCRIPTION:Müşteri: Faisal Raees\nŞoför: Kadir Ölmez / +90 (543) 287 06
   87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
  Vito / 16 LMZ 55\nGüzergah: İstanbul Havalimanı → Bursa\nUçuş: KU151\nÖd
- eme: Müşteri: 200 USD | Araç: 8.650 ₺
+ eme: Müşteri: 200 USD | Araç: 8.400 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
