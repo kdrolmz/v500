@@ -2697,12 +2697,42 @@ const accountAdjustmentTimeKey = d => {
     const x = d instanceof Date ? d : new Date();
     return String(x.getHours()).padStart(2, '0') + ':' + String(x.getMinutes()).padStart(2, '0');
 };
+/* Üç net işlem. Eski kayıtlarda geçen 'plus' / 'minus' anahtarları korunur:
+   'plus' artık "Borç verdim" olarak okunur, 'minus' yalnız eski kayıtlar için
+   durur ve seçim listesinde görünmez. */
 const ACCOUNT_ADJUSTMENT_TYPES = [
-    { id: 'received', label: 'Tahsilat aldım', short: 'Tahsilat', help: 'Firmadan para alındı, ana hesaptan düşer.' },
-    { id: 'paid', label: 'Firmaya ödeme yaptım', short: 'Ödeme', help: 'Firmaya para ödendi, borçtan düşer.' },
-    { id: 'plus', label: '+ bakiye ekle', short: '+ Bakiye', help: 'Firmadan alacağa manuel ekleme yapar.' },
-    { id: 'minus', label: '- bakiye düş', short: '- Bakiye', help: 'Alacaktan manuel düşüm yapar.' }
+    { id: 'received', ico: '📥', label: 'Firmadan ödeme aldım', chip: 'Ödeme\nAldım', short: 'Ödeme alındı',
+      help: 'Firma bana ödeme yaptı — alacağımdan düşer.' },
+    { id: 'paid', ico: '📤', label: 'Firmaya ödeme yaptım', chip: 'Ödeme\nYaptım', short: 'Ödeme yapıldı',
+      help: 'Firmaya ödeme yaptım — borcumdan düşer.' },
+    { id: 'plus', ico: '💸', label: 'Borç verdim', chip: 'Borç\nVerdim', short: 'Borç verildi',
+      help: 'Firmaya borç verdim — alacağıma eklenir.' },
+    { id: 'minus', ico: '✏️', label: 'Elle düzüm (eski kayıt)', chip: 'Düzeltme', short: 'Düzeltme',
+      help: 'Alacaktan elle düşüm — eski kayıtlar için.', legacy: true }
 ];
+/* Seçim listesinde yalnız güncel üç işlem gösterilir */
+const ACCOUNT_ADJUSTMENT_PICKS = ACCOUNT_ADJUSTMENT_TYPES.filter(x => !x.legacy);
+/* Türkçe çekim ekleri: "Salah'a verdiğim", "Salah'tan aldığım" gibi
+   başlıkların firma adına göre doğru yazılması için. */
+const koSonSesli = s => {
+    const vw = 'aeıioöuüAEIİOÖUÜ';
+    for (let i = String(s).length - 1; i >= 0; i--) if (vw.includes(s[i])) return s[i].toLowerCase();
+    return 'a';
+};
+const koKalin = v => 'aıou'.includes(v);
+const koSesliBiter = s => 'aeıioöuüAEIİOÖUÜ'.includes(String(s)[String(s).length - 1] || '');
+/* yönelme: -a / -e  (Salah'a, Taşdemir'e) */
+const koEkA = s => {
+    const v = koSonSesli(s);
+    return String(s) + "'" + (koSesliBiter(s) ? (koKalin(v) ? 'ya' : 'ye') : (koKalin(v) ? 'a' : 'e'));
+};
+/* ayrılma: -dan / -den, sert ünsüzden sonra -tan / -ten */
+const koEkDen = s => {
+    const v = koSonSesli(s);
+    const son = String(s)[String(s).length - 1] || '';
+    const sert = 'fstkçşhpFSTKÇŞHP'.includes(son);
+    return String(s) + "'" + (sert ? (koKalin(v) ? 'tan' : 'ten') : (koKalin(v) ? 'dan' : 'den'));
+};
 const accountAdjustmentTypeMeta = type => ACCOUNT_ADJUSTMENT_TYPES.find(x => x.id === type) || ACCOUNT_ADJUSTMENT_TYPES[0];
 const accountAdjustmentNet = (type, amount) => {
     const n = Math.abs(moneyValue(amount));
@@ -6007,6 +6037,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const [detayT, setDetayT] = useState(null);
     const [openHesapSections, setOpenHesapSections] = useState({});
     const [openAdjustmentPanel, setOpenAdjustmentPanel] = useState(false);
+    const [openHakedisPanel, setOpenHakedisPanel] = useState(false);
     const [adjForm, setAdjForm] = useState(() => ({ type: 'received', amount: '', date: accountAdjustmentDateKey(new Date()), time: accountAdjustmentTimeKey(new Date()), note: '' }));
   const [odeloOpen, setOdeloOpen] = useState(false);
     useEffect(() => {
@@ -6976,7 +7007,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             React.createElement("div", { style: { fontSize: 15, fontWeight: 470, color: pos ? G : R, letterSpacing: 0, fontVariantNumeric: 'tabular-nums' } }, isJabirFirm(sel) ? signedUsdText(rowUsd) : (pos ? '+' : '−') + fr(t.netOl) + '₺'),
             React.createElement("button", { className: "ko-hesap-settle-toggle " + (t.firmSettled ? "is-settled" : "is-open"), "aria-label": t.firmSettled ? "Hesap kapandı" : "Hesap açık", onPointerDown: e => e.stopPropagation(), onClick: e => { e.stopPropagation(); togSettle(t.id, settleKeys, !t.firmSettled); }, style: { display: 'inline-flex', alignItems: 'center', gap: 6, background: t.firmSettled ? 'rgba(60,60,67,.10)' : 'rgba(178,96,92,.10)', border: '1px solid ' + (t.firmSettled ? 'rgba(60,60,67,.34)' : 'rgba(178,96,92,.34)'), borderRadius: 999, cursor: 'pointer', padding: '5px 8px', minHeight: 27, boxShadow: 'inset 0 1px 0 rgba(255,255,255,.84)' } },
                 React.createElement("div", { className: "ko-hesap-settle-dot", style: { width: 17, height: 17, borderRadius: 999, border: '1.5px solid ' + (t.firmSettled ? G : R), background: t.firmSettled ? G : 'rgba(255,255,255,.80)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, t.firmSettled && React.createElement("span", { style: { color: 'white', fontSize: 10, fontWeight: 470, lineHeight: 1 } }, "✓")),
-                React.createElement("span", { className: "ko-hesap-settle-text", style: { fontSize: 10.5, fontWeight: 470, color: t.firmSettled ? G : R, letterSpacing: .1 } }, t.firmSettled ? 'Kapandı' : 'Açık')));
+                React.createElement("span", { className: "ko-hesap-settle-text", style: { fontSize: 10.5, fontWeight: 470, color: t.firmSettled ? G : R, letterSpacing: .1 } }, t.firmSettled ? 'Kapalı' : 'Açık')));
         return React.createElement("div", {
             key: t.id + (t.kaynak || '') + (t.yon || ''),
             onClick: () => openTransferFromHesap(t),
@@ -7183,53 +7214,184 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         e.stopPropagation();
                         togSettle(t.id, settleKeys, !t.firmSettled);
                     }
-                }, t.firmSettled ? 'Kapandı' : 'Açık'),
+                }, t.firmSettled ? '✓ Kapalı' : '● Açık'),
                 React.createElement("small", null, "Düzenle")));
     };
 
-    const renderManualAdjustmentPanel = firm => {
-        if (!firm)
-            return null;
-        const meta = accountAdjustmentTypeMeta(adjForm.type);
-        const previewNet = accountAdjustmentNet(adjForm.type, adjForm.amount);
-        const previewText = moneyValue(adjForm.amount) > 0
-            ? ((previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺')
-            : '0₺';
-        return React.createElement("div", { className: "ko-account-manual-panel", style: { background: '#fff', border: '1px solid ' + BOR, borderRadius: 12, padding: openAdjustmentPanel ? 10 : 0, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'hidden' } },
+    /* ═══════════════════════════════════════════════════════════
+       💳 ÖDEME / BAKİYE  ve  🪙 TUR HAKEDİŞİ
+       İki açılır kutu aynı görsel dili paylaşır: sol renk şeridi,
+       başlıkta canlı tutar, açıkken sade bir form / özet.
+       ═══════════════════════════════════════════════════════════ */
+    /* Ortak kutu kabuğu */
+    const renderAccountBox = (opts, children) => {
+        const open = !!opts.open;
+        return React.createElement("div", {
+            style: {
+                background: '#FFFFFF', border: '1px solid ' + BOR, borderLeft: '3px solid ' + opts.accent,
+                borderRadius: 13, overflow: 'hidden'
+            }
+        },
             React.createElement("button", {
-                type: "button",
-                onClick: () => setOpenAdjustmentPanel(v => !v),
+                type: "button", onClick: opts.onToggle,
                 style: {
-                    width: '100%',
-                    background: '#fff',
-                    border: 'none',
-                    padding: openAdjustmentPanel ? '0 0 2px' : '8px 10px',
-                    minHeight: openAdjustmentPanel ? 0 : 34,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    alignItems: 'center',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    font: 'inherit'
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                    background: 'transparent', border: 'none', padding: '11px 12px',
+                    cursor: 'pointer', font: 'inherit', textAlign: 'left'
                 }
             },
-                React.createElement("div", null,
-                    React.createElement("div", { style: { fontSize: 12.2, color: TX, fontWeight: 450, lineHeight: 1.15 } }, "Ödeme / Bakiye"),
-                    openAdjustmentPanel && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, meta.help)),
-                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 } },
-                    (openAdjustmentPanel || moneyValue(adjForm.amount) > 0) && React.createElement("span", { className: previewNet >= 0 ? "is-pos" : "is-neg", style: { fontSize: 12.5, fontWeight: 450, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' } }, previewText),
-                    React.createElement("span", { style: { fontSize: 12, color: SB, fontWeight: 450 } }, openAdjustmentPanel ? '▲' : '▼'))),
-            openAdjustmentPanel && React.createElement(React.Fragment, null,
-                React.createElement("div", { className: "ko-account-manual-grid", style: { display: 'grid', gridTemplateColumns: '1.2fr .75fr .65fr', gap: 7 } },
-                    React.createElement("select", { className: "inp", value: adjForm.type, onChange: e => setAdjForm(f => ({ ...f, type: e.target.value })), style: { minWidth: 0 } },
-                        ACCOUNT_ADJUSTMENT_TYPES.map(x => React.createElement("option", { key: x.id, value: x.id }, x.label))),
-                    React.createElement("input", { className: "inp", type: "number", inputMode: "decimal", value: adjForm.amount, onChange: e => setAdjForm(f => ({ ...f, amount: e.target.value })), placeholder: "Tutar" }),
-                    React.createElement("button", { type: "button", onClick: saveAccountAdjustment, style: { background: NAV, color: '#FFFFFF', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 450, cursor: 'pointer', minHeight: 38 } }, "Kaydet")),
-                React.createElement("div", { className: "ko-account-manual-grid ko-account-manual-grid-bottom", style: { display: 'grid', gridTemplateColumns: '.8fr .6fr 1.2fr', gap: 7 } },
+                React.createElement("span", { style: { fontSize: 15, flexShrink: 0, lineHeight: 1 } }, opts.ico),
+                React.createElement("span", { style: { flex: 1, minWidth: 0 } },
+                    React.createElement("span", { style: { display: 'block', fontSize: 12.5, fontWeight: 500, color: TX, lineHeight: 1.2 } }, opts.title),
+                    opts.sub && React.createElement("span", { style: { display: 'block', fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.3 } }, opts.sub)),
+                opts.value != null && React.createElement("span", {
+                    style: {
+                        flexShrink: 0, fontSize: 12.5, fontWeight: 500, fontVariantNumeric: 'tabular-nums',
+                        color: opts.valueTone === 'neg' ? R : opts.valueTone === 'pos' ? G : SB
+                    }
+                }, opts.value),
+                React.createElement("span", {
+                    style: {
+                        flexShrink: 0, width: 20, height: 20, borderRadius: 7, background: INP,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, color: SB, transition: 'transform .18s ease',
+                        transform: open ? 'rotate(180deg)' : 'none'
+                    }
+                }, '▾')),
+            open && React.createElement("div", { style: { padding: '0 12px 12px' } }, children));
+    };
+
+    const renderManualAdjustmentPanel = firm => {
+        if (!firm) return null;
+        const meta = accountAdjustmentTypeMeta(adjForm.type);
+        const tutar = moneyValue(adjForm.amount);
+        const previewNet = accountAdjustmentNet(adjForm.type, adjForm.amount);
+        const hasAmount = tutar > 0;
+        return renderAccountBox({
+            ico: '💳', title: 'Ödeme / Bakiye',
+            sub: openAdjustmentPanel ? null : 'Ödeme al, ödeme yap veya borç ver',
+            accent: NAV,
+            open: openAdjustmentPanel,
+            onToggle: () => setOpenAdjustmentPanel(v => !v),
+            value: hasAmount ? ((previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺') : null,
+            valueTone: previewNet >= 0 ? 'pos' : 'neg'
+        },
+            React.createElement(React.Fragment, null,
+                /* İşlem seçimi */
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 9 } },
+                    ACCOUNT_ADJUSTMENT_PICKS.map(x => {
+                        const on = adjForm.type === x.id;
+                        return React.createElement("button", {
+                            key: x.id, type: "button", onClick: () => setAdjForm(f => ({ ...f, type: x.id })),
+                            style: {
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                                background: on ? NAV : '#FFFFFF', color: on ? '#FFFFFF' : TX,
+                                border: '1.5px solid ' + (on ? NAV : BOR), borderRadius: 11,
+                                padding: '9px 4px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                                transition: 'all .15s ease'
+                            }
+                        },
+                            React.createElement("span", { style: { fontSize: 14, lineHeight: 1 } }, x.ico),
+                            React.createElement("span", { style: { fontSize: 10.5, fontWeight: 500, lineHeight: 1.25, textAlign: 'center', whiteSpace: 'pre-line' } }, x.chip));
+                    })),
+                React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.4, marginBottom: 10 } }, meta.help),
+                /* Tutar + tarih */
+                React.createElement("input", { className: "inp", type: "number", inputMode: "decimal", value: adjForm.amount, onChange: e => setAdjForm(f => ({ ...f, amount: e.target.value })), placeholder: "Tutar ₺", style: { width: '100%', fontWeight: 500, fontSize: 16, marginBottom: 6 } }),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 6 } },
                     React.createElement("input", { className: "inp", type: "date", value: adjForm.date, onChange: e => setAdjForm(f => ({ ...f, date: e.target.value })) }),
-                    React.createElement("input", { className: "inp", type: "time", value: adjForm.time, onChange: e => setAdjForm(f => ({ ...f, time: e.target.value })) }),
-                    React.createElement("input", { className: "inp", value: adjForm.note, onChange: e => setAdjForm(f => ({ ...f, note: e.target.value })), placeholder: "Not" }))));
+                    React.createElement("input", { className: "inp", type: "time", value: adjForm.time, onChange: e => setAdjForm(f => ({ ...f, time: e.target.value })) })),
+                React.createElement("input", { className: "inp", value: adjForm.note, onChange: e => setAdjForm(f => ({ ...f, note: e.target.value })), placeholder: "Açıklama (ör. elden nakit, havale)", style: { width: '100%', marginBottom: 10 } }),
+                /* Etki + kaydet */
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9 } },
+                    React.createElement("div", {
+                        style: {
+                            flex: 1, minWidth: 0, padding: '9px 11px', borderRadius: 10,
+                            background: hasAmount ? (previewNet >= 0 ? '#F0F8F4' : '#FFF5F4') : INP,
+                            border: '1px solid ' + (hasAmount ? (previewNet >= 0 ? '#BFE3CF' : '#F3CFCC') : BOR)
+                        }
+                    },
+                        React.createElement("div", { style: { fontSize: 9.5, color: SB, fontWeight: 500, letterSpacing: .06 + 'em', textTransform: 'uppercase' } }, 'Hesaba etkisi'),
+                        React.createElement("div", { style: { fontSize: 14, fontWeight: 500, marginTop: 1, fontVariantNumeric: 'tabular-nums', color: hasAmount ? (previewNet >= 0 ? G : R) : SB } },
+                            hasAmount ? ((previewNet >= 0 ? '+' : '−') + fr(previewNet) + '₺') : '—')),
+                    React.createElement("button", {
+                        type: "button", onClick: saveAccountAdjustment, disabled: !hasAmount,
+                        style: {
+                            flexShrink: 0, background: hasAmount ? NAV : '#C7CBD1', color: '#FFFFFF', border: 'none',
+                            borderRadius: 11, padding: '13px 22px', fontSize: 13.5, fontWeight: 500,
+                            cursor: hasAmount ? 'pointer' : 'default'
+                        }
+                    }, 'Kaydet'))));
+    };
+
+    /* 🪙 Tur hakedişi — bu firmayla olan turların komisyon payları.
+       Aldığım turlarda pay firmanın alacağıdır (bakiyeden düşer);
+       verdiğim turlarda pay benim alacağımdır (bakiyeye eklenir).
+       Tutarlar bakiyeye zaten işlenmiştir, bu kutu dökümünü gösterir. */
+    const renderHakedisPanel = (firm, rows) => {
+        if (!firm) return null;
+        const list = (rows || []).filter(t => t && t.kaynak !== 'manual' && tourCommissionTotal(t) > 0);
+        const aldigim = [], verdigim = [];
+        list.forEach(t => {
+            const total = Math.round(tourCommissionTotal(t));
+            const pay = Math.round(tourCommissionShare(t));
+            const rec = {
+                id: t.id, date: t.date, total: total, pay: pay,
+                ad: ((t.passengers || [])[0] || {}).name || t.passengerName || '—',
+                yer: t.dropoff || t.pickup || '',
+                dukkan: String(t.tourCommissionShop || '').trim()
+            };
+            if (t.yon === 'benVerdim') verdigim.push(rec); else aldigim.push(rec);
+        });
+        const payAl = verdigim.reduce((s, x) => s + x.pay, 0);    /* bana eklenir */
+        const payVer = aldigim.reduce((s, x) => s + x.pay, 0);    /* bakiyeden düşer */
+        const net = payAl - payVer;
+        const toplamHakedis = list.reduce((s, t) => s + Math.round(tourCommissionTotal(t)), 0);
+        const bosMu = !list.length;
+        const grup = (baslik, arr, isPlus) => arr.length ? React.createElement("div", { style: { marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 9.5, fontWeight: 600, color: SB, letterSpacing: .1 + 'em', textTransform: 'uppercase', marginBottom: 6 } }, baslik),
+            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+                arr.map(x => React.createElement("div", {
+                    key: x.id,
+                    style: { display: 'flex', alignItems: 'center', gap: 9, background: INP, border: '1px solid ' + BOR, borderRadius: 10, padding: '8px 10px' }
+                },
+                    React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                        React.createElement("div", { style: { fontSize: 11.5, fontWeight: 500, color: TX, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, x.ad),
+                        React.createElement("div", { style: { fontSize: 9.5, color: SB, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                            (x.date ? new Date(x.date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' · ' : '') + (x.dukkan || x.yer || 'Tur'))),
+                    React.createElement("div", { style: { flexShrink: 0, textAlign: 'right' } },
+                        React.createElement("div", { style: { fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: isPlus ? G : R } },
+                            (isPlus ? '+' : '−') + fr(x.pay) + '₺'),
+                        React.createElement("div", { style: { fontSize: 9, color: SB, marginTop: 1 } }, 'hakediş ' + fr(x.total) + '₺')))))) : null;
+        return renderAccountBox({
+            ico: '🪙', title: 'Tur Hakedişi',
+            sub: openHakedisPanel ? null : (bosMu ? 'Bu firmada hakedişli tur yok' : list.length + ' turda ' + fr(toplamHakedis) + '₺ hakediş'),
+            accent: '#C9A24E',
+            open: openHakedisPanel,
+            onToggle: () => setOpenHakedisPanel(v => !v),
+            value: bosMu ? null : ((net >= 0 ? '+' : '−') + fr(net) + '₺'),
+            valueTone: net >= 0 ? 'pos' : 'neg'
+        },
+            bosMu
+                ? React.createElement("div", { style: { fontSize: 11, color: SB, textAlign: 'center', padding: '12px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR, lineHeight: 1.45 } },
+                    'Bu firmayla yapılan turlarda hakediş girilmemiş.')
+                : React.createElement(React.Fragment, null,
+                    grup(koEkA(firm) + ' verdiğim turlar · payım alacak', verdigim, true),
+                    grup(koEkDen(firm) + ' aldığım turlar · payı borç', aldigim, false),
+                    React.createElement("div", { style: { borderTop: '1px solid ' + BOR, paddingTop: 9, marginTop: 2 } },
+                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: SB, marginBottom: 3 } },
+                            React.createElement("span", null, 'Toplam hakediş (' + list.length + ' tur)'),
+                            React.createElement("span", { style: { fontVariantNumeric: 'tabular-nums' } }, fr(toplamHakedis) + '₺')),
+                        payAl > 0 && React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: SB, marginBottom: 3 } },
+                            React.createElement("span", null, 'Bana eklenen pay'),
+                            React.createElement("span", { style: { color: G, fontVariantNumeric: 'tabular-nums' } }, '+' + fr(payAl) + '₺')),
+                        payVer > 0 && React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: SB, marginBottom: 3 } },
+                            React.createElement("span", null, 'Firmanın payı'),
+                            React.createElement("span", { style: { color: R, fontVariantNumeric: 'tabular-nums' } }, '−' + fr(payVer) + '₺')),
+                        React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 7, padding: '9px 11px', borderRadius: 10, background: net >= 0 ? '#F0F8F4' : '#FFF5F4', border: '1px solid ' + (net >= 0 ? '#BFE3CF' : '#F3CFCC') } },
+                            React.createElement("span", { style: { fontSize: 11, fontWeight: 500, color: TX } }, 'Bakiyeye etkisi'),
+                            React.createElement("span", { style: { fontSize: 14, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: net >= 0 ? G : R } }, (net >= 0 ? '+' : '−') + fr(net) + '₺')),
+                        React.createElement("div", { style: { fontSize: 9.5, color: SB, marginTop: 7, lineHeight: 1.45, textAlign: 'center' } },
+                            'Bu tutarlar transfer satırlarında hesaplandı; üstteki bakiyeye zaten dahildir.'))));
     };
 
     const renderHesapBolum = (baslik, liste, renk) => {
@@ -7343,71 +7505,52 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", null,
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 } }, renderAgencyChip(sel, false)),
                             React.createElement("div", { style: { fontSize: 10, color: SB } }, (ts.length + debtRows.length) + " kayıt" + (debtRows.length ? " · " + debtRows.length + " ek hesap" : "")))),
-                    React.createElement("div", {
-                        style: {
-                            position: 'relative',
-                            background: displayNet >= 0
-                                ? 'linear-gradient(135deg, #F2F2F7 0%, #F4F6F9 100%)'
-                                : 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                            border: '1.5px solid ' + (displayNet >= 0 ? '#D1D1D6' : '#FFC4C0'),
-                            borderRadius: 14,
-                            padding: '14px 16px',
-                            textAlign: 'center',
-                            boxShadow: displayNet >= 0
-                                ? '0 4px 14px rgba(18,108,55,.18), inset 0 1px 0 rgba(255,255,255,.6)'
-                                : '0 4px 14px rgba(79,107,69,.18), inset 0 1px 0 rgba(255,255,255,.6)',
-                            overflow: 'hidden'
-                        }
-                    },
-                        React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: displayNet >= 0 ? G : R, marginBottom: 4, letterSpacing: 1, opacity: .85 } },
-                            (displayNet >= 0 ? '▲ ' : '▼ ') + (displayNet >= 0 ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
-                        React.createElement("div", { style: { fontSize: 26, fontWeight: 450, color: displayNet >= 0 ? G : R, letterSpacing: 0, lineHeight: 1.1, textShadow: displayNet >= 0 ? '0 1px 0 rgba(255,255,255,.5)' : '0 1px 0 rgba(255,255,255,.5)' } },
-                            jabir
-                                ? signedUsdText(displayNet)
-                                : (displayNet >= 0 ? '+' : '−') + fr(Math.abs(displayNet)) + " ₺"),
-                        jabir && React.createElement("div", { style: { fontSize: 12, fontWeight: 470, color: displayNet >= 0 ? G : R, opacity: .8, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
-                            '(' + fmtTl(displayTlNet) + ')')),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-                        React.createElement("div", {
-                            className: "ko-hesap-green-frame",
-                            style: {
-                                background: 'linear-gradient(135deg, #F2F2F7 0%, #F4F6F9 100%)',
-                                border: '1.4px solid rgba(60,60,67,.58)',
-                                borderRadius: 11,
-                                padding: '10px 8px',
-                                textAlign: 'center',
-                                boxShadow: '0 2px 8px rgba(60,60,67,.08)'
-                            }
+                    /* ── Tek parça hesap özeti kartı ──────────────────────
+                       Net bakiye · alacak/borç · seçili ay — hepsi tek kart.
+                       Aynı rakamın üç ayrı kutuda tekrarı kaldırıldı. */
+                    (function () {
+                        const pos = displayNet >= 0;
+                        const tone = pos ? G : R;
+                        const netTxt = jabir ? signedUsdText(displayNet)
+                            : (pos ? '+' : '−') + fr(Math.abs(displayNet)) + ' ₺';
+                        const cell = (key, lab, val, col, sub, big) => React.createElement("div", {
+                            key: key, style: { flex: 1, minWidth: 0, textAlign: 'center', padding: '0 6px' }
                         },
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 450, color: G, letterSpacing: .8, marginBottom: 3 } }, "↑ ALACAK"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 450, color: G } }, jabir ? '+' + fmtUsd(displayAl) : "+" + fr(al) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: G, opacity: .8, marginTop: 1 } }, '(' + fmtTl(displayTlAl) + ')')),
-                        React.createElement("div", {
-                            className: "ko-hesap-green-frame",
-                            style: {
-                                background: 'linear-gradient(135deg, #FFF0EF 0%, #FFE2E0 100%)',
-                                border: '1.4px solid rgba(60,60,67,.58)',
-                                borderRadius: 11,
-                                padding: '10px 8px',
-                                textAlign: 'center',
-                                boxShadow: '0 2px 8px rgba(60,60,67,.08)'
-                            }
+                            React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: SB, textTransform: 'uppercase', marginBottom: 3, whiteSpace: 'nowrap' } }, lab),
+                            React.createElement("div", { style: { fontSize: big ? 15 : 13, fontWeight: 500, color: col, fontVariantNumeric: 'tabular-nums', lineHeight: 1.15, whiteSpace: 'nowrap' } }, val),
+                            sub ? React.createElement("div", { style: { fontSize: 9, fontWeight: 500, color: col, opacity: .72, marginTop: 1, whiteSpace: 'nowrap' } }, sub) : null);
+                        const vline = key => React.createElement("div", { key: key, style: { width: 1, alignSelf: 'stretch', background: BOR, flexShrink: 0 } });
+                        return React.createElement("div", {
+                            className: "ko-account-summary-card",
+                            style: { background: '#FFFFFF', border: '1px solid ' + BOR, borderRadius: 16, overflow: 'hidden' }
                         },
-                            React.createElement("div", { style: { fontSize: 9, fontWeight: 450, color: R, letterSpacing: .8, marginBottom: 3 } }, "↓ BORÇ"),
-                            React.createElement("div", { style: { fontSize: 16, fontWeight: 450, color: R } }, jabir ? '−' + fmtUsd(displayVer) : "−" + fr(ver) + " ₺"),
-                            jabir && React.createElement("div", { style: { fontSize: 10, fontWeight: 540, color: R, opacity: .8, marginTop: 1 } }, '(' + fmtTl(displayTlVer) + ')'))),
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                        React.createElement("span", { style: { fontSize: 11, fontWeight: 470, color: TX } }, "Ayl\u0131k"),
-                        React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', background: INP, border: '1px solid rgba(60,60,67,.34)', borderRadius: 8, padding: '4px 8px', color: TX, fontSize: 12 } })),
-                    React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 } }, [
-                        [mtsOpen.length, 'Kayıt', NAV, '#F7FAF8', ''],
-                        [jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', 'Alacak', G, '#F3FAF5', jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : ''],
-                        [jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', 'Borç', R, '#FFF8F7', jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : '']
-                    ].map(([v, l, col, bg, subtl]) => (React.createElement("div", { key: l, className: "ko-hesap-month-stat ko-hesap-green-frame", style: { background: bg, border: '1.4px solid rgba(60,60,67,.58)', borderRadius: 10, padding: '8px 4px', textAlign: 'center', boxShadow: '0 2px 8px rgba(60,60,67,.08)' } },
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 450, color: col } }, v),
-                        subtl && React.createElement("div", { style: { fontSize: 8, fontWeight: 540, color: col, opacity: .8, marginTop: 1 } }, subtl),
-                        React.createElement("div", { style: { fontSize: 8, color: SB, marginTop: 2, fontWeight: 470, letterSpacing: .3 } }, l))))),
-                    renderManualAdjustmentPanel(sel),
+                            /* Net bakiye */
+                            React.createElement("div", { style: { padding: '17px 16px 15px', textAlign: 'center', background: pos ? '#F6FAF7' : '#FFF7F6' } },
+                                React.createElement("div", { style: { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 11px', borderRadius: 999, background: '#FFFFFF', border: '1px solid ' + (pos ? 'rgba(14,159,110,.28)' : 'rgba(192,95,95,.28)'), marginBottom: 9 } },
+                                    React.createElement("span", { style: { fontSize: 8, lineHeight: 1, color: tone } }, pos ? '▲' : '▼'),
+                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 600, color: tone } }, pos ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
+                                React.createElement("div", { style: { fontSize: 30, fontWeight: 500, color: tone, lineHeight: 1.05, fontVariantNumeric: 'tabular-nums' } }, netTxt),
+                                jabir ? React.createElement("div", { style: { fontSize: 11.5, fontWeight: 500, color: tone, opacity: .72, marginTop: 3 } }, '(' + fmtTl(displayTlNet) + ')') : null),
+                            /* Alacak / Borç */
+                            React.createElement("div", { style: { display: 'flex', alignItems: 'stretch', borderTop: '1px solid ' + BOR, padding: '11px 0' } },
+                                cell('al', '↑ Alacak', jabir ? '+' + fmtUsd(displayAl) : '+' + fr(al) + ' ₺', G, jabir ? '(' + fmtTl(displayTlAl) + ')' : null, true),
+                                vline('v1'),
+                                cell('ver', '↓ Borç', jabir ? '−' + fmtUsd(displayVer) : '−' + fr(ver) + ' ₺', R, jabir ? '(' + fmtTl(displayTlVer) + ')' : null, true)),
+                            /* Seçili ay */
+                            React.createElement("div", { style: { borderTop: '1px solid ' + BOR, background: '#FAFAFB', padding: '10px 12px 11px' } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 } },
+                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 600, color: SB, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 } }, "Seçili ay"),
+                                    React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', flex: '0 0 auto', width: 'auto', minWidth: 0, maxWidth: 150, background: '#FFFFFF', border: '1px solid ' + BOR, borderRadius: 9, padding: '5px 9px', color: TX, fontSize: 11.5, fontWeight: 500 } })),
+                                React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'flex', alignItems: 'stretch' } },
+                                    cell('m0', 'İş', String(mtsOpen.length), TX, null, false),
+                                    vline('m1'),
+                                    cell('m1v', 'Alacak', jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', G, jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : null, false),
+                                    vline('m2'),
+                                    cell('m2v', 'Borç', jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', R, jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : null, false))));
+                    })(),
+                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                        renderManualAdjustmentPanel(sel),
+                        renderHakedisPanel(sel, ts)),
                     debtRows.length > 0 && React.createElement(React.Fragment, null,
                         React.createElement("div", { className: "ko-account-balance-divider" }, "Birleşen Alacak / Borç"),
                         React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
