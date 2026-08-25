@@ -14258,57 +14258,71 @@ img,svg{content-visibility:visible !important}
   box-shadow:none !important;
   transform:none !important;
 }
-/* iPhone iki sütun görünümü: isim tek satırda kalır, tutar alanı kartı kaplamaz. */
+/* index7_4 düzeni: firma adı sol üstte tam; TL ve USD sağ altta küçük. */
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card{
   padding:10px 11px !important;
+  overflow:visible !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-title{
-  flex-direction:row !important;
-  align-items:flex-start !important;
-  gap:6px !important;
+  display:block !important;
+  position:relative !important;
+  min-height:58px !important;
+  padding:0 0 24px 0 !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-copy{
-  flex:1 1 0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
   min-width:0 !important;
+  width:100% !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-title b{
   display:block !important;
   -webkit-line-clamp:unset !important;
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
-  overflow-wrap:normal !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
   max-width:100% !important;
-  font-size:11.4px !important;
-  line-height:1.15 !important;
-  letter-spacing:-.018em !important;
+  font-size:11.8px !important;
+  line-height:1.16 !important;
+  letter-spacing:-.012em !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-copy small{
   display:block !important;
   white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
   font-size:9px !important;
   line-height:1.12 !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-amount-stack{
-  flex:0 0 92px !important;
-  min-width:92px !important;
-  gap:2px !important;
+  position:absolute !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:auto !important;
+  min-width:0 !important;
+  gap:1px !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-tl-chip{
-  padding:1px 3px !important;
-  border-radius:5px !important;
-  font-size:10.4px !important;
-  font-weight:600 !important;
-  line-height:1.08 !important;
+  padding:1px 2px !important;
+  border-radius:4px !important;
+  font-size:8.2px !important;
+  font-weight:580 !important;
+  line-height:1.02 !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-usd-chip{
-  padding:1px 3px !important;
-  border-radius:5px !important;
-  font-size:8.4px !important;
-  font-weight:540 !important;
-  line-height:1.04 !important;
+  padding:1px 2px !important;
+  border-radius:4px !important;
+  font-size:7px !important;
+  font-weight:520 !important;
+  line-height:1 !important;
+}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-tl-chip::after,
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-usd-chip::after,
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card::after{
+  content:none !important;
+  display:none !important;
 }
 @supports (-webkit-touch-callout:none){
   main.main-cont{background-attachment:scroll !important}
