@@ -5442,9 +5442,23 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 tip('Aylık araç raporu kopyalandı');
             }, className: "ko-arac-report-btn", style: { width: '100%', background: 'var(--p-white)', color: NAV, border: '1px solid ' + BOR, borderRadius: 13, padding: 12, fontWeight: 450, cursor: 'pointer' } }, "Aylık raporu kopyala"));
 }
+const DEBT_GOLD_CODES = ['GOLD_GRAM', 'GOLD_QUARTER', 'GOLD_FULL', 'GOLD_ATA'];
+const DEBT_GOLD_LABELS = {
+    GOLD_GRAM: 'Gram Altın',
+    GOLD_QUARTER: 'Çeyrek Altın',
+    GOLD_FULL: 'Tam Altın',
+    GOLD_ATA: 'Ata Altın'
+};
 function debtCurrencyCode(d) {
     const c = String((d && d.currency) || 'TRY').toUpperCase();
-    return c === 'USD' || c === 'EUR' ? c : 'TRY';
+    return ['TRY', 'USD', 'EUR', ...DEBT_GOLD_CODES].includes(c) ? c : 'TRY';
+}
+function debtCurrencyOptions() {
+    return [
+        ['TRY', 'TL'], ['USD', 'USD'], ['EUR', 'EUR'],
+        ['GOLD_GRAM', 'Gram Altın'], ['GOLD_QUARTER', 'Çeyrek Altın'],
+        ['GOLD_FULL', 'Tam Altın'], ['GOLD_ATA', 'Ata Altın']
+    ].map(([value, label]) => React.createElement("option", { key: value, value: value }, label));
 }
 function debtMovementRows(d) {
     return Array.isArray(d && d.movements) ? d.movements : [];
@@ -5463,6 +5477,7 @@ function debtAmountToTRY(amount, currency, rates) {
     const n = moneyValue(amount);
     if (cur === 'USD') return n * (moneyValue(rates && rates.USD) || 44.35);
     if (cur === 'EUR') return n * (moneyValue(rates && rates.EUR) || 51.50);
+    if (DEBT_GOLD_CODES.includes(cur)) return n * moneyValue(rates && rates[cur]);
     return n;
 }
 function debtRemainingTRY(d, rates) {
@@ -5472,6 +5487,10 @@ function debtNativeText(d, amount, signed) {
     const cur = debtCurrencyCode(d);
     const sym = cur === 'USD' ? '$' : cur === 'EUR' ? '€' : '₺';
     const prefix = signed ? (d.type === 'borc' ? '−' : '+') : '';
+    if (DEBT_GOLD_CODES.includes(cur)) {
+        const quantity = Math.abs(moneyValue(amount)).toLocaleString('tr-TR', { maximumFractionDigits: 3 });
+        return prefix + quantity + ' ' + DEBT_GOLD_LABELS[cur];
+    }
     return cur === 'TRY' ? prefix + fr(amount) + ' ₺' : prefix + sym + fr(amount);
 }
 function accountActivityFirmNames(T, adjustments) {
@@ -5564,10 +5583,7 @@ function DebtAccountCard({ d, setDebts, rates, tip, embedded, forceOpen }) {
         detailOpen && React.createElement("div", { className: "ko-debt-detail" },
             React.createElement("div", { className: "ko-debt-detail-grid" },
                 React.createElement("input", { className: "inp", value: edit.name, onChange: e => setEdit(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma" }),
-                React.createElement("select", { className: "inp", value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) },
-                    React.createElement("option", { value: "TRY" }, "TL"),
-                    React.createElement("option", { value: "USD" }, "USD"),
-                    React.createElement("option", { value: "EUR" }, "EUR"))),
+                React.createElement("select", { className: "inp", value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) }, debtCurrencyOptions())),
             React.createElement("textarea", { className: "inp", value: edit.note, onChange: e => setEdit(p => ({ ...p, note: e.target.value })), placeholder: "Detay / açıklama", rows: 2, style: { resize: 'vertical' } }),
             React.createElement("button", { type: "button", onClick: saveDetails, style: { minHeight: 34, border: 'none', borderRadius: 9, background: NAV, color: 'var(--p-white)', fontWeight: 470, cursor: 'pointer' } }, "Detayları Kaydet"),
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 } },
@@ -5743,10 +5759,7 @@ function DebtLedgerCard({ d, setDebts, rates, tip, onClose }) {
         showEdit && React.createElement("div", { className: "ko-debt-ledger-form" },
             React.createElement("div", { className: "ko-debt-ledger-form-top is-edit" },
                 React.createElement("input", { value: edit.name, onChange: e => setEdit(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma" }),
-                React.createElement("select", { value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) },
-                    React.createElement("option", { value: "TRY" }, "TL"),
-                    React.createElement("option", { value: "USD" }, "USD"),
-                    React.createElement("option", { value: "EUR" }, "EUR"))),
+                React.createElement("select", { value: edit.currency, onChange: e => setEdit(p => ({ ...p, currency: e.target.value })) }, debtCurrencyOptions())),
             React.createElement("div", { className: "ko-debt-ledger-form-bottom" },
                 React.createElement("input", { value: edit.note, onChange: e => setEdit(p => ({ ...p, note: e.target.value })), placeholder: "Ana açıklama" }),
                 React.createElement("button", { type: "button", onClick: saveDetails }, "Kaydet"))));
@@ -7574,9 +7587,9 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                 React.createElement("div", { className: "ko-account-firm-card-copy" },
                     React.createElement("b", null, d.name),
                     React.createElement("small", null, rowCount + " kayıt")),
-                React.createElement("span", { className: kind === 'rec' ? "is-pos" : "is-neg" },
-                    isDone ? "Kapandı" : debtNativeText(d, remaining, true),
-                    !isDone && debtCurrencyCode(d) !== 'TRY' && React.createElement("span", { className: "ko-debt-firm-tl" }, "(" + fr(remainingTRY) + " ₺)"))));
+                React.createElement("div", { className: (kind === 'rec' ? "is-pos" : "is-neg") + " ko-debt-balance-stack" },
+                    React.createElement("span", { className: "ko-debt-primary-chip" }, isDone ? "Kapandı" : debtNativeText(d, remaining, true)),
+                    !isDone && debtCurrencyCode(d) !== 'TRY' && React.createElement("span", { className: "ko-debt-secondary-chip" }, "(" + fr(remainingTRY) + " ₺)"))));
     };
     const renderDebtBucket = (kind, title, rows) => React.createElement("section", { key: kind, className: "ko-account-firm-bucket is-" + kind },
         React.createElement("div", { className: "ko-account-firm-bucket-head" },
@@ -7653,10 +7666,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("select", { value: newDebt.type, onChange: e => setNewDebt(p => ({ ...p, type: e.target.value })), className: "inp" }, React.createElement("option", { value: 'borc' }, 'Borç'), React.createElement("option", { value: 'alacak' }, 'Alacak')),
                     React.createElement("input", { value: newDebt.name, onChange: e => setNewDebt(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma", className: "inp" }),
                     React.createElement("input", { type: "number", inputMode: "decimal", value: newDebt.total, onChange: e => setNewDebt(p => ({ ...p, total: e.target.value })), placeholder: "Tutar", className: "inp" }),
-                    React.createElement("select", { value: newDebt.currency, onChange: e => setNewDebt(p => ({ ...p, currency: e.target.value })), className: "inp" },
-                        React.createElement("option", { value: "TRY" }, "TL"),
-                        React.createElement("option", { value: "USD" }, "USD"),
-                        React.createElement("option", { value: "EUR" }, "EUR"))),
+                    React.createElement("select", { value: newDebt.currency, onChange: e => setNewDebt(p => ({ ...p, currency: e.target.value })), className: "inp" }, debtCurrencyOptions())),
                 newDebt.total && newDebt.currency !== 'TRY' && React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'right', marginTop: -7 } }, "≈ " + fr(debtAmountToTRY(newDebt.total, newDebt.currency, rates)) + "₺"),
                 React.createElement("div", { className: "ko-debt-form-row is-secondary", style: { display: 'grid', gap: 8 } },
                     React.createElement("input", { type: "number", value: newDebt.paid, onChange: e => setNewDebt(p => ({ ...p, paid: e.target.value })), placeholder: newDebt.type === 'borc' ? "Ödenen" : "Tahsilat", className: "inp" }),
@@ -8369,7 +8379,11 @@ function App() {
     // Uygulama her açılışta Ana Sayfa ile başlar; önceki oturumun sekmesi açılışı değiştirmez.
     const [tab, setTab] = useState('home');
     const [openKarPanel, setOpenKarPanel] = useState(false);
-    const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50, KWD: 144.40 });
+    const [rates, setRates] = useState({
+        USD: 44.35, EUR: 51.50, KWD: 144.40,
+        GOLD_GRAM: 7215.54, GOLD_QUARTER: 11652.08,
+        GOLD_FULL: 46465.79, GOLD_ATA: 48176.19
+    });
     try { window.__KO_RATES = rates; } catch (e) {}
     const [form, setForm] = useState(() => {
         try {
@@ -8463,6 +8477,7 @@ function App() {
     const cloudBackoffUntilRef = useRef(0);
     const cloudSnapshotReadSeqRef = useRef(0);
     const rateRefreshBusyRef = useRef(false);
+    const goldRateRefreshBusyRef = useRef(false);
     const submitBusyRef = useRef(false);
     const persistRef = useRef({});
     const quickDraftRef = useRef(null);
@@ -8643,7 +8658,7 @@ function App() {
                 const kwd = source ? 1 / Number(source.KWD) : NaN;
                 if (![usd, eur, kwd].every(Number.isFinite) || usd <= 0 || eur <= 0 || kwd <= 0)
                     throw new Error('Kur verisi geçersiz.');
-                setRates({ USD: +usd.toFixed(2), EUR: +eur.toFixed(2), KWD: +kwd.toFixed(2) });
+                setRates(prev => ({ ...prev, USD: +usd.toFixed(2), EUR: +eur.toFixed(2), KWD: +kwd.toFixed(2) }));
                 setLastRateUpdate(new Date().toISOString());
                 if (!silent) tip('Kur güncellendi');
                 return true;
@@ -8656,12 +8671,59 @@ function App() {
                 rateRefreshBusyRef.current = false;
             });
     };
+    const refreshGoldRates = (options) => {
+        const silent = !!(options && options.silent);
+        if (goldRateRefreshBusyRef.current) return Promise.resolve(false);
+        if (navigator.onLine === false) return Promise.resolve(false);
+        goldRateRefreshBusyRef.current = true;
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timeout = setTimeout(() => { if (controller) controller.abort(); }, 12000);
+        const url = 'https://finans.truncgil.com/today.json?_=' + Date.now();
+        return fetch(url, { cache: 'no-store', signal: controller ? controller.signal : undefined })
+            .then(r => {
+                if (!r.ok) throw new Error('Altın servisi yanıt vermedi.');
+                return r.json();
+            }).then(d => {
+                // Borç/alacak TL karşılığında, piyasadan yerine koyma maliyetini
+                // göstermek için güncel satış fiyatı kullanılır.
+                const nextGold = {
+                    GOLD_GRAM: moneyValue(d && d['gram-altin'] && d['gram-altin']['Satış']),
+                    GOLD_QUARTER: moneyValue(d && d['ceyrek-altin'] && d['ceyrek-altin']['Satış']),
+                    GOLD_FULL: moneyValue(d && d['tam-altin'] && d['tam-altin']['Satış']),
+                    GOLD_ATA: moneyValue(d && d['ata-altin'] && d['ata-altin']['Satış'])
+                };
+                if (!Object.values(nextGold).every(v => Number.isFinite(v) && v > 0))
+                    throw new Error('Altın verisi geçersiz.');
+                setRates(prev => ({ ...prev, ...nextGold }));
+                setLastRateUpdate(new Date().toISOString());
+                if (!silent) tip('Altın fiyatları güncellendi');
+                return true;
+            }).catch(err => {
+                console.warn('[GOLD] Altın fiyatları güncellenemedi', err);
+                if (!silent) tip('Altın fiyatı alınamadı; son güvenli fiyat korunuyor');
+                return false;
+            }).finally(() => {
+                clearTimeout(timeout);
+                goldRateRefreshBusyRef.current = false;
+            });
+    };
+    const refreshAllRates = (options) => {
+        const silent = !!(options && options.silent);
+        return Promise.all([
+            refreshRates({ silent: true }),
+            refreshGoldRates({ silent: true })
+        ]).then(results => {
+            const ok = results.some(Boolean);
+            if (!silent) tip(ok ? 'Döviz ve altın fiyatları güncellendi' : 'Fiyatlar alınamadı; son güvenli değerler korunuyor');
+            return ok;
+        });
+    };
     useEffect(() => {
         // Uygulama açılır açılmaz günceller; açık kaldığı sürece de her 30 dakikada
-        // ve ekrana geri dönüldüğünde yeni kuru kontrol eder.
-        refreshRates({ silent: true });
+        // ve ekrana geri dönüldüğünde döviz ile altın fiyatlarını kontrol eder.
+        refreshAllRates({ silent: true });
         const refreshOnVisible = () => {
-            if (document.visibilityState === 'visible') refreshRates({ silent: true });
+            if (document.visibilityState === 'visible') refreshAllRates({ silent: true });
         };
         const timer = setInterval(refreshOnVisible, 30 * 60 * 1000);
         document.addEventListener('visibilitychange', refreshOnVisible);
@@ -11894,7 +11956,7 @@ function App() {
                                 ))
                             ),
                             React.createElement("button", {
-                                onClick: (e) => { e.stopPropagation(); refreshRates(); },
+                                onClick: (e) => { e.stopPropagation(); refreshAllRates(); },
                                 style: {
                                     marginTop: 10, width: '100%',
                                     background: 'rgba(255,255,255,.18)',
@@ -14314,9 +14376,11 @@ img,svg{content-visibility:visible !important}
   transform-origin:right bottom !important;
 }
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-tl-chip{
-  padding:.5px 2px !important;
-  border-width:.6px !important;
-  border-radius:4px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
   font-size:7.2px !important;
   font-weight:550 !important;
   line-height:1.04 !important;
@@ -14337,6 +14401,122 @@ img,svg{content-visibility:visible !important}
 .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card::after{
   content:none !important;
   display:none !important;
+}
+/* Alacak / Borç bölümü de firma kartlarıyla aynı tipografi ve hizayı kullanır. */
+.ko-debt-manager .ko-debt-split-grid{gap:8px !important}
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket{border-radius:19px !important}
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-head{padding:10px 12px !important}
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-title,
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-count{
+  font-size:9.2px !important;
+  font-weight:660 !important;
+  letter-spacing:.075em !important;
+  line-height:1.22 !important;
+}
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-total{
+  font-size:16.4px !important;
+  font-weight:610 !important;
+  line-height:1.08 !important;
+  margin-top:5px !important;
+  letter-spacing:-.024em !important;
+}
+.ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-cards{
+  gap:8px !important;
+  padding:9px !important;
+}
+.ko-debt-manager .ko-debt-firm-card{
+  position:relative !important;
+  min-height:0 !important;
+  padding:10px 11px !important;
+  border-radius:13px !important;
+  overflow:visible !important;
+}
+.ko-debt-manager .ko-debt-firm-card .ko-account-firm-card-title{
+  display:block !important;
+  position:relative !important;
+  min-height:58px !important;
+  padding:0 0 24px !important;
+}
+.ko-debt-manager .ko-debt-firm-card .ko-account-firm-card-copy{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  width:100% !important;
+  min-width:0 !important;
+}
+.ko-debt-manager .ko-debt-firm-card .ko-account-firm-card-copy b{
+  display:block !important;
+  -webkit-line-clamp:unset !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+  max-width:100% !important;
+  font-size:11.8px !important;
+  font-weight:560 !important;
+  line-height:1.16 !important;
+  letter-spacing:-.012em !important;
+}
+.ko-debt-manager .ko-debt-firm-card .ko-account-firm-card-copy small{
+  display:block !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  font-size:9px !important;
+  line-height:1.12 !important;
+}
+.ko-debt-manager .ko-debt-balance-stack{
+  position:absolute !important;
+  right:0 !important;
+  bottom:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  width:auto !important;
+  min-width:0 !important;
+  gap:4px !important;
+  -webkit-text-size-adjust:none !important;
+  text-size-adjust:none !important;
+  white-space:nowrap !important;
+}
+.ko-debt-manager .ko-debt-primary-chip,
+.ko-debt-manager .ko-debt-secondary-chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  align-self:flex-end !important;
+  margin:0 !important;
+  padding:.5px 2px !important;
+  border:.6px solid currentColor !important;
+  border-radius:4px !important;
+  background:rgba(255,255,255,.72) !important;
+  color:inherit !important;
+  -webkit-text-fill-color:currentColor !important;
+  font-variant-numeric:tabular-nums !important;
+  white-space:nowrap !important;
+}
+.ko-debt-manager .ko-debt-primary-chip{
+  font-size:7.2px !important;
+  font-weight:550 !important;
+  line-height:1.04 !important;
+}
+.ko-debt-manager .ko-debt-secondary-chip{
+  font-size:6px !important;
+  font-weight:490 !important;
+  line-height:1.02 !important;
+  opacity:.62 !important;
+}
+.ko-debt-manager .ko-debt-primary-chip::after,
+.ko-debt-manager .ko-debt-secondary-chip::after,
+.ko-debt-manager .ko-debt-firm-card::after{
+  content:none !important;
+  display:none !important;
+}
+@media(max-width:430px){
+  .ko-debt-manager .ko-debt-split-grid{gap:7px !important}
+  .ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-head{padding:9px 10px !important}
+  .ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-cards{gap:7px !important;padding:8px !important}
+  .ko-debt-manager .ko-debt-split-grid .ko-account-firm-bucket-total{font-size:15.2px !important}
+  .ko-debt-manager .ko-debt-firm-card{padding:10px !important}
 }
 @supports (-webkit-touch-callout:none){
   main.main-cont{background-attachment:scroll !important}
