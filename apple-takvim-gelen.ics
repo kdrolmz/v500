@@ -4818,16 +4818,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787411241656_j79d0x@olmeztur
 DTSTAMP:20260825T135100Z
-LAST-MODIFIED:20260822T153700Z
-SEQUENCE:1787413022
+LAST-MODIFIED:20260825T135100Z
+SEQUENCE:1787665898
 DTSTART:20260827T093000
 DTEND:20260827T103000
 SUMMARY:09:30 · Bursa→SAW
 LOCATION:Bursa Ovaakça → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Nuwaier Aladwani\nŞoför: Kadir Ölmez / +90 (543) 28
  7 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
- Vito\nGüzergah: Bursa Ovaakça → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri
- : 160 USD | Araç: 7.700 ₺
+ Vito / 16 LMZ 55\nGüzergah: Bursa Ovaakça → Sabiha Gökçen Havalimanı\nÖd
+ eme: Müşteri: 160 USD | Araç: 7.700 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
