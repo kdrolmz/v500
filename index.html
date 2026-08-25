@@ -1062,8 +1062,19 @@ const DELETED_TRANSFER_IDS_KEY = 'tp10_deleted_ids';
 const DELETED_ARAC_IDS_KEY = 'tp10_deleted_arac_ids';
 const CLOUD_SYNC_READY_KEY = 'tp10_cloud_ready_v2';
 const CLOUD_SYNC_DIRTY_KEY = 'tp10_cloud_dirty_v2';
+const CLOUD_SYNC_EPOCH_KEY = 'tp10_cloud_epoch_v3';
+const CLOUD_PENDING_AT_KEY = 'tp10_cloud_pending_at_v3';
+const CLOUD_APPLIED_AT_KEY = 'tp10_cloud_applied_at_v3';
+const CLOUD_SYNC_EPOCH = 3;
 const readCloudSyncFlag = key => { try { return localStorage.getItem(key) === '1'; } catch (e) { return false; } };
 const writeCloudSyncFlag = (key, value) => { try { if (value) localStorage.setItem(key, '1'); else localStorage.removeItem(key); } catch (e) {} };
+const readCloudSyncEpoch = () => { try { return Math.max(0, parseInt(localStorage.getItem(CLOUD_SYNC_EPOCH_KEY) || '0', 10) || 0); } catch (e) { return 0; } };
+const writeCloudSyncEpoch = value => { try { localStorage.setItem(CLOUD_SYNC_EPOCH_KEY, String(Math.max(0, parseInt(value, 10) || 0))); } catch (e) {} };
+const readCloudPendingAt = () => { try { return Math.max(0, parseInt(localStorage.getItem(CLOUD_PENDING_AT_KEY) || '0', 10) || 0); } catch (e) { return 0; } };
+const writeCloudPendingAt = value => { try { const n = Math.max(0, parseInt(value, 10) || 0); if (n) localStorage.setItem(CLOUD_PENDING_AT_KEY, String(n)); else localStorage.removeItem(CLOUD_PENDING_AT_KEY); } catch (e) {} };
+const readCloudAppliedAt = () => { try { return Math.max(0, parseInt(localStorage.getItem(CLOUD_APPLIED_AT_KEY) || '0', 10) || 0); } catch (e) { return 0; } };
+const writeCloudAppliedAt = value => { try { localStorage.setItem(CLOUD_APPLIED_AT_KEY, String(Math.max(0, parseInt(value, 10) || 0))); } catch (e) {} };
+const nextCloudChangeAt = () => Math.max(Date.now(), readCloudPendingAt() + 1, readCloudAppliedAt() + 1);
 const readDeletedTransferIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_TRANSFER_IDS_KEY) || '[]'); } catch (e) { return []; } };
 const writeDeletedTransferIds = ids => { try { localStorage.setItem(DELETED_TRANSFER_IDS_KEY, JSON.stringify(Array.from(new Set((ids || []).filter(Boolean))))); } catch (e) { } };
 const readDeletedAracIds = () => { try { return JSON.parse(localStorage.getItem(DELETED_ARAC_IDS_KEY) || '[]'); } catch (e) { return []; } };
@@ -2732,6 +2743,8 @@ const removeEditedTransferClones = (arr, editId, previous) => {
 const persistTransfersImmediately = transfers => {
     try {
         const now = new Date().toISOString();
+        const changeAtMs = nextCloudChangeAt();
+        writeCloudPendingAt(changeAtMs);
         let snap = {};
         try {
             snap = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
@@ -2742,10 +2755,11 @@ const persistTransfersImmediately = transfers => {
             ...snap,
             t: transfers || [],
             del: readDeletedTransferIds(),
-            v: 26,
+            v: 28,
             date: now,
             clientUpdatedAt: now,
-            _localWriteAt: now
+            _localWriteAt: now,
+            _changeAtMs: changeAtMs
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
     } catch (e) {
@@ -2755,6 +2769,8 @@ const persistTransfersImmediately = transfers => {
 const persistAccountAdjustmentsImmediately = adjustments => {
     try {
         const now = new Date().toISOString();
+        const changeAtMs = nextCloudChangeAt();
+        writeCloudPendingAt(changeAtMs);
         let snap = {};
         try {
             snap = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {};
@@ -2770,10 +2786,11 @@ const persistAccountAdjustmentsImmediately = adjustments => {
             accountAdjustments: adj,
             del: readDeletedTransferIds(),
             delA: readDeletedAracIds(),
-            v: 26,
+            v: 28,
             date: now,
             clientUpdatedAt: now,
-            _localWriteAt: now
+            _localWriteAt: now,
+            _changeAtMs: changeAtMs
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnap));
     } catch (e) {
@@ -2965,6 +2982,7 @@ const normalizeTransfer = t => {
     };
 };
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_MACBOOK_SYNC_AUTHORITY = !IS_IOS && (/Macintosh|Mac OS X/.test(navigator.userAgent) || navigator.platform === 'MacIntel');
 async function copyText(text) {
     try {
         if (navigator.clipboard && window.isSecureContext) {
@@ -8347,6 +8365,7 @@ function App() {
     const lastCloudServerSigRef = useRef('');
     const startupLocalSigRef = useRef('');
     const cloudInitialMergeDoneRef = useRef(false);
+    const cloudAuthorityMigrationRef = useRef(false);
     const syncDeviceIdRef = useRef((() => {
         try {
             const key = 'ko_sync_device_id';
@@ -8423,10 +8442,15 @@ function App() {
                     t: s.t || [], a: s.a || [OL], ap: s.ap || {}, dr: s.dr || [],
                     r: s.r || rates, ru: s.ru || '', ak: s.ak || [], db: s.db || [],
                     adj: s.adj || [], tk: s.tk || [], tl: s.tl || [], cr: s.cr,
-                    del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26
+                    del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28
                 };
                 const sig = snapshotContentSignature(core);
-                const snapshot = { ...core, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
+                let changeAtMs = readCloudPendingAt();
+                if (cloudLoadedRef.current && sig !== lastCloudServerSigRef.current && !changeAtMs) {
+                    changeAtMs = nextCloudChangeAt();
+                    writeCloudPendingAt(changeAtMs);
+                }
+                const snapshot = { ...core, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso, _changeAtMs: changeAtMs || 0 };
                 if (sig !== lastSaveSigRef.current) {
                     lastSaveSigRef.current = sig;
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -8434,33 +8458,11 @@ function App() {
                 if (cloudLoadedRef.current && sig !== lastCloudServerSigRef.current)
                     writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
                 if (cloudEnabled() && cloudAuth && cloudAuth.currentUser && cloudLoadedRef.current &&
+                    readCloudSyncEpoch() >= CLOUD_SYNC_EPOCH && !cloudAuthorityMigrationRef.current &&
                     sig !== lastCloudServerSigRef.current && sig !== cloudWriteInFlightSigRef.current) {
                     if (cloudWriteTimerRef.current) clearTimeout(cloudWriteTimerRef.current);
                     cloudWriteTimerRef.current = null;
-                    pendingCloudSnapshotRef.current = null;
-                    cloudWriteInFlightSigRef.current = sig;
-                    cloudDocRef.set({
-                        payload: snapshot,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        clientUpdatedAt: nowIso,
-                        contentSig: sig,
-                        sourceDeviceId: syncDeviceIdRef.current
-                    }, { merge: true }).then(function(){
-                        if (cloudWriteInFlightSigRef.current === sig) cloudWriteInFlightSigRef.current = '';
-                        lastCloudSentSigRef.current = sig;
-                        lastCloudServerSigRef.current = sig;
-                        writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
-                        writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
-                        setLastCloudSyncAt(new Date().toISOString());
-                        setSyncPhase('synced');
-                        setSyncMessage('Arka plana geçmeden önce değişiklikler eşitlendi.');
-                    }).catch(function(err){
-                        if (cloudWriteInFlightSigRef.current === sig) cloudWriteInFlightSigRef.current = '';
-                        lastCloudSentSigRef.current = '';
-                        writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
-                        setSyncPhase(navigator.onLine ? 'error' : 'offline');
-                        setSyncMessage(cloudErrorText(err));
-                    });
+                    queueCloudSnapshot(snapshot, 0);
                 }
             } catch (e) {}
         };
@@ -8594,15 +8596,31 @@ function App() {
     };
     const queueCloudSnapshot = (rawSnapshot, delay) => {
         if (!rawSnapshot || !Array.isArray(rawSnapshot.t)) return;
-        const snapshot = { ...rawSnapshot };
+        let outgoingChangeAtMs = Math.max(0, Number(rawSnapshot._changeAtMs) || 0, readCloudPendingAt());
+        if (!outgoingChangeAtMs) {
+            outgoingChangeAtMs = nextCloudChangeAt();
+            writeCloudPendingAt(outgoingChangeAtMs);
+        }
+        const snapshot = { ...rawSnapshot, _changeAtMs: outgoingChangeAtMs };
         delete snapshot.__ready;
         pendingCloudSnapshotRef.current = snapshot;
         if (cloudWriteTimerRef.current) clearTimeout(cloudWriteTimerRef.current);
-        cloudWriteTimerRef.current = setTimeout(function(){
+        const runQueuedWrite = function(){
             cloudWriteTimerRef.current = null;
             const outgoing = pendingCloudSnapshotRef.current;
             pendingCloudSnapshotRef.current = null;
             if (!outgoing || !cloudEnabled() || !cloudAuth || !cloudAuth.currentUser) return;
+            if (cloudAuthorityMigrationRef.current) {
+                pendingCloudSnapshotRef.current = outgoing;
+                setSyncPhase('syncing');
+                setSyncMessage('İlk ortak kopya hazırlanıyor.');
+                return;
+            }
+            if (readCloudSyncEpoch() < CLOUD_SYNC_EPOCH && IS_IOS) {
+                setSyncPhase('waiting-master');
+                setSyncMessage('Eski iPhone kopyası gönderilmedi; ilk ortak kopya MacBook’tan bekleniyor.');
+                return;
+            }
             if (!cloudLoadedRef.current) {
                 pendingCloudSnapshotRef.current = outgoing;
                 setSyncPhase(navigator.onLine ? 'connecting' : 'offline');
@@ -8613,68 +8631,103 @@ function App() {
                 return;
             }
             const contentSig = snapshotContentSignature(outgoing);
+            if (cloudWriteInFlightSigRef.current) {
+                pendingCloudSnapshotRef.current = outgoing;
+                setSyncPhase('syncing');
+                setSyncMessage('Önceki kayıt tamamlanınca en yeni değişiklik gönderilecek.');
+                return;
+            }
             if (contentSig === lastCloudServerSigRef.current) {
                 lastCloudSentSigRef.current = contentSig;
                 writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
                 writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
+                writeCloudSyncEpoch(CLOUD_SYNC_EPOCH);
+                writeCloudPendingAt(0);
+                writeCloudAppliedAt(Math.max(readCloudAppliedAt(), Number(outgoing._changeAtMs) || 0));
                 setSyncPhase('synced');
                 setSyncMessage('MacBook ve iPhone verileri eşit.');
                 return;
             }
-            if (contentSig === cloudWriteInFlightSigRef.current) return;
             writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
             if (!navigator.onLine) {
                 pendingCloudSnapshotRef.current = outgoing;
                 setSyncPhase('offline');
-                setSyncMessage('İnternet gelince değişiklikler bulutla güvenli biçimde birleştirilecek.');
+                setSyncMessage('İnternet gelince bu cihazdaki son değişiklik eşitlenecek.');
                 return;
             }
             cloudWriteInFlightSigRef.current = contentSig;
             setSyncPhase('syncing');
-            setSyncMessage('Değişiklikler buluttaki son sürümle güvenli biçimde birleştiriliyor.');
+            setSyncMessage('İki cihazdaki değişiklik zamanları karşılaştırılıyor.');
             const writePromise = (cloudDb && cloudDb.runTransaction) ? cloudDb.runTransaction(function(tx){
                 return tx.get(cloudDocRef).then(function(serverDoc){
                     const serverData = serverDoc.exists ? (serverDoc.data() || {}) : {};
                     const serverPayload = serverData.payload || serverData;
-                    let committed = (serverDoc.exists && serverPayload && Array.isArray(serverPayload.t))
-                        ? mergeSnapshots(outgoing, serverPayload, snapshotDeletedIds(outgoing, serverPayload))
-                        : { ...outgoing };
+                    const serverChangeAtMs = Math.max(0, Number(serverData.lastChangeAtMs) || 0, Number(serverPayload && serverPayload._changeAtMs) || 0);
+                    const localChangeAtMs = Math.max(0, Number(outgoing._changeAtMs) || 0);
+                    if (serverDoc.exists && serverPayload && Array.isArray(serverPayload.t) && serverChangeAtMs > localChangeAtMs) {
+                        return {
+                            payload: serverPayload,
+                            sig: snapshotContentSignature(serverPayload),
+                            changeAtMs: serverChangeAtMs,
+                            winner: 'server'
+                        };
+                    }
                     const nowIso = new Date().toISOString();
-                    committed = { ...committed, v: 27, date: nowIso, clientUpdatedAt: nowIso };
+                    const committed = { ...outgoing, v: 28, date: nowIso, clientUpdatedAt: nowIso, _changeAtMs: localChangeAtMs };
                     const committedSig = snapshotContentSignature(committed);
                     tx.set(cloudDocRef, {
                         payload: committed,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         clientUpdatedAt: nowIso,
+                        lastChangeAtMs: localChangeAtMs,
                         contentSig: committedSig,
                         sourceDeviceId: syncDeviceIdRef.current,
-                        syncSchema: 2
-                    }, { merge: true });
-                    return { payload: committed, sig: committedSig };
+                        syncSchema: CLOUD_SYNC_EPOCH,
+                        syncEpoch: CLOUD_SYNC_EPOCH
+                    });
+                    return { payload: committed, sig: committedSig, changeAtMs: localChangeAtMs, winner: 'local' };
                 });
             }) : cloudDocRef.set({
-                payload: outgoing,
+                payload: { ...outgoing, v: 28 },
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 clientUpdatedAt: outgoing.clientUpdatedAt || outgoing.date || new Date().toISOString(),
+                lastChangeAtMs: Number(outgoing._changeAtMs) || nextCloudChangeAt(),
                 contentSig,
                 sourceDeviceId: syncDeviceIdRef.current,
-                syncSchema: 2
-            }, { merge: true }).then(function(){ return { payload: outgoing, sig: contentSig }; });
+                syncSchema: CLOUD_SYNC_EPOCH,
+                syncEpoch: CLOUD_SYNC_EPOCH
+            }).then(function(){ return { payload: outgoing, sig: contentSig, changeAtMs: Number(outgoing._changeAtMs) || 0, winner: 'local' }; });
             writePromise.then(function(result){
                 if (cloudWriteInFlightSigRef.current === contentSig) cloudWriteInFlightSigRef.current = '';
                 const committed = (result && result.payload) || outgoing;
                 const committedSig = (result && result.sig) || snapshotContentSignature(committed);
+                const committedChangeAtMs = Math.max(0, Number(result && result.changeAtMs) || 0, Number(committed._changeAtMs) || 0);
+                const newerPendingAt = readCloudPendingAt();
+                if (newerPendingAt > committedChangeAtMs) {
+                    const live = persistRef.current || {};
+                    queueCloudSnapshot({ ...live, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28, _changeAtMs: newerPendingAt }, 80);
+                    setSyncPhase('syncing');
+                    setSyncMessage('Bu cihazdaki daha yeni değişiklik de gönderiliyor.');
+                    return;
+                }
                 lastCloudSentSigRef.current = committedSig;
                 lastCloudServerSigRef.current = committedSig;
                 writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
                 writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
+                writeCloudSyncEpoch(CLOUD_SYNC_EPOCH);
+                writeCloudPendingAt(0);
+                writeCloudAppliedAt(committedChangeAtMs);
+                writeDeletedTransferIds(committed.del || []);
+                writeDeletedAracIds(committed.delA || []);
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(committed)); } catch(e) {}
+                lastSaveSigRef.current = committedSig;
                 const currentSig = snapshotContentSignature({ ...(persistRef.current || {}), del: readDeletedTransferIds(), delA: readDeletedAracIds() });
                 if (currentSig !== committedSig)
                     hydrateSnapshot(committed, false, true);
                 const nowIso = new Date().toISOString();
                 setLastCloudSyncAt(nowIso);
                 setSyncPhase('synced');
-                setSyncMessage('MacBook ve iPhone aynı bulut sürümüne geçirildi.');
+                setSyncMessage(result && result.winner === 'server' ? 'Diğer cihazdaki daha yeni değişiklik alındı.' : 'Bu cihazdaki son değişiklik iki cihaza kaydedildi.');
             }).catch(function(err){
                 if (cloudWriteInFlightSigRef.current === contentSig) cloudWriteInFlightSigRef.current = '';
                 lastCloudSentSigRef.current = '';
@@ -8682,10 +8735,19 @@ function App() {
                 console.error('[CLOUD] HATA', err);
                 setSyncPhase(navigator.onLine ? 'error' : 'offline');
                 setSyncMessage(cloudErrorText(err));
+                const errCode = String((err && err.code) || '');
+                const retryable = errCode === 'unavailable' || errCode === 'network-request-failed' || errCode === 'resource-exhausted' ||
+                    /network|temporar|backoff|exhausted/i.test(String((err && err.message) || ''));
                 if (err && (err.code === 'resource-exhausted' || /maximum|backoff|exhausted/i.test(String(err.message || ''))))
                     cloudBackoffUntilRef.current = Date.now() + 60000;
+                const waiting = pendingCloudSnapshotRef.current || outgoing;
+                if (retryable && waiting && navigator.onLine)
+                    queueCloudSnapshot(waiting, Math.max(500, cloudBackoffUntilRef.current - Date.now() + 50));
             });
-        }, Math.max(150, Number(delay) || 900));
+        };
+        const waitMs = delay == null ? 900 : Math.max(0, Number(delay) || 0);
+        if (waitMs <= 0) runQueuedWrite();
+        else cloudWriteTimerRef.current = setTimeout(runQueuedWrite, waitMs);
     };
     useEffect(() => {
         try {
@@ -8723,102 +8785,159 @@ function App() {
                 lastCloudServerSigRef.current = '';
                 cloudWriteInFlightSigRef.current = '';
                 cloudInitialMergeDoneRef.current = false;
+                cloudAuthorityMigrationRef.current = false;
                 setAuthUser(user || null);
                 setAuthReady(true);
                 setAuthError('');
                 setSyncPhase(user ? (navigator.onLine ? 'connecting' : 'offline') : 'idle');
                 setSyncMessage(user ? (navigator.onLine ? 'Buluttaki güncel veri doğrulanıyor.' : 'İnternet gelince otomatik eşitlenecek.') : '');
                 if(user){
+                    const currentLocalPayload = function(){
+                        let localPayload = null;
+                        try { localPayload = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
+                        const result = { ...(localPayload || {}) };
+                        const live = persistRef.current || {};
+                        if (live.__ready) {
+                            ['t', 'a', 'ap', 'dr', 'r', 'ru', 'adj', 'ak', 'db', 'tk', 'tl', 'cr'].forEach(function(k){
+                                if (live[k] !== undefined) result[k] = live[k];
+                            });
+                        }
+                        result.del = readDeletedTransferIds();
+                        result.delA = readDeletedAracIds();
+                        if (!Array.isArray(result.t)) result.t = [];
+                        return result;
+                    };
+                    const publishInitialMacSnapshot = function(rawLocal){
+                        if (cloudAuthorityMigrationRef.current || !IS_MACBOOK_SYNC_AUTHORITY) return;
+                        const nowIso = new Date().toISOString();
+                        const changeAtMs = nextCloudChangeAt();
+                        const canonical = { ...(rawLocal || { t: [] }), v: 28, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso, _changeAtMs: changeAtMs };
+                        if (!Array.isArray(canonical.t)) canonical.t = [];
+                        const canonicalSig = snapshotContentSignature(canonical);
+                        cloudAuthorityMigrationRef.current = true;
+                        cloudLoadedRef.current = false;
+                        cloudWriteInFlightSigRef.current = canonicalSig;
+                        setSyncPhase('syncing');
+                        setSyncMessage('Eski iPhone kopyası temizleniyor; ilk ortak kopya hazırlanıyor.');
+                        const publish = cloudDb.runTransaction(function(tx){
+                            return tx.get(cloudDocRef).then(function(){
+                                tx.set(cloudDocRef, {
+                                    payload: canonical,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    clientUpdatedAt: nowIso,
+                                    lastChangeAtMs: changeAtMs,
+                                    contentSig: canonicalSig,
+                                    sourceDeviceId: syncDeviceIdRef.current,
+                                    syncSchema: CLOUD_SYNC_EPOCH,
+                                    syncEpoch: CLOUD_SYNC_EPOCH
+                                });
+                            });
+                        });
+                        publish.then(function(){
+                            cloudAuthorityMigrationRef.current = false;
+                            cloudLoadedRef.current = true;
+                            cloudWriteInFlightSigRef.current = '';
+                            cloudInitialMergeDoneRef.current = true;
+                            lastCloudSentSigRef.current = canonicalSig;
+                            lastCloudServerSigRef.current = canonicalSig;
+                            lastSaveSigRef.current = canonicalSig;
+                            writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
+                            writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
+                            writeCloudSyncEpoch(CLOUD_SYNC_EPOCH);
+                            writeCloudPendingAt(0);
+                            writeCloudAppliedAt(changeAtMs);
+                            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(canonical)); } catch(e) {}
+                            setLastCloudSyncAt(new Date().toISOString());
+                            setSyncPhase('synced');
+                            setSyncMessage('İlk ortak kopya hazır. Bundan sonra iki cihazda da en son değişiklik kazanır.');
+                        }).catch(function(err){
+                            cloudAuthorityMigrationRef.current = false;
+                            cloudWriteInFlightSigRef.current = '';
+                            setSyncPhase(navigator.onLine ? 'error' : 'offline');
+                            setSyncMessage(cloudErrorText(err));
+                        });
+                    };
                     const handleCloudSnapshot = function(snap){
                         try{
                             const meta = (snap && snap.metadata) || {};
-                            const serverVerified = meta.fromCache !== true;
+                            const serverVerified = meta.fromCache !== true && meta.hasPendingWrites !== true;
                             if(!serverVerified){
                                 setSyncPhase(meta.hasPendingWrites ? 'syncing' : (navigator.onLine ? 'connecting' : 'offline'));
-                                setSyncMessage(meta.hasPendingWrites ? 'Değişikliklerin sunucu onayı bekleniyor.' : (navigator.onLine ? 'Sunucudaki güncel veri bekleniyor.' : 'Çevrimdışı; yerel değişiklikler korunuyor.'));
+                                setSyncMessage(meta.hasPendingWrites ? 'Değişikliğin sunucu onayı bekleniyor.' : (navigator.onLine ? 'Sunucudaki güncel veri bekleniyor.' : 'Çevrimdışı; son değişiklik bu cihazda korunuyor.'));
                                 return;
                             }
-                            let localPayload = null;
-                            try { localPayload = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
-                            const deletedIds = readDeletedTransferIds();
+                            const localPayload = currentLocalPayload();
                             if(!snap.exists){
-                                cloudLoadedRef.current = true;
-                                cloudInitialMergeDoneRef.current = true;
-                                const bootstrapPayload = mergeSnapshots(localPayload || { t: [] }, EMBEDDED_BACKUP || {}, deletedIds);
-                                const nowIso = new Date().toISOString();
-                                bootstrapPayload.v = 27;
-                                bootstrapPayload.date = nowIso;
-                                bootstrapPayload.clientUpdatedAt = nowIso;
-                                writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
-                                queueCloudSnapshot(bootstrapPayload, 80);
-                                setSyncPhase('syncing');
-                                setSyncMessage('Bu cihazdaki veriler ilk kez buluta gönderiliyor.');
+                                if (IS_MACBOOK_SYNC_AUTHORITY) publishInitialMacSnapshot(localPayload);
+                                else {
+                                    cloudLoadedRef.current = false;
+                                    setSyncPhase('waiting-master');
+                                    setSyncMessage('İlk ortak kopya MacBook’tan bekleniyor.');
+                                }
                                 return;
                             }
                             const data = snap.data() || {};
                             const payload = data.payload || data;
                             if(!payload || !Array.isArray(payload.t)) {
-                                cloudLoadedRef.current = true;
+                                cloudLoadedRef.current = false;
                                 setSyncPhase('error');
-                                setSyncMessage('Buluttaki veri biçimi okunamadı; yerel veriler korunuyor.');
+                                setSyncMessage('Buluttaki veri biçimi okunamadı; bu cihazdaki kayıtlar korunuyor.');
                                 return;
                             }
-                            const localForMerge = { ...(localPayload || {}) };
-                            const live = persistRef.current || {};
-                            if (live.__ready) {
-                                ['t', 'a', 'ap', 'dr', 'r', 'ru', 'adj', 'ak', 'db', 'tk', 'tl', 'cr'].forEach(function(k){
-                                    if (live[k] !== undefined) localForMerge[k] = live[k];
-                                });
-                                localForMerge.del = readDeletedTransferIds();
-                                localForMerge.delA = readDeletedAracIds();
+                            const serverEpoch = Math.max(0, parseInt(data.syncEpoch || '0', 10) || 0);
+                            const writerSchema = Math.max(0, parseInt(data.syncSchema || '0', 10) || 0);
+                            if (serverEpoch < CLOUD_SYNC_EPOCH || writerSchema < CLOUD_SYNC_EPOCH) {
+                                if (IS_MACBOOK_SYNC_AUTHORITY) publishInitialMacSnapshot(localPayload);
+                                else {
+                                    cloudLoadedRef.current = false;
+                                    writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
+                                    writeCloudPendingAt(0);
+                                    setSyncPhase('waiting-master');
+                                    setSyncMessage('Eski iPhone kopyası gönderilmedi; ilk ortak kopya MacBook’tan bekleniyor.');
+                                }
+                                return;
                             }
                             cloudLoadedRef.current = true;
-                            const localSig = snapshotContentSignature(localForMerge);
+                            cloudInitialMergeDoneRef.current = true;
+                            writeCloudSyncEpoch(CLOUD_SYNC_EPOCH);
+                            const localSig = snapshotContentSignature(localPayload);
                             const cloudSig = snapshotContentSignature(payload);
-                            const mergeLocalWithCloud = function(message){
-                                const mergedPayload = mergeSnapshots(payload, localForMerge, deletedIds);
-                                const nowIso = new Date().toISOString();
-                                mergedPayload.v = 27;
-                                mergedPayload.date = nowIso;
-                                mergedPayload.clientUpdatedAt = nowIso;
-                                const mergedSig = snapshotContentSignature(mergedPayload);
-                                writeDeletedTransferIds(mergedPayload.del || []);
-                                try { writeDeletedAracIds(mergedPayload.delA || []); } catch(e) {}
-                                if (localSig !== mergedSig) hydrateSnapshot(mergedPayload, false, true);
-                                if (cloudSig !== mergedSig) {
-                                    writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
-                                    queueCloudSnapshot(mergedPayload, 100);
-                                    setSyncPhase('syncing');
-                                    setSyncMessage(message);
-                                    return true;
-                                }
-                                return false;
-                            };
-                            const acceptCloudAsCanonical = function(){
-                                cloudInitialMergeDoneRef.current = true;
-                                lastCloudSentSigRef.current = cloudSig;
-                                lastCloudServerSigRef.current = cloudSig;
-                                writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
-                                writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
-                                writeDeletedTransferIds(payload.del || []);
-                                try { writeDeletedAracIds(payload.delA || []); } catch(e) {}
-                                if (localSig !== cloudSig) hydrateSnapshot(payload, false, true);
-                                const nowIso = new Date().toISOString();
-                                setLastCloudSyncAt(nowIso);
-                                setSyncPhase('synced');
-                                setSyncMessage('MacBook ve iPhone aynı bulut verisini kullanıyor.');
-                            };
-                            if (!cloudInitialMergeDoneRef.current) {
-                                cloudInitialMergeDoneRef.current = true;
-                                const mustRecoverLocal = !readCloudSyncFlag(CLOUD_SYNC_READY_KEY) || readCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY);
-                                if (mustRecoverLocal && mergeLocalWithCloud('Bu cihazdaki bekleyen veriler bulutla bir kez birleştiriliyor.')) return;
-                                acceptCloudAsCanonical();
+                            const storedCloudSig = String(data.contentSig || '');
+                            const metadataSigMismatch = !!storedCloudSig && storedCloudSig !== cloudSig;
+                            const serverChangeAtMs = Math.max(0, Number(data.lastChangeAtMs) || 0, Number(payload._changeAtMs) || 0);
+                            const pendingAtMs = readCloudPendingAt();
+                            const appliedAtMs = readCloudAppliedAt();
+                            if (IS_MACBOOK_SYNC_AUTHORITY && localSig !== cloudSig && !pendingAtMs && appliedAtMs > 0 &&
+                                (metadataSigMismatch || serverChangeAtMs === appliedAtMs)) {
+                                const repairAtMs = nextCloudChangeAt();
+                                writeCloudPendingAt(repairAtMs);
+                                writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
+                                queueCloudSnapshot({ ...localPayload, _changeAtMs: repairAtMs }, 20);
+                                setSyncPhase('syncing');
+                                setSyncMessage('Eski sürümden gelen zaman damgasız kayıt engellendi; güncel kopya korunuyor.');
                                 return;
                             }
-                            const localReallyDirty = readCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY) ||
-                                (!!lastCloudServerSigRef.current && localSig !== lastCloudServerSigRef.current && localSig !== cloudSig);
-                            if (localReallyDirty && mergeLocalWithCloud('Bekleyen yerel değişiklikler son bulut sürümüyle birleştiriliyor.')) return;
-                            acceptCloudAsCanonical();
+                            if (pendingAtMs > serverChangeAtMs && localSig !== cloudSig) {
+                                writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
+                                queueCloudSnapshot({ ...localPayload, _changeAtMs: pendingAtMs }, 80);
+                                setSyncPhase('syncing');
+                                setSyncMessage('Bu cihazdaki daha yeni değişiklik diğer cihaza gönderiliyor.');
+                                return;
+                            }
+                            lastCloudSentSigRef.current = cloudSig;
+                            lastCloudServerSigRef.current = cloudSig;
+                            lastSaveSigRef.current = cloudSig;
+                            writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
+                            writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
+                            writeCloudPendingAt(0);
+                            writeCloudAppliedAt(serverChangeAtMs);
+                            writeDeletedTransferIds(payload.del || []);
+                            writeDeletedAracIds(payload.delA || []);
+                            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {}
+                            if (localSig !== cloudSig) hydrateSnapshot(payload, false, true);
+                            setLastCloudSyncAt(new Date().toISOString());
+                            setSyncPhase('synced');
+                            setSyncMessage('MacBook ve iPhone aynı; en son değişiklik korundu.');
                         }catch(err){
                             console.error('Cloud snapshot error', err);
                             setSyncPhase('error');
@@ -8889,14 +9008,11 @@ function App() {
             try {
                 const incoming = JSON.parse(event.newValue);
                 if (!incoming || !Array.isArray(incoming.t)) return;
-                const current = {
-                    ...(persistRef.current || {}),
-                    del: readDeletedTransferIds(),
-                    delA: readDeletedAracIds()
-                };
-                const merged = mergeSnapshots(incoming, current, current.del || []);
-                if (snapshotContentSignature(current) === snapshotContentSignature(merged)) return;
-                hydrateSnapshot(merged, false, true);
+                const current = { ...(persistRef.current || {}), del: readDeletedTransferIds(), delA: readDeletedAracIds() };
+                if (snapshotContentSignature(current) === snapshotContentSignature(incoming)) return;
+                if (readCloudSyncEpoch() >= CLOUD_SYNC_EPOCH && readCloudAppliedAt() > 0 &&
+                    (Number(incoming._changeAtMs) || 0) <= readCloudAppliedAt()) return;
+                hydrateSnapshot(incoming, false, true);
             } catch (e) {
                 console.error('[SYNC] Sekmeler arası veri okunamadı', e);
             }
@@ -8978,23 +9094,33 @@ function App() {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(function(){
             try {
-                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26 };
+                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28 };
                 const saveSig = snapshotContentSignature(snapshotCore);
                 if (saveSig === lastSaveSigRef.current)
                     return;
                 lastSaveSigRef.current = saveSig;
+                let changeAtMs = readCloudPendingAt();
                 if (!cloudLoadedRef.current) {
                     if (!startupLocalSigRef.current) startupLocalSigRef.current = saveSig;
-                    else if (saveSig !== startupLocalSigRef.current) writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
+                    else if (saveSig !== startupLocalSigRef.current) {
+                        changeAtMs = nextCloudChangeAt();
+                        writeCloudPendingAt(changeAtMs);
+                        writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
+                    }
                 } else if (saveSig !== lastCloudServerSigRef.current) {
+                    changeAtMs = nextCloudChangeAt();
+                    writeCloudPendingAt(changeAtMs);
                     writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
                 } else if (!cloudWriteInFlightSigRef.current) {
+                    changeAtMs = 0;
+                    writeCloudPendingAt(0);
                     writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
                 }
                 const nowIso = new Date().toISOString();
-                const snapshot = { ...snapshotCore, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
+                const snapshot = { ...snapshotCore, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso, _changeAtMs: changeAtMs || 0 };
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
-                if (cloudEnabled() && authUser && cloudLoadedRef.current && Date.now() >= cloudBackoffUntilRef.current)
+                if (cloudEnabled() && authUser && cloudLoadedRef.current && readCloudSyncEpoch() >= CLOUD_SYNC_EPOCH &&
+                    !cloudAuthorityMigrationRef.current && saveSig !== lastCloudServerSigRef.current && Date.now() >= cloudBackoffUntilRef.current)
                     queueCloudSnapshot(snapshot, 120);
             } catch(inner) { console.error('[SAVE inner]', inner); }
         }, 180);
@@ -10161,7 +10287,7 @@ function App() {
         };
     }, [T, aracK]);
     const stats = () => statsMemo;
-    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28, date: new Date().toISOString() });
     const doBackup = async () => {
         let payload = '';
         try { payload = JSON.stringify(snapshotPayload()); } catch (e) { tip('Yedek oluşturulamadı'); return; }
@@ -10353,12 +10479,15 @@ function App() {
             return false;
         writeDeletedTransferIds([]);
         writeDeletedAracIds([]);
-        const clean = { ...d, del: [], delA: [], v: 26, date: d.date || new Date().toISOString() };
+        const nowIso = new Date().toISOString();
+        const changeAtMs = nextCloudChangeAt();
+        const clean = { ...d, del: [], delA: [], v: 28, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso, _changeAtMs: changeAtMs };
+        writeCloudPendingAt(changeAtMs);
+        writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
         hydrateSnapshot(clean, true);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
-        if(cloudEnabled() && authUser){
-            cloudDocRef.set({ payload: clean, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), clientUpdatedAt: clean.date }, { merge: true }).catch(function(err){ console.error('Cloud restore save error', err); });
-        }
+        if(cloudEnabled() && authUser && cloudLoadedRef.current && readCloudSyncEpoch() >= CLOUD_SYNC_EPOCH)
+            queueCloudSnapshot(clean, 60);
         tip('Her şey geri yüklendi!');
         return true;
     }
@@ -11122,6 +11251,7 @@ function App() {
         if(syncPhase === 'syncing') return { text: '● Eşitleniyor…', color: 'var(--p-info)', ok: false };
         if(syncPhase === 'connecting') return { text: '● Bağlanıyor…', color: 'var(--p-info)', ok: false };
         if(syncPhase === 'offline') return { text: '● İnternet bekleniyor', color: 'var(--p-warn)', ok: false };
+        if(syncPhase === 'waiting-master') return { text: '● İlk eşitleme bekleniyor', color: 'var(--p-warn)', ok: false };
         if(syncPhase === 'error') return { text: '● Senkron hatası', color: 'var(--p-neg)', ok: false };
         return { text: '● Bulut hazırlanıyor', color: 'var(--p-info)', ok: false };
     })();
@@ -11701,7 +11831,13 @@ function App() {
                             React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7 } },
                                     React.createElement("span", { className: "ko-brand-serif" }, "\u00D6lmez Transfer")),
-                                React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.76)', WebkitTextFillColor: 'rgba(255,255,255,.76)', marginTop: 4, lineHeight: 1.25 } }, todayFmt)
+                                React.createElement("div", { style: { fontSize: 11, color: 'rgba(255,255,255,.76)', WebkitTextFillColor: 'rgba(255,255,255,.76)', marginTop: 4, lineHeight: 1.25 } }, todayFmt),
+                                React.createElement("button", {
+                                    type: "button",
+                                    onClick: () => { if(cloudReconnectRef.current) cloudReconnectRef.current(); },
+                                    title: syncMessage || syncUi.text,
+                                    style: { display: 'inline-flex', alignItems: 'center', marginTop: 8, minHeight: 25, padding: '5px 9px', borderRadius: 999, border: '1px solid rgba(255,255,255,.34)', background: 'rgba(255,255,255,.13)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', fontSize: 10.5, fontWeight: 520, letterSpacing: .1, cursor: 'pointer' }
+                                }, syncUi.text + ' · S3')
                             ),
                             React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' } },
                                 React.createElement("button", { className: "lg-backup-btn ko-hero-btn", onClick: () => setBkpM(true), title: "Yedekleme", "aria-label": "Yedekleme", style: { width: 36, height: 36, minHeight: 36, padding: 0, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 } }, "⇩"),
