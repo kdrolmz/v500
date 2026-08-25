@@ -3545,8 +3545,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787407268076_6kjcob@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260822T140200Z
-SEQUENCE:1787407366
+LAST-MODIFIED:20260825T085700Z
+SEQUENCE:1787648243
 DTSTART:20260822T080000
 DTEND:20260822T090000
 SUMMARY:08:00 · Bursa→SAW
@@ -3563,8 +3563,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787407353514_rf5muz@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260822T140200Z
-SEQUENCE:1787407353
+LAST-MODIFIED:20260825T085700Z
+SEQUENCE:1787648242
 DTSTART:20260822T090000
 DTEND:20260822T100000
 SUMMARY:09:00 · Bursa→SAW
@@ -3690,8 +3690,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787497447188_7cubr8@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260825T135900Z
-SEQUENCE:1787666350
+LAST-MODIFIED:20260825T085700Z
+SEQUENCE:1787648242
 DTSTART:20260824T090000
 DTEND:20260824T100000
 SUMMARY:09:00 · Bursa→SAW
@@ -3708,8 +3708,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787161681961_jr4icp@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260825T135900Z
-SEQUENCE:1787666350
+LAST-MODIFIED:20260825T085700Z
+SEQUENCE:1787648241
 DTSTART:20260824T100000
 DTEND:20260824T110000
 SUMMARY:10:00 · Bursa→SAW
@@ -3745,8 +3745,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787497838547_43g6y8@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260825T134900Z
-SEQUENCE:1787665776
+LAST-MODIFIED:20260824T175100Z
+SEQUENCE:1787593879
 DTSTART:20260826T090000
 DTEND:20260826T100000
 SUMMARY:09:00 · Alpiş Tuana Evleri 1.etap Ve 2.etap→SAW
@@ -3754,9 +3754,9 @@ LOCATION:Alpiş Tuana Evleri 1.etap Ve 2.etap → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Balgees Mohammad\, Haya Zuraij\, Ali Abdulla\, Balg
  ees Abdullah\, Ailyn Encarguez\, Mimi Gemeda Hne\, Abdulgader Mohammad\,
   Najat Alkandari On\nŞoför: -\nİşi veren: Muhammet s.\nİşi yapan: Ölmezt
- ur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: Alpiş Tuana Evleri 1
- .etap Ve 2.etap → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç
- : 7.950 ₺ | Alt acenta: 7.935 ₺
+ ur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Alpiş Tuana Evleri 1.etap V
+ e 2.etap → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.950
+  ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -3764,8 +3764,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787497752413_17n2wv@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260825T135000Z
-SEQUENCE:1787665804
+LAST-MODIFIED:20260824T175100Z
+SEQUENCE:1787593887
 DTSTART:20260826T090000
 DTEND:20260826T100000
 SUMMARY:09:00 · Bursa→SAW
@@ -3773,9 +3773,8 @@ LOCATION:Bursa Alpiş Tuana Evleri 2.etap → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Maryam Abdullah\, Fatema Abdullah\, Noura Alkandari
  \, Khaled Alkandari\, Ahmad Alkandari\, Mariam Alkandari\, Ali Alkandari
  \, Ahmad Ahmad\nŞoför: -\nİşi veren: Muhammet s.\nİşi yapan: Ölmeztur\nA
- lt acenta: Balentur\nAraç: Vito\nGüzergah: Bursa Alpiş Tuana Evleri 2.et
- ap → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 8.200 ₺ | A
- lt acenta: 8.416 ₺
+ lt acenta: -\nAraç: Vito\nGüzergah: Bursa Alpiş Tuana Evleri 2.etap → Sa
+ biha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.950 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
@@ -3783,17 +3782,35 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1786957143699_ju5f8q@olmeztur
 DTSTAMP:20260825T142400Z
-LAST-MODIFIED:20260825T135100Z
-SEQUENCE:1787665883
+LAST-MODIFIED:20260817T085900Z
+SEQUENCE:1786957143
 DTSTART:20260826T120000
 DTEND:20260826T130000
 SUMMARY:12:00 · Bursa→SAW
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Orhan Pekbak Deniz\, Pekbak Eliz\, Pekbak Arya\, Pe
- kbak Mustafa\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmez
- tur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzerga
- h: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 7.500 TRY | Araç: 7
- .500 ₺
+DESCRIPTION:Müşteri: Orhan Pekbak Deniz\nŞoför: Kadir Ölmez / +90 (543) 
+ 287 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç
+ : Vito\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 7.50
+ 0 TRY | Araç: 7.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1787648137744_wtghx1@olmeztur
+DTSTAMP:20260825T142400Z
+LAST-MODIFIED:20260825T085600Z
+SEQUENCE:1787648191
+DTSTART:20260828T100000
+DTEND:20260828T110000
+SUMMARY:10:00 · Bursa→Elite Word Sapanca
+LOCATION:Bursa Downtown → Elite Word Sapanca
+DESCRIPTION:Müşteri: Mohammed A H K Dhahı\, Ahmad F A Dhahı\, Laıla Amm 
+ Alenezı\, Zoraıda Macaraeg\, Lulwah A H K Dhahı\, Lana F Fs Alenezı\, Go
+ pı Maya Shrestha\, Shadan F F S Alenezı\, Shamsah Kh Farag\, Reema F S K
+ halıd\nŞoför: -\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -
+ \nAraç: Sprinter\nGüzergah: Bursa Downtown → Elite Word Sapanca\nÖdeme: 
+ Müşteri: 180 USD | Araç: 8.650 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
