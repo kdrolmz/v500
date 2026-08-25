@@ -6508,22 +6508,27 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (parts.length > 1) return renderAccountRoute(parts, '', false);
         return renderAgencyChip(baslik, false);
     };
+    // Yalnız firma detayındaki açılır bölümü belirler; net tutara ve muhasebe
+    // hesabına dokunmaz. Alt acenta, işi Ölmeztur'dan alan taraf olarak gösterilir.
+    const hesapDisplayDirection = t => {
+        if (!t) return '';
+        if (t.kaynak === 'alt' || t.yon === 'alt') return 'benVerdim';
+        if (isOlmezturParty(t.givenBy)) return 'benVerdim';
+        if (isOlmezturParty(t.assignedTo)) return 'oVerdi';
+        return t.yon || '';
+    };
     const hesapRouteParts = t => {
         if (t.kaynak === 'manual') return (t.adjustmentType === 'paid' || t.adjustmentType === 'plus') ? [OL, sel] : [sel, OL];
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? ['Odelo', 'Balentur'] : ['Odelo', OL];
-        if (t.yon === 'oVerdi') return [sel, OL];
-        if (t.yon === 'benVerdim') return [OL, sel];
-        return ['Alt acenta', t.altAcenta || sel];
+        return hesapDisplayDirection(t) === 'oVerdi' ? [sel, OL] : [OL, sel];
     };
     const hesapRouteSuffix = t => t.kaynak === 'manual'
         ? accountAdjustmentTypeMeta(t.adjustmentType).short
         : t.kaynak === 'odelo'
         ? 'yaptı'
-        : t.yon === 'oVerdi'
+        : hesapDisplayDirection(t) === 'oVerdi'
             ? 'iş verdi'
-            : t.yon === 'benVerdim'
-                ? 'iş verdi'
-                : 'işi';
+            : 'iş verdi';
     const openTransferFromHesap = t => {
         if (!t || !t.id) return;
         if (t.kaynak === 'manual') return;
@@ -7133,8 +7138,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const sirali = ts.slice().sort(sortHesapTs);
                 const manualKayitlar = sirali.filter(t => t.kaynak === 'manual');
                 const normalSirali = sirali.filter(t => t.kaynak !== 'odelo' && t.kaynak !== 'manual');
-                const onunVerdikleri = normalSirali.filter(t => t.yon === 'oVerdi' || t.yon === 'alt');
-                const benimVerdiklerim = normalSirali.filter(t => t.yon === 'benVerdim');
+                const onunVerdikleri = normalSirali.filter(t => hesapDisplayDirection(t) === 'oVerdi');
+                const benimVerdiklerim = normalSirali.filter(t => hesapDisplayDirection(t) === 'benVerdim');
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
                 const isBalenturAccount = isBalenturFirm(sel);
                 const jabir = isJabirFirm(sel);
