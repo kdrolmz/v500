@@ -2486,6 +2486,7 @@ const tlToUsdAmount = tl => {
     return r > 0 ? moneyValue(tl) / r : 0;
 };
 const fmtUsd = n => '$' + Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
+const fmtUsdPrecise = n => '$' + Math.abs(moneyValue(n)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtTl = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR') + '₺';
 const accountSettleKey = (firm, kind) => {
     const base = firmSlug(firm || '');
@@ -3898,17 +3899,18 @@ function transferCustomerTRYValue(t) {
     const stored = moneyValue(t.customerTRY);
     const raw = moneyValue(t.paymentAmount);
     const currency = String(t.paymentCurrency || 'TRY').toUpperCase();
-    if (stored > 0) return stored;
-    if (currency === 'TRY') return raw;
+    // Dövizli transferlerde eski customerTRY değeri bir anlık kayıttı. Firma
+    // hesabı ve kâr ekranı her zaman en güncel ortak kuru kullanmalıdır.
+    if (currency === 'TRY') return stored > 0 ? stored : raw;
     if (raw > 0) {
         const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
         const rate = currency === 'USD' ? (moneyValue(liveRates.USD) || 44.35)
             : currency === 'EUR' ? (moneyValue(liveRates.EUR) || 51.50)
-                : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
-                    : 1;
+            : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
+                : 1;
         return raw * rate;
     }
-    return raw;
+    return stored;
 }
 function noCollectTRYValue(t) {
     const raw = moneyValue(t && t.noCollectAmount);
@@ -7286,8 +7288,17 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                                 ? React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     signedUsdText(netUsd),
                                     React.createElement("span", { style: { fontSize: 10.5, fontWeight: 450, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netUsdTl) + ')'))
-                                : React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
-                                    (netVal >= 0 ? "+" : "−") + fr(Math.round(Math.abs(netVal) / 10) * 10) + " ₺")));
+                                : React.createElement("span", { className: isRec ? "is-pos" : "is-neg", style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, whiteSpace: 'nowrap' } },
+                                    React.createElement("span", { style: { fontVariantNumeric: 'tabular-nums' } }, (netVal >= 0 ? "+" : "−") + fr(Math.round(Math.abs(netVal) / 10) * 10) + " ₺"),
+                                    React.createElement("span", {
+                                        className: "ko-account-firm-usd-chip",
+                                        style: {
+                                            display: 'inline-flex', alignItems: 'center', padding: '3px 6px', borderRadius: 999,
+                                            background: 'rgba(255,255,255,.72)', border: '1px solid currentColor',
+                                            fontSize: 10, fontWeight: 600, lineHeight: 1.1, letterSpacing: '.01em',
+                                            fontVariantNumeric: 'tabular-nums', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.82)'
+                                        }
+                                    }, '(' + fmtUsdPrecise(tlToUsdAmount(netVal)) + ')'))));
                 };
                 const koFirmGroup = (kind, title, total, rows) => React.createElement("section", { key: kind, className: "ko-account-firm-bucket is-" + kind },
                     React.createElement("div", { className: "ko-account-firm-bucket-head" },
@@ -8449,6 +8460,7 @@ function App() {
     const lastSaveSigRef = useRef('');
     const cloudBackoffUntilRef = useRef(0);
     const cloudSnapshotReadSeqRef = useRef(0);
+    const rateRefreshBusyRef = useRef(false);
     const submitBusyRef = useRef(false);
     const persistRef = useRef({});
     const quickDraftRef = useRef(null);
@@ -8610,21 +8622,53 @@ function App() {
         setNewDr({ name: '', phone: '' });
         setTab('new');
     };
-    const refreshRates = () => fetch('https://open.er-api.com/v6/latest/TRY').then(r => r.json()).then(d => {
-        if (d && d.rates && d.rates.USD && d.rates.EUR && d.rates.KWD) {
-            const next = {
-                USD: parseFloat((1 / d.rates.USD).toFixed(2)),
-                EUR: parseFloat((1 / d.rates.EUR).toFixed(2)),
-                KWD: parseFloat((1 / d.rates.KWD).toFixed(2))
-            };
-            setRates(next);
-            const now = new Date().toISOString();
-            setLastRateUpdate(now);
-            tip('Kur güncellendi');
-            return true;
-        }
-        throw new Error('Kur alınamadı');
-    }).catch(() => { tip('Kur alınamadı'); return false; });
+    const refreshRates = (options) => {
+        const silent = !!(options && options.silent);
+        if (rateRefreshBusyRef.current) return Promise.resolve(false);
+        if (navigator.onLine === false) return Promise.resolve(false);
+        rateRefreshBusyRef.current = true;
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timeout = setTimeout(() => { if (controller) controller.abort(); }, 12000);
+        // Tarih eki ve no-store, Safari'nin eski kur cevabını önbellekten vermesini engeller.
+        const url = 'https://open.er-api.com/v6/latest/TRY?_=' + Date.now();
+        return fetch(url, { cache: 'no-store', signal: controller ? controller.signal : undefined })
+            .then(r => {
+                if (!r.ok) throw new Error('Kur servisi yanıt vermedi.');
+                return r.json();
+            }).then(d => {
+                const source = d && d.rates;
+                const usd = source ? 1 / Number(source.USD) : NaN;
+                const eur = source ? 1 / Number(source.EUR) : NaN;
+                const kwd = source ? 1 / Number(source.KWD) : NaN;
+                if (![usd, eur, kwd].every(Number.isFinite) || usd <= 0 || eur <= 0 || kwd <= 0)
+                    throw new Error('Kur verisi geçersiz.');
+                setRates({ USD: +usd.toFixed(4), EUR: +eur.toFixed(4), KWD: +kwd.toFixed(4) });
+                setLastRateUpdate(new Date().toISOString());
+                if (!silent) tip('Kur güncellendi');
+                return true;
+            }).catch(err => {
+                console.warn('[RATES] Kur güncellenemedi', err);
+                if (!silent) tip('Kur alınamadı; son güvenli kur korunuyor');
+                return false;
+            }).finally(() => {
+                clearTimeout(timeout);
+                rateRefreshBusyRef.current = false;
+            });
+    };
+    useEffect(() => {
+        // Uygulama açılır açılmaz günceller; açık kaldığı sürece de her 30 dakikada
+        // ve ekrana geri dönüldüğünde yeni kuru kontrol eder.
+        refreshRates({ silent: true });
+        const refreshOnVisible = () => {
+            if (document.visibilityState === 'visible') refreshRates({ silent: true });
+        };
+        const timer = setInterval(refreshOnVisible, 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', refreshOnVisible);
+        return () => {
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', refreshOnVisible);
+        };
+    }, []);
     const hydrateSnapshot = (d, closeModal, alreadyMerged) => {
         if (!d || !Array.isArray(d.t)) return;
         if (d && Array.isArray(d.del))
@@ -9094,7 +9138,9 @@ function App() {
     };
     const toTRYr = (a, c) => {
         const tl = toTRY(a, c);
-        return String(c || 'TRY').toUpperCase() !== 'TRY' ? Math.round(tl / 50) * 50 : tl;
+        // Döviz tahsilatını 50 TL basamağına yuvarlamak, güncel kurdan eksik
+        // veya fazla hesap çıkarabiliyordu. Kuru iki ondalık hassasiyetle koru.
+        return String(c || 'TRY').toUpperCase() !== 'TRY' ? Math.round(tl * 100) / 100 : tl;
     };
     const setDriverFee = (rawAmount, currency) => {
         const cur = currency || form.driverPaymentCurrency || 'TRY';
