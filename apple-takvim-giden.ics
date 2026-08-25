@@ -3743,25 +3743,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1787497838547_43g6y8@olmeztur
-DTSTAMP:20260825T134900Z
-LAST-MODIFIED:20260824T175100Z
-SEQUENCE:1787593879
-DTSTART:20260826T090000
-DTEND:20260826T100000
-SUMMARY:09:00 · Alpiş Tuana Evleri 1.etap Ve 2.etap→SAW
-LOCATION:Alpiş Tuana Evleri 1.etap Ve 2.etap → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Balgees Mohammad\, Haya Zuraij\, Ali Abdulla\, Balg
- ees Abdullah\, Ailyn Encarguez\, Mimi Gemeda Hne\, Abdulgader Mohammad\,
-  Najat Alkandari On\nŞoför: -\nİşi veren: Muhammet s.\nİşi yapan: Ölmezt
- ur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Alpiş Tuana Evleri 1.etap V
- e 2.etap → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.950
-  ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1787497752413_17n2wv@olmeztur
 DTSTAMP:20260825T134900Z
 LAST-MODIFIED:20260824T175100Z
@@ -3775,6 +3756,25 @@ DESCRIPTION:Müşteri: Maryam Abdullah\, Fatema Abdullah\, Noura Alkandari
  \, Ahmad Ahmad\nŞoför: -\nİşi veren: Muhammet s.\nİşi yapan: Ölmeztur\nA
  lt acenta: -\nAraç: Vito\nGüzergah: Bursa Alpiş Tuana Evleri 2.etap → Sa
  biha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç: 7.950 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1787497838547_43g6y8@olmeztur
+DTSTAMP:20260825T134900Z
+LAST-MODIFIED:20260825T134900Z
+SEQUENCE:1787665765
+DTSTART:20260826T090000
+DTEND:20260826T100000
+SUMMARY:09:00 · Alpiş Tuana Evleri 1.etap Ve 2.etap→SAW
+LOCATION:Alpiş Tuana Evleri 1.etap Ve 2.etap → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Balgees Mohammad\, Haya Zuraij\, Ali Abdulla\, Balg
+ ees Abdullah\, Ailyn Encarguez\, Mimi Gemeda Hne\, Abdulgader Mohammad\,
+  Najat Alkandari On\nŞoför: -\nİşi veren: Muhammet s.\nİşi yapan: Ölmezt
+ ur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: Alpiş Tuana Evleri 1
+ .etap Ve 2.etap → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri ödemez | Araç
+ : 7.950 ₺ | Alt acenta: 7.935 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
