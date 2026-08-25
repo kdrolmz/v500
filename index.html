@@ -7292,11 +7292,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const verecekSummaries = firmSummaries.filter(x => x.signVal < 0);
                 const totalAlacak = Math.round(alacakSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
                 const totalVerecek = Math.round(verecekSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
-	                const firmCardUsdRate = moneyValue(rates && rates.USD) || 44.35;
-	                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount }) => {
+                const firmCardUsdRate = moneyValue(rates && rates.USD) || 44.35;
+                // Yalnızca Hesap ana ekranındaki firma kartı TL metni için:
+                // 0–4 aşağı, 5 sabit, 6–9 yukarı. Gerçek bakiye ve USD değişmez.
+                const firmCardRoundedTL = value => {
+                    const whole = Math.round(Math.abs(moneyValue(value)));
+                    const lastDigit = whole % 10;
+                    if (lastDigit <= 4) return whole - lastDigit;
+                    if (lastDigit === 5) return whole;
+                    return whole + (10 - lastDigit);
+                };
+                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount }) => {
                     const isRec = signVal >= 0;
-	                    const cardTl = Math.round(Math.abs(moneyValue(netVal)));
-	                    const cardUsd = firmCardUsdRate > 0 ? cardTl / firmCardUsdRate : 0;
+                    const cardTlRaw = Math.round(Math.abs(moneyValue(netVal)));
+                    const cardTl = firmCardRoundedTL(cardTlRaw);
+                    const cardUsd = firmCardUsdRate > 0 ? cardTlRaw / firmCardUsdRate : 0;
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
@@ -7310,7 +7320,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             isJabirFirm(firm)
                                 ? React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     signedUsdText(netUsd),
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 450, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(netUsdTl) + ')'))
+                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 450, opacity: .75, marginLeft: 3 } }, '(' + fmtTl(firmCardRoundedTL(netUsdTl)) + ')'))
                                 : React.createElement("div", { className: (isRec ? "is-pos" : "is-neg") + " ko-account-firm-amount-stack" },
                                     React.createElement("span", { className: "ko-account-firm-tl-chip" }, (netVal >= 0 ? "+" : "−") + fr(cardTl) + " ₺"),
                                     React.createElement("span", { className: "ko-account-firm-usd-chip" }, '(' + fmtUsdPrecise(cardUsd) + ')'))));
