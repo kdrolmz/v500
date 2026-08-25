@@ -2488,51 +2488,6 @@ const tlToUsdAmount = tl => {
 const fmtUsd = n => '$' + Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fmtUsdPrecise = n => '$' + Math.abs(moneyValue(n)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtTl = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR') + '₺';
-// TCMB günlük kurları: Bir transferin TL karşılığı, kaydın tarihiyle birlikte
-// değerlendirilir. Gelecekteki bir günün gerçek kuru henüz yayımlanmadığından
-// o gün gelene kadar 0 döner; bugünün kuruyla yanlış bir TL tutarı yazılmaz.
-const TCMB_RATE_CACHE_KEY = 'ko_tcmb_daily_rates_v1';
-const TCMB_RATE_API = 'https://api.frankfurter.dev/v2';
-const localRateDateKey = (d) => {
-    const x = d instanceof Date ? d : new Date(d);
-    if (Number.isNaN(x.getTime())) return '';
-    const z = n => String(n).padStart(2, '0');
-    return x.getFullYear() + '-' + z(x.getMonth() + 1) + '-' + z(x.getDate());
-};
-const isRateDateKey = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ''));
-function currencyRateForDate(currency, date) {
-    const cur = String(currency || 'TRY').toUpperCase();
-    if (cur === 'TRY') return 1;
-    const target = isRateDateKey(date) ? String(date) : localRateDateKey(new Date());
-    const today = localRateDateKey(new Date());
-    if (!target || target > today) return 0;
-    const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
-    if (target === today) return moneyValue(liveRates[cur]);
-    const all = (typeof window !== 'undefined' && window.__KO_HISTORICAL_RATES) || {};
-    // TCMB hafta sonu / resmî tatilde kur yayımlamaz. En yakın önceki iş günü
-    // kullanılmalıdır; API'nin tarih davranışı da budur.
-    const dates = Object.keys(all).filter(k => k <= target && moneyValue(all[k] && all[k][cur]) > 0).sort();
-    return dates.length ? moneyValue(all[dates[dates.length - 1]][cur]) : 0;
-}
-function transferCurrencyRate(t, currency) {
-    return currencyRateForDate(currency, t && t.date);
-}
-function transferTlAtDate(raw, currency, t) {
-    const amount = moneyValue(raw);
-    const cur = String(currency || 'TRY').toUpperCase();
-    if (cur === 'TRY') return amount;
-    const rate = transferCurrencyRate(t, cur);
-    return rate > 0 ? amount * rate : 0;
-}
-function storedForeignTlAtDate(t, raw, currency, stored) {
-    const amount = moneyValue(raw);
-    const cur = String(currency || 'TRY').toUpperCase();
-    if (cur === 'TRY') return moneyValue(stored) || amount;
-    if (amount <= 0) return moneyValue(stored);
-    if (isRateDateKey(t && t.date) && t.date > localRateDateKey(new Date())) return 0;
-    const rate = transferCurrencyRate(t, cur);
-    return rate > 0 ? amount * rate : 0;
-}
 const accountSettleKey = (firm, kind) => {
     const base = firmSlug(firm || '');
     const suffix = firmSlug(kind || '');
@@ -3944,19 +3899,20 @@ function transferCustomerTRYValue(t) {
     const stored = moneyValue(t.customerTRY);
     const raw = moneyValue(t.paymentAmount);
     const currency = String(t.paymentCurrency || 'TRY').toUpperCase();
-    if (currency === 'TRY') return stored > 0 ? stored : raw;
-    if (raw <= 0) return stored;
-    const rate = transferCurrencyRate(t, currency);
-    // İleri tarihli kayıtta eski customerTRY kalıntısı bile kullanılmaz. O gün
-    // geldiğinde günlük TCMB kuru yüklenir ve hesap kendiliğinden tamamlanır.
-    if (isRateDateKey(t.date) && t.date > localRateDateKey(new Date())) return 0;
-    return rate > 0 ? raw * rate : 0;
-}
-function transferDriverTRYValue(t) {
-    return storedForeignTlAtDate(t, t && t.driverPaymentRaw, t && t.driverPaymentCurrency, t && t.driverPayment);
-}
-function transferAltAcentaTRYValue(t) {
-    return storedForeignTlAtDate(t, t && t.altAcentaRaw, t && t.altAcentaCurrency, t && t.altAcentaUcreti);
+    /* index7_4'teki çalışan muhasebe kuralı: transfer kaydedildiğinde oluşan
+       customerTRY değeri sabittir; sonradan kur güncellense bile eski hesaplar
+       değişmez. Eski/eksik kayıtta yalnızca ilk kez canlı kur kullanılır. */
+    if (stored > 0) return stored;
+    if (currency === 'TRY') return raw;
+    if (raw > 0) {
+        const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+        const rate = currency === 'USD' ? (moneyValue(liveRates.USD) || 44.35)
+            : currency === 'EUR' ? (moneyValue(liveRates.EUR) || 51.50)
+                : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
+                    : 1;
+        return raw * rate;
+    }
+    return raw;
 }
 function noCollectTRYValue(t) {
     const raw = moneyValue(t && t.noCollectAmount);
@@ -3965,7 +3921,11 @@ function noCollectTRYValue(t) {
     const currency = String((t && t.noCollectCurrency) || 'TRY').toUpperCase();
     if (currency === 'TRY')
         return raw;
-    const rate = transferCurrencyRate(t, currency);
+    const liveRates = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+    const rate = currency === 'USD' ? (moneyValue(liveRates.USD) || 44.35)
+        : currency === 'EUR' ? (moneyValue(liveRates.EUR) || 51.50)
+            : currency === 'KWD' ? (moneyValue(liveRates.KWD) || 144.40)
+                : 0;
     return rate > 0 ? raw * rate : 0;
 }
 function currencySymbolFor(code) {
@@ -4011,7 +3971,12 @@ function remainingFromFirmTRY(t) {
     if (raw <= 0)
         return 0;
     const cur = String(t.remainingCurrency || 'TRY').toUpperCase();
-    return transferTlAtDate(raw, cur, t);
+    const lr = (typeof window !== 'undefined' && window.__KO_RATES) || {};
+    const rate = cur === 'USD' ? (moneyValue(lr.USD) || 44.35)
+        : cur === 'EUR' ? (moneyValue(lr.EUR) || 51.50)
+            : cur === 'KWD' ? (moneyValue(lr.KWD) || 144.40)
+                : 1;
+    return raw * rate;
 }
 function remainingFromFirmDisplay(t) {
     const raw = moneyValue(t && t.remainingAmount);
@@ -4106,8 +4071,8 @@ function accountUsdRateForRow(t) {
             pairs.push({ raw: r, tl: l });
     };
     addUsdPair(t && t.paymentAmount, t && t.paymentCurrency, transferCustomerTRYValue(t));
-    addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, transferDriverTRYValue(t));
-    addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, transferAltAcentaTRYValue(t));
+    addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, t && t.driverPayment);
+    addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, t && t.altAcentaUcreti);
     addUsdPair(t && t.remainingAmount, t && t.remainingCurrency, (t && t.remainingTRY) || remainingFromFirmTRY(t));
     const rawTotal = pairs.reduce((s, x) => s + x.raw, 0);
     const tlTotal = pairs.reduce((s, x) => s + x.tl, 0);
@@ -4211,7 +4176,7 @@ const signedUsdText = n => (moneyValue(n) >= 0 ? '+' : '−') + fmtUsd(n);
 function olmezKar(t) {
     if (!hasOlmezturSide(t))
         return 0;
-    const c = transferCustomerTRYValue(t), d = transferDriverTRYValue(t), alt = transferAltAcentaTRYValue(t);
+    const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
@@ -4240,8 +4205,8 @@ function olmezPotentialKar(t) {
     if (!hasOlmezturSide(t))
         return 0;
     const c = transferCustomerTRYValue(t);
-    const d = transferDriverTRYValue(t);
-    const alt = transferAltAcentaTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const givenOl = isOlmezturParty(t.givenBy);
@@ -4259,11 +4224,11 @@ function olmezPotentialKar(t) {
     return c - d + comTotal;
 }
 function calcAltAcentaPaylasim(t) {
-    if (!t || !t.altAcenta || !(transferAltAcentaTRYValue(t) > 0))
+    if (!t || !t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
         return null;
     const c = transferCustomerTRYValue(t);
-    const d = transferDriverTRYValue(t);
-    const alt = transferAltAcentaTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     if (!alan || !yes || t.paymentToMe)
@@ -4286,8 +4251,8 @@ function calcAltAcentaPaylasim(t) {
 }
 function calcBal(t) {
     const c = transferCustomerTRYValue(t);
-    const d = transferDriverTRYValue(t);
-    const alt = transferAltAcentaTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
     const givenOl = isOlmezturParty(t.givenBy);
@@ -4314,11 +4279,11 @@ function calcBal(t) {
     return { firm, netOl: -d + (t.altAcenta ? 0 : com) };
 }
 function calcAltBal(t) {
-    if (!t.altAcenta || !(transferAltAcentaTRYValue(t) > 0))
+    if (!t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
         return null;
     const c = transferCustomerTRYValue(t);
-    const d = transferDriverTRYValue(t);
-    const alt = transferAltAcentaTRYValue(t);
+    const d = moneyValue(t.driverPayment);
+    const alt = moneyValue(t.altAcentaUcreti);
     const yes = transferHasCustomerPayment(t);
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     const altKomisyonKesinti = tourCommissionShare(t);
@@ -7298,15 +7263,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 	                    const netVal = hesapOpenNet(openTs) + debtNetTL;
 	                    const jabirFirm = isJabirFirm(firm);
                         const usdRate = moneyValue(rates && rates.USD) || 44.35;
-	                    const historicalUsdNet = openTs.reduce((sum, row) => {
-                            const rowRate = currencyRateForDate('USD', row && row.date);
-                            return sum + (rowRate > 0 ? moneyValue(row && row.netOl) / rowRate : 0);
-                        }, 0) + openDebtRows.reduce((sum, debt) => {
-                            const rowRate = currencyRateForDate('USD', debt && debt.date);
-                            const tl = (debt.type === 'borc' ? -1 : 1) * debtRemainingTRY(debt, rates);
-                            return sum + (rowRate > 0 ? tl / rowRate : 0);
-                        }, 0);
-	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net + (debtNetTL / usdRate) : historicalUsdNet;
+	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net + (debtNetTL / usdRate) : null;
 	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net + debtNetTL : null;
 	                    const signVal = jabirFirm ? netUsd : netVal;
 	                    const totalVal = jabirFirm ? netUsdTl : netVal;
@@ -7317,10 +7274,11 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const verecekSummaries = firmSummaries.filter(x => x.signVal < 0);
                 const totalAlacak = Math.round(alacakSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
                 const totalVerecek = Math.round(verecekSummaries.reduce((s, x) => s + Math.abs(x.totalVal), 0));
+	                const firmCardUsdRate = moneyValue(rates && rates.USD) || 44.35;
 	                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount }) => {
                     const isRec = signVal >= 0;
 	                    const cardTl = Math.round(Math.abs(moneyValue(netVal)));
-	                    const cardUsd = Math.abs(moneyValue(netUsd));
+	                    const cardUsd = firmCardUsdRate > 0 ? cardTl / firmCardUsdRate : 0;
                     return React.createElement("button", {
                         key: firm,
                         type: "button",
@@ -8408,13 +8366,6 @@ function App() {
     const [openKarPanel, setOpenKarPanel] = useState(false);
     const [rates, setRates] = useState({ USD: 44.35, EUR: 51.50, KWD: 144.40 });
     try { window.__KO_RATES = rates; } catch (e) {}
-    const [historicalRates, setHistoricalRates] = useState(() => {
-        try {
-            const saved = JSON.parse(localStorage.getItem(TCMB_RATE_CACHE_KEY) || '{}');
-            return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
-        } catch (e) { return {}; }
-    });
-    try { window.__KO_HISTORICAL_RATES = historicalRates; } catch (e) {}
     const [form, setForm] = useState(() => {
         try {
             const saved = JSON.parse(localStorage.getItem('ko_transfer_draft_v1') || 'null');
@@ -8507,8 +8458,6 @@ function App() {
     const cloudBackoffUntilRef = useRef(0);
     const cloudSnapshotReadSeqRef = useRef(0);
     const rateRefreshBusyRef = useRef(false);
-    const historicalRateBusyRef = useRef(false);
-    const historicalRateRangeRef = useRef('');
     const submitBusyRef = useRef(false);
     const persistRef = useRef({});
     const quickDraftRef = useRef(null);
@@ -8677,25 +8626,19 @@ function App() {
         rateRefreshBusyRef.current = true;
         const controller = typeof AbortController === 'function' ? new AbortController() : null;
         const timeout = setTimeout(() => { if (controller) controller.abort(); }, 12000);
-        // TCMB sağlayıcısından doğrudan "1 döviz = kaç TL" biçiminde alır.
-        // Tarih eki ve no-store Safari'nin eski cevabını önbellekten vermesini engeller.
-        const request = code => fetch(TCMB_RATE_API + '/rate/' + code + '/TRY?providers=TCMB&_=' + Date.now(), {
-            cache: 'no-store', signal: controller ? controller.signal : undefined
-        }).then(r => {
-            if (!r.ok) throw new Error('Kur servisi yanıt vermedi.');
-            return r.json();
-        });
-        return Promise.all(['USD', 'EUR', 'KWD'].map(request)).then(rows => {
-                const next = rows.reduce((out, row) => {
-                    const code = String(row && row.base || '').toUpperCase();
-                    const value = moneyValue(row && row.rate);
-                    if (code && value > 0) out[code] = +value.toFixed(5);
-                    return out;
-                }, {});
-                const usd = next.USD, eur = next.EUR, kwd = next.KWD;
+        const url = 'https://open.er-api.com/v6/latest/TRY?_=' + Date.now();
+        return fetch(url, { cache: 'no-store', signal: controller ? controller.signal : undefined })
+            .then(r => {
+                if (!r.ok) throw new Error('Kur servisi yanıt vermedi.');
+                return r.json();
+            }).then(d => {
+                const source = d && d.rates;
+                const usd = source ? 1 / Number(source.USD) : NaN;
+                const eur = source ? 1 / Number(source.EUR) : NaN;
+                const kwd = source ? 1 / Number(source.KWD) : NaN;
                 if (![usd, eur, kwd].every(Number.isFinite) || usd <= 0 || eur <= 0 || kwd <= 0)
-                    throw new Error('TCMB kur verisi geçersiz.');
-                setRates(next);
+                    throw new Error('Kur verisi geçersiz.');
+                setRates({ USD: +usd.toFixed(2), EUR: +eur.toFixed(2), KWD: +kwd.toFixed(2) });
                 setLastRateUpdate(new Date().toISOString());
                 if (!silent) tip('Kur güncellendi');
                 return true;
@@ -8722,64 +8665,6 @@ function App() {
             document.removeEventListener('visibilitychange', refreshOnVisible);
         };
     }, []);
-    // Geçmiş tüm dövizli transferlerin günlük TCMB kurunu tek seferde indirir.
-    // Böylece her firma kartı, kayıtların kendi günlerindeki USD/EUR/KWD
-    // karşılıklarını toplar; bugünkü kurla yeniden bölmez.
-    const historicalRateDatesKey = (T || []).filter(t => {
-        const d = String(t && t.date || '');
-        if (!isRateDateKey(d) || d >= localRateDateKey(new Date())) return false;
-        return [t.paymentCurrency, t.driverPaymentCurrency, t.altAcentaCurrency, t.remainingCurrency, t.noCollectCurrency]
-            .some(c => String(c || 'TRY').toUpperCase() !== 'TRY');
-    }).map(t => t.date).concat((function () {
-        const d = String(form && form.date || '');
-        const cur = String(form && form.paymentCurrency || 'TRY').toUpperCase();
-        return isRateDateKey(d) && d < localRateDateKey(new Date()) && cur !== 'TRY' ? [d] : [];
-    })()).sort().join('|');
-    useEffect(() => {
-        if (!historicalRateDatesKey || navigator.onLine === false || historicalRateBusyRef.current) return;
-        const dates = historicalRateDatesKey.split('|').filter(Boolean);
-        const firstNeeded = dates[0], to = localRateDateKey(new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1));
-        if (!firstNeeded || !to || firstNeeded > to) return;
-        // İlk kayıt hafta sonu/tatil ise önceki iş gününün kurunu da almak için
-        // sorguyu bir hafta geriden başlatıyoruz.
-        const beforeFirst = new Date(firstNeeded + 'T12:00:00');
-        beforeFirst.setDate(beforeFirst.getDate() - 7);
-        const from = localRateDateKey(beforeFirst);
-        const rangeKey = from + '|' + to;
-        if (historicalRateRangeRef.current === rangeKey) return;
-        historicalRateBusyRef.current = true;
-        historicalRateRangeRef.current = rangeKey;
-        const controller = typeof AbortController === 'function' ? new AbortController() : null;
-        const timeout = setTimeout(() => { if (controller) controller.abort(); }, 18000);
-        const load = code => fetch(TCMB_RATE_API + '/rates?from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to) + '&base=' + code + '&quotes=TRY&providers=TCMB&_=' + Date.now(), {
-            cache: 'no-store', signal: controller ? controller.signal : undefined
-        }).then(r => {
-            if (!r.ok) throw new Error('Geçmiş kur alınamadı.');
-            return r.json();
-        });
-        Promise.all(['USD', 'EUR', 'KWD'].map(load)).then(groups => {
-            const merged = {};
-            groups.forEach(rows => (Array.isArray(rows) ? rows : []).forEach(row => {
-                const date = String(row && row.date || '');
-                const code = String(row && row.base || '').toUpperCase();
-                const value = moneyValue(row && row.rate);
-                if (isRateDateKey(date) && code && value > 0)
-                    merged[date] = { ...(merged[date] || {}), [code]: +value.toFixed(5) };
-            }));
-            if (Object.keys(merged).length) setHistoricalRates(prev => {
-                const next = { ...(prev || {}) };
-                Object.keys(merged).forEach(date => { next[date] = { ...(next[date] || {}), ...merged[date] }; });
-                try { localStorage.setItem(TCMB_RATE_CACHE_KEY, JSON.stringify(next)); } catch (e) {}
-                return next;
-            });
-        }).catch(err => {
-            console.warn('[TCMB HISTORY] Geçmiş kur alınamadı', err);
-            historicalRateRangeRef.current = '';
-        }).finally(() => {
-            clearTimeout(timeout);
-            historicalRateBusyRef.current = false;
-        });
-    }, [historicalRateDatesKey]);
     const hydrateSnapshot = (d, closeModal, alreadyMerged) => {
         if (!d || !Array.isArray(d.t)) return;
         if (d && Array.isArray(d.del))
@@ -9240,15 +9125,15 @@ function App() {
             }catch(e){}
         })();
     }, [rememberMe, authUser]);
-    const toTRY = (a, c, date) => {
+    const toTRY = (a, c) => {
         const n = moneyValue(a);
-        const cur = String(c || 'TRY').toUpperCase();
-        if (cur === 'TRY') return n;
-        const rate = currencyRateForDate(cur, date || localRateDateKey(new Date()));
-        return rate > 0 ? n * rate : 0;
+        if (c === 'USD') return n * (moneyValue(rates.USD) || 44.35);
+        if (c === 'EUR') return n * (moneyValue(rates.EUR) || 51.50);
+        if (c === 'KWD') return n * (moneyValue(rates.KWD) || (moneyValue(rates.USD) ? rates.USD * 3.27 : 144.40));
+        return n;
     };
-    const toTRYr = (a, c, date) => {
-        const tl = toTRY(a, c, date);
+    const toTRYr = (a, c) => {
+        const tl = toTRY(a, c);
         // Döviz tahsilatını 50 TL basamağına yuvarlamak, güncel kurdan eksik
         // veya fazla hesap çıkarabiliyordu. Kuru iki ondalık hassasiyetle koru.
         return String(c || 'TRY').toUpperCase() !== 'TRY' ? Math.round(tl * 100) / 100 : tl;
@@ -9502,8 +9387,8 @@ function App() {
         const __cur = String(form.paymentCurrency || 'TRY').toUpperCase();
         const __amt = moneyValue(form.paymentAmount);
         if (__cur !== 'TRY' && __amt > 0) {
-            const __r = currencyRateForDate(__cur, form.date);
-            if (form.date <= localRateDateKey(new Date()) && !(__r > 0)) { releaseSubmitLock(); tip('Bu günün TCMB kuru hazırlanıyor — birkaç saniye sonra tekrar deneyin'); return; }
+            const __r = __cur === 'USD' ? moneyValue(rates.USD) : __cur === 'EUR' ? moneyValue(rates.EUR) : __cur === 'KWD' ? moneyValue(rates.KWD) : 0;
+            if (!(__r > 0)) { releaseSubmitLock(); tip('Kur henüz yüklenmedi — birkaç saniye sonra tekrar deneyin veya TL girin'); return; }
         }
         const cTRY = toTRYr(form.paymentAmount, form.paymentCurrency, form.date);
         [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
