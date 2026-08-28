@@ -3817,16 +3817,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787850941154_2xlqvr@olmeztur
 DTSTAMP:20260828T164400Z
-LAST-MODIFIED:20260827T204100Z
-SEQUENCE:1787863263
+LAST-MODIFIED:20260828T164400Z
+SEQUENCE:1787935481
 DTSTART:20260828T063000
 DTEND:20260828T073000
 SUMMARY:06:30 · Bursa→IST
 LOCATION:Bursa → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Hessah Almutairi\nŞoför: Balentur\nİşi veren: Nuri 
  Çalışkan\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprinter\
- nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri: 220 USD | Araç: 
- 9.000 ₺ | Alt acenta: 9.000 ₺
+ nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri ödemez | Araç: 9.
+ 000 ₺ | Alt acenta: 9.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
