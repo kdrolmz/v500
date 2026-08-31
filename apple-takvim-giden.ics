@@ -2656,24 +2656,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788164715737_g0hk40@olmeztur
-DTSTAMP:20260831T082500Z
-LAST-MODIFIED:20260831T082500Z
-SEQUENCE:1788164715
-DTSTART:20260804T083000
-DTEND:20260804T093000
-SUMMARY:08:30 · Bursa→SAW
-LOCATION:Bursa Fomara Toki B-4 Blok → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Ayoub Alkandari\, Hajer Alkanderi\, Mariam Alkandar
- i\, Noor Alkandari\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren:
-  Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bur
- sa Fomara Toki B-4 Blok → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 170 
- USD | Araç: 8.200 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1785758878706_zj3l0b@olmeztur
 DTSTAMP:20260831T082500Z
 LAST-MODIFIED:20260804T103200Z
@@ -4147,6 +4129,24 @@ DESCRIPTION:Müşteri: Khaled Alhashel\, Asma Aljawhar\, Rayan Alhashel\,
  Dayan Alhashel\nŞoför: -\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt 
  acenta: -\nAraç: Sprinter\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme:
   Müşteri: 240 USD | Araç: 11.550 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788164715737_g0hk40@olmeztur
+DTSTAMP:20260831T082500Z
+LAST-MODIFIED:20260831T082500Z
+SEQUENCE:1788164750
+DTSTART:20260904T083000
+DTEND:20260904T093000
+SUMMARY:08:30 · Bursa→SAW
+LOCATION:Bursa Fomara Toki B-4 Blok → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Ayoub Alkandari\, Hajer Alkanderi\, Mariam Alkandar
+ i\, Noor Alkandari\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren:
+  Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bur
+ sa Fomara Toki B-4 Blok → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 170 
+ USD | Araç: 8.200 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
