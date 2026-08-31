@@ -4031,16 +4031,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1787764452214_0z02gj@olmeztur
 DTSTAMP:20260831T081900Z
-LAST-MODIFIED:20260826T171400Z
-SEQUENCE:1787764452
+LAST-MODIFIED:20260831T081900Z
+SEQUENCE:1788164376
 DTSTART:20260831T093000
 DTEND:20260831T103000
 SUMMARY:09:30 · Bursa→SAW
 LOCATION:Bursa → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Muneera Almathen\, Ayeshah Alqassara\, Zaınab Alras
  hed\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi 
- yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa → Sabiha Gök
- çen Havalimanı\nÖdeme: Müşteri: 160 USD | Araç: 7.700 ₺
+ yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa 
+ → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 160 USD | Araç: 7.700 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
