@@ -4923,7 +4923,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1788286988861_k1c4ng@olmeztur
 DTSTAMP:20260902T090100Z
 LAST-MODIFIED:20260902T090100Z
-SEQUENCE:1788339698
+SEQUENCE:1788339712
 DTSTART:20260902T200000
 DTEND:20260902T210000
 SUMMARY:20:00 · SAW→Bursa
@@ -4931,8 +4931,8 @@ LOCATION:Sabiha Gökçen Havalimanı → Fomara Toki Bursa
 DESCRIPTION:Müşteri: Hmad M A A Karam\, Ohammad A Ma Karam\, Ona A Alaka
  rı\, Ousuf Am A Karam\, Bdulwahab A M A Karam\nŞoför: Kadir Üstündağ / 0
  5436566156\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\
- nAraç: Caravelle / 34 HOL 224\nGüzergah: Sabiha Gökçen Havalimanı → Foma
- ra Toki Bursa\nUçuş: PC1182\nÖdeme: Müşteri: 8.000 TRY | Araç: 8.000 ₺
+ nAraç: Sprinter / 34 HOL 224\nGüzergah: Sabiha Gökçen Havalimanı → Fomar
+ a Toki Bursa\nUçuş: PC1182\nÖdeme: Müşteri: 8.000 TRY | Araç: 8.000 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
