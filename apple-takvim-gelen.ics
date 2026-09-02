@@ -4903,22 +4903,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788381852845_v4ez4e@olmeztur
-DTSTAMP:20260902T204400Z
-LAST-MODIFIED:20260902T204400Z
-SEQUENCE:1788381852
-DTSTART:20260902T140500
-DTEND:20260902T150500
-SUMMARY:14:05 · SAW→Bursa
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Waleed Ali\nŞoför: -\nİşi veren: Trias Turizm\nİşi 
- yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Sabiha Gökçen Hava
- limanı → Bursa\nUçuş: K9305\nÖdeme: Müşteri: 160 USD | Araç: 7.700 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1788283581342_wftg39@olmeztur
 DTSTAMP:20260902T204400Z
 LAST-MODIFIED:20260901T172600Z
@@ -4950,6 +4934,22 @@ DESCRIPTION:Müşteri: Ahmad Karam\, Mohammad Karam\, Mona A Alakarı\, Abd
  : Sprinter / 34 HOL 224\nGüzergah: Sabiha Gökçen Havalimanı → Fomara Tok
  i Bursa\nUçuş: PC1182\nÖdeme: Müşteri: 8.000 TRY | Araç: 7.500 ₺ | Alt a
  centa: 7.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788381852845_v4ez4e@olmeztur
+DTSTAMP:20260902T204400Z
+LAST-MODIFIED:20260902T204400Z
+SEQUENCE:1788381874
+DTSTART:20260903T140500
+DTEND:20260903T150500
+SUMMARY:14:05 · SAW→Bursa
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Waleed Ali\nŞoför: -\nİşi veren: Trias Turizm\nİşi 
+ yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Sabiha Gökçen Hava
+ limanı → Bursa\nUçuş: K9305\nÖdeme: Müşteri: 160 USD | Araç: 7.700 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
