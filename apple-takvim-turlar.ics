@@ -1388,7 +1388,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1788349515738_diembg@olmeztur
 DTSTAMP:20260902T114500Z
 LAST-MODIFIED:20260902T114500Z
-SEQUENCE:1788349515
+SEQUENCE:1788349555
 DTSTART:20260903T103000
 DTEND:20260903T113000
 SUMMARY:10:30 · Yalova Tur
@@ -1396,9 +1396,9 @@ LOCATION:Bursa → Yalova Tur
 DESCRIPTION:Müşteri: Khansa Kareem\, Samah Saad Mahmood Majeed\, Shahd A
  hmed Attia Hassan Elsalamouny\, Alkhansaa Ahmed Attia Hassan Elsalamouny
  \, Musk Ahmed Attia Hassan Elsalamouny\nŞoför: Kadir Ölmez / +90 (543) 2
- 87 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölm\nAlt acenta: -\nAra
- ç: Vito\nGüzergah: Bursa → Yalova Tur\nÖdeme: Müşteri: 140 USD | Araç: 5
- .800 ₺
+ 87 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa → Yalova Tur\nÖdeme: Müşteri: 140 USD | Ar
+ aç: 5.800 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
