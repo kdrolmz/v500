@@ -1264,6 +1264,241 @@ const splitPassengerId = v => {
         ? { idNo: raw, tc: digits, pasaport: '' }
         : { idNo: raw, tc: '', pasaport: raw };
 };
+/* ==========================================================================
+   BİLETTEN BİLGİ AL + WHATSAPP İSİM YAPIŞTIR — yardımcılar
+   (Sadece bilet paneli/yapıştırma kullanıldığında devreye girer.
+    Panel açılmazsa form eskisi gibi tamamen elle doldurulur.)
+   ========================================================================== */
+const KO_AP_SAW = 'Sabiha Gökçen Havalimanı';
+const KO_AP_IST = 'İstanbul Havalimanı';
+const KO_HOME_CITY = 'Bursa';
+const KO_LEAD_KEY = 'ko_lead_times_v1';
+/* Gidişte uçuş saatinden kaç DAKİKA geri gidilecek */
+const KO_LEAD_DEFAULT = { saw: 270, istYoa: 330, istBr: 360, istFy: 420 };
+const koLeadRead = () => {
+    try {
+        const v = JSON.parse(localStorage.getItem(KO_LEAD_KEY) || 'null');
+        if (v && typeof v === 'object') {
+            const out = Object.assign({}, KO_LEAD_DEFAULT);
+            Object.keys(KO_LEAD_DEFAULT).forEach(k => {
+                const n = Number(v[k]);
+                if (Number.isFinite(n) && n >= 0 && n <= 900) out[k] = Math.round(n);
+            });
+            return out;
+        }
+    } catch (e) {}
+    return Object.assign({}, KO_LEAD_DEFAULT);
+};
+const koLeadWrite = v => { try { localStorage.setItem(KO_LEAD_KEY, JSON.stringify(v)); } catch (e) {} };
+/* Gidiş güzergâhları: hem havalimanını hem rotayı hem bekleme süresini belirler */
+const KO_TICKET_LEGS = [
+    { id: 'saw',    ap: KO_AP_SAW, route: 'br',  lead: 'saw',    ico: '🛫', n: 'Sabiha Gökçen',   sub: 'Osm. Köprü' },
+    { id: 'istYoa', ap: KO_AP_IST, route: 'yoa', lead: 'istYoa', ico: '🌉', n: 'İst. Havalimanı', sub: 'Yss + Osm. Köprü' },
+    { id: 'istBr',  ap: KO_AP_IST, route: 'br',  lead: 'istBr',  ico: '🌉', n: 'İst. Havalimanı', sub: 'Sadece Osm. Köprü' },
+    { id: 'istFy',  ap: KO_AP_IST, route: 'fy',  lead: 'istFy',  ico: '⛴️', n: 'İst. Havalimanı', sub: 'Feribot' }
+];
+const koPad2 = n => (n < 10 ? '0' : '') + n;
+const koUpTR = s => String(s || '').toLocaleUpperCase('tr-TR');
+const koAsciiUp = s => koUpTR(s).replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+const KO_MONTHS = {
+    OCA: 1, SUB: 2, MAR: 3, NIS: 4, MAY: 5, HAZ: 6, TEM: 7, AGU: 8, EYL: 9, EKI: 10, KAS: 11, ARA: 12,
+    JAN: 1, FEB: 2, APR: 4, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12
+};
+const koIsoDate = (y, mo, d) => (
+    (y >= 2000 && y <= 2099 && mo >= 1 && mo <= 12 && d >= 1 && d <= 31)
+        ? (y + '-' + koPad2(mo) + '-' + koPad2(d)) : ''
+);
+const koPrettyDate = iso => {
+    const p = String(iso || '').split('-');
+    return p.length === 3 ? (p[2] + '.' + p[1] + '.' + p[0]) : (iso || '');
+};
+/* Tarih + saatten dakika çıkar (gece yarısını geçerse gün de geri gider) */
+const koShiftDateTime = (dateStr, timeStr, minusMin) => {
+    if (!dateStr || !timeStr) return { date: dateStr || '', time: timeStr || '' };
+    const dp = String(dateStr).split('-').map(Number);
+    const tp = String(timeStr).split(':').map(Number);
+    if (dp.length !== 3 || tp.length < 2) return { date: dateStr, time: timeStr };
+    const dt = new Date(dp[0], dp[1] - 1, dp[2], tp[0], tp[1], 0, 0);
+    if (isNaN(dt.getTime())) return { date: dateStr, time: timeStr };
+    dt.setMinutes(dt.getMinutes() - (Number(minusMin) || 0));
+    return {
+        date: dt.getFullYear() + '-' + koPad2(dt.getMonth() + 1) + '-' + koPad2(dt.getDate()),
+        time: koPad2(dt.getHours()) + ':' + koPad2(dt.getMinutes())
+    };
+};
+const koMinsLabel = m => {
+    const v = Math.max(0, Math.round(Number(m) || 0));
+    const h = Math.floor(v / 60), mm = v % 60;
+    return mm ? (h + ' sa ' + mm + ' dk') : (h + ' saat');
+};
+const koMinsToHourStr = m => {
+    const v = Math.max(0, Number(m) || 0) / 60;
+    return (Math.round(v * 100) / 100).toString().replace('.', ',');
+};
+const koHourStrToMins = s => {
+    const n = parseFloat(String(s || '').replace(',', '.'));
+    return Number.isFinite(n) ? Math.round(n * 60) : NaN;
+};
+
+/* ---------- İsim ayrıştırma (WhatsApp / bilet metni) ---------- */
+const KO_TITLE_HEAD = /^(MR|MRS|MS|MSTR|MISS|MSS|CHD|CHLD|INF|DR|PROF|BAY|BAYAN|SAYIN|SN)\.?\s+/;
+const KO_TITLE_TAIL = /\s+(MR|MRS|MS|MSTR|MISS|CHD|CHLD|INF)\.?$/;
+const KO_JUNK_RE = /(UCUS|FLIGHT|PNR|BILET|TICKET|REZERV|BOOKING|TOPLAM|TUTAR|FIYAT|PRICE|SAAT|TARIH|DATE|TIME|HAVALIMAN|HAVAYOL|HAVA YOL|AIRPORT|AIRWAY|AIRLINE|\bAIR\b|TERMINAL|BAGAJ|BAGGAGE|KOLTUK|SEAT|GATE|VARIS|KALKIS|INIS|DEPARTURE|ARRIVAL|BOARDING|CHECK|EKONOMI|ECONOMY|BUSINESS|CLASS|SINIF|TRANSFER|ARAC|SOFOR|KAPTAN|FIRMA|ACENT|OTEL|HOTEL|ADRES|ADDRESS|WHATSAPP|MESAJ|TESEKKUR|MERHABA|GUNAYDIN|IYI GUNLER|SELAM|TAMAM|LUTFEN|YOLCU|MISAFIR|KISI|TELEFON|PHONE|PASAPORT|PASSPORT|KIMLIK|NUMARA|NUMBER|TOTAL|ADET|NOT:|LINK|HTTP|TURKISH|PEGASUS|ANADOLUJET|AJET|SUNEXPRESS|CORENDON|TAILWIND|FREEBIRD|KUWAIT|KUVEYT|JAZEERA|FLYNAS|SAUDIA|EMIRATES|QATAR|FLYDUBAI|LUFTHANSA|AEGEAN|WIZZ|RYANAIR|ETIHAD|GULF|ROYAL|JORDANIAN|MIDDLE EAST|MUSTERI|HIZMET|DESTEK|CAGRI|REFERANS|IADE|KURAL|ONEMLI)/;
+/* Sadece yer adlarından oluşan satırlar isim sayılmaz */
+const KO_PLACES = 'ISTANBUL,ISTANBULA,ISTANBULDAN,BURSA,BURSAYA,BURSADAN,ANKARA,IZMIR,ANTALYA,YALOVA,SABIHA,GOKCEN,KUVEYT,KUWAIT,DUBAI,DOHA,ABUDABI,CIDDE,JEDDAH,RIYAD,RIYADH,DAMMAM,MEDINE,MEKKE,BAGDAT,BAGHDAD,ERBIL,BASRA,NECEF,SULEYMANIYE,TAHRAN,TEHRAN,BEYRUT,AMMAN,KAHIRE,CAIRO,LONDRA,LONDON,BERLIN,PARIS,AMSTERDAM,FRANKFURT,MUNIH,VIYANA,ZURIH,BRUKSEL,MOSKOVA,KIEV,BAKU,TIFLIS,ALMATI,TASKENT,DUSSELDORF,HAMBURG,STUTTGART,KOLN,MILANO,ROMA,ATINA,SOFYA,BUKRES,SKOPJE,SARAYBOSNA,PRISTINA,TRABZON,ADANA,DALAMAN,BODRUM,MILAS,ESENBOGA,YENISEHIR,TURKIYE,TURKEY,VE,ILE,SAW,IST,IGA,KWI,DXB,DOH,JED,RUH'.split(',');
+const koAllPlaces = t => {
+    const w = koAsciiUp(t).split(/[^A-Z]+/).filter(x => x.length >= 2);
+    return w.length > 0 && w.every(x => KO_PLACES.indexOf(x) >= 0);
+};
+const koLooksLikeName = (s, loose) => {
+    const t = String(s || '').replace(/\s+/g, ' ').trim();
+    if (t.length < 3 || t.length > 60) return false;
+    if (/\d/.test(t)) return false;
+    if (!/^[A-Za-zÇĞİIÖŞÜçğıöşü'’\- .]+$/.test(t)) return false;
+    if (KO_JUNK_RE.test(koAsciiUp(t))) return false;
+    if (koAllPlaces(t)) return false;
+    const words = t.split(/\s+/).filter(w => w.replace(/[^A-Za-zÇĞİIÖŞÜçğıöşü]/g, '').length >= 2);
+    return loose ? words.length >= 1 : words.length >= 2;
+};
+const koTidyName = raw => {
+    let t = String(raw || '').replace(/[|;·•]+/g, ' ').replace(/\s+/g, ' ').trim();
+    t = t.replace(KO_TITLE_HEAD, '').replace(KO_TITLE_TAIL, '');
+    if (t.indexOf('/') >= 0) {
+        const parts = t.split('/').map(x => x.trim()).filter(Boolean);
+        t = parts.length === 2 ? (parts[1] + ' ' + parts[0]) : parts.join(' ');
+    }
+    t = t.replace(KO_TITLE_HEAD, '').replace(KO_TITLE_TAIL, '');
+    return t.replace(/^[\s,.\-]+|[\s,.\-]+$/g, '').replace(/\s+/g, ' ').trim();
+};
+/* Bir satırdan {name, id, phone} çıkarır; isim geçerli değilse null */
+const koParseOneNameLine = (rawLine) => {
+    let line = String(rawLine || '').replace(/ /g, ' ').trim();
+    if (!line) return null;
+    let stamped = false;
+    /* WhatsApp: "[01.09.2026 13:10] Ahmet:" veya "01.09.2026 13:10 - Ahmet:" */
+    line = line.replace(/^\[[^\]]{4,44}\]\s*/, () => { stamped = true; return ''; });
+    line = line.replace(/^\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}[, ]+\d{1,2}[:.]\d{2}(?::\d{2})?\s*(?:AM|PM|ÖÖ|ÖS)?\s*[-–]\s*/i, () => { stamped = true; return ''; });
+    if (stamped) line = line.replace(/^[^:]{1,32}:\s*/, '');
+    /* Numaralandırma / madde işareti */
+    line = line.replace(/^[\s\-–—•*·>»•]+/, '');
+    line = line.replace(/^\(?\d{1,2}\)?\s*[).\-\/:]\s+?/, '');
+    line = line.replace(/^\(?\d{1,2}\)?[).\-\/:]\s*/, '');
+    line = line.trim();
+    if (!line) return null;
+    let phone = '', id = '';
+    /* Telefon: 10-15 hane (11 hane ise 0 ile başlamalı) */
+    line = line.replace(/(\+?\d[\d\s().\-]{8,18}\d)/g, m => {
+        const d = m.replace(/\D/g, '');
+        if (d.length === 11 && d[0] !== '0') return m;             // TC olabilir
+        if (d.length >= 10 && d.length <= 15) { if (!phone) phone = m.replace(/[().\-\s]+/g, ' ').trim(); return ' '; }
+        return m;
+    });
+    /* TC: 11 hane, 0 ile başlamaz */
+    line = line.replace(/\b(\d{11})\b/g, m => { if (!id && m[0] !== '0') { id = m; return ' '; } return m; });
+    /* Kalan rakamlı parçalar → pasaport no (ilki) */
+    line = line.split(/\s+/).filter(w => {
+        if (!/\d/.test(w)) return true;
+        const c = w.replace(/[^A-Za-z0-9]/g, '');
+        if (!id && c.length >= 5 && c.length <= 12) id = c.toUpperCase();
+        return false;
+    }).join(' ');
+    /* "Yolcu: AHMET YILMAZ" gibi etiketli satırlar */
+    const ci = line.indexOf(':');
+    if (ci > 0 && ci <= 26) {
+        const right = koTidyName(line.slice(ci + 1));
+        if (right && koLooksLikeName(right, !!(id || phone))) return { name: right, id: id, phone: phone };
+    }
+    const name = koTidyName(line);
+    if (!name) return null;
+    if (!koLooksLikeName(name, !!(id || phone))) return null;
+    return { name: name, id: id, phone: phone };
+};
+/* Çok satırlı metinden yolcu listesi */
+const koParseNameList = (raw) => {
+    const out = [];
+    const seen = {};
+    String(raw || '').replace(/ /g, ' ').split(/[\r\n]+/).forEach(rawLine => {
+        const line = String(rawLine || '').trim();
+        if (!line) return;
+        let pieces = [line];
+        /* Tek satırda virgülle birden çok isim: her parça en az 2 kelime olmalı */
+        if (line.indexOf(',') >= 0) {
+            const parts = line.split(',').map(x => x.trim()).filter(Boolean);
+            const allNames = parts.length >= 2 && parts.every(p => {
+                const t = koTidyName(p.replace(/^\(?\d{1,2}\)?\s*[).\-\/:]\s*/, ''));
+                return koLooksLikeName(t, false);
+            });
+            if (allNames) pieces = parts;
+            else if (parts.length === 2 && koLooksLikeName(koTidyName(parts.join(' ')), false)) {
+                /* "YILMAZ, AHMET" → "AHMET YILMAZ" */
+                pieces = [parts[1] + ' ' + parts[0]];
+            }
+        }
+        pieces.forEach(p => {
+            const r = koParseOneNameLine(p);
+            if (!r) return;
+            const key = koAsciiUp(r.name).replace(/[^A-Z]/g, '');
+            if (!key || seen[key]) return;
+            seen[key] = 1;
+            out.push(r);
+        });
+    });
+    return out;
+};
+
+/* ---------- Bilet metni ayrıştırma ---------- */
+const KO_FLIGHT_BAD = { TC: 1, NO: 1, ID: 1, PNR: 1, VIP: 1, TL: 1, KG: 1, AM: 1, PM: 1, USD: 1, EUR: 1, MR: 1, MS: 1, NR: 1, SA: 1, DK: 1, KM: 1 };
+const koParseTicket = (raw) => {
+    const out = { dates: [], times: [], date: '', time: '', flight: '', dir: '', ap: '', names: [], hasText: false };
+    const src = String(raw || '').replace(/ /g, ' ');
+    if (!src.trim()) return out;
+    out.hasText = true;
+    const U = koAsciiUp(src);
+    /* Yön tahmini */
+    const cnt = re => (U.match(re) || []).length;
+    const aC = cnt(/\b(INIS|INISI|VARIS|VARISI|ARRIVAL|ARR|GELIS|LANDING|LANDS)\b/g);
+    const dC = cnt(/\b(KALKIS|KALKISI|DEPARTURE|DEP|GIDIS|CIKIS|TAKEOFF|DEPARTS)\b/g);
+    out.dir = aC > dC ? 'arrival' : (dC > aC ? 'departure' : '');
+    /* Havalimanı tahmini */
+    if (/(SABIHA|GOKCEN|\bSAW\b)/.test(U)) out.ap = 'saw';
+    else if (/(ISTANBUL HAVALIMANI|ISTANBUL AIRPORT|\bIST\b|\bIGA\b|\bLTFM\b)/.test(U)) out.ap = 'ist';
+    /* Tarihler (bulundukça metinden çıkarılır ki saat aramasını bozmasın) */
+    let work = src;
+    const pushDate = iso => { if (iso && out.dates.indexOf(iso) < 0) out.dates.push(iso); };
+    work = work.replace(/\b(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})\b/g, (m, y, mo, d) => { pushDate(koIsoDate(+y, +mo, +d)); return ' ~ '; });
+    work = work.replace(/\b(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})\b/g, (m, d, mo, y) => {
+        let yy = +y; if (yy < 100) yy += 2000;
+        pushDate(koIsoDate(yy, +mo, +d)); return ' ~ ';
+    });
+    work = work.replace(/\b(\d{1,2})\s+([A-Za-zÇĞİIÖŞÜçğıöşü]{3,12})\.?\s*(\d{4})?/g, (m, d, mon, y) => {
+        const mo = KO_MONTHS[koAsciiUp(mon).slice(0, 3)];
+        if (!mo) return m;
+        pushDate(koIsoDate(y ? +y : new Date().getFullYear(), mo, +d));
+        return ' ~ ';
+    });
+    /* Saatler */
+    work.replace(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/g, (m, h, mi) => {
+        const t = koPad2(+h) + ':' + mi;
+        if (out.times.indexOf(t) < 0) out.times.push(t);
+        return m;
+    });
+    /* Uçuş kodu */
+    const WU = koAsciiUp(work);
+    const fre = /\b([A-Z]{2}|[A-Z]\d|\d[A-Z])[ \-]?(\d{1,4})\b/g;
+    let m2;
+    while ((m2 = fre.exec(WU))) {
+        const pre = m2[1], num = m2[2];
+        if (KO_FLIGHT_BAD[pre]) continue;
+        if (num.length === 4 && +num > 1900 && +num < 2100) continue;
+        out.flight = pre + num;
+        break;
+    }
+    out.date = out.dates[0] || '';
+    out.time = out.times[0] || '';
+    out.names = koParseNameList(src);
+    return out;
+};
+
 const MRZ_ISO3_TO_APP = {
     TUR: 'TR', DEU: 'DE', GBR: 'GB', USA: 'US', FRA: 'FR', NLD: 'NL',
     BEL: 'BE', AUT: 'AT', CHE: 'CH', SAU: 'SA', ARE: 'AE', RUS: 'RU',
@@ -8421,6 +8656,18 @@ function App() {
     const [paxModal, setPaxModal] = useState(null);
     const [passportScan, setPassportScan] = useState(null); // {kind, msg, cur, total} tarama sürerken
     const [paxBatch, setPaxBatch] = useState(null);          // okunanların onay listesi
+    /* --- Biletten bilgi al / isim yapıştır (isteğe bağlı, kapalıyken form eskisi gibi) --- */
+    const [ticketOpen, setTicketOpen] = useState(false);
+    const [ticketText, setTicketText] = useState('');
+    const [ticketDir, setTicketDir] = useState('arrival');
+    const [ticketAp, setTicketAp] = useState('saw');          // geliş: 'saw' | 'ist'
+    const [ticketLeg, setTicketLeg] = useState('saw');        // gidiş: KO_TICKET_LEGS id
+    const [ticketSel, setTicketSel] = useState({ date: '', time: '' });
+    const [ticketNames, setTicketNames] = useState(true);
+    const [ticketDrop, setTicketDrop] = useState({});
+    const [leadTimes, setLeadTimes] = useState(koLeadRead);
+    const [leadOpen, setLeadOpen] = useState(false);
+    const [pasteBox, setPasteBox] = useState(null);           // { text, single }
     const passportFileRef = useRef(null);
     const nameShotRef = useRef(null);
     const scanCancelRef = useRef(false);
@@ -8638,6 +8885,8 @@ function App() {
     };
     const sf = p => setForm(f => ({ ...f, ...p }));
     const openNewTransferForm = () => {
+        setTicketText(''); setTicketSel({ date: '', time: '' }); setTicketDrop({}); setTicketOpen(false);
+        setPasteBox(null); setLeadOpen(false);
         quickDraftRef.current = null;
         try { localStorage.removeItem('ko_transfer_draft_v1'); } catch (e) {}
         setQuickEditT(null);
@@ -9416,6 +9665,111 @@ function App() {
     const delPax = (idx) => {
         const list = paxReal().filter((_, i) => i !== idx);
         sf({ passengers: list.length ? list : [emptyPassenger()], passengerCount: list.length });
+    };
+    /* ===== BİLET / İSİM YAPIŞTIRMA MANTIĞI ===== */
+    const ticketParsed = koParseTicket(ticketText);
+    const ticketPlan = (function () {
+        const p = ticketParsed;
+        const date = ticketSel.date || p.date || '';
+        const time = ticketSel.time || p.time || '';
+        const arr = ticketDir === 'arrival';
+        const leg = KO_TICKET_LEGS.find(x => x.id === ticketLeg) || KO_TICKET_LEGS[0];
+        const apName = arr ? (ticketAp === 'ist' ? KO_AP_IST : KO_AP_SAW) : leg.ap;
+        const lead = arr ? 0 : (leadTimes[leg.lead] || 0);
+        const sh = arr ? { date: date, time: time } : koShiftDateTime(date, time, lead);
+        return {
+            ok: !!(date && time),
+            date: sh.date, time: sh.time,
+            flightDate: date, flightTime: time,
+            lead: lead, leg: leg, apName: apName,
+            pickup: arr ? apName : KO_HOME_CITY,
+            dropoff: arr ? KO_HOME_CITY : apName,
+            route: arr ? '' : leg.route,
+            flight: p.flight,
+            names: (p.names || []).filter(n => !ticketDrop[nlKey(n.name)])
+        };
+    })();
+    const ticketIngest = (txt) => {
+        setTicketText(txt);
+        setTicketSel({ date: '', time: '' });
+        setTicketDrop({});
+        const p = koParseTicket(txt);
+        if (p.dir) setTicketDir(p.dir);
+        if (p.ap === 'saw') { setTicketAp('saw'); setTicketLeg('saw'); }
+        else if (p.ap === 'ist') { setTicketAp('ist'); setTicketLeg(l => (l === 'saw' ? 'istYoa' : l)); }
+    };
+    const readClipboardInto = (target) => {
+        const put = t => {
+            if (!t || !t.trim()) { tip('Pano boş'); return; }
+            if (target === 'ticket') ticketIngest((ticketText ? ticketText + '\n' : '') + t);
+            else setPasteBox(b => { const cur = b || { text: '', single: '' }; return { ...cur, text: (cur.text ? cur.text + '\n' : '') + t }; });
+        };
+        try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(put).catch(() => tip('Panoya erişilemedi — kutuya elle yapıştırın'));
+            } else tip('Panoya erişilemedi — kutuya elle yapıştırın');
+        } catch (e) { tip('Panoya erişilemedi — kutuya elle yapıştırın'); }
+    };
+    const setLeadValue = (key, hoursText) => {
+        const mins = koHourStrToMins(hoursText);
+        if (!Number.isFinite(mins) || mins < 0 || mins > 900) return;
+        setLeadTimes(prev => { const next = { ...prev, [key]: mins }; koLeadWrite(next); return next; });
+    };
+    const resetLeadValues = () => { const next = { ...KO_LEAD_DEFAULT }; koLeadWrite(next); setLeadTimes(next); tip('Süreler varsayılana döndü'); };
+    const applyTicket = () => {
+        const pl = ticketPlan;
+        if (!pl.ok) { tip('Bilette tarih/saat bulunamadı — metni kontrol edin'); return; }
+        const patch = {
+            transferType: ticketDir,
+            date: pl.date, time: pl.time,
+            pickup: pl.pickup, dropoff: pl.dropoff
+        };
+        if (pl.flight) patch.flightCode = pl.flight;
+        if (pl.route) patch.route = pl.route;
+        let added = 0, skipped = 0;
+        if (ticketNames && pl.names.length) {
+            const list = paxReal();
+            pl.names.forEach(n => {
+                const key = nlKey(n.name);
+                if (key && list.some(x => nlKey(x.name || '') === key)) { skipped++; return; }
+                if (list.length >= 25) { skipped++; return; }
+                list.push({ ...emptyPassenger(), name: koTitleCaseTR(n.name), phone: n.phone || '', uyruk: 'TR', ...splitPassengerId(n.id || '') });
+                added++;
+            });
+            patch.passengers = list.length ? list : [emptyPassenger()];
+            patch.passengerCount = Math.max(1, list.length);
+        }
+        sf(patch);
+        setShowSg({ pickup: false, dropoff: false });
+        const bits = ['✓ Bilet forma yazıldı'];
+        if (pl.lead) bits.push(koMinsLabel(pl.lead) + ' önce · ' + pl.time);
+        if (added) bits.push(added + ' yolcu');
+        tip(bits.join(' · '));
+    };
+    const openPasteBox = () => setPasteBox({ text: '', single: '' });
+    const pasteNamesReview = () => {
+        const src = (pasteBox && pasteBox.text) || '';
+        const rows = koParseNameList(src);
+        if (!rows.length) { tip('Metinde ad soyad bulunamadı'); return; }
+        setPasteBox(null);
+        setPaxBatch({
+            kind: 'paste', unread: 0, cancelled: false, src: src,
+            items: rows.map(r => batchRow({ name: koTitleCaseTR(r.name), id: r.id || '', phone: r.phone || '', uyruk: 'TR', verified: true }))
+        });
+    };
+    const addSingleName = () => {
+        const txt = (pasteBox && pasteBox.single) || '';
+        let r = koParseOneNameLine(txt);
+        if (!r) { const t = koTidyName(txt); if (koLooksLikeName(t, true)) r = { name: t, id: '', phone: '' }; }
+        if (!r) { tip('Geçerli bir ad soyad girin'); return; }
+        const list = paxReal();
+        const key = nlKey(r.name);
+        if (key && list.some(x => nlKey(x.name || '') === key)) { tip('Bu yolcu zaten listede'); setPasteBox(b => b ? { ...b, single: '' } : b); return; }
+        if (list.length >= 25) { tip('En fazla 25 yolcu'); return; }
+        list.push({ ...emptyPassenger(), name: koTitleCaseTR(r.name), phone: r.phone || '', uyruk: 'TR', ...splitPassengerId(r.id || '') });
+        sf({ passengers: list, passengerCount: list.length });
+        setPasteBox(b => b ? { ...b, single: '' } : b);
+        tip('✓ ' + koTitleCaseTR(r.name) + ' eklendi');
     };
     const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
     const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
@@ -12293,6 +12647,112 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 450, color: G } }, "Transfer düzenleniyor"),
                         React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? fullAirportLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? fullAirportLoc(form.dropoff) : 'Bırakış'))),
                     React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(60,60,67,.22)', background: 'var(--p-white)', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 470, cursor: 'pointer' } }, "Yeni kayıt")),
+                /* ===== 🎫 BİLETTEN BİLGİ AL (isteğe bağlı panel) ===== */
+                (function () {
+                    const p = ticketParsed;
+                    const pl = ticketPlan;
+                    const arr = ticketDir === 'arrival';
+                    const chip = (key, active, label, sub, onClick) => React.createElement("button", {
+                        key: key, type: "button", onClick: onClick,
+                        style: {
+                            flex: '1 1 0', minWidth: 0, padding: '7px 5px', borderRadius: 9, cursor: 'pointer',
+                            border: '1.5px solid ' + (active ? NAV : BOR), background: active ? NAV : INP,
+                            color: active ? 'var(--p-white)' : TX, fontSize: 11, fontWeight: active ? 500 : 450,
+                            lineHeight: 1.25, textAlign: 'center', transition: 'all .15s ease'
+                        }
+                    },
+                        React.createElement("div", { style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, label),
+                        sub ? React.createElement("div", { style: { fontSize: 9.5, opacity: active ? .85 : .65, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, sub) : null);
+                    const miniRow = (lbl, val, strong) => React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', gap: 10, padding: '3px 0' } },
+                        React.createElement("span", { style: { fontSize: 11, color: SB, flexShrink: 0 } }, lbl),
+                        React.createElement("span", { style: { fontSize: strong ? 12.5 : 11.5, fontWeight: strong ? 500 : 450, color: strong ? TX : TX, textAlign: 'right', minWidth: 0, wordBreak: 'break-word' } }, val));
+                    return React.createElement("div", { className: "card", style: { padding: '10px 12px', borderColor: ticketOpen ? 'var(--p-accent)' : BOR, background: ticketOpen ? 'var(--p-accent-soft)' : 'var(--p-white)' } },
+                        React.createElement("button", {
+                            type: "button", onClick: () => setTicketOpen(o => !o),
+                            style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }
+                        },
+                            React.createElement("span", { style: { fontSize: 15 } }, '🎫'),
+                            React.createElement("span", { style: { flex: 1, minWidth: 0 } },
+                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, 'Biletten Bilgi Al'),
+                                React.createElement("div", { style: { fontSize: 10, color: SB, marginTop: 1 } }, ticketOpen ? 'Bileti yapıştır → tarih, saat, uçuş kodu, güzergâh, isimler' : 'İsteğe bağlı — kullanmazsan form eskisi gibi elle doldurulur')),
+                            React.createElement("span", { style: { fontSize: 10.5, color: SB, transition: 'transform .2s', transform: ticketOpen ? 'rotate(180deg)' : 'none' } }, '▼')),
+                        ticketOpen && React.createElement("div", { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 9 } },
+                            React.createElement("div", { style: { display: 'flex', gap: 6 } },
+                                chip('a', arr, '🛬 Geliş', 'iniş saati', () => setTicketDir('arrival')),
+                                chip('d', !arr, '🛫 Gidiş', 'kalkıştan geri say', () => setTicketDir('departure'))),
+                            React.createElement("textarea", {
+                                value: ticketText,
+                                onChange: e => ticketIngest(e.target.value),
+                                placeholder: arr
+                                    ? 'Bileti buraya yapıştır…\n\nÖrn:\n01.09.2026 13:10 Sabiha Gökçen iniş\nKU157\nAHMET YILMAZ\nAYŞE YILMAZ'
+                                    : 'Bileti buraya yapıştır…\n\nÖrn:\n01.09.2026 14:00 Sabiha Gökçen → Kuveyt\nKU158\nAHMET YILMAZ',
+                                rows: 5,
+                                className: "inp",
+                                style: { width: '100%', resize: 'vertical', fontSize: 12.5, lineHeight: 1.45, minHeight: 92, fontFamily: 'inherit' }
+                            }),
+                            React.createElement("div", { style: { display: 'flex', gap: 6 } },
+                                React.createElement("button", { type: "button", onClick: () => readClipboardInto('ticket'), style: { flex: 1, background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + NAV, borderRadius: 10, padding: '8px 6px', fontSize: 11.5, fontWeight: 470, cursor: 'pointer' } }, '📋 Panodan Yapıştır'),
+                                ticketText ? React.createElement("button", { type: "button", onClick: () => { setTicketText(''); setTicketSel({ date: '', time: '' }); }, style: { flex: 'none', background: INP, color: SB, border: '1.5px solid ' + BOR, borderRadius: 10, padding: '8px 12px', fontSize: 11.5, fontWeight: 470, cursor: 'pointer' } }, '🗑 Temizle') : null),
+                            arr
+                                ? React.createElement("div", null,
+                                    React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: SB, marginBottom: 5 } }, 'İniş yapılan havalimanı'),
+                                    React.createElement("div", { style: { display: 'flex', gap: 6 } },
+                                        chip('sa', ticketAp === 'saw', '🛬 Sabiha Gökçen', null, () => setTicketAp('saw')),
+                                        chip('is', ticketAp === 'ist', '🛬 İst. Havalimanı', null, () => setTicketAp('ist'))))
+                                : React.createElement("div", null,
+                                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 } },
+                                        React.createElement("span", { style: { fontSize: 10.5, fontWeight: 470, color: SB } }, 'Güzergâh — kaç saat önce alınacak'),
+                                        React.createElement("button", { type: "button", onClick: () => setLeadOpen(o => !o), style: { background: 'none', border: 'none', color: NAV, fontSize: 11, fontWeight: 470, cursor: 'pointer', padding: 2 } }, leadOpen ? 'Kapat' : '⚙️ Süreler')),
+                                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
+                                        KO_TICKET_LEGS.map(lg => chip(lg.id, ticketLeg === lg.id, lg.ico + ' ' + lg.n, lg.sub + ' · ' + koMinsLabel(leadTimes[lg.lead]), () => setTicketLeg(lg.id)))),
+                                    leadOpen && React.createElement("div", { style: { marginTop: 8, background: 'var(--p-white)', border: '1px dashed ' + BOR, borderRadius: 10, padding: '9px 10px' } },
+                                        React.createElement("div", { style: { fontSize: 10.5, color: SB, marginBottom: 7, lineHeight: 1.4 } }, 'Uçuş saatinden kaç saat geri gidileceğini buradan değiştirebilirsin (cihaza kaydedilir).'),
+                                        KO_TICKET_LEGS.map(lg => React.createElement("div", { key: lg.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                                            React.createElement("span", { style: { flex: 1, minWidth: 0, fontSize: 11, color: TX } }, lg.ico + ' ' + lg.n + ' · ' + lg.sub),
+                                            React.createElement("input", {
+                                                type: "text", inputMode: "decimal", defaultValue: koMinsToHourStr(leadTimes[lg.lead]),
+                                                onBlur: e => setLeadValue(lg.lead, e.target.value),
+                                                className: "inp", style: { width: 62, flex: 'none', textAlign: 'center', fontSize: 12, padding: '6px 4px' }
+                                            }),
+                                            React.createElement("span", { style: { fontSize: 10.5, color: SB, flex: 'none' } }, 'saat'))),
+                                        React.createElement("button", { type: "button", onClick: resetLeadValues, style: { width: '100%', marginTop: 2, background: INP, border: '1px solid ' + BOR, borderRadius: 9, padding: '7px', fontSize: 11, color: SB, cursor: 'pointer' } }, '↺ Varsayılana dön (4,5 / 5,5 / 6 / 7)'))),
+                            (p.dates.length > 1) && React.createElement("div", null,
+                                React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: SB, marginBottom: 5 } }, 'Bilette birden çok tarih var — hangisi?'),
+                                React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                                    p.dates.map(d => chip('d' + d, (ticketSel.date || p.date) === d, koPrettyDate(d), null, () => setTicketSel(s => ({ ...s, date: d })))))),
+                            (p.times.length > 1) && React.createElement("div", null,
+                                React.createElement("div", { style: { fontSize: 10.5, fontWeight: 470, color: SB, marginBottom: 5 } }, arr ? 'Hangisi iniş saati?' : 'Hangisi kalkış saati?'),
+                                React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                                    p.times.map(t => chip('t' + t, (ticketSel.time || p.time) === t, t, null, () => setTicketSel(s => ({ ...s, time: t })))))),
+                            p.hasText && React.createElement("div", { style: { background: 'var(--p-white)', border: '1.5px solid ' + (pl.ok ? 'var(--p-pos-bd)' : 'var(--p-warn-bd)'), borderRadius: 11, padding: '9px 11px' } },
+                                React.createElement("div", { style: { fontSize: 11, fontWeight: 500, color: pl.ok ? 'var(--p-pos-deep)' : 'var(--p-warn)', marginBottom: 6 } },
+                                    pl.ok ? '✅ Forma yazılacaklar' : '⚠️ Tarih veya saat bulunamadı'),
+                                miniRow('Tarih', pl.date ? koPrettyDate(pl.date) : '—', true),
+                                miniRow('Saat', pl.time || '—', true),
+                                !arr && pl.ok ? React.createElement("div", { style: { fontSize: 10.5, color: SB, background: INP, borderRadius: 7, padding: '5px 7px', margin: '4px 0', lineHeight: 1.4 } },
+                                    'Uçuş ' + koPrettyDate(pl.flightDate) + ' ' + pl.flightTime + ' → ' + koMinsLabel(pl.lead) + ' önce alış: ' + koPrettyDate(pl.date) + ' ' + pl.time) : null,
+                                miniRow('Uçuş kodu', pl.flight || '—'),
+                                miniRow('Alış yeri', pl.pickup),
+                                miniRow('Varış yeri', pl.dropoff),
+                                !arr ? miniRow('Güzergâh', (ROTALAR.find(r => r.id === pl.route) || {}).n || '—') : null,
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, paddingTop: 7, borderTop: '1px dashed ' + BOR } },
+                                    React.createElement("button", {
+                                        type: "button", onClick: () => setTicketNames(v => !v), disabled: !pl.names.length,
+                                        style: { flexShrink: 0, width: 20, height: 20, borderRadius: 6, cursor: pl.names.length ? 'pointer' : 'default', padding: 0, fontSize: 11, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--p-white)', border: '1.5px solid ' + (ticketNames && pl.names.length ? 'var(--p-pos-ink)' : 'var(--p-ink-5)'), background: ticketNames && pl.names.length ? 'var(--p-pos-ink)' : 'var(--p-white)' }
+                                    }, ticketNames && pl.names.length ? '✓' : ''),
+                                    React.createElement("span", { style: { flex: 1, minWidth: 0, fontSize: 11, color: pl.names.length ? TX : SB, lineHeight: 1.35 } },
+                                        pl.names.length ? (pl.names.length + ' isim eklenecek') : 'Bilette isim bulunamadı — yolcuları aşağıdan ekleyebilirsin')),
+                                pl.names.length ? React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6, paddingLeft: 28 } },
+                                    pl.names.map(n => React.createElement("span", { key: n.name, style: { display: 'inline-flex', alignItems: 'center', gap: 4, background: INP, border: '1px solid ' + BOR, borderRadius: 999, padding: '3px 5px 3px 9px', fontSize: 11, color: TX, opacity: ticketNames ? 1 : .5 } },
+                                        koTitleCaseTR(n.name),
+                                        React.createElement("button", { type: "button", title: "Bu ismi ekleme", onClick: () => setTicketDrop(d => ({ ...d, [nlKey(n.name)]: 1 })), style: { background: 'none', border: 'none', color: 'var(--p-ink-4)', fontSize: 12, lineHeight: 1, cursor: 'pointer', padding: '0 2px' } }, '✕'))),
+                                    Object.keys(ticketDrop).length ? React.createElement("button", { type: "button", onClick: () => setTicketDrop({}), style: { background: 'none', border: '1px dashed ' + BOR, borderRadius: 999, padding: '3px 9px', fontSize: 10.5, color: SB, cursor: 'pointer' } }, '↺ geri al') : null
+                                ) : null),
+                            React.createElement("button", {
+                                type: "button", onClick: applyTicket, disabled: !pl.ok,
+                                style: { width: '100%', background: pl.ok ? NAV : 'var(--p-ink-5)', color: 'var(--p-white)', border: 'none', borderRadius: 12, padding: '12px', fontSize: 13.5, fontWeight: 500, cursor: pl.ok ? 'pointer' : 'default' }
+                            }, pl.ok ? '✓ Forma Uygula' : 'Önce bileti yapıştır')));
+                })(),
                 React.createElement("div", { className: "card ko-schedule-card" },
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
@@ -12642,6 +13102,12 @@ function App() {
                                 photoBtn('\uD83D\uDCDD', '\u0130sim Listesi', 'WhatsApp / bilet', openNameShotPicker)),
                             React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '6px 0 7px', lineHeight: 1.35 } },
                                 "Galeriden se\u00E7 \u2014 okunanlar onay listesinde g\u00F6sterilir, onaylay\u0131nca s\u0131rayla eklenir."),
+                            React.createElement("button", {
+                                type: "button", onClick: openPasteBox,
+                                style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(11,114,133,.22)' }
+                            },
+                                React.createElement("span", null, "\uD83D\uDCAC WhatsApp\u2019tan \u0130sim Yap\u0131\u015Ft\u0131r"),
+                                React.createElement("span", { style: { display: 'block', fontSize: 10.5, opacity: .85, fontWeight: 450, marginTop: 1 } }, "\u00E7oklu veya tek tek")),
                             React.createElement("button", {
                                 type: "button", onClick: () => openPaxModal(null),
                                 style: { width: '100%', background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + NAV, borderRadius: 11, padding: '9px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }
@@ -13001,15 +13467,20 @@ function App() {
                 React.createElement("style", null, "@keyframes koSpin{to{transform:rotate(360deg)}}"));
         })(),
         paxBatch && (function () {
-            const isNames = paxBatch.kind === 'names';
+            const isPaste = paxBatch.kind === 'paste';
+            const isNames = paxBatch.kind === 'names' || isPaste;
             const items = paxBatch.items || [];
             const picked = items.filter(it => it.sel && (it.name || '').trim()).length;
             const allOn = items.length > 0 && items.every(it => it.sel);
             const okCount = items.filter(it => it.verified).length;
-            const head = isNames
+            const head = isPaste
+                ? (items.length + ' isim yapıştırıldı')
+                : isNames
                 ? (items.length + ' isim bulundu')
                 : (items.length + ' pasaport okundu');
-            const banner = isNames
+            const banner = isPaste
+                ? 'Yapıştırılan metinden ayıklandı. Yazımı kontrol edip gereksizleri çıkarın; istersen TC / pasaport no ekleyebilirsin.'
+                : isNames
                 ? (okCount === items.length
                     ? 'Tüm isimler iki ayrı okumada aynı çıktı. Sırayı ve yazımı kontrol edip ekleyin.'
                     : 'İsimler ekran görüntüsünden okundu. ⚠︎ işaretli olanları kontrol edin, gereksizleri kaldırın.')
@@ -13020,10 +13491,10 @@ function App() {
             return React.createElement("div", { className: "mo", onClick: () => setPaxBatch(null) },
                 React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 20 } },
                     React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
-                        React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, (isNames ? '📝 ' : '🪪 ') + head),
+                        React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, (isPaste ? '💬 ' : isNames ? '📝 ' : '🪪 ') + head),
                         React.createElement("button", { onClick: () => setPaxBatch(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
                     React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10, padding: '9px 11px', borderRadius: 10, fontSize: 11.5, fontWeight: 450, lineHeight: 1.4, background: good ? 'var(--p-pos-soft)' : 'var(--p-warn-soft)', color: good ? 'var(--p-pos-deep)' : 'var(--p-warn)', border: '1px solid ' + (good ? 'var(--p-pos-bd)' : 'var(--p-accent)') } },
-                        React.createElement("span", { style: { fontSize: 14, flexShrink: 0 } }, good ? '✅' : '📷'),
+                        React.createElement("span", { style: { fontSize: 14, flexShrink: 0 } }, isPaste ? '💬' : (good ? '✅' : '📷')),
                         React.createElement("span", null, banner)),
                     (paxBatch.unread > 0) && React.createElement("div", { style: { fontSize: 11, color: 'var(--p-warn)', background: 'var(--p-warn-soft)', border: '1px solid var(--p-warn-bd)', borderRadius: 9, padding: '7px 10px', marginBottom: 10, lineHeight: 1.4 } },
                         '⚠️ ' + paxBatch.unread + ' fotoğraf okunamadı — o yolcuları elle eklemeniz gerekiyor.'),
@@ -13051,7 +13522,7 @@ function App() {
                                         style: { flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 500, padding: '7px 9px' }
                                     })
                                     : React.createElement("span", { style: { flex: 1, minWidth: 0, fontSize: 13, color: SB, textDecoration: 'line-through', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, it.name || 'Misafir'),
-                                React.createElement("span", { title: it.verified ? 'İki ayrı okuma aynı sonucu verdi' : 'Kontrol edin', style: { flexShrink: 0, fontSize: 12 } }, it.verified ? '✅' : '⚠️'),
+                                isPaste ? null : React.createElement("span", { title: it.verified ? 'İki ayrı okuma aynı sonucu verdi' : 'Kontrol edin', style: { flexShrink: 0, fontSize: 12 } }, it.verified ? '✅' : '⚠️'),
                                 React.createElement("button", { type: "button", onClick: () => batchDel(i), title: "Listeden çıkar", style: { flexShrink: 0, background: 'none', border: 'none', color: 'var(--p-ink-5)', fontSize: 15, cursor: 'pointer', padding: '0 2px', lineHeight: 1 } }, "✕")),
                             it.sel && React.createElement("div", { style: { display: 'flex', gap: 6, paddingLeft: 30, alignItems: 'center' } },
                                 (!isNames || it.showId || it.id)
@@ -13072,13 +13543,52 @@ function App() {
                                 it.phone && React.createElement("span", { title: "Ekran görüntüsünden okunan telefon", style: { flexShrink: 0, fontSize: 10.5, color: SB, whiteSpace: 'nowrap' } }, "📞 " + it.phone))))),
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 14 } },
                         React.createElement("button", {
-                            onClick: () => { setPaxBatch(null); setTimeout(isNames ? openNameShotPicker : openPassportPicker, 60); },
+                            onClick: () => { const src = paxBatch.src || ''; setPaxBatch(null); setTimeout(() => { if (isPaste) setPasteBox({ text: src, single: '' }); else if (isNames) openNameShotPicker(); else openPassportPicker(); }, 60); },
                             style: { flex: 1, background: 'var(--p-white)', color: 'var(--p-pos-ink)', border: '1.5px solid var(--p-pos-ink)', borderRadius: 13, padding: 13, fontWeight: 470, fontSize: '13.5px', cursor: 'pointer' }
-                        }, "📷 Tekrar Seç"),
+                        }, isPaste ? "✏️ Metni Düzenle" : "📷 Tekrar Seç"),
                         React.createElement("button", {
                             onClick: batchCommit, disabled: !picked,
                             style: { flex: 2, background: picked ? NAV : 'var(--p-ink-5)', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: picked ? 'pointer' : 'default' }
                         }, picked ? ('✓ ' + picked + ' Yolcuyu Ekle') : 'Yolcu seçilmedi'))));
+        })(),
+        pasteBox && (function () {
+            const preview = koParseNameList(pasteBox.text || '');
+            return React.createElement("div", { className: "mo", onClick: () => setPasteBox(null) },
+                React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 20 } },
+                    React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
+                        React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, '💬 İsim Yapıştır'),
+                        React.createElement("button", { onClick: () => setPasteBox(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, '✕')),
+                    React.createElement("div", { style: { fontSize: 11, color: SB, lineHeight: 1.45, marginBottom: 10 } },
+                        'WhatsApp’tan kopyaladığın isimleri aşağıya yapıştır. Satır numaraları, saat damgaları ve “Ad:” önekleri otomatik temizlenir. TC / pasaport no ve telefon aynı satırdaysa ayrılır.'),
+                    React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: TX, marginBottom: 5 } }, '① Tek tek ekle'),
+                    React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 12 } },
+                        React.createElement("input", {
+                            type: "text", value: pasteBox.single || '', autoCapitalize: "words",
+                            onChange: e => setPasteBox(b => b ? { ...b, single: e.target.value } : b),
+                            onKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); addSingleName(); } },
+                            placeholder: "Ad Soyad yapıştır → Enter", className: "inp", style: { flex: 1, minWidth: 0 }
+                        }),
+                        React.createElement("button", { type: "button", onClick: addSingleName, style: { flex: 'none', background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 15px', fontSize: 13, fontWeight: 500, cursor: 'pointer' } }, '＋ Ekle')),
+                    React.createElement("div", { style: { fontSize: 11, fontWeight: 470, color: TX, marginBottom: 5 } }, '② Çoklu — her satıra bir isim'),
+                    React.createElement("textarea", {
+                        value: pasteBox.text || '', rows: 7, className: "inp",
+                        onChange: e => setPasteBox(b => b ? { ...b, text: e.target.value } : b),
+                        placeholder: '1. AHMET YILMAZ\n2. AYŞE YILMAZ 12345678901\n3. MEHMET DEMİR 0532 111 22 33',
+                        style: { width: '100%', resize: 'vertical', minHeight: 118, fontSize: 12.5, lineHeight: 1.5, fontFamily: 'inherit' }
+                    }),
+                    React.createElement("div", { style: { display: 'flex', gap: 6, marginTop: 7 } },
+                        React.createElement("button", { type: "button", onClick: () => readClipboardInto('paste'), style: { flex: 1, background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + NAV, borderRadius: 10, padding: '8px 6px', fontSize: 11.5, fontWeight: 470, cursor: 'pointer' } }, '📋 Panodan Yapıştır'),
+                        (pasteBox.text || '') ? React.createElement("button", { type: "button", onClick: () => setPasteBox(b => b ? { ...b, text: '' } : b), style: { flex: 'none', background: INP, color: SB, border: '1.5px solid ' + BOR, borderRadius: 10, padding: '8px 12px', fontSize: 11.5, fontWeight: 470, cursor: 'pointer' } }, '🗑 Temizle') : null),
+                    React.createElement("div", { style: { marginTop: 9, fontSize: 11, color: preview.length ? 'var(--p-pos-deep)' : SB, background: preview.length ? 'var(--p-pos-soft)' : INP, border: '1px solid ' + (preview.length ? 'var(--p-pos-bd)' : BOR), borderRadius: 9, padding: '7px 9px', lineHeight: 1.4 } },
+                        preview.length
+                            ? ('✓ ' + preview.length + ' isim ayıklandı: ' + preview.slice(0, 8).map(r => koTitleCaseTR(r.name)).join(', ') + (preview.length > 8 ? ' …' : ''))
+                            : 'Henüz isim ayıklanmadı.'),
+                    React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 13 } },
+                        React.createElement("button", { onClick: () => setPasteBox(null), style: { flex: 1, background: INP, color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 470, fontSize: '13.5px', cursor: 'pointer' } }, 'Kapat'),
+                        React.createElement("button", {
+                            onClick: pasteNamesReview, disabled: !preview.length,
+                            style: { flex: 2, background: preview.length ? NAV : 'var(--p-ink-5)', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: preview.length ? 'pointer' : 'default' }
+                        }, preview.length ? ('✓ ' + preview.length + ' İsmi Gözden Geçir') : 'İsim bulunamadı'))));
         })(),
         paxModal && (React.createElement("div", { className: "mo", onClick: () => setPaxModal(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
