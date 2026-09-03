@@ -4189,17 +4189,18 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1788351062208_4izxe6@olmeztur
 DTSTAMP:20260903T195800Z
-LAST-MODIFIED:20260902T121100Z
-SEQUENCE:1788351062
+LAST-MODIFIED:20260903T195800Z
+SEQUENCE:1788465535
 DTSTART:20260904T090000
 DTEND:20260904T100000
 SUMMARY:09:00 · Bursa→SAW
 LOCATION:Bursa Soğanlı → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Faisal Raees\, Lina Aldweık\, Amal Almahdi\, Montah
- a Almahdi\, Anusha Kumari\nŞoför: -\nİşi veren: Trias Turizm\nİşi yapan:
-  Ölmeztur\nAlt acenta: -\nAraç: Sprinter\nGüzergah: Bursa Soğanlı → Sabi
- ha Gökçen Havalimanı\nNot: Müşteri 200 dolar ödeme yapacak  . 650 tl ger
- i iade verilecek\nÖdeme: Müşteri: 9.000 TRY | Araç: 9.000 ₺
+ a Almahdi\, Anusha Kumari\nŞoför: Balentur\nİşi veren: Trias Turizm\nİşi
+  yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzergah: Bursa 
+ Soğanlı → Sabiha Gökçen Havalimanı\nNot: Müşteri 200 dolar ödeme yapacak
+   . 650 tl geri iade verilecek\nÖdeme: Müşteri: 9.000 TRY | Araç: 8.750 
+ ₺ | Alt acenta: 8.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
