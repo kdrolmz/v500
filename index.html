@@ -208,6 +208,21 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-smart-opt2:hover,.ko-smart-opt2:active,.ko-smart-opt2:focus-visible{background:var(--p-bg-lo) !important}
 .ko-smart-opt2+.ko-smart-opt2{position:relative}
 .ko-smart-opt2+.ko-smart-opt2::before{content:"";position:absolute;left:52px;right:10px;top:0;height:1px;background:var(--p-bg-lo)}
+/* iPhone (16 Pro dahil) — ana sayfa transfer kartları: küçük, kibar, ferah. MacBook (>700px) etkilenmez. */
+@media(max-width:700px){
+  .ko-htx-card{padding:13px 14px !important;border-radius:17px !important}
+  .ko-htx-grid{gap:11px !important}
+  .ko-htx-mid{gap:6px !important}
+  .ko-htx-time{min-width:50px !important;padding:8px 6px 7px !important}
+  .ko-htx-time>span:first-child{font-size:13px !important}
+  .ko-htx-badge{font-size:9px !important;padding:2px 8px !important;font-weight:520 !important}
+  .ko-htx-time>span:first-child{font-weight:520 !important}
+  .ko-htx-route{font-size:12.2px !important;font-weight:480 !important;line-height:1.32 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;letter-spacing:0 !important}
+  .ko-htx-meta{font-size:10.3px !important;font-weight:420 !important}
+  .ko-htx-amt{font-size:12.8px !important;font-weight:520 !important}
+  .ko-htx-who{font-size:8.3px !important;font-weight:480 !important}
+  .ko-htx-status{font-size:9px !important;padding:3px 9px !important;font-weight:500 !important}
+}
 .ko-passenger-list,.tk-panel-list{display:flex;flex-direction:column;gap:8px}
 .ko-passenger-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--p-white)}
 .ko-passenger-index{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--soft);font-weight:650}
@@ -3921,7 +3936,8 @@ const APPLE_CALENDAR_TYPES = [
     { id: 'departure', filename: 'apple-takvim-giden.ics', name: 'KÖ Giden Yolcu', color: 'var(--p-info)' },
     { id: 'tour', filename: 'apple-takvim-turlar.ics', name: 'KÖ Turlar', color: 'var(--p-accent)' },
     { id: 'shortpass', filename: 'apple-takvim-kisa-pas.ics', name: 'KÖ Kısa Pas', color: 'var(--p-ink-2)' },
-    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: 'var(--p-pos)' }
+    { id: 'intercity', filename: 'apple-takvim-diger.ics', name: 'KÖ VIP Tahsis', color: 'var(--p-pos)' },
+    { id: 'dugun', filename: 'apple-takvim-dugun.ics', name: 'KÖ Düğün', color: '#8E44AD' }
 ];
 const GITHUB_CALENDAR_OWNER = 'kdrolmz';
 const GITHUB_CALENDAR_REPO = 'v500';
@@ -3963,6 +3979,7 @@ const transferCalendarIcon = t => {
     if (type === 'tour') return '🏔️';
     if (type === 'shortpass') return '⚡';
     if (type === 'intercity') return '🚐';
+    if (type === 'dugun') return '💍';
     return '🔴';
 };
 const appleCalendarCompactLoc = name => {
@@ -3998,6 +4015,8 @@ const transferCalendarRoute = t => {
     const type = String((t && t.transferType) || 'arrival');
     const from = appleCalendarCompactLoc(t && t.pickup);
     const to = appleCalendarCompactLoc(t && t.dropoff);
+    if (type === 'dugun')
+        return 'Düğün' + ((from || to) ? ' · ' + (from && to ? (from + '→' + to) : (from || to)) : '');
     if (type === 'tour')
         return (to || from || 'Tur') + ' Tur';
     if (from && to)
@@ -4026,7 +4045,9 @@ const appleCalendarTitle = t => {
     const from = appleCalendarTitleLoc(t && t.pickup);
     const to = appleCalendarTitleLoc(t && t.dropoff);
     let route;
-    if (type === 'tour') {
+    if (type === 'dugun') {
+        route = 'Düğün' + ((from || to) ? ' · ' + (from && to ? (from + '→' + to) : (from || to)) : '');
+    } else if (type === 'tour') {
         route = (to || from || 'Tur') + ' Tur';
     } else if (from && to) {
         route = from + '→' + to;
@@ -5041,8 +5062,8 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
                         style: { display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '9px 10px', border: 'none', background: 'transparent', borderRadius: 11, cursor: 'pointer', textAlign: 'left' } },
                         React.createElement("span", { style: { flexShrink: 0, width: 32, height: 32, borderRadius: 999, background: 'var(--brand-soft)', border: '1px solid var(--brand-bd)', color: 'var(--brand)', WebkitTextFillColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 640 } }, initial || '•'),
                         React.createElement("span", { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 } },
-                            React.createElement("span", { style: { fontSize: 13.5, fontWeight: 600, color: 'var(--p-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, r.name),
-                            r.phone ? React.createElement("span", { style: { fontSize: 11, color: 'var(--p-ink-4)', fontWeight: 450, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📞 ' + r.phone) : null),
+                            React.createElement("span", { style: { fontSize: 13.5, fontWeight: 600, color: 'var(--p-ink)', lineHeight: 1.25, whiteSpace: 'normal', wordBreak: 'break-word' } }, r.name),
+                            r.phone ? React.createElement("span", { style: { fontSize: 11, color: 'var(--p-ink-4)', fontWeight: 450, lineHeight: 1.2, whiteSpace: 'normal', wordBreak: 'break-word' } }, '📞 ' + r.phone) : null),
                         React.createElement("span", { style: { flexShrink: 0, fontSize: 12, color: 'var(--p-ink-5)', WebkitTextFillColor: 'var(--p-ink-5)' } }, '›'));
                 })
                 : React.createElement("div", { style: { padding: '13px 12px', fontSize: 12, color: 'var(--p-ink-3)', fontWeight: 450, lineHeight: 1.4, textAlign: 'center' } }, emptyText || "Eşleşme yok — yazdığınız isimle devam edebilirsiniz.")
@@ -7942,13 +7963,6 @@ function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
             React.createElement("span", null,
                 (alacaklar.length + borclar.length) ? (alacaklar.length + borclar.length) + ' kayıt' : 'Kayıt yok',
                 '   ', openDebtMgr ? '−' : '+')),
-        openDebtMgr && (alacaklar.length + borclar.length) > 0 && React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 11 } },
-            React.createElement("div", { style: { flex: 1, background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', borderRadius: 12, padding: '9px 12px' } },
-                React.createElement("div", { style: { fontSize: 9.5, fontWeight: 600, color: 'var(--p-pos-deep)', textTransform: 'uppercase', letterSpacing: .5 } }, 'Toplam alacak'),
-                React.createElement("div", { style: { fontSize: 16, fontWeight: 650, color: 'var(--p-pos-deep)', fontVariantNumeric: 'tabular-nums', marginTop: 2, letterSpacing: -.2 } }, '+' + fr(totalAlacakTRY) + '₺')),
-            React.createElement("div", { style: { flex: 1, background: 'var(--p-neg-soft)', border: '1px solid var(--p-neg-bd)', borderRadius: 12, padding: '9px 12px' } },
-                React.createElement("div", { style: { fontSize: 9.5, fontWeight: 600, color: 'var(--p-neg-deep)', textTransform: 'uppercase', letterSpacing: .5 } }, 'Toplam borç'),
-                React.createElement("div", { style: { fontSize: 16, fontWeight: 650, color: 'var(--p-neg-deep)', fontVariantNumeric: 'tabular-nums', marginTop: 2, letterSpacing: -.2 } }, '−' + fr(totalBorcTRY) + '₺'))),
         openDebtMgr && React.createElement("div", { className: "ko-debt-direct-head", style: { marginTop: 11 } },
             React.createElement("div", null,
                 React.createElement("div", { className: "ko-debt-direct-sub" }, "Aynı isimli firma hesapları yukarıda birleşir; bağımsız kayıtlar burada görünür.")),
@@ -12224,13 +12238,33 @@ function App() {
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
-                    const compactLoc = loc => {
-                        let n = homeTransferCardLoc(loc);
-                        if (/İstanbul Havaliman|Istanbul Havaliman/i.test(n)) return 'İst. Havalimanı';
-                        if (/Sabiha Gökçen|Sabiha Gokcen/i.test(n)) return 'Sabiha Gökçen';
-                        return n.replace(/\s*Havalimanı/i, ' Hav.').trim();
+                    const shortCode = loc => {
+                        const n = String(homeTransferCardLoc(loc) || '').trim();
+                        if (!n || n === 'Belirtilmedi' || n === '—') return '';
+                        if (/Sabiha Gökçen|Sabiha Gokcen|\bSAW\b/i.test(n)) return 'SAW';
+                        if (/İstanbul Havaliman|Istanbul Havaliman|\bIST\b|\bIGA\b/i.test(n)) return 'IST';
+                        if (/Esenboğa|Esenboga|\bESB\b/i.test(n)) return 'ESB';
+                        if (/Adnan Menderes|İzmir Havaliman|\bADB\b/i.test(n)) return 'ADB';
+                        if (/Antalya Havaliman|\bAYT\b/i.test(n)) return 'AYT';
+                        if (/Dalaman|\bDLM\b/i.test(n)) return 'DLM';
+                        if (/Bodrum|Milas|\bBJV\b/i.test(n)) return 'BJV';
+                        if (/Trabzon|\bTZX\b/i.test(n)) return 'TZX';
+                        if (/Yenişehir|Yenisehir|\bYEI\b/i.test(n)) return 'YEI';
+                        return n.toLocaleUpperCase('tr-TR');
                     };
-                    const routeText = compactLoc(t.pickup) + ' → ' + compactLoc(t.dropoff);
+                    const __rp = shortCode(t.pickup), __rd = shortCode(t.dropoff);
+                    let routeText;
+                    if (t.transferType === 'tour') {
+                        let dest = __rd || __rp || 'TUR';
+                        if (!/\bTUR$/.test(dest)) dest = dest + ' TUR';
+                        routeText = dest;
+                    } else if (t.transferType === 'dugun') {
+                        let dst = __rd || __rp || 'DÜĞÜN';
+                        if (!/DÜĞÜN$/.test(dst)) dst = dst + ' DÜĞÜN';
+                        routeText = dst;
+                    } else {
+                        routeText = (__rp && __rd) ? (__rp + ' - ' + __rd) : (__rp || __rd || '—');
+                    }
                     const tip = TIPLER.find(x => x.id === t.transferType) || TIPLER[1];
                     const vehicleBadge = homeVehicleBadge(t);
                     const acentaMain = [t.givenBy, t.assignedTo].filter(Boolean).join(' / ');
@@ -12254,32 +12288,37 @@ function App() {
                     const statusColor = payDone ? 'var(--p-pos-ink)' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
                     const statusBd = payDone ? 'var(--p-pos-bd)' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
                     const bags = bagCount(t);
+                    const __isDgn = t.transferType === 'dugun';
+                    const __chipBg = __isDgn ? 'rgba(142,68,173,.10)' : (tip.bg || 'var(--p-bg-lo)');
+                    const __chipInk = __isDgn ? '#8E44AD' : (tip.c || 'var(--p-ink)');
                     return React.createElement("div", {
                         key: t.id,
+                        className: "ko-htx-card",
                         onClick: () => openTransferInList(t),
                         style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.06)', borderRadius: 18, padding: '13px 15px', boxShadow: '0 1px 2px rgba(24,35,29,.03), 0 16px 30px -20px rgba(24,35,29,.14)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 13 } },
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 54, padding: '9px 7px 8px', borderRadius: 13, background: 'var(--p-bg-lo)' } },
-                                React.createElement("span", { style: { fontSize: 14.5, fontWeight: 640, letterSpacing: '-.01em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
-                                React.createElement("span", { style: { width: 16, height: 3, borderRadius: 3, background: tip.c, opacity: .85 } })),
-                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, justifyContent: 'center' } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
-                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.03em', padding: '3px 9px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
+                        React.createElement("div", { className: "ko-htx-grid", style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 13 } },
+                            React.createElement("div", { className: "ko-htx-time", style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 54, padding: '9px 7px 8px', borderRadius: 13, background: __chipBg } },
+                                React.createElement("span", { style: { fontSize: 14, fontWeight: 540, letterSpacing: '-.01em', color: __chipInk, WebkitTextFillColor: __chipInk, fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
+                                React.createElement("span", { style: { fontSize: 12.5, lineHeight: 1, marginTop: 1 } }, transferCalendarIcon(t))),
+                            React.createElement("div", { className: "ko-htx-mid", style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, justifyContent: 'center' } },
+                                React.createElement("div", { className: "ko-htx-badges", style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
+                                    React.createElement("span", { className: "ko-htx-badge", style: { fontSize: 9.5, fontWeight: 530, letterSpacing: '.03em', padding: '3px 9px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
-                                    flight && React.createElement("span", { style: { fontSize: 10, fontWeight: 500, color: 'var(--p-ink-4)', flexShrink: 0 } }, flight)),
-                                React.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: 'var(--p-ink)', letterSpacing: '-.012em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--p-ink-3)', fontWeight: 450, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
-                                    React.createElement("span", { style: { fontWeight: 550, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 } }, firstPas),
+                                    flight && React.createElement("span", { style: { fontSize: 10, fontWeight: 440, color: 'var(--p-ink-4)', flexShrink: 0 } }, flight)),
+                                React.createElement("div", { className: "ko-htx-route", style: { fontSize: 14, fontWeight: 500, color: 'var(--p-ink)', letterSpacing: '-.01em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
+                                React.createElement("div", { className: "ko-htx-meta", style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--p-ink-3)', fontWeight: 430, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                                    React.createElement("span", { style: { fontWeight: 500, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 } }, firstPas),
                                     (t.passengerCount || 0) > 1 && React.createElement("span", { style: { flexShrink: 0 } }, '· ' + t.passengerCount + ' kişi'),
                                     bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 🧳 ' + bags))),
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 7, flexShrink: 0, paddingLeft: 6 } },
+                            React.createElement("div", { className: "ko-htx-money", style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 7, flexShrink: 0, paddingLeft: 6 } },
                                 React.createElement("div", { style: { textAlign: 'right' } },
-                                    React.createElement("div", { style: { fontSize: 14, fontWeight: 620, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.01em', lineHeight: 1.05, whiteSpace: 'nowrap' } }, amtText),
-                                    React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 2 } }, whoLabel)),
+                                    React.createElement("div", { className: "ko-htx-amt", style: { fontSize: 14, fontWeight: 540, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.01em', lineHeight: 1.05, whiteSpace: 'nowrap' } }, amtText),
+                                    React.createElement("div", { className: "ko-htx-who", style: { fontSize: 9, fontWeight: 500, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 2 } }, whoLabel)),
                                 React.createElement("button", {
+                                    className: "ko-htx-status",
                                     onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                    style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
+                                    style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
                                 }, statusText)),
                             t.isKarsilikli && (() => {
                                 const col = ksPairColor(t);
