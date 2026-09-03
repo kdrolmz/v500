@@ -1,0 +1,96 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Olmeztur//Transfer Takvim//TR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:KÖ Düğün
+X-WR-TIMEZONE:Europe/Istanbul
+X-APPLE-CALENDAR-COLOR:#8E44AD
+REFRESH-INTERVAL;VALUE=DURATION:PT15M
+X-PUBLISHED-TTL:PT15M
+BEGIN:VEVENT
+UID:ko-transfer-1783097870328_a7sugb@olmeztur
+DTSTAMP:20260903T203700Z
+LAST-MODIFIED:20260713T171400Z
+SEQUENCE:1783962855
+DTSTART:20260712T090000
+DTEND:20260712T100000
+SUMMARY:09:00 · Düğün · Bursa→Gelin Arabası
+LOCATION:Bursa → Gelin Arabası
+DESCRIPTION:Müşteri: Nazif Aşık\nŞoför: Kadir Ölmez / +90 (543) 287 06 8
+ 7\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito /
+  16 LMZ 55\nGüzergah: Bursa → Gelin Arabası\nÖdeme: Müşteri: 10.000 TRY 
+ | Araç: 10.000 ₺
+CATEGORIES:KÖ Düğün
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786379512997_yyzmj1@olmeztur
+DTSTAMP:20260903T203700Z
+LAST-MODIFIED:20260903T195700Z
+SEQUENCE:1788465446
+DTSTART:20260828T093000
+DTEND:20260828T103000
+SUMMARY:09:30 · Düğün · Bursa→Bursa
+LOCATION:Bursa → Bursa Tahsis
+DESCRIPTION:Müşteri: Tolga Bey\nŞoför: Kadir Ölmez / +90 (543) 287 06 87
+ \nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 
+ 16 LMZ 55\nGüzergah: Bursa → Bursa Tahsis\nNot: süsleme dahil\nÖdeme: Mü
+ şteri: 10.500 TRY
+CATEGORIES:KÖ Düğün
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1787229831530_y6ck7p@olmeztur
+DTSTAMP:20260903T203700Z
+LAST-MODIFIED:20260903T195700Z
+SEQUENCE:1788465448
+DTSTART:20260829T153000
+DTEND:20260829T163000
+SUMMARY:15:30 · Düğün · Bursa→Düğün Arabası
+LOCATION:Bursa Kestel → Düğün Arabası
+DESCRIPTION:Müşteri: Ahmet Gökçimen\nŞoför: Kadir Ölmez / +90 (543) 287 
+ 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vi
+ to / 16 LMZ 55\nGüzergah: Bursa Kestel → Düğün Arabası\nÖdeme: Müşteri: 
+ 12.000 TRY | Araç: 12.000 ₺
+CATEGORIES:KÖ Düğün
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1786972213171_1nxlbz@olmeztur
+DTSTAMP:20260903T203700Z
+LAST-MODIFIED:20260903T195700Z
+SEQUENCE:1788465450
+DTSTART:20260830T120000
+DTEND:20260830T130000
+SUMMARY:12:00 · Düğün · İznik→İznik Gelin Arabası
+LOCATION:İznik → İznik Gelin Arabası
+DESCRIPTION:Müşteri: -\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi ve
+ ren: Eren Çalışkan\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 
+ LMZ 55\nGüzergah: İznik → İznik Gelin Arabası\nÖdeme: Müşteri: 10.000 TR
+ Y | Araç: 10.000 ₺
+CATEGORIES:KÖ Düğün
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1781287064165_sfaoir@olmeztur
+DTSTAMP:20260903T203700Z
+LAST-MODIFIED:20260814T142000Z
+SEQUENCE:1786717224
+DTSTART:20260906T080000
+DTEND:20260906T090000
+SUMMARY:08:00 · Düğün · Bursa→Bursa
+LOCATION:Bursa → Bursa Düğün Arabası
+DESCRIPTION:Müşteri: Emre Bey Burulaş\nŞoför: Kadir Ölmez / +90 (543) 28
+ 7 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: 
+ Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Düğün Arabası\nÖdeme: Müşteri:
+  7.500 TRY | Araç: 7.500 ₺
+CATEGORIES:KÖ Düğün
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
