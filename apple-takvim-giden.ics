@@ -4172,7 +4172,7 @@ BEGIN:VEVENT
 UID:ko-transfer-1788164715737_g0hk40@olmeztur
 DTSTAMP:20260903T205500Z
 LAST-MODIFIED:20260903T205500Z
-SEQUENCE:1788468906
+SEQUENCE:1788468940
 DTSTART:20260904T083000
 DTEND:20260904T093000
 SUMMARY:08:30 · Bursa→SAW
@@ -4181,7 +4181,7 @@ DESCRIPTION:Müşteri: Ayoub Alkandari\, Hajer Alkanderi\, Mariam Alkandar
  i\, Noor Alkandari\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren:
   Ölmeztur\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nG
  üzergah: Bursa Fomara Toki B-4 Blok → Sabiha Gökçen Havalimanı\nÖdeme: M
- üşteri: 170 USD | Araç: 8.200 ₺
+ üşteri: 8.200 TRY | Araç: 396.300 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
