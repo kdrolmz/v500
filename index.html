@@ -12207,7 +12207,13 @@ function App() {
                     const noCollect = t.paymentCollect === 'no';
                     const toMe = !!t.paymentToMe;
                     const whoLabel = toMe ? 'bana ödeme' : (noCollect ? 'tahsilat yok' : 'müşteriden');
-                    const amtText = amt > 0 ? fmtTLHome(amt) : (noCollect ? 'Ücretsiz' : '—');
+                    const payCur = t.paymentCurrency || 'TRY';
+                    const payRaw = moneyValue(t.paymentAmount);
+                    const koMoneyLabel = (n, c) => {
+                        const num = Math.round(n).toLocaleString('tr-TR');
+                        return c === 'USD' ? ('$' + num) : c === 'EUR' ? ('€' + num) : c === 'KWD' ? (num + ' KD') : (num + '₺');
+                    };
+                    const amtText = noCollect ? 'Ücretsiz' : (payRaw > 0 ? koMoneyLabel(payRaw, payCur) : '—');
                     const statusText = payDone ? '✓ Tahsil edildi' : (noCollect ? 'Ödeme yok' : 'Bekliyor');
                     const statusBg = payDone ? 'var(--p-pos-soft)' : (noCollect ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
                     const statusColor = payDone ? 'var(--p-pos-ink)' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
@@ -12216,33 +12222,30 @@ function App() {
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
-                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.10)', borderRadius: 18, padding: '11px 13px 11px 14px', boxShadow: '0 1px 2px rgba(24,35,29,.05), 0 10px 22px -14px rgba(24,35,29,.18)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
+                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.09)', borderRadius: 20, padding: '15px 16px 15px 17px', boxShadow: '0 1px 2px rgba(24,35,29,.04), 0 12px 26px -16px rgba(24,35,29,.16)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
-                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 11, bottom: 11, width: 3, borderRadius: '0 3px 3px 0', background: tip.c } }),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '46px minmax(0,1fr) auto', alignItems: 'stretch', gap: 11 } },
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, paddingRight: 10, borderRight: '1px solid rgba(24,35,29,.09)' } },
-                                React.createElement("span", { style: { fontSize: 15.5, fontWeight: 680, letterSpacing: '-.02em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
-                                React.createElement("span", { style: { fontSize: 13, lineHeight: 1 } }, tip.ico)),
-                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 } },
-                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.03em', padding: '2px 8px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
+                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 14, bottom: 14, width: 3, borderRadius: '0 3px 3px 0', background: tip.c } }),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '46px minmax(0,1fr) auto', alignItems: 'center', gap: 14 } },
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, paddingRight: 12, borderRight: '1px solid rgba(24,35,29,.08)' } },
+                                React.createElement("span", { style: { fontSize: 16.5, fontWeight: 680, letterSpacing: '-.02em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
+                                React.createElement("span", { style: { fontSize: 14, lineHeight: 1 } }, tip.ico)),
+                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, justifyContent: 'center' } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
+                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.03em', padding: '3px 9px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
                                     flight && React.createElement("span", { style: { fontSize: 10, fontWeight: 500, color: 'var(--p-ink-4)', flexShrink: 0 } }, flight)),
-                                React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: 'var(--p-ink)', letterSpacing: '-.012em', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--p-ink-3)', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
-                                    React.createElement("span", { style: { fontWeight: 550, overflow: 'hidden', textOverflow: 'ellipsis' } }, firstPas),
+                                React.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: 'var(--p-ink)', letterSpacing: '-.012em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--p-ink-3)', fontWeight: 450, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                                    React.createElement("span", { style: { fontWeight: 550, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 } }, firstPas),
                                     (t.passengerCount || 0) > 1 && React.createElement("span", { style: { flexShrink: 0 } }, '· ' + t.passengerCount + ' kişi'),
-                                    bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 🧳 ' + bags)),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--p-ink-4)', fontWeight: 450, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
-                                    React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis' } }, acentaText),
-                                    drv > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 👨🏻‍✈️ ' + fmtTLHome(drv)))),
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 4, flexShrink: 0, paddingLeft: 4 } },
+                                    bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 🧳 ' + bags))),
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 7, flexShrink: 0, paddingLeft: 6 } },
                                 React.createElement("div", { style: { textAlign: 'right' } },
-                                    React.createElement("div", { style: { fontSize: 15.5, fontWeight: 680, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em', lineHeight: 1.05 } }, amtText),
-                                    React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 1 } }, whoLabel)),
+                                    React.createElement("div", { style: { fontSize: 17, fontWeight: 690, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em', lineHeight: 1.02, whiteSpace: 'nowrap' } }, amtText),
+                                    React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 2 } }, whoLabel)),
                                 React.createElement("button", {
                                     onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                    style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.02em', padding: '3px 9px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
+                                    style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
                                 }, statusText)),
                             t.isKarsilikli && (() => {
                                 const col = ksPairColor(t);
