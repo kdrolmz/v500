@@ -750,6 +750,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--slate) !important;box
 .tcard:active,.ko-account-firm-card:active,.ko-takas-partner:active,.lg-choice:active{transform:scale(.982)}
 button:active{transform:scale(.965)}
 @keyframes koIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes koSpin{to{transform:rotate(360deg)}}
+.ko-spin{animation:koSpin .7s linear infinite}
 .tcard,.ko-arac-job-card{animation:koIn .3s cubic-bezier(.22,.61,.36,1) both}
 @media(prefers-reduced-motion:reduce){.tcard,.ko-arac-job-card{animation:none}.lg-month-day,.ko-arac-day,.tk-cell{transition:none}}
 .tcard hr,.card hr{border:0 !important;height:1px !important;background:linear-gradient(90deg,rgba(20,26,38,0),rgba(20,26,38,.16),rgba(20,26,38,0)) !important}
@@ -838,8 +840,10 @@ const ALLOWED_UID = window.OLMEZTUR_ALLOWED_UID || '';
 const REMEMBER_ME_KEY = 'olmeztur_remember_me';
 const REMEMBER_EMAIL_KEY = 'olmeztur_remember_email';
 const EXTERNAL_LIB_URLS = {
-  Tesseract: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'
+  Tesseract: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+  pdfjsLib: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'
 };
+const PDF_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 const externalLibPromises = Object.create(null);
 function ensureExternalLibrary(name){
   if(window[name]) return Promise.resolve(window[name]);
@@ -1144,6 +1148,7 @@ const BF = {
     driverName: '', driverPhone: '',
     passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
     childSeat: false, childSeatCount: 0,
+    bagBig: 0, bagSmall: 0,
     tourCommission: '', tourCommissionShop: '',
     paymentAmount: '', paymentCurrency: 'TRY', paymentCollect: 'yes',
     kdvEnabled: false, kdvRate: 0, kdvAmount: 0, kdvBaseTRY: 0, kdvTotalTRY: 0,
@@ -1331,6 +1336,15 @@ const koMinsLabel = m => {
     const h = Math.floor(v / 60), mm = v % 60;
     return mm ? (h + ' sa ' + mm + ' dk') : (h + ' saat');
 };
+const bagLabel = t => {
+    const big = Math.max(0, parseInt((t && t.bagBig) || 0, 10) || 0);
+    const small = Math.max(0, parseInt((t && t.bagSmall) || 0, 10) || 0);
+    const parts = [];
+    if (big) parts.push(big + ' büyük valiz');
+    if (small) parts.push(small + ' el bagajı');
+    return parts.join(' · ');
+};
+const bagCount = t => (Math.max(0, parseInt((t && t.bagBig) || 0, 10) || 0) + Math.max(0, parseInt((t && t.bagSmall) || 0, 10) || 0));
 const koMinsToHourStr = m => {
     const v = Math.max(0, Number(m) || 0) / 60;
     return (Math.round(v * 100) / 100).toString().replace('.', ',');
@@ -1343,7 +1357,7 @@ const koHourStrToMins = s => {
 /* ---------- İsim ayrıştırma (WhatsApp / bilet metni) ---------- */
 const KO_TITLE_HEAD = /^(MR|MRS|MS|MSTR|MISS|MSS|CHD|CHLD|INF|DR|PROF|BAY|BAYAN|SAYIN|SN)\.?\s+/;
 const KO_TITLE_TAIL = /\s+(MR|MRS|MS|MSTR|MISS|CHD|CHLD|INF)\.?$/;
-const KO_JUNK_RE = /(UCUS|FLIGHT|PNR|BILET|TICKET|REZERV|BOOKING|TOPLAM|TUTAR|FIYAT|PRICE|SAAT|TARIH|DATE|TIME|HAVALIMAN|HAVAYOL|HAVA YOL|AIRPORT|AIRWAY|AIRLINE|\bAIR\b|TERMINAL|BAGAJ|BAGGAGE|KOLTUK|SEAT|GATE|VARIS|KALKIS|INIS|DEPARTURE|ARRIVAL|BOARDING|CHECK|EKONOMI|ECONOMY|BUSINESS|CLASS|SINIF|TRANSFER|ARAC|SOFOR|KAPTAN|FIRMA|ACENT|OTEL|HOTEL|ADRES|ADDRESS|WHATSAPP|MESAJ|TESEKKUR|MERHABA|GUNAYDIN|IYI GUNLER|SELAM|TAMAM|LUTFEN|YOLCU|MISAFIR|KISI|TELEFON|PHONE|PASAPORT|PASSPORT|KIMLIK|NUMARA|NUMBER|TOTAL|ADET|NOT:|LINK|HTTP|TURKISH|PEGASUS|ANADOLUJET|AJET|SUNEXPRESS|CORENDON|TAILWIND|FREEBIRD|KUWAIT|KUVEYT|JAZEERA|FLYNAS|SAUDIA|EMIRATES|QATAR|FLYDUBAI|LUFTHANSA|AEGEAN|WIZZ|RYANAIR|ETIHAD|GULF|ROYAL|JORDANIAN|MIDDLE EAST|MUSTERI|HIZMET|DESTEK|CAGRI|REFERANS|IADE|KURAL|ONEMLI)/;
+const KO_JUNK_RE = /(UCUS|FLIGHT|PNR|BILET|TICKET|REZERV|BOOKING|TOPLAM|TUTAR|FIYAT|PRICE|SAAT|TARIH|DATE|TIME|HAVALIMAN|HAVAYOL|HAVA YOL|AIRPORT|AIRWAY|AIRLINE|\bAIR\b|TERMINAL|BAGAJ|BAGGAGE|KOLTUK|SEAT|GATE|VARIS|KALKIS|INIS|DEPARTURE|ARRIVAL|\bDEP\b|\bARR\b|\bVIA\b|BOARD|BORDING|CHECK|EKONOMI|ECONOMY|BUSINESS|CLASS|SINIF|TRANSFER|ARAC|SOFOR|KAPTAN|FIRMA|ACENT|OTEL|HOTEL|ADRES|ADDRESS|WHATSAPP|MESAJ|TESEKKUR|MERHABA|GUNAYDIN|IYI GUNLER|SELAM|TAMAM|LUTFEN|YOLCU|MISAFIR|KISI|TELEFON|PHONE|PASAPORT|PASSPORT|KIMLIK|NUMARA|NUMBER|TOTAL|ADET|NOT:|LINK|HTTP|TURKISH|PEGASUS|ANADOLUJET|AJET|SUNEXPRESS|CORENDON|TAILWIND|FREEBIRD|KUWAIT|KUVEYT|JAZEERA|FLYNAS|SAUDIA|EMIRATES|QATAR|FLYDUBAI|LUFTHANSA|AEGEAN|WIZZ|RYANAIR|ETIHAD|GULF|ROYAL|JORDANIAN|MIDDLE EAST|MUSTERI|HIZMET|DESTEK|CAGRI|REFERANS|IADE|KURAL|ONEMLI)/;
 /* Sadece yer adlarından oluşan satırlar isim sayılmaz */
 const KO_PLACES = 'ISTANBUL,ISTANBULA,ISTANBULDAN,BURSA,BURSAYA,BURSADAN,ANKARA,IZMIR,ANTALYA,YALOVA,SABIHA,GOKCEN,KUVEYT,KUWAIT,DUBAI,DOHA,ABUDABI,CIDDE,JEDDAH,RIYAD,RIYADH,DAMMAM,MEDINE,MEKKE,BAGDAT,BAGHDAD,ERBIL,BASRA,NECEF,SULEYMANIYE,TAHRAN,TEHRAN,BEYRUT,AMMAN,KAHIRE,CAIRO,LONDRA,LONDON,BERLIN,PARIS,AMSTERDAM,FRANKFURT,MUNIH,VIYANA,ZURIH,BRUKSEL,MOSKOVA,KIEV,BAKU,TIFLIS,ALMATI,TASKENT,DUSSELDORF,HAMBURG,STUTTGART,KOLN,MILANO,ROMA,ATINA,SOFYA,BUKRES,SKOPJE,SARAYBOSNA,PRISTINA,TRABZON,ADANA,DALAMAN,BODRUM,MILAS,ESENBOGA,YENISEHIR,TURKIYE,TURKEY,VE,ILE,SAW,IST,IGA,KWI,DXB,DOH,JED,RUH'.split(',');
 const koAllPlaces = t => {
@@ -1489,7 +1503,7 @@ const koParseTicket = (raw) => {
     while ((m2 = fre.exec(WU))) {
         const pre = m2[1], num = m2[2];
         if (KO_FLIGHT_BAD[pre]) continue;
-        if (num.length === 4 && +num > 1900 && +num < 2100) continue;
+        if (!+num) continue;
         out.flight = pre + num;
         break;
     }
@@ -2669,6 +2683,71 @@ async function nlReadNamesFromFile(file, onProgress) {
     } finally {
         try { URL.revokeObjectURL(img.__url); } catch (e) {}
     }
+}
+async function ticketOcrFromImage(file, onProgress) {
+    const note = m => { try { if (onProgress) onProgress(m); } catch (e) {} };
+    note('Okuma motoru hazırlanıyor…');
+    const worker = await nlGetWorker();
+    const img = await mrzLoadImage(file);
+    try {
+        note('Bilet okunuyor…');
+        let text = '';
+        for (const w of [1900, 2500]) {
+            let canvas = null;
+            try { canvas = nlPrepCanvas(img, w); } catch (e) { continue; }
+            if (!canvas) continue;
+            const data = await nlOcr(worker, canvas, 6);
+            const lines = data ? nlTextLines(data).map(r => r.text).filter(Boolean) : [];
+            if (lines.join('').replace(/\s/g, '').length > text.replace(/\s/g, '').length) text = lines.join('\n');
+        }
+        return text;
+    } finally { try { URL.revokeObjectURL(img.__url); } catch (e) {} }
+}
+function pdfLinesFromTextContent(tc) {
+    const rows = {};
+    (tc.items || []).forEach(it => {
+        const s = (it.str || '');
+        if (!s.trim()) return;
+        const y = Math.round((it.transform && it.transform[5]) || 0);
+        const x = (it.transform && it.transform[4]) || 0;
+        const key = Math.round(y / 4) * 4;
+        (rows[key] = rows[key] || []).push({ x, s });
+    });
+    return Object.keys(rows).map(Number).sort((a, b) => b - a)
+        .map(k => rows[k].sort((a, b) => a.x - b.x).map(o => o.s).join(' ').replace(/\s+/g, ' ').trim())
+        .filter(Boolean).join('\n');
+}
+async function ticketTextFromPdf(file, onProgress) {
+    const note = m => { try { if (onProgress) onProgress(m); } catch (e) {} };
+    note('PDF açılıyor…');
+    await ensureExternalLibrary('pdfjsLib');
+    try { if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL; } catch (e) {}
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const maxPages = Math.min(pdf.numPages || 1, 3);
+    let text = '';
+    for (let i = 1; i <= maxPages; i++) {
+        note('PDF sayfa ' + i + '/' + maxPages + ' okunuyor…');
+        const page = await pdf.getPage(i);
+        const tc = await page.getTextContent();
+        const pageText = pdfLinesFromTextContent(tc);
+        if (pageText) text += (text ? '\n' : '') + pageText;
+    }
+    if (text.replace(/\s/g, '').length >= 12) return text;
+    note('Taranmış PDF — görüntü okunuyor…');
+    const worker = await nlGetWorker();
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2.2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(viewport.width); canvas.height = Math.round(viewport.height);
+    const ctx = canvas.getContext('2d');
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+    const data = await nlOcr(worker, canvas, 6);
+    return data ? nlTextLines(data).map(r => r.text).filter(Boolean).join('\n') : '';
+}
+async function ticketReadFromFile(file, onProgress) {
+    const isPdf = /pdf/i.test(file.type || '') || /\.pdf$/i.test(file.name || '');
+    return isPdf ? ticketTextFromPdf(file, onProgress) : ticketOcrFromImage(file, onProgress);
 }
 const fr = n => Math.abs(Math.round(moneyValue(n))).toLocaleString('tr-TR');
 const fn = n => (moneyValue(n) >= 0 ? '+' : '') + Math.round(moneyValue(n)).toLocaleString('tr-TR');
@@ -6824,6 +6903,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             ['Alış', detayT.pickup || '—'],
             ['Bırakış', detayT.dropoff || '—'],
             ['Yolcu', yolcu || '—'],
+            bagLabel(detayT) ? ['Bagaj', bagLabel(detayT)] : null,
             ['Kaptan', detayT.driverName || '—'],
             ['Plaka', detayT.plate || '—'],
             detayT.kaynak === 'odelo' ? ['Odelo Bedeli', fr(detayT.odelloGross || detayT.odeloGross || detayT.customerTRY || detayT.paymentAmount || detayT.driverPayment || 0) + '₺'] : ['Müşteri', odeme],
@@ -6913,6 +6993,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const badges = React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
             t.driverName && React.createElement("span", { style: { fontSize: 10.5, color: SB, background: 'var(--p-tint-3)', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👨🏻‍✈️ ' + t.driverName),
             ((t.passengerCount || 0) > 0) && React.createElement("span", { style: { fontSize: 10.5, color: SB, background: 'var(--p-tint-3)', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '👥 ' + t.passengerCount),
+            (bagCount(t) > 0) && React.createElement("span", { style: { fontSize: 10.5, color: SB, background: 'var(--p-tint-3)', borderRadius: 5, padding: '2px 5px', border: '1px solid ' + BOR } }, '🧳 ' + bagCount(t)),
             React.createElement("span", { style: { fontSize: 10.5, color: NAV, fontWeight: 450 } }, 'Düzenle ›'));
         const rightSide = React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 7, flexShrink: 0 } },
             React.createElement("div", { style: { fontSize: 15, fontWeight: 470, color: pos ? G : R, letterSpacing: 0, fontVariantNumeric: 'tabular-nums' } }, isJabirFirm(sel) ? signedUsdText(rowUsd) : (pos ? '+' : '−') + fr(t.netOl) + '₺'),
@@ -8668,6 +8749,9 @@ function App() {
     const [leadTimes, setLeadTimes] = useState(koLeadRead);
     const [leadOpen, setLeadOpen] = useState(false);
     const [pasteBox, setPasteBox] = useState(null);           // { text, single }
+    const [wizStep, setWizStep] = useState(1);                 // yeni transfer sihirbazı adımı (1-3)
+    const [ticketScan, setTicketScan] = useState('');          // bilet OCR durumu
+    const ticketFileRef = useRef(null);                        // bilet foto/pdf seçici
     const passportFileRef = useRef(null);
     const nameShotRef = useRef(null);
     const scanCancelRef = useRef(false);
@@ -8886,7 +8970,7 @@ function App() {
     const sf = p => setForm(f => ({ ...f, ...p }));
     const openNewTransferForm = () => {
         setTicketText(''); setTicketSel({ date: '', time: '' }); setTicketDrop({}); setTicketOpen(false);
-        setPasteBox(null); setLeadOpen(false);
+        setPasteBox(null); setLeadOpen(false); setWizStep(1);
         quickDraftRef.current = null;
         try { localStorage.removeItem('ko_transfer_draft_v1'); } catch (e) {}
         setQuickEditT(null);
@@ -9746,6 +9830,28 @@ function App() {
         if (added) bits.push(added + ' yolcu');
         tip(bits.join(' · '));
     };
+    const openTicketPicker = () => {
+        if (ticketScan) return;
+        if (ticketFileRef.current) { ticketFileRef.current.value = ''; ticketFileRef.current.click(); }
+    };
+    const handleTicketFiles = async (files) => {
+        const file = Array.from(files || []).filter(Boolean)[0];
+        if (!file) return;
+        setTicketOpen(true);
+        setTicketScan('Bilet okunuyor…');
+        try {
+            const text = await ticketReadFromFile(file, m => setTicketScan(m || 'Bilet okunuyor…'));
+            if (text && text.trim().replace(/\s/g, '').length >= 6) {
+                ticketIngest((ticketText ? ticketText + '\n' : '') + text.trim());
+                tip('✓ Bilet okundu — bilgileri kontrol edip “Forma Uygula” deyin');
+            } else {
+                tip('Bilette yazı okunamadı — daha net bir görüntü deneyin veya metni yapıştırın');
+            }
+        } catch (e) {
+            console.error('[TICKET OCR] hata', e);
+            tip('Bilet okunamadı — internet bağlantısını kontrol edin veya metni yapıştırın');
+        } finally { setTicketScan(''); }
+    };
     const openPasteBox = () => setPasteBox({ text: '', single: '' });
     const pasteNamesReview = () => {
         const src = (pasteBox && pasteBox.text) || '';
@@ -9792,12 +9898,14 @@ function App() {
         const releaseSubmitLock = () => setTimeout(() => { submitBusyRef.current = false; }, 650);
         if (!form.pickup || !form.dropoff) {
             releaseSubmitLock();
+            setWizStep(1);
             tip('Alış ve bırakış girin');
             return;
         }
         const baseDate = new Date(form.date);
         if (!form.date || Number.isNaN(baseDate.getTime())) {
             releaseSubmitLock();
+            setWizStep(1);
             tip('Tarih girin');
             return;
         }
@@ -10240,6 +10348,7 @@ function App() {
         const kisi = paxList.length || t.passengerCount || 0;
         if (px) msg += '\n*MİSAFİRLER · ' + kisi + ' kişi*\n' + px + '\n';
         else if (kisi) msg += '\n*MİSAFİRLER · ' + kisi + ' kişi*\n';
+        { const bagTxt = bagLabel(t); if (bagTxt) msg += '🧳 *Bagaj:* ' + bagTxt + '\n'; }
         const foot = [];
         if (t.paymentToMe) foot.push('💳 *Tahsilat:* Hesap/ödeme bana geldi');
         else if (t.paymentCollect === 'no') foot.push('💳 *Tahsilat:* Yok');
@@ -11033,8 +11142,8 @@ function App() {
                     React.createElement("div", { className: 'tcard-flow' },
                         React.createElement("div", { className: 'tcard-agency' },
                             React.createElement("span", null, gvn),
-                            React.createElement("span", { className: 'arrow' }, '→'),
-                            React.createElement("span", null, asg)
+                            t.assignedTo && React.createElement("span", { className: 'arrow' }, '→'),
+                            t.assignedTo && React.createElement("span", null, asg)
                         ),
                         React.createElement("div", { className: 'tcard-route' },
                             React.createElement("span", null, pickup),
@@ -11074,8 +11183,15 @@ function App() {
                             },
                             collectionState === 'collected' ? 'Tahsil edildi' : 'Ödeme bekliyor'
                         ),
-                        React.createElement("div", { className: 'tcard-paystatus', style: { marginTop: 4, background: 'var(--p-tint-3)', border: '1px solid var(--p-line-3)', color: 'var(--p-brand)', WebkitTextFillColor: 'var(--p-brand)', borderRadius: 8, fontWeight: 600, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.25, padding: '3px 8px' } },
-                            asg + ' · ' + vehiclePayTxt),
+                        (vehiclePayNum > 0 || t.driverName) && (() => {
+                            const paid = !!t.vehiclePaid;
+                            const who = t.driverName || t.assignedTo || 'Araç';
+                            return React.createElement("div", {
+                                onClick: vehiclePayNum > 0 ? (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }) : undefined,
+                                className: 'tcard-paystatus',
+                                style: { marginTop: 4, background: paid ? 'var(--p-pos-soft)' : 'var(--p-tint-3)', border: '1px solid ' + (paid ? 'var(--p-pos-bd)' : 'var(--p-line-3)'), color: paid ? 'var(--p-pos-ink)' : 'var(--p-brand)', WebkitTextFillColor: paid ? 'var(--p-pos-ink)' : 'var(--p-brand)', borderRadius: 8, fontWeight: 600, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.25, padding: '3px 8px', cursor: vehiclePayNum > 0 ? 'pointer' : 'default' }
+                            }, '👨🏻‍✈️ ' + who + (vehiclePayNum > 0 ? ' · ' + vehiclePayTxt + (paid ? ' ✓' : '') : ''));
+                        })(),
                         t.altAcenta && React.createElement("div", { className: 'tcard-paystatus', style: { marginTop: 4, background: 'var(--p-warn-soft)', border: '1px solid var(--p-warn-bd)', color: 'var(--p-warn)', WebkitTextFillColor: 'var(--p-warn)', borderRadius: 8, fontWeight: 600, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.25, padding: '3px 8px' } },
                             '↳ Alt: ' + t.altAcenta + ' · ' + (moneyValue(t.altAcentaUcreti) > 0 ? moneyValue(t.altAcentaUcreti).toLocaleString('tr-TR') + '₺' : '—'))
                     )
@@ -12073,51 +12189,66 @@ function App() {
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
-                    const routeText = homeTransferCardLoc(t.pickup) + ' → ' + homeTransferCardLoc(t.dropoff);
+                    const compactLoc = loc => {
+                        let n = homeTransferCardLoc(loc);
+                        if (/İstanbul Havaliman|Istanbul Havaliman/i.test(n)) return 'İst. Havalimanı';
+                        if (/Sabiha Gökçen|Sabiha Gokcen/i.test(n)) return 'Sabiha Gökçen';
+                        return n.replace(/\s*Havalimanı/i, ' Hav.').trim();
+                    };
+                    const routeText = compactLoc(t.pickup) + ' → ' + compactLoc(t.dropoff);
                     const tip = TIPLER.find(x => x.id === t.transferType) || TIPLER[1];
                     const vehicleBadge = homeVehicleBadge(t);
                     const acentaMain = [t.givenBy, t.assignedTo].filter(Boolean).join(' / ');
                     const acentaText = acentaMain || 'Firma belirtilmedi';
                     const altText = t.altAcenta || '';
                     const payDone = collectionState === 'collected';
-                    const payText = payDone ? 'Tahsil edildi' : 'Tahsilat bekliyor';
-                    const payBg = payDone ? 'var(--p-pos-soft)' : 'var(--p-warn-soft)';
-                    const payColor = payDone ? 'var(--p-pos-ink)' : 'var(--p-warn)';
+                    const amt = homeAmountTRY(t);
+                    const drv = moneyValue(t.driverPayment);
+                    const noCollect = t.paymentCollect === 'no';
+                    const toMe = !!t.paymentToMe;
+                    const whoLabel = toMe ? 'bana ödeme' : (noCollect ? 'tahsilat yok' : 'müşteriden');
+                    const amtText = amt > 0 ? fmtTLHome(amt) : (noCollect ? 'Ücretsiz' : '—');
+                    const statusText = payDone ? '✓ Tahsil edildi' : (noCollect ? 'Ödeme yok' : 'Bekliyor');
+                    const statusBg = payDone ? 'var(--p-pos-soft)' : (noCollect ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
+                    const statusColor = payDone ? 'var(--p-pos-ink)' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
+                    const statusBd = payDone ? 'var(--p-pos-bd)' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
+                    const bags = bagCount(t);
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
-                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.11)', borderRadius: 20, padding: '10px 13px 10px 15px', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.9), 0 1px 2px rgba(24,35,29,.05), 0 10px 24px -12px rgba(24,35,29,.20)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
+                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.10)', borderRadius: 18, padding: '11px 13px 11px 14px', boxShadow: '0 1px 2px rgba(24,35,29,.05), 0 10px 22px -14px rgba(24,35,29,.18)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
-                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 10, bottom: 10, width: 3, borderRadius: '0 3px 3px 0', background: tip.c } }),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '52px minmax(0,1fr)', alignItems: 'stretch', gap: 11, minHeight: 66 } },
-                            React.createElement("div", { style: { minHeight: 66, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: 9, borderRight: '1px solid rgba(24,35,29,.10)', fontSize: 16.5, fontWeight: 640, letterSpacing: '-.02em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', textAlign: 'center', alignSelf: 'stretch' } }, t.time || '--:--'),
-                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 } },
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 640, letterSpacing: '.03em', padding: '2px 9px', minHeight: 18, borderRadius: 999, background: tip.bg, color: tip.c, border: '1px solid rgba(24,35,29,.09)', flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
+                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 11, bottom: 11, width: 3, borderRadius: '0 3px 3px 0', background: tip.c } }),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '46px minmax(0,1fr) auto', alignItems: 'stretch', gap: 11 } },
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, paddingRight: 10, borderRight: '1px solid rgba(24,35,29,.09)' } },
+                                React.createElement("span", { style: { fontSize: 15.5, fontWeight: 680, letterSpacing: '-.02em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
+                                React.createElement("span", { style: { fontSize: 13, lineHeight: 1 } }, tip.ico)),
+                            React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, minWidth: 0 } },
+                                    React.createElement("span", { style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.03em', padding: '2px 8px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
                                     vehicleBadge,
-                                    flight && React.createElement("span", { style: { fontSize: 10.5, fontWeight: 450, color: 'var(--p-ink-4)', marginLeft: 'auto', flexShrink: 0 } }, flight)
-                                ),
-                                React.createElement("div", { style: { fontSize: 13.2, fontWeight: 570, color: 'var(--p-ink)', letterSpacing: '-.012em', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.26, padding: '2px 0 3px' } }, routeText),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
-                                    React.createElement("button", {
-                                        onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
-                                        style: { fontSize: 10.5, fontWeight: 620, letterSpacing: '.02em', padding: '2px 9px', borderRadius: 999, border: '1px solid rgba(24,35,29,.10)', cursor: 'pointer', flexShrink: 0, background: payBg, color: payColor }
-                                    }, payText),
-                                    React.createElement("span", { style: { fontSize: 10.2, color: 'var(--p-ink-3)', fontWeight: 500, minWidth: 0, overflowWrap: 'anywhere' } }, firstPas)
-                                ),
-                                React.createElement("div", { style: { width: '100%', height: 1, margin: '5px 0 3px', background: 'rgba(24,35,29,.10)' } }),
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', fontSize: 10.5, color: 'var(--p-ink-4)', fontWeight: 520, lineHeight: 1.2 } },
-                                    React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere' } }, acentaText),
-                                    altText && React.createElement("span", { style: { color: 'var(--p-brand)', fontWeight: 450 } }, "→"),
-                                    altText && React.createElement("span", { style: { minWidth: 0, overflowWrap: 'anywhere', color: 'var(--p-brand)', fontWeight: 450 } }, altText)
-                                ),
-                                t.isKarsilikli && (() => {
-                                    const col = ksPairColor(t);
-                                    const kc = ksPair ? (getCollectionState(ksPair) === 'collected') : false;
-                                    return React.createElement("div", { style: { marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
-                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (ksPair ? ksPairLabel(ksPair) : ksPairLabel(t))));
-                                })()
-                            )
+                                    flight && React.createElement("span", { style: { fontSize: 10, fontWeight: 500, color: 'var(--p-ink-4)', flexShrink: 0 } }, flight)),
+                                React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: 'var(--p-ink)', letterSpacing: '-.012em', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--p-ink-3)', fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                                    React.createElement("span", { style: { fontWeight: 550, overflow: 'hidden', textOverflow: 'ellipsis' } }, firstPas),
+                                    (t.passengerCount || 0) > 1 && React.createElement("span", { style: { flexShrink: 0 } }, '· ' + t.passengerCount + ' kişi'),
+                                    bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 🧳 ' + bags)),
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 10.5, color: 'var(--p-ink-4)', fontWeight: 450, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                                    React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis' } }, acentaText),
+                                    drv > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 👨🏻‍✈️ ' + fmtTLHome(drv)))),
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 4, flexShrink: 0, paddingLeft: 4 } },
+                                React.createElement("div", { style: { textAlign: 'right' } },
+                                    React.createElement("div", { style: { fontSize: 15.5, fontWeight: 680, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.02em', lineHeight: 1.05 } }, amtText),
+                                    React.createElement("div", { style: { fontSize: 9, fontWeight: 600, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 1 } }, whoLabel)),
+                                React.createElement("button", {
+                                    onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
+                                    style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.02em', padding: '3px 9px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
+                                }, statusText)),
+                            t.isKarsilikli && (() => {
+                                const col = ksPairColor(t);
+                                return React.createElement("div", { style: { gridColumn: '2 / -1', marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+                                    React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '⇄ ' + ksPairLabel(t)));
+                            })()
                         )
                     );
                 };
@@ -12647,8 +12778,39 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12.5, fontWeight: 450, color: G } }, "Transfer düzenleniyor"),
                         React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? fullAirportLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? fullAirportLoc(form.dropoff) : 'Bırakış'))),
                     React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(60,60,67,.22)', background: 'var(--p-white)', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 470, cursor: 'pointer' } }, "Yeni kayıt")),
+                /* ===== ADIM GÖSTERGESİ (3 adımlı sihirbaz) ===== */
+                (function(){
+                    const steps = [
+                        { n: 1, label: 'Sefer', ico: '🛫' },
+                        { n: 2, label: 'Yolcu', ico: '👥' },
+                        { n: 3, label: 'Hesap', ico: '💳' }
+                    ];
+                    return React.createElement("div", { className: "ko-wiz-head", style: { display: 'flex', gap: 5, padding: 5, background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 15, boxShadow: '0 1px 5px rgba(60,60,67,.06)' } },
+                        steps.map(s => {
+                            const active = wizStep === s.n;
+                            const done = wizStep > s.n;
+                            return React.createElement("button", {
+                                key: s.n, type: "button", onClick: () => setWizStep(s.n),
+                                style: {
+                                    flex: '1 1 0', minWidth: 0,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                    padding: '9px 6px', borderRadius: 11, cursor: 'pointer',
+                                    border: '1px solid ' + (active ? 'var(--brand)' : (done ? 'var(--p-pos-bd)' : 'transparent')),
+                                    background: active ? 'var(--brand)' : (done ? 'var(--p-pos-soft)' : 'transparent'),
+                                    color: active ? 'var(--p-white)' : (done ? 'var(--p-pos-deep)' : SB),
+                                    fontWeight: active ? 600 : 470, fontSize: 12.5,
+                                    WebkitTextFillColor: active ? 'var(--p-white)' : (done ? 'var(--p-pos-deep)' : SB),
+                                    transition: 'all .18s ease', whiteSpace: 'nowrap'
+                                }
+                            },
+                                React.createElement("span", { style: { width: 19, height: 19, borderRadius: 999, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, background: active ? 'rgba(255,255,255,.24)' : (done ? 'var(--p-pos-ink)' : 'var(--p-tint-4)'), color: (active || done) ? 'var(--p-white)' : SB, WebkitTextFillColor: (active || done) ? 'var(--p-white)' : SB } }, done ? '✓' : s.n),
+                                React.createElement("span", null, s.label)
+                            );
+                        })
+                    );
+                })(),
                 /* ===== 🎫 BİLETTEN BİLGİ AL (isteğe bağlı panel) ===== */
-                (function () {
+                wizStep === 1 && (function () {
                     const p = ticketParsed;
                     const pl = ticketPlan;
                     const arr = ticketDir === 'arrival';
@@ -12680,6 +12842,14 @@ function App() {
                             React.createElement("div", { style: { display: 'flex', gap: 6 } },
                                 chip('a', arr, '🛬 Geliş', 'iniş saati', () => setTicketDir('arrival')),
                                 chip('d', !arr, '🛫 Gidiş', 'kalkıştan geri say', () => setTicketDir('departure'))),
+                            React.createElement("input", { ref: ticketFileRef, type: "file", accept: "image/*,application/pdf,.pdf", style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr2 = fs ? Array.from(fs) : []; e.target.value = ''; handleTicketFiles(arr2); } }),
+                            ticketScan
+                                ? React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--p-info-soft)', border: '1px solid var(--p-ink-4)', borderRadius: 12, padding: '13px 12px', fontSize: 12, fontWeight: 470, color: NAV } },
+                                    React.createElement("span", { className: "ko-spin", style: { width: 15, height: 15, borderRadius: 999, border: '2px solid var(--p-ink-5)', borderTopColor: NAV, display: 'inline-block' } }),
+                                    React.createElement("span", null, ticketScan))
+                                : React.createElement("button", { type: "button", onClick: openTicketPicker, style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 12, padding: '12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(11,114,133,.22)' } },
+                                    React.createElement("span", null, '📸 Bilet Fotoğrafı / PDF Yükle'),
+                                    React.createElement("span", { style: { fontSize: 10.5, opacity: .85, fontWeight: 450 } }, '· otomatik okunur')),
                             React.createElement("textarea", {
                                 value: ticketText,
                                 onChange: e => ticketIngest(e.target.value),
@@ -12753,7 +12923,7 @@ function App() {
                                 style: { width: '100%', background: pl.ok ? NAV : 'var(--p-ink-5)', color: 'var(--p-white)', border: 'none', borderRadius: 12, padding: '12px', fontSize: 13.5, fontWeight: 500, cursor: pl.ok ? 'pointer' : 'default' }
                             }, pl.ok ? '✓ Forma Uygula' : 'Önce bileti yapıştır')));
                 })(),
-                React.createElement("div", { className: "card ko-schedule-card" },
+                wizStep === 1 && React.createElement("div", { className: "card ko-schedule-card" },
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
                             (function(){
@@ -12974,7 +13144,7 @@ function App() {
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "\u2708\uFE0F U\u00E7u\u015F Kodu"),
                         React.createElement("input", { type: "text", value: form.flightCode, onChange: e => sf({ flightCode: e.target.value.toUpperCase() }), placeholder: "TK 123", className: "inp" }))),
-                React.createElement("div", { className: "card" },
+                wizStep === 1 && React.createElement("div", { className: "card" },
                     React.createElement("div", { className: "ko-party-row", style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 44px', gap: 7, alignItems: 'flex-end', marginBottom: 8 } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Veren"),
@@ -13003,7 +13173,7 @@ function App() {
                         React.createElement("button", { type: "button", onClick: () => sf({ altAcenta: '', altAcentaUcreti: '', altAcentaRaw: '', altAcentaCurrency: 'TRY', __showAltAcenta: false }), title: "Alt acentayı kapat", style: { border: '1px solid ' + BOR, background: 'var(--p-white)', color: R, borderRadius: 10, minHeight: 43, padding: 0, fontSize: 14, cursor: 'pointer', alignSelf: 'flex-end' } }, '✕')
                     ) : React.createElement("button", { type: "button", onClick: () => sf({ __showAltAcenta: true }), title: "Alt acenta ekle", style: { border: '1px dashed ' + BOR, background: 'transparent', color: SB, borderRadius: 11, padding: '0 14px', minHeight: 38, fontSize: 12, fontWeight: 540, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' } }, '+ Alt acenta'),
                     null),
-                React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                wizStep === 1 && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement(LocIn, { field: "pickup", lbl: "\uD83D\uDCCD Al\u0131\u015F Noktas\u0131", value: form.pickup, sugg: sugg.pickup, show: showSg.pickup, onChange: chL, onSel: selL, onFocus: () => { if (form.pickup.length > 1)
                             setShowSg(p => ({ ...p, pickup: true })); }, onBlur: () => setTimeout(() => setShowSg(p => ({ ...p, pickup: false })), 180) }),
                     React.createElement("input", { className: "inp", value: form.pickupMaps || '', onChange: e => sf({ pickupMaps: e.target.value }), placeholder: '📍 Alış maps adresi / linki (ops.)', inputMode: 'url', style: { fontSize: 12, marginTop: -2 } }),
@@ -13020,7 +13190,7 @@ function App() {
                             r.ico,
                             React.createElement("br", null),
                             r.n)))))),
-                React.createElement("div", { className: "card" },
+                wizStep === 1 && React.createElement("div", { className: "card" },
                     React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "\uD83D\uDE90 Ara\u00E7 Tipi"),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 5, marginBottom: 12 } }, VEHS.map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
                         React.createElement("div", { style: { fontSize: 16, marginBottom: 1 } }, v.ico),
@@ -13073,7 +13243,7 @@ function App() {
                                 transition: 'all .15s ease'
                             }
                         }, "🚐 ", PLAKA)))),
-                React.createElement("div", { className: "card ko-passenger-card" },
+                wizStep === 2 && React.createElement("div", { className: "card ko-passenger-card" },
                     (function () {
                         const busy = !!passportScan;
                         const count = paxReal().length;
@@ -13126,7 +13296,33 @@ function App() {
                                 React.createElement("button", { type: "button", onClick: () => openPaxModal(i), style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "D\u00FCzenle"),
                                 React.createElement("button", { type: "button", onClick: () => delPax(i), style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 450, cursor: 'pointer' } }, "Sil")))));
                     })()),
-	                React.createElement("div", { className: "card ko-payment-card" },
+	                wizStep === 2 && (function(){
+                    const big = Math.max(0, parseInt(form.bagBig, 10) || 0);
+                    const small = Math.max(0, parseInt(form.bagSmall, 10) || 0);
+                    const paxN = paxReal().length || Math.max(0, parseInt(form.passengerCount, 10) || 0);
+                    const veh = VEHS.find(v => v.id === form.vehicle);
+                    const capMax = veh ? (parseInt(String(veh.cap).split('-').pop(), 10) || 0) : 0;
+                    const over = capMax && paxN > capMax;
+                    const stepper = (icon, label, sub, val, key) => React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: INP, border: '1px solid ' + BOR, borderRadius: 12 } },
+                        React.createElement("span", { style: { fontSize: 20, flexShrink: 0 } }, icon),
+                        React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                            React.createElement("div", { style: { fontSize: 13, fontWeight: 500, color: TX } }, label),
+                            React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 1 } }, sub)),
+                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0, background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 11, overflow: 'hidden' } },
+                            React.createElement("button", { type: "button", onClick: () => sf({ [key]: Math.max(0, val - 1) }), disabled: val <= 0, style: { width: 38, height: 38, border: 'none', background: 'none', fontSize: 20, fontWeight: 400, color: val <= 0 ? 'var(--p-ink-5)' : NAV, cursor: val <= 0 ? 'default' : 'pointer', WebkitTextFillColor: val <= 0 ? 'var(--p-ink-5)' : NAV } }, '−'),
+                            React.createElement("div", { style: { minWidth: 30, textAlign: 'center', fontSize: 16, fontWeight: 600, color: TX, fontVariantNumeric: 'tabular-nums' } }, val),
+                            React.createElement("button", { type: "button", onClick: () => sf({ [key]: Math.min(99, val + 1) }), style: { width: 38, height: 38, border: 'none', background: 'none', fontSize: 20, fontWeight: 400, color: NAV, cursor: 'pointer', WebkitTextFillColor: NAV } }, '+')));
+                    return React.createElement("div", { className: "card" },
+                        React.createElement("span", { className: "lbl", style: { marginBottom: 9 } }, "🧳 Bagaj"),
+                        React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                            stepper('🧳', 'Büyük valiz', 'Bagaj bölümüne konur', big, 'bagBig'),
+                            stepper('🎒', 'El bagajı / küçük', 'Kabin içi, küçük çanta', small, 'bagSmall')),
+                        (big + small) > 0 && React.createElement("div", { style: { marginTop: 9, fontSize: 11.5, color: 'var(--p-pos-deep)', background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', borderRadius: 10, padding: '8px 11px', fontWeight: 450 } },
+                            '✓ Toplam ' + (big + small) + ' parça — kaptana giden bilgide görünür'),
+                        over && React.createElement("div", { style: { marginTop: 8, fontSize: 11.5, color: 'var(--p-warn)', background: 'var(--p-warn-soft)', border: '1px solid var(--p-warn-bd)', borderRadius: 10, padding: '8px 11px', fontWeight: 450, lineHeight: 1.4 } },
+                            '⚠️ ' + paxN + ' yolcu seçili — ' + veh.n + ' kapasitesi ' + veh.cap + ' kişi. Bagajla birlikte daha büyük araç gerekebilir.'));
+                })(),
+	                wizStep === 3 && React.createElement("div", { className: "card ko-payment-card" },
                     React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 8 } }, [['yes', '✅ Müşteri Öder'], ['no', '❌ Ödemez']].map(([v, l]) => (React.createElement("button", { key: v, className: "lg-choice" + (form.paymentCollect === v ? " is-active ko-selected-gold" : ""), onClick: () => sf(v === 'no' ? { paymentCollect: v, paymentToMe: false, customerCollected: false } : { paymentCollect: v }), style: { flex: 1, padding: '10px 4px', borderRadius: 10, border: '1.5px solid ' + (form.paymentCollect === v ? NAV : BOR), background: form.paymentCollect === v ? NAV : INP, color: form.paymentCollect === v ? 'var(--p-white)' : SB, fontWeight: 470, cursor: 'pointer', fontSize: '13px' } }, l)))),
                   form.paymentCollect === 'yes' && (React.createElement("div", null,
                        React.createElement("div", { style: { marginBottom: '10px' } },
@@ -13340,7 +13536,7 @@ function App() {
                                 fNet >= 0 ? '+' : '−',
                                 previewTL(fNet),
 	                                " \u20BA"))))),
-	                React.createElement("div", { className: "card ko-status-card" },
+	                wizStep === 3 && React.createElement("div", { className: "card ko-status-card" },
 	                    React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "Sefer Durumu"),
 	                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } }, [['tam', '✅ Tam', 'var(--p-ink-3)', 'var(--p-pos-soft)'], ['bos', '🔄 Boş', 'var(--p-info)', 'var(--p-pos-soft)'], ['iptal', '❌ İptal', R, 'var(--p-neg-soft)']].map(([id, lbl, ac, bg]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.status === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ status: id }), style: { background: form.status === id ? ac : bg, color: form.status === id ? 'var(--p-white)' : ac, border: '1.5px solid ' + (form.status === id ? ac : BOR), borderRadius: 9, padding: '10px 3px', cursor: 'pointer', fontSize: '12px', fontWeight: 470 } }, lbl)))),
 	                    form.transferType === 'tour' && React.createElement("div", {
@@ -13381,7 +13577,26 @@ function App() {
                             style: { fontSize: 11, padding: '6px 10px', background: 'var(--p-tint-2)', border: '1px solid var(--p-line-3)', color: 'var(--p-ink-3)', fontStyle: 'italic' }
                         })),
                     React.createElement("textarea", { value: form.notes, onChange: e => sf({ notes: e.target.value }), placeholder: "Notlar", rows: 2, className: "inp", style: { resize: 'none' } })),
-                React.createElement("button", { className: "ko-submit-btn", onClick: submit, style: { width: '100%', background: 'var(--p-brand)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', border: '1px solid var(--p-ink-2)', borderRadius: 16, padding: '14px', fontWeight: 500, fontSize: '15.5px', boxShadow: '0 8px 24px rgba(31,39,51,.32)', cursor: 'pointer', letterSpacing: '.4px' } }, editId ? '✓ Güncelle' : '+ Transfer Kaydet'))),
+                (function(){
+                    const paxN = paxReal().length || Math.max(0, parseInt(form.passengerCount, 10) || 0);
+                    const bags = bagCount(form);
+                    const amt = moneyValue(form.paymentAmount);
+                    const curSym = form.paymentCurrency === 'USD' ? '$' : form.paymentCurrency === 'EUR' ? '€' : form.paymentCurrency === 'KWD' ? 'KD' : '₺';
+                    const routeTxt = (form.pickup ? shortLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? shortLoc(form.dropoff) : 'Bırakış');
+                    const payTxt = form.paymentToMe ? 'Ödeme bana' : (form.paymentCollect === 'no' ? 'Tahsilat yok' : (amt > 0 ? (curSym + fr(amt)) : 'Tutar yok'));
+                    const summary = wizStep === 1
+                        ? (routeTxt + ' · ' + (form.date ? koPrettyDate(form.date) : '—') + ' ' + (form.time || ''))
+                        : wizStep === 2
+                        ? (paxN + ' yolcu' + (bags ? ' · ' + bags + ' bagaj' : '') + (form.driverName ? ' · ' + form.driverName : ''))
+                        : (payTxt + ' · ' + (form.driverPayment ? ('Kaptan ' + fr(moneyValue(form.driverPayment)) + '₺') : 'Kaptan ücreti yok'));
+                    return React.createElement("div", { style: { position: 'sticky', bottom: 0, zIndex: 30, marginTop: 4, paddingTop: 10, paddingBottom: 2, background: 'var(--p-bg)', boxShadow: '0 -8px 16px -6px var(--p-bg)' } },
+                        React.createElement("div", { style: { fontSize: 11, color: SB, textAlign: 'center', marginBottom: 8, padding: '0 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 450 } }, summary),
+                        React.createElement("div", { style: { display: 'flex', gap: 8 } },
+                            wizStep > 1 && React.createElement("button", { type: "button", onClick: () => setWizStep(s => Math.max(1, s - 1)), style: { flex: '0 0 auto', minWidth: 92, background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 15, padding: '15px 14px', fontWeight: 500, fontSize: 14, cursor: 'pointer' } }, '‹ Geri'),
+                            wizStep < 3
+                                ? React.createElement("button", { className: "ko-submit-btn", type: "button", onClick: () => setWizStep(s => Math.min(3, s + 1)), style: { flex: 1, background: 'var(--p-brand)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', border: '1px solid var(--p-ink-2)', borderRadius: 15, padding: '15px', fontWeight: 500, fontSize: '15px', boxShadow: '0 8px 22px rgba(31,39,51,.28)', cursor: 'pointer' } }, 'Devam ›')
+                                : React.createElement("button", { className: "ko-submit-btn", type: "button", onClick: submit, style: { flex: 1, background: 'var(--p-brand)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', border: '1px solid var(--p-ink-2)', borderRadius: 15, padding: '15px', fontWeight: 500, fontSize: '15px', boxShadow: '0 8px 22px rgba(31,39,51,.28)', cursor: 'pointer', letterSpacing: '.3px' } }, editId ? '✓ Güncelle' : '✓ Transfer Kaydet')));
+                })())),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Ara", className: "inp", style: { fontSize: '14px' } })),
