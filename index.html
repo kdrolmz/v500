@@ -204,6 +204,10 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-smart-wrap:focus-within,.ko-party-alt-row:focus-within,.ko-party-row:focus-within{z-index:9998}
 .ko-smart-option{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
 .ko-smart-name{font-size:13px;font-weight:620}
+.ko-smart-opt2{transition:background .12s ease}
+.ko-smart-opt2:hover,.ko-smart-opt2:active,.ko-smart-opt2:focus-visible{background:var(--p-bg-lo) !important}
+.ko-smart-opt2+.ko-smart-opt2{position:relative}
+.ko-smart-opt2+.ko-smart-opt2::before{content:"";position:absolute;left:52px;right:10px;top:0;height:1px;background:var(--p-bg-lo)}
 .ko-passenger-list,.tk-panel-list{display:flex;flex-direction:column;gap:8px}
 .ko-passenger-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--p-white)}
 .ko-passenger-index{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--soft);font-weight:650}
@@ -4974,7 +4978,14 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
             const el = __ctrlRef.current;
             if (!el) return;
             const r = el.getBoundingClientRect();
-            __setPos({ left: r.left, top: r.bottom + 4, width: r.width });
+            const vw = window.innerWidth || 393;
+            const vh = window.innerHeight || 800;
+            const spaceBelow = vh - r.bottom;
+            const flip = spaceBelow < 250 && r.top > spaceBelow;
+            const width = Math.min(Math.max(r.width, 264), vw - 20);
+            let left = r.left;
+            if (left + width > vw - 10) left = Math.max(10, vw - 10 - width);
+            __setPos({ left: left, width: width, flip: flip, top: flip ? null : (r.bottom + 6), bottom: flip ? (vh - r.top + 6) : null });
         } catch (e) {}
     };
     React.useEffect(() => {
@@ -5019,12 +5030,22 @@ function SmartPick({ value, rows, onChange, onSelect, placeholder, emptyText }) 
             React.createElement("select", { className: "inp ko-smart-native-select ko-smart-icon-select", value: "", onFocus: () => setOpen(false), onChange: e => { const ix = parseInt(e.target.value, 10); if (!isNaN(ix) && selectRows[ix]) pick(selectRows[ix]); }, "aria-label": "Kayıtlılardan seç", title: "Kayıtlılardan seç" },
                 React.createElement("option", { value: "" }, "▾"),
                 selectRows.map((r, i) => React.createElement("option", { key: nm(r.name) + '|' + r.phone + '|' + i, value: i }, r.name + (r.phone ? ' · ' + r.phone : ''))))),
-        open && (raw || '').trim().length > 0 && q.length < 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed ko-smart-hint", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } }, "Sonuçlar için en az 2 harf yazın"), document.body),
-        open && q.length >= 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, top: __pos.top, width: __pos.width } },
-            ranked.length > 0 ? ranked.map(r => React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-option", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); } },
-                React.createElement("span", { className: "ko-smart-name" }, r.name),
-                r.phone && React.createElement("span", { className: "ko-smart-phone" }, r.phone)
-            )) : React.createElement("div", { className: "ko-smart-empty" }, emptyText || "Eşleşme yok; yazdığınız isimle devam edebilirsiniz.")
+        open && (raw || '').trim().length > 0 && q.length < 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, width: __pos.width, ...(__pos.flip ? { bottom: __pos.bottom } : { top: __pos.top }), background: 'var(--p-white)', border: '1px solid var(--p-line)', borderRadius: 14, boxShadow: '0 18px 40px -14px rgba(16,20,31,.32), 0 2px 8px rgba(16,20,31,.08)', padding: '11px 13px', fontSize: 11.5, color: 'var(--p-ink-3)', fontWeight: 450, display: 'flex', alignItems: 'center', gap: 7 } },
+            React.createElement("span", { style: { fontSize: 13 } }, '⌨️'),
+            React.createElement("span", null, "Aramak için en az 2 harf yazın")), document.body),
+        open && q.length >= 2 && __pos && ReactDOM.createPortal(React.createElement("div", { className: "ko-smart-menu-fixed", style: { position: 'fixed', left: __pos.left, width: __pos.width, ...(__pos.flip ? { bottom: __pos.bottom } : { top: __pos.top }), background: 'var(--p-white)', border: '1px solid var(--p-line)', borderRadius: 14, boxShadow: '0 18px 40px -14px rgba(16,20,31,.32), 0 2px 8px rgba(16,20,31,.08)', overflow: 'hidden', maxHeight: 288, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 5 } },
+            ranked.length > 0
+                ? ranked.map((r, i) => {
+                    const initial = (r.name || '?').trim().charAt(0).toLocaleUpperCase('tr-TR');
+                    return React.createElement("button", { key: nm(r.name) + '|' + r.phone, type: "button", className: "ko-smart-opt2", onMouseDown: e => { e.preventDefault(); pick(r); }, onPointerDown: e => { e.preventDefault(); pick(r); },
+                        style: { display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '9px 10px', border: 'none', background: 'transparent', borderRadius: 11, cursor: 'pointer', textAlign: 'left' } },
+                        React.createElement("span", { style: { flexShrink: 0, width: 32, height: 32, borderRadius: 999, background: 'var(--brand-soft)', border: '1px solid var(--brand-bd)', color: 'var(--brand)', WebkitTextFillColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 640 } }, initial || '•'),
+                        React.createElement("span", { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 } },
+                            React.createElement("span", { style: { fontSize: 13.5, fontWeight: 600, color: 'var(--p-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, r.name),
+                            r.phone ? React.createElement("span", { style: { fontSize: 11, color: 'var(--p-ink-4)', fontWeight: 450, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📞 ' + r.phone) : null),
+                        React.createElement("span", { style: { flexShrink: 0, fontSize: 12, color: 'var(--p-ink-5)', WebkitTextFillColor: 'var(--p-ink-5)' } }, '›'));
+                })
+                : React.createElement("div", { style: { padding: '13px 12px', fontSize: 12, color: 'var(--p-ink-3)', fontWeight: 450, lineHeight: 1.4, textAlign: 'center' } }, emptyText || "Eşleşme yok — yazdığınız isimle devam edebilirsiniz.")
         ), document.body)
     );
 }
