@@ -7853,29 +7853,11 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                                 sel.openNet > 0 ? ('+' + fr(sel.openNet) + '\u20BA bana g\u00F6nderecek') : (sel.openNet < 0 ? ('\u2212' + fr(sel.openNet) + '\u20BA ben g\u00F6nderece\u011Fim') : 'Ba\u015Fa ba\u015F'))),
                         sel.rows.map(jobLine)))));
 }
-function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates }) {
-    const [openAg, setOpenAg] = useState(false);
-    const [showDebtForm, setShowDebtForm] = useState(false);
+function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
     const [openDebtMgr, setOpenDebtMgr] = useState(true);
+    const [showDebtForm, setShowDebtForm] = useState(false);
     const [selectedDebtId, setSelectedDebtId] = useState(null);
-    const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
-    const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
     const [newDebt, setNewDebt] = useState({ type: 'borc', name: '', total: '', paid: '', currency: 'TRY', note: '' });
-    const addAgency = () => {
-        const name = (newAgency.name || '').trim(), phone = (newAgency.phone || '').trim();
-        if (!name) return;
-        setAgencies(p => p.includes(name) ? p : [...p, name]);
-        setAgencyPhones(p => ({ ...p, [name]: phone }));
-        setNewAgency({ name: '', phone: '' });
-        tip('Acenta eklendi');
-    };
-    const addDriver = () => {
-        const name = (newDriver.name || '').trim(), phone = (newDriver.phone || '').trim();
-        if (!name) return;
-        setDrivers(p => [...p.filter(x => x.name !== name), { name, phone }]);
-        setNewDriver({ name: '', phone: '' });
-        tip('Kaptan eklendi');
-    };
     const saveDebt = () => {
         const name = (newDebt.name || '').trim();
         const total = moneyValue(newDebt.total);
@@ -7885,7 +7867,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
             return false;
         }
         const now = new Date().toISOString();
-        setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, currency: newDebt.currency || 'TRY', note: (newDebt.note || '').trim(), movements: [], createdAt: now, updatedAt: now }, ...p]);
+        setDebts(p => [{ id: Date.now().toString(), type: newDebt.type, name, total, paid, currency: newDebt.currency || 'TRY', note: (newDebt.note || '').trim(), movements: [], createdAt: now, updatedAt: now }, ...(Array.isArray(p) ? p : [])]);
         setNewDebt({ type: newDebt.type, name: '', total: '', paid: '', currency: newDebt.currency || 'TRY', note: '' });
         tip(newDebt.type === 'borc' ? 'Borç eklendi' : 'Alacak eklendi');
         return true;
@@ -7896,6 +7878,8 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
     const alacaklar = standaloneDebts.filter(d => d.type === 'alacak');
     const selectedDebt = standaloneDebts.find(d => String(d.id) === String(selectedDebtId)) || null;
     const debtOpenTotalTRY = rows => Math.round((rows || []).reduce((s, d) => s + debtRemainingTRY(d, rates), 0));
+    const totalAlacakTRY = debtOpenTotalTRY(alacaklar);
+    const totalBorcTRY = debtOpenTotalTRY(borclar);
     const renderDebtSummary = (d, kind) => {
         const remaining = debtRemainingAmount(d);
         const remainingTRY = debtRemainingTRY(d, rates);
@@ -7926,6 +7910,68 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
             rows.length
                 ? rows.map(d => renderDebtSummary(d, kind))
                 : React.createElement("div", { className: "ko-account-firm-bucket-empty" }, "Yok")));
+    const net = totalAlacakTRY - totalBorcTRY;
+    return React.createElement("div", { className: "card ko-debt-manager", style: { order: 1 } },
+        React.createElement("button", {
+            type: "button", className: "ko-debt-toggle",
+            onClick: () => setOpenDebtMgr(v => !v),
+            style: { width: '100%', textAlign: 'left', cursor: 'pointer' }
+        },
+            React.createElement("span", null, '💼 Alacak / Borç'),
+            React.createElement("span", null,
+                (alacaklar.length + borclar.length) ? (alacaklar.length + borclar.length) + ' kayıt' : 'Kayıt yok',
+                '   ', openDebtMgr ? '−' : '+')),
+        openDebtMgr && (alacaklar.length + borclar.length) > 0 && React.createElement("div", { style: { display: 'flex', gap: 8, marginTop: 11 } },
+            React.createElement("div", { style: { flex: 1, background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', borderRadius: 12, padding: '9px 12px' } },
+                React.createElement("div", { style: { fontSize: 9.5, fontWeight: 600, color: 'var(--p-pos-deep)', textTransform: 'uppercase', letterSpacing: .5 } }, 'Toplam alacak'),
+                React.createElement("div", { style: { fontSize: 16, fontWeight: 650, color: 'var(--p-pos-deep)', fontVariantNumeric: 'tabular-nums', marginTop: 2, letterSpacing: -.2 } }, '+' + fr(totalAlacakTRY) + '₺')),
+            React.createElement("div", { style: { flex: 1, background: 'var(--p-neg-soft)', border: '1px solid var(--p-neg-bd)', borderRadius: 12, padding: '9px 12px' } },
+                React.createElement("div", { style: { fontSize: 9.5, fontWeight: 600, color: 'var(--p-neg-deep)', textTransform: 'uppercase', letterSpacing: .5 } }, 'Toplam borç'),
+                React.createElement("div", { style: { fontSize: 16, fontWeight: 650, color: 'var(--p-neg-deep)', fontVariantNumeric: 'tabular-nums', marginTop: 2, letterSpacing: -.2 } }, '−' + fr(totalBorcTRY) + '₺'))),
+        openDebtMgr && React.createElement("div", { className: "ko-debt-direct-head", style: { marginTop: 11 } },
+            React.createElement("div", null,
+                React.createElement("div", { className: "ko-debt-direct-sub" }, "Aynı isimli firma hesapları yukarıda birleşir; bağımsız kayıtlar burada görünür.")),
+            React.createElement("button", { type: "button", className: "ko-debt-new-btn", onClick: () => setShowDebtForm(v => !v) }, showDebtForm ? "Formu Kapat" : "+ Yeni Ekle")),
+        openDebtMgr && React.createElement("div", { className: "ko-debt-body", style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 12 } },
+            showDebtForm && React.createElement("div", { className: "ko-debt-new-form" },
+            React.createElement("div", { className: "ko-debt-form-row is-primary", style: { display: 'grid', gap: 8 } },
+                React.createElement("select", { value: newDebt.type, onChange: e => setNewDebt(p => ({ ...p, type: e.target.value })), className: "inp" }, React.createElement("option", { value: 'borc' }, 'Borç'), React.createElement("option", { value: 'alacak' }, 'Alacak')),
+                React.createElement("input", { value: newDebt.name, onChange: e => setNewDebt(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma", className: "inp" }),
+                React.createElement("input", { type: "number", inputMode: "decimal", value: newDebt.total, onChange: e => setNewDebt(p => ({ ...p, total: e.target.value })), placeholder: "Tutar", className: "inp" }),
+                React.createElement("select", { value: newDebt.currency, onChange: e => setNewDebt(p => ({ ...p, currency: e.target.value })), className: "inp" }, debtCurrencyOptions())),
+            newDebt.total && newDebt.currency !== 'TRY' && React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'right', marginTop: -7 } }, "≈ " + fr(debtAmountToTRY(newDebt.total, newDebt.currency, rates)) + "₺"),
+            React.createElement("div", { className: "ko-debt-form-row is-secondary", style: { display: 'grid', gap: 8 } },
+                React.createElement("input", { type: "number", value: newDebt.paid, onChange: e => setNewDebt(p => ({ ...p, paid: e.target.value })), placeholder: newDebt.type === 'borc' ? "Ödenen" : "Tahsilat", className: "inp" }),
+                React.createElement("input", { value: newDebt.note, onChange: e => setNewDebt(p => ({ ...p, note: e.target.value })), placeholder: "Detay / açıklama", className: "inp" }),
+                React.createElement("button", { onClick: () => { if (saveDebt()) setShowDebtForm(false); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, fontWeight: 450, cursor: 'pointer' } }, 'Kaydet'))),
+            React.createElement("div", { className: "ko-account-split-grid ko-debt-split-grid" },
+                renderDebtBucket('rec', 'Alacak', alacaklar),
+                renderDebtBucket('pay', 'Borç', borclar)),
+            selectedDebt && React.createElement(React.Fragment, null,
+                React.createElement("div", { className: "ko-account-balance-divider" }, "Hesap Detayı"),
+                React.createElement("div", { className: "ko-debt-selected-detail" },
+                    React.createElement(DebtLedgerCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, onClose: () => setSelectedDebtId(null) })))));
+}
+
+function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates }) {
+    const [openAg, setOpenAg] = useState(false);
+    const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
+    const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
+    const addAgency = () => {
+        const name = (newAgency.name || '').trim(), phone = (newAgency.phone || '').trim();
+        if (!name) return;
+        setAgencies(p => p.includes(name) ? p : [...p, name]);
+        setAgencyPhones(p => ({ ...p, [name]: phone }));
+        setNewAgency({ name: '', phone: '' });
+        tip('Acenta eklendi');
+    };
+    const addDriver = () => {
+        const name = (newDriver.name || '').trim(), phone = (newDriver.phone || '').trim();
+        if (!name) return;
+        setDrivers(p => [...p.filter(x => x.name !== name), { name, phone }]);
+        setNewDriver({ name: '', phone: '' });
+        tip('Kaptan eklendi');
+    };
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 } },
         React.createElement(TakasHesap, { T: T, sT: sT, crossRates: crossRates || DEFAULT_CROSS_RATES, setCrossRates: setCrossRates, tip: tip }),
         React.createElement(DugunHesap, { T: T, sT: sT, tip: tip }),
@@ -7972,39 +8018,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                                 () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); },
                                 () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }))))));
             })()),
-        React.createElement("div", { className: "card ko-debt-manager", style: { order: 1 } },
-            React.createElement("button", {
-                type: "button", className: "ko-debt-toggle",
-                onClick: () => setOpenDebtMgr(v => !v),
-                style: { width: '100%', textAlign: 'left', cursor: 'pointer' }
-            },
-                React.createElement("span", null, '💼 Alacak / Borç'),
-                React.createElement("span", null,
-                    (alacaklar.length + borclar.length) ? (alacaklar.length + borclar.length) + ' kayıt' : 'Kayıt yok',
-                    '\u00A0\u00A0\u00A0', openDebtMgr ? '−' : '+')),
-            openDebtMgr && React.createElement("div", { className: "ko-debt-direct-head", style: { marginTop: 11 } },
-                React.createElement("div", null,
-                    React.createElement("div", { className: "ko-debt-direct-sub" }, "Aynı isimli firma hesapları yukarıda birleşir; bağımsız kayıtlar burada görünür.")),
-                React.createElement("button", { type: "button", className: "ko-debt-new-btn", onClick: () => setShowDebtForm(v => !v) }, showDebtForm ? "Formu Kapat" : "+ Yeni Ekle")),
-            openDebtMgr && React.createElement("div", { className: "ko-debt-body", style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 12 } },
-                showDebtForm && React.createElement("div", { className: "ko-debt-new-form" },
-                React.createElement("div", { className: "ko-debt-form-row is-primary", style: { display: 'grid', gap: 8 } },
-                    React.createElement("select", { value: newDebt.type, onChange: e => setNewDebt(p => ({ ...p, type: e.target.value })), className: "inp" }, React.createElement("option", { value: 'borc' }, 'Borç'), React.createElement("option", { value: 'alacak' }, 'Alacak')),
-                    React.createElement("input", { value: newDebt.name, onChange: e => setNewDebt(p => ({ ...p, name: e.target.value })), placeholder: "Kişi / firma", className: "inp" }),
-                    React.createElement("input", { type: "number", inputMode: "decimal", value: newDebt.total, onChange: e => setNewDebt(p => ({ ...p, total: e.target.value })), placeholder: "Tutar", className: "inp" }),
-                    React.createElement("select", { value: newDebt.currency, onChange: e => setNewDebt(p => ({ ...p, currency: e.target.value })), className: "inp" }, debtCurrencyOptions())),
-                newDebt.total && newDebt.currency !== 'TRY' && React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'right', marginTop: -7 } }, "≈ " + fr(debtAmountToTRY(newDebt.total, newDebt.currency, rates)) + "₺"),
-                React.createElement("div", { className: "ko-debt-form-row is-secondary", style: { display: 'grid', gap: 8 } },
-                    React.createElement("input", { type: "number", value: newDebt.paid, onChange: e => setNewDebt(p => ({ ...p, paid: e.target.value })), placeholder: newDebt.type === 'borc' ? "Ödenen" : "Tahsilat", className: "inp" }),
-                    React.createElement("input", { value: newDebt.note, onChange: e => setNewDebt(p => ({ ...p, note: e.target.value })), placeholder: "Detay / açıklama", className: "inp" }),
-                    React.createElement("button", { onClick: () => { if (saveDebt()) setShowDebtForm(false); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, fontWeight: 450, cursor: 'pointer' } }, 'Kaydet'))),
-                React.createElement("div", { className: "ko-account-split-grid ko-debt-split-grid" },
-                    renderDebtBucket('rec', 'Alacak', alacaklar),
-                    renderDebtBucket('pay', 'Borç', borclar)),
-                selectedDebt && React.createElement(React.Fragment, null,
-                    React.createElement("div", { className: "ko-account-balance-divider" }, "Hesap Detayı"),
-                    React.createElement("div", { className: "ko-debt-selected-detail" },
-                        React.createElement(DebtLedgerCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, onClose: () => setSelectedDebtId(null) }))))));
+        React.createElement(DebtManager, { debts: debts, setDebts: setDebts, rates: rates, tip: tip, T: T, accountAdjustments: accountAdjustments }));
 }
 function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -12222,13 +12236,12 @@ function App() {
                     return React.createElement("div", {
                         key: t.id,
                         onClick: () => openTransferInList(t),
-                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.09)', borderRadius: 20, padding: '15px 16px 15px 17px', boxShadow: '0 1px 2px rgba(24,35,29,.04), 0 12px 26px -16px rgba(24,35,29,.16)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
+                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.06)', borderRadius: 18, padding: '13px 15px', boxShadow: '0 1px 2px rgba(24,35,29,.03), 0 16px 30px -20px rgba(24,35,29,.14)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
-                        React.createElement("div", { style: { position: 'absolute', left: 0, top: 14, bottom: 14, width: 3, borderRadius: '0 3px 3px 0', background: tip.c } }),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '46px minmax(0,1fr) auto', alignItems: 'center', gap: 14 } },
-                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, paddingRight: 12, borderRight: '1px solid rgba(24,35,29,.08)' } },
-                                React.createElement("span", { style: { fontSize: 15, fontWeight: 640, letterSpacing: '-.01em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
-                                React.createElement("span", { style: { fontSize: 14, lineHeight: 1 } }, tip.ico)),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 13 } },
+                            React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 54, padding: '9px 7px 8px', borderRadius: 13, background: 'var(--p-bg-lo)' } },
+                                React.createElement("span", { style: { fontSize: 14.5, fontWeight: 640, letterSpacing: '-.01em', color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
+                                React.createElement("span", { style: { width: 16, height: 3, borderRadius: 3, background: tip.c, opacity: .85 } })),
                             React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, justifyContent: 'center' } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
                                     React.createElement("span", { style: { fontSize: 9.5, fontWeight: 640, letterSpacing: '.03em', padding: '3px 9px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
