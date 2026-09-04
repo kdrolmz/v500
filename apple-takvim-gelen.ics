@@ -4956,25 +4956,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788441129985_iycapx@olmeztur
-DTSTAMP:20260904T082500Z
-LAST-MODIFIED:20260903T194600Z
-SEQUENCE:1788464774
-DTSTART:20260904T113500
-DTEND:20260904T123500
-SUMMARY:11:35 · IST→Bursa
-LOCATION:İstanbul Havalimanı → Bursa
-DESCRIPTION:Müşteri: Najah Abdulmajeed Ahmed Hussaın\, Tahanı Hamad Moha
- mmed Al-saeed\, Mona Hamad Mohammed Al-saeed\, Hamad Mohammed Al-saeed\,
-  Eiman Alsaeed\nŞoför: -\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt ace
- nta: Cihat Öter\nAraç: Sprinter\nGüzergah: İstanbul Havalimanı → Bursa\n
- Uçuş: KU155\nÖdeme: Müşteri: 230 USD | Araç: 8.000 ₺ | Alt acenta: 7.500
-  ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1788464694072_f3l6el@olmeztur
 DTSTAMP:20260904T082500Z
 LAST-MODIFIED:20260903T194700Z
@@ -4987,6 +4968,25 @@ DESCRIPTION:Müşteri: Lain Richardson\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Cihat Öter\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
   Vito / 16 LMZ 55\nGüzergah: Sabiha Gökçen Havalimanı → Bursa\nUçuş: PC1
  164\nÖdeme: Müşteri: 9.800 TRY | Araç: 6.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788441129985_iycapx@olmeztur
+DTSTAMP:20260904T082500Z
+LAST-MODIFIED:20260904T082500Z
+SEQUENCE:1788510335
+DTSTART:20260904T165500
+DTEND:20260904T175500
+SUMMARY:16:55 · IST→Bursa
+LOCATION:İstanbul Havalimanı → Bursa
+DESCRIPTION:Müşteri: Najah Abdulmajeed Ahmed Hussaın\, Tahanı Hamad Moha
+ mmed Al-saeed\, Mona Hamad Mohammed Al-saeed\, Hamad Mohammed Al-saeed\,
+  Eiman Alsaeed\nŞoför: -\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt ace
+ nta: Cihat Öter\nAraç: Sprinter\nGüzergah: İstanbul Havalimanı → Bursa\n
+ Uçuş: KU155\nÖdeme: Müşteri: 230 USD | Araç: 8.000 ₺ | Alt acenta: 7.500
+  ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
