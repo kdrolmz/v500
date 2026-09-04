@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#4E7160">
+<meta name="theme-color" content="#2C3852">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>KÖ Transfer Takip - Stabil</title>
@@ -19,29 +19,35 @@
 :root{
   --p-white:#FFFFFF;
   --p-surface:#FFFFFF;
-  --p-bg:#EFF2ED;
-  --p-bg-hi:#FAFBF8;
-  --p-bg-lo:#F3F5F1;
+  --p-bg:#EDEFF3;
+  --p-bg-hi:#FAFBFD;
+  --p-bg-lo:#F1F3F7;
   --p-field:#F7F9FB;
   --p-tint:#EDF1F6;
   --p-tint-2:#F2F2F7;
   --p-tint-3:#F4F6F9;
   --p-tint-4:#E5E5EA;
-  --p-ink:#18231D;
-  --p-ink-2:#334037;
-  --p-ink-3:#66756C;
-  --p-ink-4:#96A29A;
+  --p-ink:#1B2230;
+  --p-ink-2:#333B48;
+  --p-ink-3:#69707A;
+  --p-ink-4:#98A0AA;
   --p-ink-5:#C7CBD1;
-  --p-brand:#22252E;
+  --p-brand:#20263A;
   --p-brand-soft:#EDF1F6;
-  --p-line:#D8DEDA;
-  --p-line-2:#C9D1CC;
+  --p-line:#D9DEE6;
+  --p-line-2:#C9D0DA;
   --p-line-3:#D1D1D6;
   --p-pos:#0E9F6E;
-  --p-pos-deep:#2F6B4F;
-  --p-pos-soft:#EAF3ED;
-  --p-pos-bd:#B7E1C4;
-  --p-pos-ink:#0B7C55;
+  --p-pos-deep:#38476E;
+  --p-pos-soft:#EEF1F8;
+  --p-pos-bd:#C6D1E7;
+  --p-pos-ink:#2E3E66;
+  --p-t-arr:#5E7A5F;--p-t-arr-bg:#EDF2EC;--p-t-arr-bd:#CCDBC8;
+  --p-t-dep:#616873;--p-t-dep-bg:#F0F1F4;--p-t-dep-bd:#D6D9DF;
+  --p-t-tur:#8C6F31;--p-t-tur-bg:#F6F1E3;--p-t-tur-bd:#E4D8B9;
+  --p-t-dug:#7E5A86;--p-t-dug-bg:#F1EBF3;--p-t-dug-bd:#D9C7DD;
+  --p-t-vip:#9E6540;--p-t-vip-bg:#F6ECE4;--p-t-vip-bd:#E6CDB8;
+  --p-t-kisa:#4F6588;--p-t-kisa-bg:#EAEEF4;--p-t-kisa-bd:#CAD4E2;
   --p-neg:#C05F5F;
   --p-neg-deep:#B5544F;
   --p-neg-soft:#FBEDEC;
@@ -55,9 +61,9 @@
   --p-accent:#B99447;
   --p-accent-2:#E6CE96;
   --p-accent-soft:#FAF4E7;
-  --p-hero-1:#5E8570;
-  --p-hero-2:#4E7160;
-  --p-hero-3:#436251;
+  --p-hero-1:#46567E;
+  --p-hero-2:#3A4968;
+  --p-hero-3:#2C3852;
 }
 :root{--green:var(--p-pos);--green-2:var(--p-pos);--red:var(--p-neg);--yellow:var(--p-warn);--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:var(--p-white);--line:var(--p-line);--line-2:var(--p-line-3);--ink:var(--p-ink);--ink-2:var(--p-ink-2);--ink-3:var(--p-ink-3);--muted:var(--p-ink-3);--accent:var(--p-brand);--accent-2:var(--p-brand);--accent-soft:var(--p-tint);--brand:var(--p-brand);--brand-2:var(--p-brand);--brand-soft:var(--p-tint);--ok:var(--p-pos);--ok-bg:var(--p-pos-soft);--ok-bd:var(--p-pos-bd);--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -222,6 +228,8 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
   .ko-htx-amt{font-size:12.8px !important;font-weight:520 !important}
   .ko-htx-who{font-size:8.3px !important;font-weight:480 !important}
   .ko-htx-status{font-size:9px !important;padding:3px 9px !important;font-weight:500 !important}
+  .ko-htx-agency{font-size:9.4px !important;padding-top:7px !important;gap:6px !important}
+  .ko-htx-agency-val{max-width:118px !important}
 }
 .ko-passenger-list,.tk-panel-list{display:flex;flex-direction:column;gap:8px}
 .ko-passenger-item{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--p-white)}
@@ -235,7 +243,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-account-firm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important}
 .ko-account-split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
 .ko-account-firm-bucket{min-width:0;border:1px solid var(--line);border-radius:14px;background:var(--p-white);overflow:hidden}
-.ko-account-firm-bucket.is-rec{border-color:rgba(79,107,69,.34)}
+.ko-account-firm-bucket.is-rec{border-color:rgba(46,62,102,.34)}
 .ko-account-firm-bucket.is-pay{border-color:rgba(178,82,76,.30)}
 .ko-account-firm-bucket-head{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border-bottom:1px solid rgba(60,60,67,.12)}
 .ko-account-firm-bucket-title,.x-none{font-size:11px;font-weight:620;line-height:1.12;letter-spacing:.2px;text-transform:uppercase}
@@ -244,7 +252,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-account-firm-bucket-total{font-size:12px;font-weight:650;line-height:1.08;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .ko-account-firm-bucket-cards{display:flex;flex-direction:column;gap:6px;padding:7px}
 .ko-account-firm-bucket-empty{font-size:11px;font-weight:520;padding:12px 8px;text-align:center}
-.ko-account-firm-card.is-rec{border-color:rgba(79,107,69,.30) !important;border-left:3px solid var(--p-brand) !important;background:var(--p-white) !important}
+.ko-account-firm-card.is-rec{border-color:rgba(46,62,102,.30) !important;border-left:3px solid var(--p-brand) !important;background:var(--p-white) !important}
 .ko-account-firm-card.is-pay{border-color:rgba(178,82,76,.28) !important;border-left:3px solid var(--p-neg) !important;background:var(--p-white) !important}
 .ko-account-firm-bucket .ko-account-firm-card-title{flex-direction:column;align-items:stretch !important;gap:4px !important}
 .ko-account-firm-bucket .ko-account-firm-card-title span{align-self:flex-end;max-width:100%;white-space:normal !important;text-align:right}
@@ -282,7 +290,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-debt-split-grid{margin-top:2px}
 .ko-debt-split-grid .ko-account-firm-bucket-cards{gap:7px}
 .ko-debt-summary-card{width:100%;min-height:52px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:var(--p-white);box-shadow:var(--shadow);color:var(--ink);text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.ko-debt-summary-card.is-rec{border-color:rgba(79,107,69,.30);border-left:3px solid var(--p-brand)}
+.ko-debt-summary-card.is-rec{border-color:rgba(46,62,102,.30);border-left:3px solid var(--p-brand)}
 .ko-debt-summary-card.is-pay{border-color:rgba(178,82,76,.28);border-left:3px solid var(--p-neg)}
 .ko-debt-summary-card.is-selected{outline:2px solid rgba(28,28,30,.18);outline-offset:1px}
 .ko-debt-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;min-width:0}
@@ -312,7 +320,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-account-settle-btn{border:1px solid var(--line);background:var(--p-white);font-size:10px !important;font-weight:520 !important;padding:5px 8px !important;min-height:25px !important;border-radius:999px !important}
 .ko-hesap-settle-toggle{display:flex;align-items:center;gap:6px}
 .ko-hesap-settle-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
-.ko-hesap-settle-toggle.is-closed .ko-hesap-settle-dot{background:var(--green)}
+.ko-hesap-settle-toggle.is-closed .ko-hesap-settle-dot{background:var(--p-brand)}
 .tk-wrap,.tk-widget-page{display:flex;flex-direction:column;gap:10px}
 .tk-cell-dot{width:5px;height:5px;border-radius:50%;background:var(--brand)}
 .tk-cell-dots{display:flex;gap:2px;flex-wrap:wrap}
@@ -394,8 +402,8 @@ main.main-cont.view-home{padding-top:0 !important}
 .tcard-pill-alt{font-weight:600 !important;flex:0 1 auto !important;white-space:normal !important;overflow-wrap:anywhere !important;text-align:left !important;line-height:1.2 !important}
 .tcard-pill-flight{flex:0 0 auto !important;white-space:nowrap !important}
 .tcard-paystatus.is-pending{border-color:rgba(178,96,92,.28) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
-.tcard-paystatus.is-paid{border-color:rgba(31,122,77,.28) !important;color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
-.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.tcard-paystatus.is-paid{border-color:rgba(46,62,102,.28) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
+.lg-chip-ok{border-color:rgba(46,62,102,.28) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .lg-chip-status-tam{border-color:rgba(60,60,67,.28) !important;color:var(--brand) !important;-webkit-text-fill-color:var(--brand) !important}
 .lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
 .lg-chip-wait,.lg-chip-status-iptal{border-color:rgba(178,96,92,.30) !important;color:var(--red) !important;-webkit-text-fill-color:var(--red) !important}
@@ -445,11 +453,11 @@ main.main-cont.view-home{padding-top:0 !important}
 .lg-upcoming-card,.lg-mini-upcoming{content-visibility:auto;contain-intrinsic-size:auto 64px;contain:layout paint style}
 .ko-account-transfer-row{content-visibility:auto;contain-intrinsic-size:auto 88px;contain:layout paint style}
 .lg-month-day,.tk-cell{contain:layout paint style}
-:root{--card:var(--p-white) !important;--accent:var(--p-brand) !important;--accent-soft:var(--p-tint) !important;--brand-bd:rgba(60,60,67,.18) !important;--green:var(--p-pos) !important;--red:var(--p-neg) !important;--ok:var(--p-brand) !important;--ok-bd:rgba(31,122,77,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(94,122,82,.26) !important;--err:var(--p-neg) !important;--err-bd:rgba(79,107,69,.24) !important;--shadow:none !important}
+:root{--card:var(--p-white) !important;--accent:var(--p-brand) !important;--accent-soft:var(--p-tint) !important;--brand-bd:rgba(60,60,67,.18) !important;--green:var(--p-pos) !important;--red:var(--p-neg) !important;--ok:var(--p-brand) !important;--ok-bd:rgba(46,62,102,.24) !important;--info-bd:rgba(47,101,167,.22) !important;--warn-bd:rgba(46,62,102,.26) !important;--err:var(--p-neg) !important;--err-bd:rgba(46,62,102,.24) !important;--shadow:none !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 .card,.lg-glass-card,.lg-metric-card,.lg-greeting-card,.lg-period-card,.lg-profit-card,.lg-period-panel,.lg-upcoming-card,.date-hdr,.tk-card,.tk-panel,.tk-ledger,.ko-account-firm-card,.ko-account-sheet-section,.ko-transfer-edit-sheet,.ms,.tcard{background:var(--p-white) !important;box-shadow:none !important}
 input,select,textarea,.inp{background:var(--p-white) !important;box-shadow:none !important}
-input:focus,select:focus,textarea:focus,.inp:focus{border-color:var(--p-brand) !important;box-shadow:0 0 0 3px rgba(79,107,69,.12) !important}
+input:focus,select:focus,textarea:focus,.inp:focus{border-color:var(--p-brand) !important;box-shadow:0 0 0 3px rgba(46,62,102,.12) !important}
 .is-pos,.amt-pos,.lg-profit-value.is-pos,.lg-profit-detail-value.is-pos,.lg-profit-month-total.is-pos,.ko-money-pos,.ko-money-token[data-ko-sign="plus"],.ko-money-currency[data-ko-sign="plus"],.ko-account-stat-total.is-pos,.ko-account-firm-card-title .is-pos,.ko-account-net-cell.is-pos,.ko-hesap-month-stat .is-pos,.ko-arac-money-line.is-net b{color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
 .is-neg,.amt-neg,.lg-profit-value.is-neg,.lg-profit-detail-value.is-neg,.lg-profit-month-total.is-neg,.ko-money-neg,.ko-money-token[data-ko-sign="minus"],.ko-money-currency[data-ko-sign="minus"],.ko-payment-none,.ko-account-stat-total.is-neg,.ko-account-firm-card-title .is-neg,.ko-account-net-cell.is-neg,.ko-hesap-month-stat .is-neg,.ko-arac-money-line.is-net.is-neg b{color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
 .hdr-iconbtn,.lg-backup-btn,.lg-refresh-btn,.tk-nav-btn,.tk-mini-btn,.ko-party-add-btn,.ko-arac-soft-btn,.ko-account-settle-btn,.lg-month-nav,.lg-month-today-btn{background:var(--p-white) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important;box-shadow:none !important}
@@ -457,7 +465,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:var(--p-brand) !
 .tcard-pill.tcard-pill-alt{font-weight:600 !important}
 .tcard-pill-status-tam,.lg-chip-status-tam{border-color:rgba(47,101,167,.24) !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(154,106,31,.30) !important}
-.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(31,122,77,.28) !important;color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.tcard-paystatus.is-paid,.lg-chip-ok{border-color:rgba(46,62,102,.28) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .tcard-paystatus.is-pending,.tcard-paystatus.is-none,.lg-chip-wait,.lg-chip-status-iptal,.tcard-pill-status-iptal{border-color:rgba(176,82,76,.24) !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
 .tcard-stripe{background:var(--p-brand) !important}
 .tabbar{background:rgba(255,255,255,.98) !important;border-top:1px solid rgba(60,60,67,.18) !important;box-shadow:none !important}
@@ -473,7 +481,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:var(--p-brand) !
 .lg-month-weekdays div{font-size:10px !important;font-weight:520 !important;text-align:center !important}
 .lg-month-day,.ko-arac-day{min-height:50px !important;aspect-ratio:auto !important;border-radius:12px !important;padding:7px 4px 5px !important;background:var(--p-white) !important;box-shadow:none !important;display:grid !important;grid-template-rows:15px 11px 11px !important;align-content:start !important;justify-items:center !important;align-items:center !important;row-gap:0 !important;gap:0 !important;overflow:hidden !important;text-align:center !important;contain:layout paint style !important}
 .lg-month-day.is-other,.ko-arac-day.is-other{opacity:.36 !important}
-.lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(79,107,69,.40) !important}
+.lg-month-day.is-today,.ko-arac-day.is-today{border-color:rgba(46,62,102,.40) !important}
 .lg-month-day>div:first-child,.ko-arac-day>div:first-child{width:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:3px !important;min-width:0 !important}
 .lg-month-day-num,.ko-arac-day-num,.tk-cell-num{font-size:11px !important;font-weight:600 !important;line-height:1 !important;text-align:center !important}
 .lg-month-day.is-today:not(.is-selected) .lg-month-day-num,.ko-arac-day.is-today:not(.is-selected) .ko-arac-day-num,.tk-cell.tk-today:not(.tk-selected) .tk-cell-num{color:var(--slate,var(--p-info)) !important;-webkit-text-fill-color:var(--slate,var(--p-info)) !important}
@@ -510,7 +518,7 @@ img,svg{content-visibility:auto}
   .tcard-header{padding:11px !important}
   .tcard-body{grid-template-columns:44px minmax(0,1fr) auto !important}
 }
-:root{--card:var(--p-white) !important;--green:var(--p-pos) !important;--green-2:var(--p-pos) !important;--red:var(--p-neg) !important;--ok:var(--p-pos) !important;--ok-bd:rgba(47,117,89,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:var(--p-neg) !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
+:root{--card:var(--p-white) !important;--green:var(--p-pos) !important;--green-2:var(--p-pos) !important;--red:var(--p-neg) !important;--ok:var(--p-pos) !important;--ok-bd:rgba(46,62,102,.24) !important;--info-bd:rgba(55,109,134,.24) !important;--warn-bd:rgba(158,124,46,.28) !important;--err:var(--p-neg) !important;--err-bd:rgba(158,94,88,.24) !important;--shadow:0 1px 2px rgba(37,40,35,.06) !important}
 html,body,#root,.app-shell{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Arial,sans-serif !important}
 body *,body *::before,body *::after{animation:none !important;transition:none !important;text-shadow:none !important;filter:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;letter-spacing:0 !important}
 [style*="linear-gradient"]{background-image:none !important}
@@ -540,7 +548,7 @@ input,select,textarea,.inp{background:var(--p-white) !important;box-shadow:none 
 .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight{background:var(--p-white) !important;border-radius:999px !important;font-size:10.5px !important;font-weight:430 !important}
 .tcard-pill-status-bos,.lg-chip-status-bos{border-color:rgba(158,124,46,.28) !important}
 .tcard-pill-status-iptal,.lg-chip-status-iptal,.tcard-paystatus.is-none{border-color:rgba(158,94,88,.24) !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
-.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(47,117,89,.24) !important;color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.tcard-paystatus.is-paid,.lg-chip-ok,.ko-payment-to-me-pill{border-color:rgba(46,62,102,.24) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .tcard-paystatus.is-pending,.lg-chip-wait{border-color:rgba(158,94,88,.24) !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
 .tabbar{background:var(--p-white) !important;box-shadow:none !important}
 .tabbar-inner{background:var(--p-white) !important;border:0 !important;box-shadow:none !important;height:74px !important}
@@ -569,7 +577,7 @@ input,select,textarea,.inp{background:var(--p-white) !important;box-shadow:none 
 .ko-account-manual-panel .inp{min-height:44px !important;border-radius:10px !important;font-size:16px !important}
 .ko-account-manual-row{border-style:solid !important}
 .ko-hesap-settle-toggle.is-open,.ko-account-settle-btn.is-open{border-color:rgba(158,94,88,.24) !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
-.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(47,117,89,.24) !important;color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.ko-hesap-settle-toggle.is-settled,.ko-account-settle-btn.is-settled{border-color:rgba(46,62,102,.24) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.ko-account-flow,.ko-account-route-cell small,.lg-arac-head-title,.ko-account-firm-card-title b,.ko-contact-name,.ko-contact-phone{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
 :where(.tcard-agency,.tcard-route,.tcard-passenger,.lg-route,.lg-transfer-date,.lg-row,.ko-account-flow,.ko-account-cell small,.ko-arac-job-title,.ko-arac-job-sub,.ko-contact-name,.ko-contact-phone,.lg-month-selected-title,.lg-month-selected-count,.lg-month-day-count,.ko-arac-day-count,.lg-month-day-net,.ko-arac-day-net){text-overflow:clip !important}
 .tcard *,.lg-upcoming-card *,.ko-account-row *,.lg-month-day *,.ko-arac-day *{min-width:0 !important}
@@ -597,9 +605,9 @@ input,select,textarea,.inp{background:var(--p-white) !important;box-shadow:none 
 .lg-home .lg-greeting-card{overflow:hidden !important}
 .lg-home .lg-backup-btn,.lg-home .lg-refresh-btn{box-shadow:none !important;-webkit-text-fill-color:var(--p-brand) !important}
 .lg-home-transfer-list>div,.lg-today-list-standalone>div{contain:layout paint style}
-.view-arac .ko-arac-day.is-today{border-color:rgba(94,122,82,.58) !important}
+.view-arac .ko-arac-day.is-today{border-color:rgba(46,62,102,.58) !important}
 .ko-debt-firm-card{width:100% !important;margin:0 !important}
-.ko-debt-firm-card.is-selected{outline:2px solid rgba(79,107,69,.22) !important;outline-offset:1px !important}
+.ko-debt-firm-card.is-selected{outline:2px solid rgba(46,62,102,.22) !important;outline-offset:1px !important}
 .ko-debt-firm-card .ko-account-firm-card-copy b{white-space:normal !important;overflow:visible !important;overflow-wrap:anywhere !important;text-overflow:clip !important}
 .ko-debt-firm-card .ko-debt-firm-tl{display:inline !important;margin-left:3px !important;font-size:10.5px !important;opacity:.75 !important}
 .ko-debt-ledger{border-left:4px solid var(--debt-accent,var(--p-brand)) !important;border-radius:16px !important;background:var(--p-white) !important;padding:9px !important;box-shadow:0 1px 2px rgba(37,40,35,.05) !important;overflow:hidden !important}
@@ -800,20 +808,20 @@ input,select,textarea,.inp{min-height:44px !important;font-size:16px !important}
 .ko-arac-day.is-selected .ko-arac-day-num,.ko-arac-day.is-selected .ko-arac-day-count,
 .tk-cell.tk-selected .tk-cell-num,.tk-cell.tk-selected .tk-cell-count,
 .lg-month-day.ko-selected-gold .lg-month-day-num{color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important}
-.tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:var(--p-pos-deep) !important}
-.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:var(--p-info) !important}
-.tcard.t-tour .tcard-stripe,.lg-home-transfer-list .tcard.t-tour .tcard-stripe{background:var(--p-accent) !important}
-.tcard.t-shortpass .tcard-stripe,.lg-home-transfer-list .tcard.t-shortpass .tcard-stripe{background:var(--p-ink-2) !important}
-.tcard.t-intercity .tcard-stripe,.lg-home-transfer-list .tcard.t-intercity .tcard-stripe{background:var(--p-info) !important}
+.tcard.t-arrival .tcard-stripe,.lg-home-transfer-list .tcard.t-arrival .tcard-stripe{background:var(--p-t-arr) !important}
+.tcard.t-departure .tcard-stripe,.lg-home-transfer-list .tcard.t-departure .tcard-stripe{background:var(--p-t-dep) !important}
+.tcard.t-tour .tcard-stripe,.lg-home-transfer-list .tcard.t-tour .tcard-stripe{background:var(--p-t-tur) !important}
+.tcard.t-shortpass .tcard-stripe,.lg-home-transfer-list .tcard.t-shortpass .tcard-stripe{background:var(--p-t-kisa) !important}
+.tcard.t-intercity .tcard-stripe,.lg-home-transfer-list .tcard.t-intercity .tcard-stripe{background:var(--p-t-vip) !important}
 .tcard.t-takas .tcard-stripe,.lg-home-transfer-list .tcard.t-takas .tcard-stripe{background:var(--p-ink-3) !important}
-.tcard.t-dugun .tcard-stripe,.lg-home-transfer-list .tcard.t-dugun .tcard-stripe{background:var(--p-ink-4) !important}
+.tcard.t-dugun .tcard-stripe,.lg-home-transfer-list .tcard.t-dugun .tcard-stripe{background:var(--p-t-dug) !important}
 .tcard-stripe{width:6px !important;min-width:6px !important}
-.tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:var(--p-pos-soft) !important;border-color:var(--p-pos-bd) !important;color:var(--p-pos-deep) !important;-webkit-text-fill-color:var(--p-pos-deep) !important}
-.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:var(--p-info-soft) !important;border-color:var(--p-ink-4) !important;color:var(--p-info) !important;-webkit-text-fill-color:var(--p-info) !important}
-.tcard.t-tour .tcard-type,.tcard.t-tour .tcard-pill:first-child{background:var(--p-warn-soft) !important;border-color:var(--p-warn-bd) !important;color:var(--p-warn) !important;-webkit-text-fill-color:var(--p-warn) !important}
-.tcard.t-shortpass .tcard-type,.tcard.t-shortpass .tcard-pill:first-child{background:var(--p-tint) !important;border-color:var(--p-ink-4) !important;color:var(--p-info) !important;-webkit-text-fill-color:var(--p-info) !important}
-.tcard.t-intercity .tcard-type,.tcard.t-intercity .tcard-pill:first-child{background:var(--p-info-soft) !important;border-color:var(--p-ink-4) !important;color:var(--p-info) !important;-webkit-text-fill-color:var(--p-info) !important}
-.tcard.t-dugun .tcard-type,.tcard.t-dugun .tcard-pill:first-child{background:var(--p-tint) !important;border-color:var(--p-ink-4) !important;color:var(--p-ink-2) !important;-webkit-text-fill-color:var(--p-ink-2) !important}
+.tcard.t-arrival .tcard-type,.tcard.t-arrival .tcard-pill:first-child{background:var(--p-t-arr-bg) !important;border-color:var(--p-t-arr-bd) !important;color:var(--p-t-arr) !important;-webkit-text-fill-color:var(--p-t-arr) !important}
+.tcard.t-departure .tcard-type,.tcard.t-departure .tcard-pill:first-child{background:var(--p-t-dep-bg) !important;border-color:var(--p-t-dep-bd) !important;color:var(--p-t-dep) !important;-webkit-text-fill-color:var(--p-t-dep) !important}
+.tcard.t-tour .tcard-type,.tcard.t-tour .tcard-pill:first-child{background:var(--p-t-tur-bg) !important;border-color:var(--p-t-tur-bd) !important;color:var(--p-t-tur) !important;-webkit-text-fill-color:var(--p-t-tur) !important}
+.tcard.t-shortpass .tcard-type,.tcard.t-shortpass .tcard-pill:first-child{background:var(--p-t-kisa-bg) !important;border-color:var(--p-t-kisa-bd) !important;color:var(--p-t-kisa) !important;-webkit-text-fill-color:var(--p-t-kisa) !important}
+.tcard.t-intercity .tcard-type,.tcard.t-intercity .tcard-pill:first-child{background:var(--p-t-vip-bg) !important;border-color:var(--p-t-vip-bd) !important;color:var(--p-t-vip) !important;-webkit-text-fill-color:var(--p-t-vip) !important}
+.tcard.t-dugun .tcard-type,.tcard.t-dugun .tcard-pill:first-child{background:var(--p-t-dug-bg) !important;border-color:var(--p-t-dug-bd) !important;color:var(--p-t-dug) !important;-webkit-text-fill-color:var(--p-t-dug) !important}
 .tcard.t-takas .tcard-type,.tcard.t-takas .tcard-pill:first-child{background:var(--p-info-soft) !important;border-color:var(--p-ink-4) !important;color:var(--p-info) !important;-webkit-text-fill-color:var(--p-info) !important}
 html,body{min-height:100%;overflow-x:hidden !important;max-width:100vw !important}
 main.main-cont{width:100% !important;box-sizing:border-box !important}
@@ -1026,13 +1034,13 @@ const NAV = 'var(--p-brand)', NAV2 = 'var(--p-brand)', GOLD = 'rgba(255,255,255,
 const G = 'var(--p-pos-deep)', O = 'var(--p-info)', R = 'var(--p-neg)', BR = 'var(--p-line-3)';
 const TX = 'var(--p-ink)', SB = 'var(--p-ink-3)', INP = 'var(--p-field)', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: 'var(--p-info)', bg: 'var(--p-info-soft)', b: 'var(--p-ink-4)' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: 'var(--p-pos-deep)', bg: 'var(--p-pos-soft)', b: 'var(--p-pos-bd)' },
-    { id: 'tour', n: 'Tur', ico: '🏔️', c: 'var(--p-warn)', bg: 'var(--p-warn-soft)', b: 'var(--p-warn-bd)' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: 'var(--p-info)', bg: 'var(--p-tint)', b: 'var(--p-ink-4)' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: 'var(--p-info)', bg: 'var(--p-info-soft)', b: 'var(--p-ink-4)' },
-    { id: 'takas', n: 'Takas İş', ico: '🔁', c: 'var(--p-ink-3)', bg: 'var(--p-info-soft)', b: 'var(--p-ink-4)' },
-    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: 'var(--p-ink-2)', bg: 'var(--p-tint)', b: 'var(--p-ink-4)' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: 'var(--p-t-dep)', bg: 'var(--p-t-dep-bg)', b: 'var(--p-t-dep-bd)' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: 'var(--p-t-arr)', bg: 'var(--p-t-arr-bg)', b: 'var(--p-t-arr-bd)' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: 'var(--p-t-tur)', bg: 'var(--p-t-tur-bg)', b: 'var(--p-t-tur-bd)' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: 'var(--p-t-kisa)', bg: 'var(--p-t-kisa-bg)', b: 'var(--p-t-kisa-bd)' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: 'var(--p-t-vip)', bg: 'var(--p-t-vip-bg)', b: 'var(--p-t-vip-bd)' },
+    { id: 'takas', n: 'Takas İş', ico: '🔁', c: 'var(--p-ink-3)', bg: 'var(--p-tint)', b: 'var(--p-line-2)' },
+    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: 'var(--p-t-dug)', bg: 'var(--p-t-dug-bg)', b: 'var(--p-t-dug-bd)' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -5350,7 +5358,7 @@ function AracTab({ tip, aracK, setAracK }) {
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
                                                     alignItems: 'center',
-                                                    boxShadow: sNet >= 0 ? '0 2px 6px rgba(60,60,67,.12)' : '0 2px 6px rgba(79,107,69,.14)'
+                                                    boxShadow: sNet >= 0 ? '0 2px 6px rgba(60,60,67,.12)' : '0 2px 6px rgba(46,62,102,.14)'
                                                 }
                                             },
                                                 React.createElement("span", { style: { fontSize: 11, color: SB, fontWeight: 430 } }, "Net K\u00E2r"),
@@ -5664,7 +5672,7 @@ function AracCalendarTab({ tip, aracK, setAracK, onDeleteTransfer }) {
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(-1), title: "Önceki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: 'var(--p-white)', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "‹"),
                 React.createElement("input", { type: "month", value: monthKey, onChange: e => selectMonth(e.target.value || todayKey.slice(0, 7)), className: "inp", style: { height: 38, padding: '6px 10px', fontWeight: 450, color: NAV } }),
                 React.createElement("button", { type: "button", onClick: () => shiftMonth(1), title: "Sonraki ay", style: { height: 38, borderRadius: 11, border: '1px solid ' + BOR, background: 'var(--p-white)', color: NAV, fontWeight: 470, cursor: 'pointer' } }, "›"),
-                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(94,122,82,.34)', background: 'var(--p-tint)', color: 'var(--p-brand)', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
+                React.createElement("button", { type: "button", onClick: () => { setMonthKey(todayKey.slice(0, 7)); setSelectedDay(todayKey); }, style: { height: 38, borderRadius: 11, border: '1px solid rgba(46,62,102,.34)', background: 'var(--p-tint)', color: 'var(--p-brand)', fontWeight: 470, cursor: 'pointer' } }, "Bugün"))),
         React.createElement("div", { className: "card ko-real-cal-card", style: { padding: 10, border: '1px solid rgba(60,60,67,.16)' } },
             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 6 } }, weekdayLabels.map(w => React.createElement("div", { key: w, style: { textAlign: 'center', fontSize: 10.5, fontWeight: 450, color: SB } }, w))),
             React.createElement("div", { className: "ko-arac-month-grid", style: { display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5 } }, calendarDays.map(d => {
@@ -6264,7 +6272,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const netOlKdvHaric = Math.round(moneyValue(b.netOl) + extra);
                 const kdvRate = transferKdvRate(t);
                 const kdvAmount = netOlKdvHaric > 0 ? calcKdvAmountForBase(netOlKdvHaric, kdvRate) : 0;
-                const e = { ...t, netOl: netOlKdvHaric + kdvAmount, netOlKdvHaric, kdvEnabled: kdvAmount > 0, kdvRate: kdvAmount > 0 ? kdvRate : 0, kdvAmount, kdvBaseTRY: kdvAmount > 0 ? netOlKdvHaric : 0, kdvTotalTRY: kdvAmount > 0 ? netOlKdvHaric + kdvAmount : 0, firmSettled: km, yon: t.givenBy === OL ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
+                const e = { ...t, netOl: netOlKdvHaric + kdvAmount, netOlKdvHaric, kdvEnabled: kdvAmount > 0, kdvRate: kdvAmount > 0 ? kdvRate : 0, kdvAmount, kdvBaseTRY: kdvAmount > 0 ? netOlKdvHaric : 0, kdvTotalTRY: kdvAmount > 0 ? netOlKdvHaric + kdvAmount : 0, firmSettled: km, yon: isOlmezturParty(t.givenBy) ? 'benVerdim' : 'oVerdi', remainingTRY: extra, settleFirmKey: settleKeys[0], settleFirmKeys: settleKeys };
                 detay.push(e);
                 if (!km) {
                     if (e.netOl > 0)
@@ -6383,7 +6391,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return 'ÖLMEZTUR TURİZM\n' + firm + ' — ' + new Date().toLocaleDateString('tr-TR') + '\n' + '─'.repeat(28) + '\n' + ts.length + ' Kayıt | Alacak:' + fr(al) + '₺ Borç:' + fr(ver) + '₺\nNet: ' + (net >= 0 ? '+' : '') + fr(net) + '₺' + hdSatir + '\n' + '─'.repeat(28) + '\n\n' + rows + '\n\n' + poz;
     };
     const csvExport = firm => {
-        const { ts, al, ver, net } = hesapData(firm);
+        const { ts, al, ver, net, debtRows } = hesapData(firm);
         const esc = v => {
             const s = String(v == null ? '' : v);
             if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes(';')) {
@@ -6569,6 +6577,29 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             });
             csv += '\n';
         }
+        const debtList = (debtRows || []).map(d => ({ d, tryVal: debtRemainingTRY(d, rates) })).filter(x => Math.abs(x.tryVal) >= 0.5);
+        let debtNet = 0;
+        if (debtList.length > 0) {
+            csv += '═══ NAKİT BORÇ / ALACAK ═══\n';
+            csv += 'Kayıt Sayısı,' + debtList.length + '\n';
+            csv += '\n';
+            csv += 'No,Tarih,Saat,Tür,Açıklama,Tutar (TL),Net (TL)\n';
+            debtList.forEach((x, i) => {
+                const signed = x.d.type === 'borc' ? -Math.abs(Math.round(x.tryVal)) : Math.abs(Math.round(x.tryVal));
+                debtNet += signed;
+                const row = [
+                    i + 1,
+                    esc(x.d.date || ''),
+                    esc(x.d.time || ''),
+                    esc(x.d.type === 'borc' ? 'Borç (vereceğim)' : 'Alacak (alacağım)'),
+                    esc(x.d.note || x.d.notes || ''),
+                    Math.abs(Math.round(x.tryVal)),
+                    signed
+                ];
+                csv += row.join(',') + '\n';
+            });
+            csv += '\n';
+        }
         csv += '═══ HESAPLAMA ÖZETİ ═══\n';
         csv += 'Grup,Alacak (TL),Borç (TL),Net (TL)\n';
         csv += esc(firm) + "'ın verdiği işler," + Math.round(gO.al) + ',' + Math.round(gO.ver) + ',' + Math.round(gO.net) + '\n';
@@ -6578,6 +6609,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         }
         if (manualGrup.length > 0) {
             csv += 'Ödeme / Bakiye,' + Math.round(gM.al) + ',' + Math.round(gM.ver) + ',' + Math.round(gM.net) + '\n';
+        }
+        if (debtList.length > 0) {
+            csv += 'Nakit Borç / Alacak,' + (debtNet > 0 ? debtNet : 0) + ',' + (debtNet < 0 ? Math.abs(debtNet) : 0) + ',' + debtNet + '\n';
         }
         csv += 'TOPLAM,' + Math.round(al) + ',' + Math.round(ver) + ',' + Math.round(net) + '\n';
         csv += '\n';
@@ -6599,7 +6633,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const HESAP_NCOL = HESAP_COLS.length;
     const buildHesapSheet = (firm, opts) => {
         opts = opts || {};
-        const { ts: allTs } = hesapData(firm);
+        const { ts: allTs, debtRows } = hesapData(firm);
         const ts = allTs.filter(t => !t.firmSettled);
         const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1
             : String(a.time || '').localeCompare(String(b.time || '')));
@@ -6722,6 +6756,44 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         addSection(firm + ' - ' + OL, oVerdi, 'normal');
         if (odeloGrup.length) addSection('Odelo', odeloGrup, 'odelo');
         if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
+        (function () {
+            const list = (debtRows || []).map(d => ({ d, tryVal: debtRemainingTRY(d, rates) })).filter(x => Math.abs(x.tryVal) >= 0.5);
+            if (!list.length) return;
+            const label = [{ v: up('Nakit Borç / Alacak'), s: KOX.SECTION }, { v: '', s: KOX.SECTION }, { v: '', s: KOX.SECTION }];
+            for (let i = 3; i < HESAP_NCOL; i++) label.push({ v: '', s: KOX.SECTION_FILL });
+            rows.push({ h: 22, cells: label });
+            merges.push('A' + rowNo() + ':C' + rowNo());
+            let sumK = 0;
+            list.forEach((x, i) => {
+                const z = i % 2 === 1;
+                const sT = z ? KOX.TXT_Z : KOX.TXT;
+                const sM = z ? KOX.MONEY_Z : KOX.MONEY;
+                const signed = x.d.type === 'borc' ? -Math.abs(money(x.tryVal)) : Math.abs(money(x.tryVal));
+                sumK += signed;
+                rows.push({ cells: [
+                    { v: dateTxt(x.d.date), s: sT },
+                    { v: x.d.time || '', s: sT },
+                    { v: up(x.d.type === 'borc' ? 'BORÇ (VERECEĞİM)' : 'ALACAK (ALACAĞIM)'), s: sT },
+                    { v: '', s: sT },
+                    { v: '', s: sT },
+                    { v: '', s: sT },
+                    { v: 0, s: sM, n: true },
+                    { v: 0, s: sM, n: true },
+                    { v: 0, s: sM, n: true },
+                    { v: signed, s: sM, n: true },
+                    { v: clean(x.d.note || x.d.notes || ''), s: KOX.NOTE },
+                    { v: '', s: sT }
+                ] });
+            });
+            const sub = [];
+            for (let i = 0; i < HESAP_NCOL; i++) sub.push({ v: '', s: KOX.SUB_TXT });
+            sub[5] = { v: 'ARA TOPLAM', s: KOX.SUB_TXT };
+            sub[9] = { v: sumK, s: KOX.SUB_MONEY, n: true };
+            rows.push({ h: 20, cells: sub });
+            rows.push({ h: 7, cells: Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.BAND })) });
+            blankRow();
+            grand.kalan += sumK;
+        })();
         if (rows.length === headRow) {
             const empty = Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.TXT }));
             empty[2] = { v: 'AÇIK KAYIT YOK', s: KOX.TXT };
@@ -6982,7 +7054,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         gap: 10,
                         boxShadow: pos
                             ? '0 3px 10px rgba(60,60,67,.12), inset 0 1px 0 rgba(255,255,255,.5)'
-                            : '0 3px 10px rgba(79,107,69,.16), inset 0 1px 0 rgba(255,255,255,.5)'
+                            : '0 3px 10px rgba(46,62,102,.16), inset 0 1px 0 rgba(255,255,255,.5)'
                     }
                 },
                     React.createElement("div", null,
@@ -7060,7 +7132,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     ? 'inset 0 0 0 1px rgba(60,60,67,.06)'
                     : pos
                         ? '0 1px 4px rgba(60,60,67,.08)'
-                        : '0 1px 4px rgba(79,107,69,.10)'
+                        : '0 1px 4px rgba(46,62,102,.10)'
             }
         },
             React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 } },
@@ -7072,7 +7144,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { style: { fontSize: 11, color: SB } }, '→ ' + (t.dropoff || '—')),
                     badges,
                     React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 5, alignItems: 'center' } },
-                        kar !== 0 && React.createElement("div", { style: { background: 'rgba(30,122,69,.08)', borderRadius: 6, padding: '2px 7px' } },
+                        kar !== 0 && React.createElement("div", { style: { background: 'rgba(46,62,102,.08)', borderRadius: 6, padding: '2px 7px' } },
                             React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 450 } }, 'Kâr: ' + (kar >= 0 ? '+' : '−') + fr(kar) + '₺')),
                         kartKdv.active && React.createElement("div", { style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 6, padding: '2px 7px' } },
                             React.createElement("span", { style: { fontSize: 10, color: G, fontWeight: 450 } }, "KDV: " + fr(kartKdv.base) + "₺ + " + fr(kartKdv.amount) + "₺")),
@@ -7174,7 +7246,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("button", {
                             type: "button",
                             className: "ko-account-settle-btn is-open",
-                            style: { color: R, borderColor: 'rgba(79,107,69,.28)', background: 'var(--p-neg-soft)' },
+                            style: { color: R, borderColor: 'rgba(46,62,102,.28)', background: 'var(--p-neg-soft)' },
                             onClick: e => {
                                 e.stopPropagation();
                                 deleteAccountAdjustment(t.adjustmentId);
@@ -11380,7 +11452,7 @@ function App() {
             const active = selectedProfit === scope;
             return React.createElement("button", {
                 onClick: () => setProfit(scope),
-                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? 'var(--p-tint)' : 'var(--p-white)', border: '1px solid ' + (active ? 'rgba(79,107,69,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
+                style: { flex: 1, minWidth: 0, textAlign: 'left', cursor: 'pointer', background: active ? 'var(--p-tint)' : 'var(--p-white)', border: '1px solid ' + (active ? 'rgba(46,62,102,.32)' : 'var(--line)'), borderRadius: 13, padding: '8px 11px', boxShadow: 'var(--shadow)' }
             },
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                     React.createElement("div", { style: { fontSize: 10, fontWeight: 450, color: 'var(--p-ink-4)', letterSpacing: '.01em' } }, label),
@@ -12238,29 +12310,20 @@ function App() {
                     const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
-                    const shortCode = loc => {
+                    const routeName = loc => {
                         const n = String(homeTransferCardLoc(loc) || '').trim();
                         if (!n || n === 'Belirtilmedi' || n === '—') return '';
-                        if (/Sabiha Gökçen|Sabiha Gokcen|\bSAW\b/i.test(n)) return 'SAW';
-                        if (/İstanbul Havaliman|Istanbul Havaliman|\bIST\b|\bIGA\b/i.test(n)) return 'IST';
-                        if (/Esenboğa|Esenboga|\bESB\b/i.test(n)) return 'ESB';
-                        if (/Adnan Menderes|İzmir Havaliman|\bADB\b/i.test(n)) return 'ADB';
-                        if (/Antalya Havaliman|\bAYT\b/i.test(n)) return 'AYT';
-                        if (/Dalaman|\bDLM\b/i.test(n)) return 'DLM';
-                        if (/Bodrum|Milas|\bBJV\b/i.test(n)) return 'BJV';
-                        if (/Trabzon|\bTZX\b/i.test(n)) return 'TZX';
-                        if (/Yenişehir|Yenisehir|\bYEI\b/i.test(n)) return 'YEI';
-                        return n.toLocaleUpperCase('tr-TR');
+                        return n;
                     };
-                    const __rp = shortCode(t.pickup), __rd = shortCode(t.dropoff);
+                    const __rp = routeName(t.pickup), __rd = routeName(t.dropoff);
                     let routeText;
                     if (t.transferType === 'tour') {
-                        let dest = __rd || __rp || 'TUR';
-                        if (!/\bTUR$/.test(dest)) dest = dest + ' TUR';
+                        let dest = __rd || __rp || 'Tur';
+                        if (!/\bTur$/i.test(dest)) dest = dest + ' Tur';
                         routeText = dest;
                     } else if (t.transferType === 'dugun') {
-                        let dst = __rd || __rp || 'DÜĞÜN';
-                        if (!/DÜĞÜN$/.test(dst)) dst = dst + ' DÜĞÜN';
+                        let dst = __rd || __rp || 'Düğün';
+                        if (!/Düğün$/i.test(dst)) dst = dst + ' Düğün';
                         routeText = dst;
                     } else {
                         routeText = (__rp && __rd) ? (__rp + ' - ' + __rd) : (__rp || __rd || '—');
@@ -12288,9 +12351,8 @@ function App() {
                     const statusColor = payDone ? 'var(--p-pos-ink)' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
                     const statusBd = payDone ? 'var(--p-pos-bd)' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
                     const bags = bagCount(t);
-                    const __isDgn = t.transferType === 'dugun';
-                    const __chipBg = __isDgn ? 'rgba(142,68,173,.10)' : (tip.bg || 'var(--p-bg-lo)');
-                    const __chipInk = __isDgn ? '#8E44AD' : (tip.c || 'var(--p-ink)');
+                    const __chipBg = tip.bg || 'var(--p-bg-lo)';
+                    const __chipInk = tip.c || 'var(--p-ink)';
                     return React.createElement("div", {
                         key: t.id,
                         className: "ko-htx-card",
@@ -12324,6 +12386,19 @@ function App() {
                                 const col = ksPairColor(t);
                                 return React.createElement("div", { style: { gridColumn: '2 / -1', marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
                                     React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '⇄ ' + ksPairLabel(t)));
+                            })(),
+                            (() => {
+                                const parts = [];
+                                if (t.givenBy) parts.push(['İşi Veren', t.givenBy]);
+                                if (t.assignedTo) parts.push(['İşi Alan', t.assignedTo]);
+                                if (altText) parts.push(['Alt Acenta', altText]);
+                                if (!parts.length) return null;
+                                return React.createElement("div", { className: "ko-htx-agency", style: { gridColumn: '1 / -1', marginTop: 3, paddingTop: 8, borderTop: '1px solid rgba(46,58,78,.08)', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', minWidth: 0, fontSize: 9.5, lineHeight: 1.25 } },
+                                    parts.map((pr, i) => React.createElement(React.Fragment, { key: 'ag' + i },
+                                        i > 0 && React.createElement("span", { style: { color: 'var(--p-ink-5)', fontWeight: 400 } }, '·'),
+                                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'baseline', gap: 4, minWidth: 0 } },
+                                            React.createElement("span", { style: { fontSize: 8, fontWeight: 600, letterSpacing: .4, textTransform: 'uppercase', color: 'var(--p-ink-4)', flexShrink: 0 } }, pr[0]),
+                                            React.createElement("span", { className: "ko-htx-agency-val", style: { fontWeight: 500, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 132 } }, pr[1])))));
                             })()
                         )
                     );
@@ -12369,12 +12444,35 @@ function App() {
                         })
                         : React.createElement("div", { className: "lg-empty", style: { padding: '8px 4px' } }, "Yaklaşan transfer yok")
                 );
+                const HOME_GROUP_ORDER = ['arrival', 'departure', 'tour', 'dugun', 'intercity', 'shortpass', 'takas'];
+                const renderGroupedHomeTransfers = rows => {
+                    const byType = {};
+                    (rows || []).forEach(t => { const k = (t && t.transferType) || 'other'; (byType[k] = byType[k] || []).push(t); });
+                    const orderedKeys = [
+                        ...HOME_GROUP_ORDER.filter(k => byType[k] && byType[k].length),
+                        ...Object.keys(byType).filter(k => !HOME_GROUP_ORDER.includes(k))
+                    ];
+                    const out = [];
+                    orderedKeys.forEach((k, gi) => {
+                        const grp = byType[k];
+                        if (!grp || !grp.length) return;
+                        const tip = TIPLER.find(x => x.id === k);
+                        const label = tip ? tip.n : 'Diğer';
+                        const dotColor = tip ? tip.c : 'var(--p-ink-4)';
+                        out.push(React.createElement("div", { key: 'grp_' + k, className: "ko-htx-group-hd", style: { display: 'flex', alignItems: 'center', gap: 5, padding: '0 3px', marginTop: gi > 0 ? 8 : 1, marginBottom: 1 } },
+                            React.createElement("span", { style: { width: 5, height: 5, borderRadius: 999, background: dotColor, flexShrink: 0 } }),
+                            React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, label),
+                            React.createElement("span", { style: { fontSize: 8.5, fontWeight: 500, color: 'var(--p-ink-5)' } }, grp.length)));
+                        grp.forEach(t => out.push(renderHomeTransfer(t)));
+                    });
+                    return out;
+                };
                 const renderPeriodPanel = mode => {
                     const rows = periodRows[mode] || [];
                     const title = mode === 'today' ? 'Bugünün Transferleri' : mode === 'month' ? 'Bu Ayın Transferleri' : 'Bu Yılın Transferleri';
                     if (mode === 'today') {
                         return React.createElement("div", { className: "lg-home-transfer-list lg-today-list-standalone" },
-                            rows.length ? rows.map(renderHomeTransfer) : renderHomeTransfer(null)
+                            rows.length ? renderGroupedHomeTransfers(rows) : renderHomeTransfer(null)
                         );
                     }
                     return React.createElement("div", { className: "lg-glass-card lg-period-panel mode-" + mode },
@@ -12383,7 +12481,7 @@ function App() {
                             React.createElement("div", { className: "lg-period-panel-count" }, rows.length + " iş")
                         ),
                         rows.length
-                            ? React.createElement("div", { className: "lg-home-transfer-list" }, rows.map(renderHomeTransfer))
+                            ? React.createElement("div", { className: "lg-home-transfer-list" }, renderGroupedHomeTransfers(rows))
                             : renderHomeTransfer(null)
                     );
                 };
@@ -12923,7 +13021,7 @@ function App() {
                                 ? React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--p-info-soft)', border: '1px solid var(--p-ink-4)', borderRadius: 12, padding: '13px 12px', fontSize: 12, fontWeight: 470, color: NAV } },
                                     React.createElement("span", { className: "ko-spin", style: { width: 15, height: 15, borderRadius: 999, border: '2px solid var(--p-ink-5)', borderTopColor: NAV, display: 'inline-block' } }),
                                     React.createElement("span", null, ticketScan))
-                                : React.createElement("button", { type: "button", onClick: openTicketPicker, style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 12, padding: '12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(11,114,133,.22)' } },
+                                : React.createElement("button", { type: "button", onClick: openTicketPicker, style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 12, padding: '12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,62,102,.22)' } },
                                     React.createElement("span", null, '📸 Bilet Fotoğrafı / PDF Yükle'),
                                     React.createElement("span", { style: { fontSize: 10.5, opacity: .85, fontWeight: 450 } }, '· otomatik okunur')),
                             React.createElement("textarea", {
@@ -13330,7 +13428,7 @@ function App() {
                                 background: busy ? 'var(--p-info-soft)' : 'var(--p-pos-ink)',
                                 color: busy ? 'var(--p-ink-5)' : 'var(--p-white)', border: 'none', borderRadius: 12,
                                 padding: '10px 6px', cursor: busy ? 'default' : 'pointer',
-                                boxShadow: busy ? 'none' : '0 2px 8px rgba(11,114,133,.22)',
+                                boxShadow: busy ? 'none' : '0 2px 8px rgba(46,62,102,.22)',
                                 transition: 'all .15s ease', WebkitTapHighlightColor: 'transparent'
                             }
                         },
@@ -13350,7 +13448,7 @@ function App() {
                                 "Galeriden se\u00E7 \u2014 okunanlar onay listesinde g\u00F6sterilir, onaylay\u0131nca s\u0131rayla eklenir."),
                             React.createElement("button", {
                                 type: "button", onClick: openPasteBox,
-                                style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(11,114,133,.22)' }
+                                style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,62,102,.22)' }
                             },
                                 React.createElement("span", null, "\uD83D\uDCAC WhatsApp\u2019tan \u0130sim Yap\u0131\u015Ft\u0131r"),
                                 React.createElement("span", { style: { display: 'block', fontSize: 10.5, opacity: .85, fontWeight: 450, marginTop: 1 } }, "\u00E7oklu veya tek tek")),
@@ -13547,7 +13645,7 @@ function App() {
                                 background: formBalenturOdelo.netOl >= 0 ? 'linear-gradient(135deg, var(--p-tint-2) 0%, var(--p-tint-3) 100%)' : 'linear-gradient(135deg,var(--p-neg-soft),var(--p-neg-bd))',
                                 border: '1.5px solid ' + (formBalenturOdelo.netOl >= 0 ? 'var(--p-line-3)' : 'var(--p-neg-bd)'),
                                 marginBottom: 8,
-                                boxShadow: formBalenturOdelo.netOl >= 0 ? '0 2px 8px rgba(18,108,55,.14)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: formBalenturOdelo.netOl >= 0 ? '0 2px 8px rgba(46,62,102,.14)' : '0 2px 8px rgba(46,62,102,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 10.5, color: formBalenturOdelo.netOl >= 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -13563,7 +13661,7 @@ function App() {
                                 background: firmPreviewNetWithKdv > 0 ? 'linear-gradient(135deg, var(--p-tint-2) 0%, var(--p-tint-4) 100%)' : 'linear-gradient(135deg, var(--p-neg-soft) 0%, var(--p-neg-bd) 100%)',
                                 border: '1.5px solid ' + (firmPreviewNetWithKdv > 0 ? 'var(--p-line-3)' : 'var(--p-neg-bd)'),
                                 marginBottom: 8,
-                                boxShadow: firmPreviewNetWithKdv > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: firmPreviewNetWithKdv > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(46,62,102,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 10.5, color: firmPreviewNetWithKdv > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -13581,7 +13679,7 @@ function App() {
                                 background: altPreviewNet > 0 ? 'linear-gradient(135deg, var(--p-tint-2) 0%, var(--p-tint-4) 100%)' : 'linear-gradient(135deg, var(--p-neg-soft) 0%, var(--p-neg-bd) 100%)',
                                 border: '1.5px solid ' + (altPreviewNet > 0 ? 'var(--p-line-3)' : 'var(--p-neg-bd)'),
                                 marginBottom: 8,
-                                boxShadow: altPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(79,107,69,.14)'
+                                boxShadow: altPreviewNet > 0 ? '0 2px 8px rgba(60,60,67,.12)' : '0 2px 8px rgba(46,62,102,.14)'
                             }
                         },
                             React.createElement("div", { style: { fontSize: 10.5, color: altPreviewNet > 0 ? G : R, fontWeight: 450, letterSpacing: .6, marginBottom: 2 } },
@@ -13603,7 +13701,7 @@ function App() {
                                 boxShadow: fNet > 0
                                     ? '0 3px 10px rgba(60,60,67,.12)'
                                     : fNet < 0
-                                        ? '0 3px 10px rgba(79,107,69,.14)'
+                                        ? '0 3px 10px rgba(46,62,102,.14)'
                                         : 'none'
                             }
                         },
@@ -14129,7 +14227,7 @@ function App() {
                                 }
                             },
                                 React.createElement("span", { style: { width: 9, height: 9, borderRadius: '50%', background: meta.color, flexShrink: 0 } }),
-                                React.createElement("span", null, meta.id === 'arrival' ? 'Gelen Yolcu' : meta.id === 'departure' ? 'Giden Yolcu' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : 'VIP Tahsis')))),
+                                React.createElement("span", null, meta.id === 'arrival' ? 'Gelen Yolcu' : meta.id === 'departure' ? 'Giden Yolcu' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : meta.id === 'dugun' ? 'Düğün' : meta.id === 'intercity' ? 'VIP Tahsis' : (String(meta.name || '').replace(/^KÖ\s*/, '') || meta.id))))),
                         React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.45, marginTop: 10, textAlign: 'center' } },
                             "Her takvim Apple Takvim’de kendi rengiyle görünür."))));
         })()));
@@ -14363,7 +14461,7 @@ pre,code,kbd,samp{
 .ko-account-firm-bucket-title{
   font-size:10.5px !important;font-weight:680 !important;text-transform:uppercase !important;line-height:1 !important;
 }
-.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title{color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.ko-account-firm-bucket.is-rec .ko-account-firm-bucket-title{color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .ko-account-firm-bucket.is-pay .ko-account-firm-bucket-title{color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
 .ko-account-firm-bucket-total{
   font-size:18px !important;font-weight:560 !important;line-height:1.12 !important;
@@ -14384,7 +14482,7 @@ pre,code,kbd,samp{
   background:var(--p-white) !important;box-shadow:none !important;
   padding:13px 13px !important;min-height:0 !important;width:100% !important;
 }
-.ko-account-firm-card.is-rec{border-left:3px solid var(--p-pos) !important}
+.ko-account-firm-card.is-rec{border-left:3px solid var(--p-brand) !important}
 .ko-account-firm-card.is-pay{border-left:3px solid var(--p-neg) !important}
 .ko-account-firm-card:active{background:var(--p-field) !important}
 .ko-account-firm-bucket .ko-account-firm-card-title{
@@ -14526,7 +14624,7 @@ main.main-cont{min-height:100vh !important;background:transparent !important}
   box-shadow:0 1px 1.5px rgba(22,32,26,.05) !important;
   border:1px solid var(--ko-hair-soft) !important;
 }
-.ko-account-firm-card.is-rec{border-left:3px solid var(--p-pos) !important}
+.ko-account-firm-card.is-rec{border-left:3px solid var(--p-brand) !important}
 .ko-account-firm-card.is-pay{border-left:3px solid var(--p-neg) !important}
 .ko-account-transfer-row{border-radius:17px !important}
 .ko-account-firm-card{border-radius:14px !important}
@@ -14549,8 +14647,8 @@ input,select,textarea,.inp{
   box-shadow:inset 0 1px 2px rgba(22,32,26,.04) !important;
 }
 input:focus,select:focus,textarea:focus,.inp:focus{
-  outline:none !important;border-color:rgba(78,113,96,.55) !important;
-  box-shadow:inset 0 1px 2px rgba(22,32,26,.04),0 0 0 3px rgba(78,113,96,.14) !important;
+  outline:none !important;border-color:rgba(46,62,102,.55) !important;
+  box-shadow:inset 0 1px 2px rgba(22,32,26,.04),0 0 0 3px rgba(46,62,102,.14) !important;
 }
 .ko-acc-kicker{
   display:flex;align-items:center;gap:9px;
@@ -15058,7 +15156,7 @@ button{touch-action:manipulation}
 }
 .ko-account-state-label{font-weight:600 !important;letter-spacing:.01em !important}
 .ko-account-state-label.is-open{color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
-.ko-account-state-label.is-closed{color:var(--p-pos) !important;-webkit-text-fill-color:var(--p-pos) !important}
+.ko-account-state-label.is-closed{color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
 .ko-account-section-stats{min-width:0 !important;justify-content:flex-end !important;flex-wrap:wrap !important}
 .ko-account-section-state-count{font-size:9.5px !important;white-space:nowrap !important;color:var(--p-ink-4) !important}
 .tcard-header>*,.tcard-body>*,.lg-upcoming-top>*,.ko-account-row>*,
