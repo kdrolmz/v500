@@ -4244,16 +4244,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1788464202340_wlous2@olmeztur
 DTSTAMP:20260904T130300Z
-LAST-MODIFIED:20260903T193600Z
-SEQUENCE:1788464202
+LAST-MODIFIED:20260904T130300Z
+SEQUENCE:1788527030
 DTSTART:20260905T093000
 DTEND:20260905T103000
 SUMMARY:09:30 · Bursa→SAW
 LOCATION:Bursa Balat → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Aroub Aldhafırı\, Andal Aldhufaırı\, Ratag Aldhafır
- ı\, Haıa Aldhafırı\, Deema Aldafırı\nŞoför: -\nİşi veren: Trias Turizm\n
- İşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa Balat → 
- Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 170 USD | Araç: 8.200 ₺
+ ı\, Haıa Aldhafırı\, Deema Aldafırı\nŞoför: Kadir Ölmez / +90 (543) 287 
+ 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç
+ : Vito / 16 LMZ 55\nGüzergah: Bursa Balat → Sabiha Gökçen Havalimanı\nÖd
+ eme: Müşteri: 170 USD | Araç: 7.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
