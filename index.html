@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#2C3852">
+<meta name="theme-color" content="#1B2740">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>KÖ Transfer Takip - Stabil</title>
@@ -32,7 +32,7 @@
   --p-ink-3:#69707A;
   --p-ink-4:#98A0AA;
   --p-ink-5:#C7CBD1;
-  --p-brand:#20263A;
+  --p-brand:#1A2035;
   --p-brand-soft:#EDF1F6;
   --p-line:#D9DEE6;
   --p-line-2:#C9D0DA;
@@ -61,9 +61,9 @@
   --p-accent:#B99447;
   --p-accent-2:#E6CE96;
   --p-accent-soft:#FAF4E7;
-  --p-hero-1:#46567E;
-  --p-hero-2:#3A4968;
-  --p-hero-3:#2C3852;
+  --p-hero-1:#354566;
+  --p-hero-2:#28374F;
+  --p-hero-3:#1B2740;
 }
 :root{--green:var(--p-pos);--green-2:var(--p-pos);--red:var(--p-neg);--yellow:var(--p-warn);--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:var(--p-white);--line:var(--p-line);--line-2:var(--p-line-3);--ink:var(--p-ink);--ink-2:var(--p-ink-2);--ink-3:var(--p-ink-3);--muted:var(--p-ink-3);--accent:var(--p-brand);--accent-2:var(--p-brand);--accent-soft:var(--p-tint);--brand:var(--p-brand);--brand-2:var(--p-brand);--brand-soft:var(--p-tint);--ok:var(--p-pos);--ok-bg:var(--p-pos-soft);--ok-bd:var(--p-pos-bd);--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -12146,8 +12146,16 @@ function App() {
                 const yearNetHome = Math.round(homeStats.yPpotential || homeStats.yP || 0);
                 const selectedPeriod = expandedT.__lgPeriod || 'today';
                 const selectedProfit = expandedT.__lgProfit || null;
+                const homeDayOffset = expandedT.__lgDay || 0;
+                const dayKeyFor = off => { const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+                const viewDayKey = dayKeyFor(homeDayOffset);
+                const dayT = homeDayOffset === 0 ? todayT : T.filter(x => x.date === viewDayKey);
+                const dayLabel = homeDayOffset === 0 ? 'Bugünkü Transferler'
+                    : homeDayOffset === 1 ? 'Yarınki Transferler'
+                    : homeDayOffset === -1 ? 'Dünkü Transferler'
+                    : (new Date(now.getFullYear(), now.getMonth(), now.getDate() + homeDayOffset).toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric', month: 'long' }) + ' Transferleri');
                 const periodRows = {
-                    today: todayT.slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))),
+                    today: dayT.slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || ''))),
                     month: monthT.slice().sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || ''))),
                     year: yearT.slice().sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')))
                 };
@@ -12347,9 +12355,9 @@ function App() {
                     };
                     const amtText = noCollect ? 'Ücretsiz' : (payRaw > 0 ? koMoneyLabel(payRaw, payCur) : '—');
                     const statusText = payDone ? '✓ Tahsil edildi' : (noCollect ? 'Ödeme yok' : 'Bekliyor');
-                    const statusBg = payDone ? 'var(--p-pos-soft)' : (noCollect ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
-                    const statusColor = payDone ? 'var(--p-pos-ink)' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
-                    const statusBd = payDone ? 'var(--p-pos-bd)' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
+                    const statusBg = payDone ? '#E8F5EE' : (noCollect ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
+                    const statusColor = payDone ? '#0B7C55' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
+                    const statusBd = payDone ? '#BEE3CB' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
                     const bags = bagCount(t);
                     const __chipBg = tip.bg || 'var(--p-bg-lo)';
                     const __chipInk = tip.c || 'var(--p-ink)';
@@ -12552,10 +12560,21 @@ function App() {
                         renderPeriodCard('year', 'Yıllık', yearT.length, String(yyyy))
                     ),
                     React.createElement("div", { className: "lg-section-row lg-today-title-row" },
-                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                            React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
-                            React.createElement("span", { className: "lg-badge" }, todayT.length)
-                        )
+                        selectedPeriod === 'today'
+                            ? (() => {
+                                const navBtn = { flexShrink: 0, width: 32, height: 32, borderRadius: 999, border: '1px solid var(--p-line-2)', background: 'var(--p-white)', color: 'var(--p-ink-2)', fontSize: 17, fontWeight: 500, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 2px rgba(24,35,29,.05)' };
+                                return React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 8 } },
+                                    React.createElement("button", { type: "button", "aria-label": "Önceki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) - 1 })), style: navBtn }, '‹'),
+                                    React.createElement("div", { onClick: () => setExpandedT(p => ({ ...p, __lgDay: 0 })), style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 0, cursor: homeDayOffset !== 0 ? 'pointer' : 'default' } },
+                                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 } },
+                                            React.createElement("div", { className: "lg-section-title", style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, dayLabel),
+                                            React.createElement("span", { className: "lg-badge" }, periodRows.today.length)),
+                                        homeDayOffset !== 0 && React.createElement("div", { style: { fontSize: 9.5, fontWeight: 500, color: 'var(--p-accent)', letterSpacing: .2 } }, "• bugüne dön")),
+                                    React.createElement("button", { type: "button", "aria-label": "Sonraki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) + 1 })), style: navBtn }, '›'));
+                            })()
+                            : React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                                React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
+                                React.createElement("span", { className: "lg-badge" }, todayT.length))
                     ),
                     renderPeriodPanel(selectedPeriod)
                 );
