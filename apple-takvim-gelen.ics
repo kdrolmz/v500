@@ -4992,24 +4992,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788523902427_clbt63@olmeztur
-DTSTAMP:20260905T060400Z
-LAST-MODIFIED:20260904T130400Z
-SEQUENCE:1788527081
-DTSTART:20260905T141500
-DTEND:20260905T151500
-SUMMARY:14:15 · SAW→Bursa
-LOCATION:Sabiha Gökçen Havalimanı → Bursa
-DESCRIPTION:Müşteri: Abeer Alfaılakawı\, Jasem Alsayyar\, Fatemah Alsayy
- ar\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi y
- apan: Ölmeztur\nAlt acenta: -\nAraç: Minibüs / 16 LMZ 55\nGüzergah: Sabi
- ha Gökçen Havalimanı → Bursa\nUçuş: J9305\nÖdeme: Müşteri: 7.750 TRY | A
- raç: 7.750 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1788588249816_k1jilo@olmeztur
 DTSTAMP:20260905T060400Z
 LAST-MODIFIED:20260905T060400Z
@@ -5022,6 +5004,24 @@ DESCRIPTION:Müşteri: Faisal Alshammarı\nŞoför: Cihat Öter\nİşi veren: Ta
  hir Balta\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nGüze
  rgah: Sabiha Gökçen Havalimanı → Taksim\nÖdeme: Müşteri: 50 USD | Araç: 
  2.000 ₺ | Alt acenta: 2.000 ₺
+CATEGORIES:KÖ Gelen Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788523902427_clbt63@olmeztur
+DTSTAMP:20260905T060400Z
+LAST-MODIFIED:20260905T060400Z
+SEQUENCE:1788588271
+DTSTART:20260905T141500
+DTEND:20260905T151500
+SUMMARY:14:15 · SAW→Bursa
+LOCATION:Sabiha Gökçen Havalimanı → Bursa
+DESCRIPTION:Müşteri: Abeer Alfaılakawı\, Jasem Alsayyar\, Fatemah Alsayy
+ ar\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi y
+ apan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzergah: Sabiha 
+ Gökçen Havalimanı → Bursa\nUçuş: J9305\nÖdeme: Müşteri: 7.750 TRY | Araç
+ : 7.750 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
