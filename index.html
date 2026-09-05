@@ -7,19 +7,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
 <meta name="theme-color" content="#0C1E39">
-<meta name="referrer" content="no-referrer">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.github.com https://open.er-api.com https://finans.truncgil.com https://*.googleapis.com https://www.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; worker-src 'self' blob: https://cdn.jsdelivr.net; frame-src https://*.firebaseapp.com; manifest-src 'self'; media-src 'self' data: blob:; upgrade-insecure-requests">
-<link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="512x512" href="./app-icon-512.png">
 <title>KÖ Transfer Takip - Stabil</title>
-<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
 :root{
   --p-white:#FFFFFF;
@@ -69,18 +64,6 @@
   --p-hero-1:#1A3A62;
   --p-hero-2:#133050;
   --p-hero-3:#0C1E39;
-  --soft:var(--p-tint);
-  --debt-accent:var(--p-brand);
-  --surface:var(--p-surface);
-  --ink-4:var(--p-ink-4);
-  --info-bg:var(--p-info-soft);
-  --info:var(--p-info);
-  --warn-bg:var(--p-warn-soft);
-  --err-bg:var(--p-neg-soft);
-  --card-2:var(--p-bg-hi);
-  --r-lg:18px;
-  --brand-softer:var(--p-brand-soft);
-  --r-md:12px;
 }
 :root{--green:var(--p-pos);--green-2:var(--p-pos);--red:var(--p-neg);--yellow:var(--p-warn);--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:var(--p-white);--line:var(--p-line);--line-2:var(--p-line-3);--ink:var(--p-ink);--ink-2:var(--p-ink-2);--ink-3:var(--p-ink-3);--muted:var(--p-ink-3);--accent:var(--p-brand);--accent-2:var(--p-brand);--accent-soft:var(--p-tint);--brand:var(--p-brand);--brand-2:var(--p-brand);--brand-soft:var(--p-tint);--ok:var(--p-pos);--ok-bg:var(--p-pos-soft);--ok-bd:var(--p-pos-bd);--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -241,7 +224,8 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
   .ko-htx-badge{font-size:9px !important;padding:2px 8px !important;font-weight:520 !important}
   .ko-htx-time>span:first-child{font-weight:520 !important}
   .ko-htx-route{font-size:12.2px !important;font-weight:480 !important;line-height:1.32 !important;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;letter-spacing:0 !important}
-  .ko-htx-meta{font-size:10.3px !important;font-weight:420 !important}
+  .ko-htx-meta{font-size:10.6px !important;font-weight:430 !important}
+  .ko-htx-meta2{font-size:10px !important;font-weight:430 !important;gap:2px 9px !important}
   .ko-htx-amt{font-size:12.8px !important;font-weight:520 !important}
   .ko-htx-who{font-size:8.3px !important;font-weight:480 !important}
   .ko-htx-status{font-size:9px !important;padding:3px 9px !important;font-weight:500 !important}
@@ -887,10 +871,6 @@ const EXTERNAL_LIB_URLS = {
   Tesseract: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
   pdfjsLib: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'
 };
-const EXTERNAL_LIB_INTEGRITY = {
-  Tesseract: 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F',
-  pdfjsLib: 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e'
-};
 const PDF_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 const externalLibPromises = Object.create(null);
 function ensureExternalLibrary(name){
@@ -907,9 +887,6 @@ function ensureExternalLibrary(name){
     if(!existing){
       script.src = src;
       script.async = true;
-      if(EXTERNAL_LIB_INTEGRITY[name]) script.integrity = EXTERNAL_LIB_INTEGRITY[name];
-      script.crossOrigin = 'anonymous';
-      script.referrerPolicy = 'no-referrer';
       script.dataset.koLib = name;
       document.head.appendChild(script);
     }
@@ -3976,28 +3953,6 @@ const GITHUB_CALENDAR_REPO = 'v500';
 const GITHUB_CALENDAR_BRANCH = 'main';
 const GITHUB_CALENDAR_TOKEN_KEY = 'ko_github_calendar_token_v1';
 const GITHUB_CALENDAR_AUTO_KEY = 'ko_github_calendar_auto_v1';
-const readGithubCalendarToken = () => {
-    try {
-        const persistent = localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || '';
-        if (persistent) return persistent;
-        // Önceki güvenlik sürümü tokenı oturuma taşımış olabilir. Apple Takvim'in
-        // otomatik güncellenmesi bozulmasın diye aynı cihazdaki kaydı geri koru.
-        const activeSession = sessionStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || '';
-        if (activeSession) {
-            localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, activeSession);
-            sessionStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
-        }
-        return activeSession;
-    } catch (e) { return ''; }
-};
-const writeGithubCalendarToken = value => {
-    try {
-        const token = String(value || '').replace(/\s+/g, '').trim();
-        if (token) localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, token);
-        else localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
-        sessionStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
-    } catch (e) {}
-};
 const APPLE_CALENDAR_WEB_BASE = 'https://kdrolmz.github.io/v500/';
 const APPLE_CALENDAR_WEBCAL_BASE = 'webcal://kdrolmz.github.io/v500/';
 const appleCalendarTypeMeta = id => APPLE_CALENDAR_TYPES.find(x => x.id === id) || APPLE_CALENDAR_TYPES[0];
@@ -4176,53 +4131,10 @@ const buildAppleCalendarFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => ({ meta, rows: (transfers || []).filter(t => transferCalendarBucket(t) === meta.id) }))
     .filter(x => x.rows.length)
     .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta) }));
-// GitHub Pages herkese açıktır. Abonelik dosyalarına müşteri, telefon, plaka,
-// konum, not veya ödeme bilgisi koyma. Ayrıntılı takvim yalnızca cihazdan
-// dışa aktarma yoluyla üretilir; iş verisi Firebase'de aynen korunur.
-const buildPublicAppleCalendarIcs = (transfers, meta) => {
-    const now = new Date();
-    const rows = (transfers || []).filter(t => t && t.date && t.status !== 'iptal').slice()
-        .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
-    const lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Olmeztur//Gizlilik Korumalı Takvim//TR',
-        'CALSCALE:GREGORIAN',
-        'METHOD:PUBLISH',
-        'X-WR-CALNAME:' + icsEscape(meta.name),
-        'X-WR-TIMEZONE:Europe/Istanbul',
-        'X-APPLE-CALENDAR-COLOR:' + meta.color,
-        'REFRESH-INTERVAL;VALUE=DURATION:PT15M',
-        'X-PUBLISHED-TTL:PT15M'
-    ];
-    rows.forEach(t => {
-        const start = parseTransferDateTime(t);
-        if (!start) return;
-        const end = new Date(start.getTime() + 60 * 60 * 1000);
-        const updated = new Date(t.clientUpdatedAt || t.updatedAt || t.createdAt || now);
-        lines.push(
-            'BEGIN:VEVENT',
-            'UID:' + icsEscape('ko-public-' + koFastHash(String(t.id || transferDuplicateKey(t))).replace(/[0-9]/g, d => 'ghijklmnop'[Number(d)]) + '@olmeztur'),
-            'DTSTAMP:' + icsUtcDateTime(now),
-            'LAST-MODIFIED:' + icsUtcDateTime(isNaN(updated.getTime()) ? now : updated),
-            'SEQUENCE:' + Math.max(0, Math.floor((isNaN(updated.getTime()) ? now.getTime() : updated.getTime()) / 1000)),
-            'DTSTART:' + icsLocalDateTime(start),
-            'DTEND:' + icsLocalDateTime(end),
-            'SUMMARY:' + icsEscape(String(meta.name || 'Transfer').replace(/^KÖ\s*/, '')),
-            'DESCRIPTION:' + icsEscape('Ayrıntılar güvenli KÖ Transfer uygulamasındadır.'),
-            'CATEGORIES:' + icsEscape(meta.name),
-            'STATUS:CONFIRMED',
-            'TRANSP:OPAQUE',
-            'END:VEVENT'
-        );
-    });
-    lines.push('END:VCALENDAR');
-    return lines.map(icsFold).join('\r\n') + '\r\n';
-};
 const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => {
         const rows = (transfers || []).filter(t => transferCalendarBucket(t) === meta.id);
-        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildPublicAppleCalendarIcs(rows, meta), meta };
+        return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
     });
 const githubCalendarHeaders = token => ({
     Authorization: 'Bearer ' + token,
@@ -9006,7 +8918,7 @@ function App() {
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } });
-    const [githubCalendarToken, setGithubCalendarToken] = useState(readGithubCalendarToken);
+    const [githubCalendarToken, setGithubCalendarToken] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || ''; }catch(e){ return ''; } });
     const [githubCalendarAuto, setGithubCalendarAuto] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_AUTO_KEY) === '1'; }catch(e){ return false; } });
     const [githubCalendarBusy, setGithubCalendarBusy] = useState(false);
     const [githubCalendarMsg, setGithubCalendarMsg] = useState('');
@@ -9049,7 +8961,11 @@ function App() {
         try { localStorage.setItem('ko_active_tab', tab); } catch (e) {}
     }, [tab]);
     useEffect(() => {
-        writeGithubCalendarToken(githubCalendarToken);
+        try {
+            const tok = (githubCalendarToken || '').replace(/\s+/g, '').trim();
+            if (tok) localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, tok);
+            else localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
+        } catch (e) {}
     }, [githubCalendarToken]);
     useEffect(() => {
         try { localStorage.setItem(GITHUB_CALENDAR_AUTO_KEY, githubCalendarAuto ? '1' : '0'); } catch (e) {}
@@ -11017,7 +10933,14 @@ function App() {
             tip(dl ? 'Pano kapalı — yedek dosya olarak indirildi' : 'Kopyalanamadı — üstteki dosya indirmeyi kullan');
         }
     };
+    const KO_GH_MIN_ARALIK = 3 * 60 * 1000; /* 3 dk — art arda commit GitHub Pages dağıtımını iptal ettiriyor */
     const doGithubBackup = async () => {
+        try {
+            const son = Number(localStorage.getItem('ko_gh_last_backup') || 0);
+            const kalan = KO_GH_MIN_ARALIK - (Date.now() - son);
+            if (kalan > 0) { tip('GitHub yedeği ' + Math.ceil(kalan / 60000) + ' dk sonra tekrar al\u0131nabilir (art arda commit dağıtımı iptal ettiriyor)'); return; }
+            localStorage.setItem('ko_gh_last_backup', String(Date.now()));
+        } catch (e) {}
         const snap = snapshotPayload();
         const widgetPayload = {
             t: snap.t || [],
@@ -11030,11 +10953,22 @@ function App() {
             v: snap.v || 26
         };
         const payload = JSON.stringify(widgetPayload);
-        const now = new Date();
-        const stamp = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + '_' + String(now.getHours()).padStart(2, '0') + '-' + String(now.getMinutes()).padStart(2, '0');
-        const ok = await downloadText(payload, 'Olmeztur_Ozel_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
-        if (ok) markBackupDone();
-        tip(ok ? 'Özel yedek yalnızca bu cihaza indirildi' : 'Özel yedek oluşturulamadı');
+        try { localStorage.setItem('ko_widget_payload', payload); } catch (e) {}
+        const ok = await copyText(payload);
+        if (ok) {
+            tip('Veri panoya kopyalandı');
+            await new Promise(r => setTimeout(r, 200));
+            const editUrl = 'https://github.com/kdrolmz/v500/edit/main/data.json';
+            const opened = window.open(editUrl, '_blank');
+            if (!opened)
+                window.location.href = editUrl;
+            setTimeout(() => {
+                tip('GitHub açıldı — panodakini yapıştır ve commit et');
+            }, 800);
+        } else {
+            const dl = await downloadText(payload, 'data.json', 'application/json;charset=utf-8');
+            tip(dl ? 'Pano kapalı — data.json indirildi, GitHub\'a elle yükle' : 'Panoya kopyalanamadı');
+        }
     };
     const downloadBackupFile = async () => {
         const now = new Date();
@@ -11618,7 +11552,7 @@ function App() {
                                 return React.createElement("div", { key: tid, className: 'ko-type-group', style: { marginBottom: 4 } },
                                     React.createElement("div", { className: 'ko-htx-group-hd', style: { display: 'flex', alignItems: 'center', gap: 5, padding: '0 3px', marginTop: gi > 0 ? 8 : 2, marginBottom: 3 } },
                                         React.createElement("span", { style: { width: 5, height: 5, borderRadius: 999, background: meta.c, flexShrink: 0 } }),
-                                        React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, meta.n),
+                                        React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, (meta.n || '').toLocaleUpperCase('tr-TR')),
                                         React.createElement("span", { style: { fontSize: 8.5, fontWeight: 500, color: 'var(--p-ink-5)' } }, secRows.length)),
                                     secRows.map(renderTransferItem));
                             });
@@ -12409,6 +12343,7 @@ function App() {
                     }
                     const tip = TIPLER.find(x => x.id === t.transferType) || TIPLER[1];
                     const vehicleBadge = homeVehicleBadge(t);
+                    const vehName = ((homeVehicleMeta(t) || {}).name || '').trim();
                     const acentaMain = [t.givenBy, t.assignedTo].filter(Boolean).join(' / ');
                     const acentaText = acentaMain || 'Firma belirtilmedi';
                     const altText = t.altAcenta || '';
@@ -12442,16 +12377,15 @@ function App() {
                             React.createElement("div", { className: "ko-htx-time", style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 54, padding: '9px 7px 8px', borderRadius: 13, background: __chipBg } },
                                 React.createElement("span", { style: { fontSize: 14, fontWeight: 540, letterSpacing: '-.01em', color: __chipInk, WebkitTextFillColor: __chipInk, fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, t.time || '--:--'),
                                 React.createElement("span", { style: { fontSize: 12.5, lineHeight: 1, marginTop: 1 } }, transferCalendarIcon(t))),
-                            React.createElement("div", { className: "ko-htx-mid", style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7, justifyContent: 'center' } },
-                                React.createElement("div", { className: "ko-htx-badges", style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
-                                    React.createElement("span", { className: "ko-htx-badge", style: { fontSize: 9.5, fontWeight: 530, letterSpacing: '.03em', padding: '3px 9px', borderRadius: 999, background: tip.bg, color: tip.c, flexShrink: 0, display: 'inline-flex', alignItems: 'center' } }, tip.n),
-                                    vehicleBadge,
-                                    flight && React.createElement("span", { style: { fontSize: 10, fontWeight: 440, color: 'var(--p-ink-4)', flexShrink: 0 } }, flight)),
-                                React.createElement("div", { className: "ko-htx-route", style: { fontSize: 14, fontWeight: 500, color: 'var(--p-ink)', letterSpacing: '-.01em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
-                                React.createElement("div", { className: "ko-htx-meta", style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--p-ink-3)', fontWeight: 430, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
-                                    React.createElement("span", { style: { fontWeight: 500, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 } }, firstPas),
-                                    (t.passengerCount || 0) > 1 && React.createElement("span", { style: { flexShrink: 0 } }, '· ' + t.passengerCount + ' kişi'),
-                                    bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '· 🧳 ' + bags))),
+                            React.createElement("div", { className: "ko-htx-mid", style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'center' } },
+                                React.createElement("div", { className: "ko-htx-route", style: { fontSize: 14, fontWeight: 540, color: 'var(--p-ink)', letterSpacing: '-.01em', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, routeText),
+                                React.createElement("div", { className: "ko-htx-meta", style: { fontSize: 11, color: 'var(--p-ink-3)', fontWeight: 430, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                                    React.createElement("span", { style: { fontWeight: 500, color: 'var(--p-ink-2)' } }, firstPas),
+                                    (t.passengerCount || 0) > 1 && React.createElement("span", null, ' · ' + t.passengerCount + ' kişi')),
+                                (vehName || bags > 0 || flight) && React.createElement("div", { className: "ko-htx-meta2", style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '2px 10px', fontSize: 10.5, color: 'var(--p-ink-4)', fontWeight: 430, lineHeight: 1.3, marginTop: 1 } },
+                                    vehName && React.createElement("span", { style: { flexShrink: 0 } }, '🚐 ' + vehName),
+                                    bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '🧳 ' + bags + ' bagaj'),
+                                    flight && React.createElement("span", { style: { flexShrink: 0, fontVariantNumeric: 'tabular-nums' } }, '✈ ' + flight))),
                             React.createElement("div", { className: "ko-htx-money", style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 7, flexShrink: 0, paddingLeft: 6 } },
                                 React.createElement("div", { style: { textAlign: 'right' } },
                                     React.createElement("div", { className: "ko-htx-amt", style: { fontSize: 14, fontWeight: 540, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.01em', lineHeight: 1.05, whiteSpace: 'nowrap' } }, amtText),
@@ -12476,7 +12410,7 @@ function App() {
                                     parts.map((pr, i) => React.createElement(React.Fragment, { key: 'ag' + i },
                                         i > 0 && React.createElement("span", { style: { color: 'var(--p-ink-5)', fontWeight: 400 } }, '·'),
                                         React.createElement("span", { style: { display: 'inline-flex', alignItems: 'baseline', gap: 4, minWidth: 0 } },
-                                            React.createElement("span", { style: { fontSize: 8, fontWeight: 600, letterSpacing: .4, textTransform: 'uppercase', color: 'var(--p-ink-4)', flexShrink: 0 } }, pr[0]),
+                                            React.createElement("span", { style: { fontSize: 8, fontWeight: 600, letterSpacing: .4, textTransform: 'uppercase', color: 'var(--p-ink-4)', flexShrink: 0 } }, (pr[0] || '').toLocaleUpperCase('tr-TR')),
                                             React.createElement("span", { className: "ko-htx-agency-val", style: { fontWeight: 500, color: 'var(--p-ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 132 } }, pr[1])))));
                             })()
                         )
@@ -12540,7 +12474,7 @@ function App() {
                         const dotColor = tip ? tip.c : 'var(--p-ink-4)';
                         out.push(React.createElement("div", { key: 'grp_' + k, className: "ko-htx-group-hd", style: { display: 'flex', alignItems: 'center', gap: 5, padding: '0 3px', marginTop: gi > 0 ? 8 : 1, marginBottom: 1 } },
                             React.createElement("span", { style: { width: 5, height: 5, borderRadius: 999, background: dotColor, flexShrink: 0 } }),
-                            React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, label),
+                            React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, (label || '').toLocaleUpperCase('tr-TR')),
                             React.createElement("span", { style: { fontSize: 8.5, fontWeight: 500, color: 'var(--p-ink-5)' } }, grp.length)));
                         grp.forEach(t => out.push(renderHomeTransfer(t)));
                     });
@@ -12630,22 +12564,27 @@ function App() {
                         renderPeriodCard('month', 'Aylık', monthT.length, AYLAR[now.getMonth()]),
                         renderPeriodCard('year', 'Yıllık', yearT.length, String(yyyy))
                     ),
-                    React.createElement("div", { className: "lg-section-row lg-today-title-row" },
-                        selectedPeriod === 'today'
-                            ? (() => {
-                                const navBtn = { flexShrink: 0, width: 32, height: 32, borderRadius: 999, border: '1px solid var(--p-line-2)', background: 'var(--p-white)', color: 'var(--p-ink-2)', fontSize: 17, fontWeight: 500, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 2px rgba(24,35,29,.05)' };
-                                return React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 8 } },
-                                    React.createElement("button", { type: "button", "aria-label": "Önceki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) - 1 })), style: navBtn }, '‹'),
-                                    React.createElement("div", { onClick: () => setExpandedT(p => ({ ...p, __lgDay: 0 })), style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 0, cursor: homeDayOffset !== 0 ? 'pointer' : 'default' } },
-                                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 } },
-                                            React.createElement("div", { className: "lg-section-title", style: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, dayLabel),
-                                            React.createElement("span", { className: "lg-badge" }, periodRows.today.length)),
-                                        homeDayOffset !== 0 && React.createElement("div", { style: { fontSize: 9.5, fontWeight: 500, color: 'var(--p-accent)', letterSpacing: .2 } }, "• bugüne dön")),
-                                    React.createElement("button", { type: "button", "aria-label": "Sonraki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) + 1 })), style: navBtn }, '›'));
-                            })()
-                            : React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                                React.createElement("div", { className: "lg-section-title" }, "Bugünkü Transferler"),
-                                React.createElement("span", { className: "lg-badge" }, todayT.length))
+                    React.createElement("div", { className: "lg-today-title-row", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', padding: '10px 2px 4px', margin: 0 } },
+                        (() => {
+                            const chev = dir => React.createElement("svg", { viewBox: "0 0 24 24", width: 16, height: 16, fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", style: { display: 'block' } },
+                                React.createElement("path", { d: dir === 'l' ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7" }));
+                            const navBtn = { flexShrink: 0, width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--p-line)', background: 'var(--p-white)', color: 'var(--p-brand)', WebkitTextFillColor: 'var(--p-brand)', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 2px 8px -3px rgba(20,34,68,.22), inset 0 1px 0 rgba(255,255,255,.9)', padding: 0, lineHeight: 0 };
+                            const titleTxt = selectedPeriod === 'today' ? dayLabel : 'Bugünkü Transferler';
+                            const viewDateLabel = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (selectedPeriod === 'today' ? homeDayOffset : 0)).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+                            const center = React.createElement("div", { onClick: () => setExpandedT(p => ({ ...p, __lgDay: 0 })), style: { flex: '1 1 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 0, cursor: (selectedPeriod === 'today' && homeDayOffset !== 0) ? 'pointer' : 'default' } },
+                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, minWidth: 0, maxWidth: '100%' } },
+                                    React.createElement("span", { style: { fontSize: 15.5, fontWeight: 620, letterSpacing: '-.015em', color: 'var(--p-ink)', WebkitTextFillColor: 'var(--p-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.05 } }, titleTxt),
+                                    React.createElement("span", { style: { flexShrink: 0, minWidth: 25, height: 25, padding: '0 6px', borderRadius: 999, background: 'var(--gradSel)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', fontSize: 12, fontWeight: 620, fontVariantNumeric: 'tabular-nums', display: 'grid', placeItems: 'center', lineHeight: 1, boxShadow: '0 3px 8px -3px rgba(21,35,62,.55), 0 0 0 3px rgba(228,200,138,.16)' } }, periodRows.today.length)),
+                                React.createElement("div", { style: { display: 'inline-flex', alignItems: 'center', gap: 6, lineHeight: 1 } },
+                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 500, color: 'var(--p-ink-4)', WebkitTextFillColor: 'var(--p-ink-4)', letterSpacing: .2, textTransform: 'capitalize' } }, viewDateLabel),
+                                    (selectedPeriod === 'today' && homeDayOffset !== 0) && React.createElement("span", { style: { fontSize: 10.5, fontWeight: 700, color: 'var(--p-accent)', WebkitTextFillColor: 'var(--p-accent)' } }, "· ↺ bugüne dön")));
+                            if (selectedPeriod !== 'today')
+                                return center;
+                            return React.createElement(React.Fragment, null,
+                                React.createElement("button", { type: "button", "aria-label": "Önceki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) - 1 })), style: navBtn }, chev('l')),
+                                center,
+                                React.createElement("button", { type: "button", "aria-label": "Sonraki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) + 1 })), style: navBtn }, chev('r')));
+                        })()
                     ),
                     renderPeriodPanel(selectedPeriod)
                 );
@@ -14264,7 +14203,7 @@ function App() {
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: '12px 13px', marginBottom: 14 } },
                             React.createElement("div", { style: { minWidth: 0 } },
                                 React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, "Otomatik yayın"),
-                                React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, "Yalnızca kişisel bilgi içermeyen takvim güncellenir")),
+                                React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, "Transfer değişince takvim kendiliğinden güncellenir")),
                             React.createElement("button", {
                                 type: "button", onClick: () => setGithubCalendarAuto(v => !v),
                                 style: {
@@ -14276,7 +14215,7 @@ function App() {
                         bolumBaslik('GitHub Erişimi'),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 7, marginBottom: 7 } },
                             React.createElement("input", {
-                                type: "password", inputMode: "text", value: githubCalendarToken,
+                                type: "text", inputMode: "text", value: githubCalendarToken,
                                 onChange: e => setGithubCalendarToken(e.target.value),
                                 placeholder: "github_pat_…", autoComplete: "off", autoCorrect: "off",
                                 autoCapitalize: "off", spellCheck: false, name: "ko-gh-token-field",
@@ -14291,7 +14230,7 @@ function App() {
                         (function () {
                             const tk = (githubCalendarToken || '').replace(/\s+/g, '');
                             if (!tk) return React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.4, marginBottom: 12 } },
-                                "Token yalnızca bu cihazda saklanır; cihaz kilidini ve tarayıcı erişimini koruyun.");
+                                "Token her cihazda ayrı saklanır; iPhone ve MacBook’ta bir kez girmen yeterli.");
                             const ok = tk.startsWith('github_pat_') || tk.startsWith('ghp_');
                             return React.createElement("div", {
                                 style: {
@@ -14299,7 +14238,7 @@ function App() {
                                     color: ok ? 'var(--p-pos-deep)' : 'var(--p-warn)', background: ok ? 'var(--p-pos-soft)' : 'var(--p-warn-soft)',
                                     border: '1px solid ' + (ok ? 'var(--p-pos-bd)' : 'var(--p-warn-bd)')
                                 }
-                            }, ok ? ('✓ Token bu cihazda etkin · ' + tk.length + ' karakter · …' + tk.slice(-4))
+                            }, ok ? ('✓ Token kayıtlı · ' + tk.length + ' karakter · …' + tk.slice(-4))
                                   : ('⚠ Bu metin token gibi görünmüyor — github_pat_ ile başlamalı (' + tk.length + ' karakter)'));
                         })(),
                         React.createElement("button", {
@@ -14309,14 +14248,14 @@ function App() {
                                 border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500,
                                 cursor: githubCalendarBusy ? 'default' : 'pointer', marginBottom: 8
                             }
-                        }, githubCalendarBusy ? "Yayınlanıyor…" : "⟳ Gizlilik Korumalı Takvimi Yayınla"),
+                        }, githubCalendarBusy ? "Yayınlanıyor…" : "⟳ Takvimi Şimdi Yayınla"),
                         React.createElement("div", {
                             style: {
                                 fontSize: 10.5, lineHeight: 1.4, marginBottom: 16, textAlign: 'center',
                                 color: githubCalendarMsg && /hata|yanlış|eksik|görünmüyor|kabul|Repo|Token/i.test(githubCalendarMsg) ? R : SB,
                                 fontWeight: githubCalendarMsg ? 500 : 450
                             }
-                        }, githubCalendarMsg || "GitHub takviminde müşteri, telefon, plaka, konum, not ve ödeme bilgisi yayımlanmaz."),
+                        }, githubCalendarMsg || "Yayınladıktan sonra aşağıdaki takvimlere bir kez abone ol."),
                         bolumBaslik('Takvimlere Abone Ol'),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
                             APPLE_CALENDAR_TYPES.map(meta => React.createElement("button", {
@@ -14330,7 +14269,7 @@ function App() {
                                 React.createElement("span", { style: { width: 9, height: 9, borderRadius: '50%', background: meta.color, flexShrink: 0 } }),
                                 React.createElement("span", null, meta.id === 'arrival' ? 'Gelen Yolcu' : meta.id === 'departure' ? 'Giden Yolcu' : meta.id === 'tour' ? 'Turlar' : meta.id === 'shortpass' ? 'Kısa Pas' : meta.id === 'dugun' ? 'Düğün' : meta.id === 'intercity' ? 'VIP Tahsis' : (String(meta.name || '').replace(/^KÖ\s*/, '') || meta.id))))),
                         React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.45, marginTop: 10, textAlign: 'center' } },
-                            "Ayrıntılı takvim yalnızca cihazdaki dışa aktarma özelliğinden oluşturulur."))));
+                            "Her takvim Apple Takvim’de kendi rengiyle görünür."))));
         })()));
 }
 class AppErrorBoundary extends React.Component {
@@ -14359,12 +14298,6 @@ class AppErrorBoundary extends React.Component {
     }
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(AppErrorBoundary, null, React.createElement(App, null)));
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js', { scope: './' })
-            .catch(err => { try { console.warn('[PWA] Service worker kaydedilemedi', err); } catch (e) {} });
-    }, { once: true });
-}
 </script>
 <style id="rogo-premium-typography-override">
 :root{
@@ -15554,43 +15487,71 @@ img,svg{content-visibility:visible !important}
   }
   .tabbar{background:rgba(255,255,255,.98) !important;will-change:auto !important}
 }
-/* === iPhone premium alt bar — net, oturaklı, taşmasız (en son sözü bu blok söyler) === */
+/* === Alacak/Borç — seçili kart sade, defter kartı net (en son söz) === */
+.ko-debt-firm-card.is-selected{
+  background:var(--p-white) !important;outline:0 !important;
+  border:1.5px solid rgba(46,62,102,.30) !important;
+  box-shadow:0 0 0 3px rgba(46,62,102,.10),0 6px 16px -8px rgba(16,20,31,.22) !important;
+}
+.ko-debt-firm-card.is-rec.is-selected{border-color:rgba(47,125,87,.55) !important;box-shadow:0 0 0 3px rgba(47,125,87,.13),0 6px 16px -8px rgba(16,20,31,.2) !important}
+.ko-debt-firm-card.is-pay.is-selected{border-color:rgba(192,95,95,.55) !important;box-shadow:0 0 0 3px rgba(192,95,95,.13),0 6px 16px -8px rgba(16,20,31,.2) !important}
+.ko-debt-firm-card.is-selected .ko-account-firm-card-copy b{color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important}
+.ko-debt-firm-card.is-selected .ko-account-firm-card-copy small{color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important}
+.ko-debt-firm-card.is-rec.is-selected .ko-debt-balance-stack,.ko-debt-firm-card.is-rec.is-selected .ko-debt-primary-chip,.ko-debt-firm-card.is-rec.is-selected .ko-debt-secondary-chip{color:var(--p-t-arr) !important;-webkit-text-fill-color:var(--p-t-arr) !important}
+.ko-debt-firm-card.is-pay.is-selected .ko-debt-balance-stack,.ko-debt-firm-card.is-pay.is-selected .ko-debt-primary-chip,.ko-debt-firm-card.is-pay.is-selected .ko-debt-secondary-chip{color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important}
+.ko-debt-selected-detail{margin-top:8px !important}
+.ko-debt-ledger{background:var(--p-white) !important;border:1px solid var(--p-line) !important;border-left:4px solid var(--debt-accent,var(--p-brand)) !important;border-radius:16px !important;padding:12px !important;box-shadow:0 6px 18px -10px rgba(16,20,31,.22) !important}
+.ko-debt-ledger-head{padding-bottom:10px !important;border-bottom:1px solid var(--p-line) !important}
+.ko-debt-ledger-name{color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important;font-weight:560 !important}
+.ko-debt-ledger-meta{color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important}
+.ko-debt-ledger-stats{margin-top:10px !important;gap:6px !important}
+.ko-debt-ledger-stat{background:var(--p-tint-3) !important;border:1px solid var(--p-line) !important;padding:7px 6px !important;border-radius:10px !important}
+.ko-debt-ledger-stat small{color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important;font-weight:500 !important}
+.ko-debt-ledger-stat b{color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important;font-size:11.5px !important;font-weight:600 !important}
+.ko-debt-ledger-rows{margin-top:10px !important;gap:0 !important;border:1px solid var(--p-line) !important;border-radius:11px !important;overflow:hidden !important}
+.ko-debt-ledger-row{background:var(--p-white) !important;border-radius:0 !important;border-bottom:1px solid var(--p-line) !important;min-height:40px !important}
+.ko-debt-ledger-rows .ko-debt-ledger-row:last-child{border-bottom:0 !important}
+.ko-debt-ledger-row:nth-child(even){background:var(--p-bg-hi) !important}
+.ko-debt-ledger-date{color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important}
+.ko-debt-ledger-note{color:var(--p-ink-2) !important;-webkit-text-fill-color:var(--p-ink-2) !important;font-weight:450 !important}
+.ko-debt-ledger-actions{margin-top:10px !important;padding-top:10px !important;border-top:1px solid var(--p-line) !important}
+.ko-debt-ledger-actions button{border:1px solid var(--p-line-2) !important;font-weight:520 !important}
+.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,var(--p-brand)) !important}
+/* === iPhone premium alt bar — sade, net, taşmasız (en son sözü bu blok söyler) === */
 @media(max-width:700px){
   .tabbar{
-    left:0 !important;right:0 !important;bottom:0 !important;border-radius:26px 26px 0 0 !important;
-    background:rgba(255,255,255,.9) !important;-webkit-backdrop-filter:blur(26px) saturate(1.7) !important;backdrop-filter:blur(26px) saturate(1.7) !important;
-    border-top:1px solid rgba(255,255,255,.75) !important;
-    box-shadow:0 -1px 0 rgba(20,34,68,.06),0 -14px 34px -12px rgba(16,20,31,.26) !important;
+    left:0 !important;right:0 !important;bottom:0 !important;border-radius:0 !important;
+    background:var(--p-white) !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;
+    border-top:1px solid rgba(20,34,68,.09) !important;
+    box-shadow:0 -8px 26px -14px rgba(16,20,31,.22) !important;
     padding-bottom:var(--sa-b) !important;z-index:70 !important;
   }
   .tabbar-inner{
-    height:72px !important;max-width:none !important;padding:9px 12px 7px !important;gap:3px !important;
-    grid-template-columns:1fr 1fr 1.3fr 1fr 1fr !important;align-items:center !important;background:transparent !important;
+    height:64px !important;max-width:none !important;padding:6px 8px 4px !important;gap:0 !important;
+    grid-template-columns:1fr 1fr 1.1fr 1fr 1fr !important;align-items:center !important;background:var(--p-white) !important;
   }
   .tab{
     height:56px !important;max-width:none !important;width:100% !important;justify-self:stretch !important;
     display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;
-    gap:4px !important;padding:7px 2px !important;border-radius:16px !important;border:1px solid transparent !important;
-    overflow:hidden !important;background:transparent !important;color:var(--p-ink-4) !important;
+    gap:5px !important;padding:6px 2px !important;border-radius:14px !important;border:0 !important;
+    background:transparent !important;color:var(--p-ink-4) !important;overflow:visible !important;
   }
   .tab .tab-icon{
-    font-size:0 !important;width:22px !important;height:22px !important;display:flex !important;align-items:center !important;justify-content:center !important;color:inherit !important;
+    font-size:0 !important;width:24px !important;height:24px !important;display:flex !important;align-items:center !important;justify-content:center !important;color:inherit !important;
   }
-  .tab .tab-icon svg{width:21px !important;height:21px !important;display:block !important}
-  .tab .tab-label{font-size:9.5px !important;font-weight:560 !important;line-height:1 !important;white-space:nowrap !important;color:inherit !important;-webkit-text-fill-color:currentColor !important}
-  .tab.is-active{
-    background:var(--gradSel) !important;border:1px solid rgba(255,255,255,.22) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 6px 14px -6px rgba(16,20,31,.45) !important;
-  }
-  .tab.is-active .tab-icon,.tab.is-active .tab-label,.tab.is-active *{color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important}
-  .tab:active{transform:scale(.95) !important}
+  .tab .tab-icon svg{width:23px !important;height:23px !important;display:block !important}
+  .tab .tab-label{font-size:10px !important;font-weight:560 !important;line-height:1 !important;white-space:nowrap !important;color:inherit !important;-webkit-text-fill-color:currentColor !important}
+  .tab.is-active{background:transparent !important;border:0 !important;box-shadow:none !important;color:var(--p-brand) !important}
+  .tab.is-active .tab-icon,.tab.is-active .tab-label,.tab.is-active *{color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
+  .tab.is-active .tab-icon svg{filter:drop-shadow(0 1px 2px rgba(21,35,62,.22)) !important}
+  .tab:active{transform:scale(.93) !important}
   .tab-fab{
-    width:54px !important;height:54px !important;border-radius:18px !important;transform:translateY(-14px) !important;
-    background:var(--gradSel) !important;border:none !important;color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important;
-    font-size:30px !important;font-weight:400 !important;
-    box-shadow:0 14px 26px -8px rgba(16,20,31,.5),0 0 0 5px var(--bg),0 0 0 6px rgba(228,200,138,.3) !important;
+    width:56px !important;height:56px !important;border-radius:50% !important;transform:translateY(-15px) !important;
+    background:var(--gradSel) !important;border:3px solid var(--p-white) !important;color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important;
+    font-size:29px !important;font-weight:300 !important;
+    box-shadow:0 10px 22px -6px rgba(21,35,62,.5) !important;
   }
-  .tab-fab:active{transform:translateY(-11px) scale(.94) !important}
+  .tab-fab:active{transform:translateY(-13px) scale(.95) !important}
 }
 </style>
 </body>
