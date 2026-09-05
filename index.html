@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
-<meta name="theme-color" content="#1B2740">
+<meta name="theme-color" content="#0C1E39">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>KÖ Transfer Takip - Stabil</title>
@@ -32,7 +32,7 @@
   --p-ink-3:#69707A;
   --p-ink-4:#98A0AA;
   --p-ink-5:#C7CBD1;
-  --p-brand:#1A2035;
+  --p-brand:#15233E;
   --p-brand-soft:#EDF1F6;
   --p-line:#D9DEE6;
   --p-line-2:#C9D0DA;
@@ -42,12 +42,12 @@
   --p-pos-soft:#EEF1F8;
   --p-pos-bd:#C6D1E7;
   --p-pos-ink:#2E3E66;
-  --p-t-arr:#5E7A5F;--p-t-arr-bg:#EDF2EC;--p-t-arr-bd:#CCDBC8;
-  --p-t-dep:#616873;--p-t-dep-bg:#F0F1F4;--p-t-dep-bd:#D6D9DF;
-  --p-t-tur:#8C6F31;--p-t-tur-bg:#F6F1E3;--p-t-tur-bd:#E4D8B9;
-  --p-t-dug:#7E5A86;--p-t-dug-bg:#F1EBF3;--p-t-dug-bd:#D9C7DD;
-  --p-t-vip:#9E6540;--p-t-vip-bg:#F6ECE4;--p-t-vip-bd:#E6CDB8;
-  --p-t-kisa:#4F6588;--p-t-kisa-bg:#EAEEF4;--p-t-kisa-bd:#CAD4E2;
+  --p-t-arr:#2F7D57;--p-t-arr-bg:#E4F1E9;--p-t-arr-bd:#B8DBC5;--p-t-arr-chip:#CFE7D8;
+  --p-t-dep:#465063;--p-t-dep-bg:#EAECF1;--p-t-dep-bd:#C6CCD7;--p-t-dep-chip:#D9DEE7;
+  --p-t-tur:#A5771B;--p-t-tur-bg:#F8EFD4;--p-t-tur-bd:#E8D296;--p-t-tur-chip:#EFE0B4;
+  --p-t-dug:#8438A0;--p-t-dug-bg:#F2E6F6;--p-t-dug-bd:#DCBFE8;--p-t-dug-chip:#E6D0EE;
+  --p-t-vip:#BE5F2A;--p-t-vip-bg:#FAEADB;--p-t-vip-bd:#EFC7A2;--p-t-vip-chip:#F5D4B6;
+  --p-t-kisa:#315F9E;--p-t-kisa-bg:#E5EDF8;--p-t-kisa-bd:#BACDE9;--p-t-kisa-chip:#CEDCF1;
   --p-neg:#C05F5F;
   --p-neg-deep:#B5544F;
   --p-neg-soft:#FBEDEC;
@@ -61,9 +61,9 @@
   --p-accent:#B99447;
   --p-accent-2:#E6CE96;
   --p-accent-soft:#FAF4E7;
-  --p-hero-1:#354566;
-  --p-hero-2:#28374F;
-  --p-hero-3:#1B2740;
+  --p-hero-1:#1A3A62;
+  --p-hero-2:#133050;
+  --p-hero-3:#0C1E39;
 }
 :root{--green:var(--p-pos);--green-2:var(--p-pos);--red:var(--p-neg);--yellow:var(--p-warn);--r:14px;--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--card:var(--p-white);--line:var(--p-line);--line-2:var(--p-line-3);--ink:var(--p-ink);--ink-2:var(--p-ink-2);--ink-3:var(--p-ink-3);--muted:var(--p-ink-3);--accent:var(--p-brand);--accent-2:var(--p-brand);--accent-soft:var(--p-tint);--brand:var(--p-brand);--brand-2:var(--p-brand);--brand-soft:var(--p-tint);--ok:var(--p-pos);--ok-bg:var(--p-pos-soft);--ok-bd:var(--p-pos-bd);--shadow:0 1px 4px rgba(60,60,67,.045);--tabbar-h:72px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1034,13 +1034,13 @@ const NAV = 'var(--p-brand)', NAV2 = 'var(--p-brand)', GOLD = 'rgba(255,255,255,
 const G = 'var(--p-pos-deep)', O = 'var(--p-info)', R = 'var(--p-neg)', BR = 'var(--p-line-3)';
 const TX = 'var(--p-ink)', SB = 'var(--p-ink-3)', INP = 'var(--p-field)', BOR = 'rgba(46,58,78,.20)';
 const TIPLER = [
-    { id: 'departure', n: 'Gidiş', ico: '🛫', c: 'var(--p-t-dep)', bg: 'var(--p-t-dep-bg)', b: 'var(--p-t-dep-bd)' },
-    { id: 'arrival', n: 'Geliş', ico: '🛬', c: 'var(--p-t-arr)', bg: 'var(--p-t-arr-bg)', b: 'var(--p-t-arr-bd)' },
-    { id: 'tour', n: 'Tur', ico: '🏔️', c: 'var(--p-t-tur)', bg: 'var(--p-t-tur-bg)', b: 'var(--p-t-tur-bd)' },
-    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: 'var(--p-t-kisa)', bg: 'var(--p-t-kisa-bg)', b: 'var(--p-t-kisa-bd)' },
-    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: 'var(--p-t-vip)', bg: 'var(--p-t-vip-bg)', b: 'var(--p-t-vip-bd)' },
-    { id: 'takas', n: 'Takas İş', ico: '🔁', c: 'var(--p-ink-3)', bg: 'var(--p-tint)', b: 'var(--p-line-2)' },
-    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: 'var(--p-t-dug)', bg: 'var(--p-t-dug-bg)', b: 'var(--p-t-dug-bd)' },
+    { id: 'departure', n: 'Gidiş', ico: '🛫', c: 'var(--p-t-dep)', bg: 'var(--p-t-dep-bg)', b: 'var(--p-t-dep-bd)', chip: 'var(--p-t-dep-chip)' },
+    { id: 'arrival', n: 'Geliş', ico: '🛬', c: 'var(--p-t-arr)', bg: 'var(--p-t-arr-bg)', b: 'var(--p-t-arr-bd)', chip: 'var(--p-t-arr-chip)' },
+    { id: 'tour', n: 'Tur', ico: '🏔️', c: 'var(--p-t-tur)', bg: 'var(--p-t-tur-bg)', b: 'var(--p-t-tur-bd)', chip: 'var(--p-t-tur-chip)' },
+    { id: 'shortpass', n: 'Kısa Pas', ico: '⚡', c: 'var(--p-t-kisa)', bg: 'var(--p-t-kisa-bg)', b: 'var(--p-t-kisa-bd)', chip: 'var(--p-t-kisa-chip)' },
+    { id: 'intercity', n: 'VIP Tahsis', ico: '🚐', c: 'var(--p-t-vip)', bg: 'var(--p-t-vip-bg)', b: 'var(--p-t-vip-bd)', chip: 'var(--p-t-vip-chip)' },
+    { id: 'takas', n: 'Takas İş', ico: '🔁', c: 'var(--p-ink-3)', bg: 'var(--p-tint)', b: 'var(--p-line-2)', chip: 'var(--p-tint-4)' },
+    { id: 'dugun', n: 'Düğün', ico: '👰🤵', c: 'var(--p-t-dug)', bg: 'var(--p-t-dug-bg)', b: 'var(--p-t-dug-bd)', chip: 'var(--p-t-dug-chip)' },
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
@@ -4122,13 +4122,17 @@ const buildAppleCalendarIcs = (transfers, meta) => {
     lines.push('END:VCALENDAR');
     return lines.map(icsFold).join('\r\n') + '\r\n';
 };
+const transferCalendarBucket = t => {
+    if (t && (t.isDugun || t.transferType === 'dugun')) return 'dugun';
+    return String((t && t.transferType) || 'arrival');
+};
 const buildAppleCalendarFiles = transfers => APPLE_CALENDAR_TYPES
-    .map(meta => ({ meta, rows: (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id) }))
+    .map(meta => ({ meta, rows: (transfers || []).filter(t => transferCalendarBucket(t) === meta.id) }))
     .filter(x => x.rows.length)
     .map(x => ({ filename: x.meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(x.rows, x.meta) }));
 const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
     .map(meta => {
-        const rows = (transfers || []).filter(t => (t.transferType || 'arrival') === meta.id);
+        const rows = (transfers || []).filter(t => transferCalendarBucket(t) === meta.id);
         return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
     });
 const githubCalendarHeaders = token => ({
@@ -10358,7 +10362,7 @@ function App() {
         try { if ((githubCalendarToken || '').trim()) setTimeout(() => publishAppleCalendarToGithub(true), 300); } catch (e) {}
         tip('Silindi');
     };
-	    const editT = t => openFullEditT(t);
+	    const editT = t => { setExpandedT(p => ({ ...p, __homeCard: null })); openFullEditT(t); };
     const copyT = t => {
         const companyCollected = isCompanyCollected(t);
         const customerCollected = isCustomerCollected(t);
@@ -10383,6 +10387,7 @@ function App() {
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
+        setExpandedT(p => ({ ...p, __homeCard: null }));
         const deletedIds = readDeletedTransferIds();
         const sid = String(id);
         if (!deletedIds.includes(sid)) deletedIds.push(sid);
@@ -11535,20 +11540,19 @@ function App() {
                             (acc[tp] || (acc[tp] = [])).push(t);
                             return acc;
                         }, {});
-                        const orderedTypeIds = TIPLER.map(tp => tp.id)
-                            .concat(Object.keys(grouped).filter(k => !TIPLER.some(tp => tp.id === k)));
+                        const HOME_ORDER = ['arrival', 'departure', 'tour', 'dugun', 'intercity', 'shortpass', 'takas'];
+                        const orderedTypeIds = HOME_ORDER.filter(k => grouped[k] && grouped[k].length)
+                            .concat(Object.keys(grouped).filter(k => !HOME_ORDER.includes(k)));
                         const sections = orderedTypeIds
                             .filter(tid => grouped[tid] && grouped[tid].length)
-                            .map(tid => {
-                                const meta = TIPLER.find(tp => tp.id === tid) || { id: tid, n: tid, ico: '📌', c: 'var(--p-ink-3)', bg: 'var(--p-tint-3)', b: 'var(--p-line-3)' };
+                            .map((tid, gi) => {
+                                const meta = TIPLER.find(tp => tp.id === tid) || { id: tid, n: tid, ico: '📌', c: 'var(--p-ink-3)' };
                                 const secRows = grouped[tid];
-                                const secDone = secRows.filter(x => x.status === 'tam').length;
-                                return React.createElement("div", { key: tid, className: 'ko-type-group', style: { marginBottom: 8 } },
-                                    React.createElement("div", { className: 'ko-type-group-head', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, background: meta.bg, border: '1px solid ' + meta.b, borderLeft: '4px solid ' + meta.c, borderRadius: 10, padding: '6px 10px', margin: '2px 0 6px' } },
-                                        React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 } },
-                                            React.createElement("span", { style: { fontSize: 13 } }, meta.ico),
-                                            React.createElement("span", { style: { fontSize: 12, fontWeight: 700, color: meta.c, letterSpacing: '.01em' } }, meta.n)),
-                                        React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: meta.c, whiteSpace: 'nowrap', opacity: .9 } }, secRows.length + ' transfer · ' + secDone + ' tamam')),
+                                return React.createElement("div", { key: tid, className: 'ko-type-group', style: { marginBottom: 4 } },
+                                    React.createElement("div", { className: 'ko-htx-group-hd', style: { display: 'flex', alignItems: 'center', gap: 5, padding: '0 3px', marginTop: gi > 0 ? 8 : 2, marginBottom: 3 } },
+                                        React.createElement("span", { style: { width: 5, height: 5, borderRadius: 999, background: meta.c, flexShrink: 0 } }),
+                                        React.createElement("span", { style: { fontSize: 9, fontWeight: 600, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--p-ink-4)' } }, meta.n),
+                                        React.createElement("span", { style: { fontSize: 8.5, fontWeight: 500, color: 'var(--p-ink-5)' } }, secRows.length)),
                                     secRows.map(renderTransferItem));
                             });
                         return React.createElement("div", null, sections);
@@ -12359,12 +12363,12 @@ function App() {
                     const statusColor = payDone ? '#0B7C55' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
                     const statusBd = payDone ? '#BEE3CB' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
                     const bags = bagCount(t);
-                    const __chipBg = tip.bg || 'var(--p-bg-lo)';
+                    const __chipBg = tip.chip || tip.bg || 'var(--p-bg-lo)';
                     const __chipInk = tip.c || 'var(--p-ink)';
                     return React.createElement("div", {
                         key: t.id,
                         className: "ko-htx-card",
-                        onClick: () => openTransferInList(t),
+                        onClick: () => setExpandedT(p => ({ ...p, __homeCard: t.id, [t.id]: true })),
                         style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.06)', borderRadius: 18, padding: '13px 15px', boxShadow: '0 1px 2px rgba(24,35,29,.03), 0 16px 30px -20px rgba(24,35,29,.14)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
                         React.createElement("div", { className: "ko-htx-grid", style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 13 } },
@@ -14031,6 +14035,17 @@ function App() {
                         ? React.createElement("button", { onClick: () => { setPaxModal(null); setTimeout(openPassportPicker, 60); }, title: "Başka bir pasaport fotoğrafı seç", style: { flex: 1, background: 'var(--p-white)', color: 'var(--p-pos-ink)', border: '1.5px solid var(--p-pos-ink)', borderRadius: 13, padding: 13, fontWeight: 470, fontSize: '14px', cursor: 'pointer' } }, "📷 Tekrar Tara")
                         : React.createElement("button", { onClick: () => setPaxModal(null), style: { flex: 1, background: 'var(--p-white)', color: SB, border: '1.5px solid ' + BOR, borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "İptal"),
                     React.createElement("button", { onClick: savePaxModal, style: { flex: 2, background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, paxModal.scan ? "✓ Yolcuyu Ekle" : "Kaydet"))))),
+        expandedT.__homeCard && (() => {
+            const hc = (T || []).find(x => x && x.id === expandedT.__homeCard);
+            if (!hc) return null;
+            return React.createElement("div", { className: "mo", onClick: () => setExpandedT(p => ({ ...p, __homeCard: null })), style: { zIndex: 88 } },
+                React.createElement("div", { onClick: e => e.stopPropagation(), style: { width: '100%', maxWidth: 620, maxHeight: '90vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: 'var(--p-bg)', borderRadius: '26px 26px 0 0', padding: '10px 12px calc(16px + var(--sa-b))', boxShadow: '0 -14px 44px rgba(16,20,31,.30)' } },
+                    React.createElement("div", { style: { width: 44, height: 5, background: 'rgba(20,26,38,.2)', borderRadius: 3, margin: '2px auto 12px' } }),
+                    React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, padding: '0 2px' } },
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 560, color: 'var(--p-ink)', letterSpacing: .2 } }, "Transfer · işlem seç"),
+                        React.createElement("button", { onClick: () => setExpandedT(p => ({ ...p, __homeCard: null })), style: { background: 'var(--p-tint-3)', border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14, color: 'var(--p-ink-2)' } }, "✕")),
+                    renderTransferItem(hc)));
+        })(),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
@@ -15465,6 +15480,44 @@ img,svg{content-visibility:visible !important}
     backdrop-filter:none !important;
   }
   .tabbar{background:rgba(255,255,255,.98) !important;will-change:auto !important}
+}
+/* === iPhone premium alt bar — net, oturaklı, taşmasız (en son sözü bu blok söyler) === */
+@media(max-width:700px){
+  .tabbar{
+    left:0 !important;right:0 !important;bottom:0 !important;border-radius:26px 26px 0 0 !important;
+    background:rgba(255,255,255,.9) !important;-webkit-backdrop-filter:blur(26px) saturate(1.7) !important;backdrop-filter:blur(26px) saturate(1.7) !important;
+    border-top:1px solid rgba(255,255,255,.75) !important;
+    box-shadow:0 -1px 0 rgba(20,34,68,.06),0 -14px 34px -12px rgba(16,20,31,.26) !important;
+    padding-bottom:var(--sa-b) !important;z-index:70 !important;
+  }
+  .tabbar-inner{
+    height:72px !important;max-width:none !important;padding:9px 12px 7px !important;gap:3px !important;
+    grid-template-columns:1fr 1fr 1.3fr 1fr 1fr !important;align-items:center !important;background:transparent !important;
+  }
+  .tab{
+    height:56px !important;max-width:none !important;width:100% !important;justify-self:stretch !important;
+    display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;
+    gap:4px !important;padding:7px 2px !important;border-radius:16px !important;border:1px solid transparent !important;
+    overflow:hidden !important;background:transparent !important;color:var(--p-ink-4) !important;
+  }
+  .tab .tab-icon{
+    font-size:0 !important;width:22px !important;height:22px !important;display:flex !important;align-items:center !important;justify-content:center !important;color:inherit !important;
+  }
+  .tab .tab-icon svg{width:21px !important;height:21px !important;display:block !important}
+  .tab .tab-label{font-size:9.5px !important;font-weight:560 !important;line-height:1 !important;white-space:nowrap !important;color:inherit !important;-webkit-text-fill-color:currentColor !important}
+  .tab.is-active{
+    background:var(--gradSel) !important;border:1px solid rgba(255,255,255,.22) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 6px 14px -6px rgba(16,20,31,.45) !important;
+  }
+  .tab.is-active .tab-icon,.tab.is-active .tab-label,.tab.is-active *{color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important}
+  .tab:active{transform:scale(.95) !important}
+  .tab-fab{
+    width:54px !important;height:54px !important;border-radius:18px !important;transform:translateY(-14px) !important;
+    background:var(--gradSel) !important;border:none !important;color:var(--p-white) !important;-webkit-text-fill-color:var(--p-white) !important;
+    font-size:30px !important;font-weight:400 !important;
+    box-shadow:0 14px 26px -8px rgba(16,20,31,.5),0 0 0 5px var(--bg),0 0 0 6px rgba(228,200,138,.3) !important;
+  }
+  .tab-fab:active{transform:translateY(-11px) scale(.94) !important}
 }
 </style>
 </body>
