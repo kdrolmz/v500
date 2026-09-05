@@ -9,1067 +9,1396 @@ X-APPLE-CALENDAR-COLOR:var(--p-accent)
 REFRESH-INTERVAL;VALUE=DURATION:PT15M
 X-PUBLISHED-TTL:PT15M
 BEGIN:VEVENT
-UID:ko-public-igmjjjiokaeljlmmmlmdcnndanklnodc@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-pdf_balen_olmez_20251024_1200_074_kdv-fatura-odemesi@olm
+ eztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260604T185200Z
 SEQUENCE:1780599173
 DTSTART:20251024T120000
 DTEND:20251024T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · - Tur
+LOCATION:- → -
+DESCRIPTION:Müşteri: KDV FATURA ÖDEMESİ\nŞoför: -\nİşi veren: Odelo\nİşi
+  yapan: Balentur\nAlt acenta: -\nAraç: Vito\nGüzergah: - → -\nNot: PDF a
+ ktarım: ODELO-ÖLMEZ | PDF kalan: -₺4.700 | BALENE VERİLECEK\nÖdeme: Araç
+ : 4.700 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-canbpkjbjiffjjdpomjdoeonnfgnfeog@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-pdf_balen_olmez_20251207_1800_019_doga-nalcaci@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260604T185400Z
 SEQUENCE:1780599269
 DTSTART:20251207T180000
 DTEND:20251207T190000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:18:00 · Çanakkale Tur
+LOCATION:İstanbul Havalimanı → ÇANAKKALE - EDİRNE TAHSİS
+DESCRIPTION:Müşteri: DOĞA NALÇACI\nŞoför: -\nİşi veren: Ölmeztur\nİşi ya
+ pan: Balentur\nAlt acenta: -\nAraç: Vito\nGüzergah: İstanbul Havalimanı 
+ → ÇANAKKALE - EDİRNE TAHSİS\nNot: PDF aktarım: ÖLMEZ-BALEN | Güzergah: Ç
+ ANAKKALE KÖPRÜSÜ | PDF kalan: -₺59.000\nÖdeme: Araç: 59.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-plckjkehcbmcilbbgoplncckhhadniam@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-pdf_balen_olmez_20251224_1200_022_racha-mossad@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260604T185400Z
 SEQUENCE:1780599271
 DTSTART:20251224T120000
 DTEND:20251224T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:ULUDAĞ → BURSA TUR ULUDAĞ DÖNÜŞ
+DESCRIPTION:Müşteri: RACHA MOSSAD\nŞoför: -\nİşi veren: Ölmeztur\nİşi ya
+ pan: Balentur\nAlt acenta: -\nAraç: Vito\nGüzergah: ULUDAĞ → BURSA TUR U
+ LUDAĞ DÖNÜŞ\nNot: PDF aktarım: ÖLMEZ-BALEN | PDF kalan: -₺6.500\nÖdeme: 
+ Araç: 6.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lkgjdhbcdmgdjolicfbghhdbompapafa@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1774894514638@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260628T184200Z
 SEQUENCE:1782672178
 DTSTART:20251229T110000
 DTEND:20251229T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Uludağ Yolu Otel → Bursa / Uludağ Tur
+DESCRIPTION:Müşteri: Daniil Dudkik\nŞoför: Nuri Çalışkan\nİşi veren: Ölm
+ eztur\nİşi yapan: Nuri Çalışkan\nAlt acenta: -\nAraç: Vito\nGüzergah: Ul
+ udağ Yolu Otel → Bursa / Uludağ Tur\nÖdeme: Araç: 5.150 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cmidikpagpjhlnifopfkemlefikcjffo@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1774894694133@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260628T184200Z
 SEQUENCE:1782672178
 DTSTART:20251230T130000
 DTEND:20251230T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Uludağ Yolu Otel → Bursa Tur
+DESCRIPTION:Müşteri: Danııl Dudkik\nŞoför: Nuri Çalışkan\nİşi veren: Ölm
+ eztur\nİşi yapan: Nuri Çalışkan\nAlt acenta: -\nAraç: Vito\nGüzergah: Ul
+ udağ Yolu Otel → Bursa Tur\nNot: Ödemeyi ben aldım\nÖdeme: Araç: 4.300 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-kjfoampcoaoidepjpghppmdnghfgfagk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1774895442147@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260628T184200Z
 SEQUENCE:1782672179
 DTSTART:20260107T110000
 DTEND:20260107T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Lilium Hotel Bursa → Bursa / Uludağ Tur
+DESCRIPTION:Müşteri: Nehad  Alsaleh\nŞoför: Nuri Çalışkan\nİşi veren: Öl
+ meztur\nİşi yapan: Nuri Çalışkan\nAlt acenta: -\nAraç: Sprinter\nGüzerga
+ h: Lilium Hotel Bursa → Bursa / Uludağ Tur\nÖdeme: Müşteri: 15.050 TRY |
+  Araç: 6.450 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-plompjecbhkjlkbnpokkleanmaplicfn@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1774959828868@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260628T184200Z
 SEQUENCE:1782672168
 DTSTART:20260112T100000
 DTEND:20260112T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Bursa / Crowne Plaza → Bursa / Uludağ Tur
+DESCRIPTION:Müşteri: Abdullah Alenezi\nŞoför: Nuri Çalışkan / +90 (536) 
+ 307 78 31\nİşi veren: Ölmeztur\nİşi yapan: Nuri Çalışkan\nAlt acenta: -\
+ nAraç: Vito\nGüzergah: Bursa / Crowne Plaza → Bursa / Uludağ Tur\nÖdeme:
+  Müşteri: 6.850 TRY | Araç: 5.580 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cadflpelehijjlnbaipdnmcjoaocgkio@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1776282124269_9w0gzm@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260416T100000
 DTEND:20260416T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 4.450 TR
+ Y | Araç: 4.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lgknphocalfcblacdblmkidhonbdbknh@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1776442617456_4tqacq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260417T140000
 DTEND:20260417T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşte
+ ri: 4.450 TRY | Araç: 4.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-fckccpchcccgpaeacfhgebnaklfhgmak@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1776442790803_4bdwlt@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260418T120000
 DTEND:20260418T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aaseeri\nŞoför: Kadir Ölmez / +90 (543) 287 
+ 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç
+ : Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşt
+ eri: 5.100 TRY | Araç: 4.650 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-kiijkjflcplikfemjanigcjokbplckbp@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1776442844244_tw0ccg@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260419T120000
 DTEND:20260419T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşte
+ ri: 4.450 TRY | Araç: 4.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lfjnadbccknefkonifchcmifegblamhn@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777151664115_cjhmp7@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260624T174800Z
 SEQUENCE:1782323292
 DTSTART:20260426T090000
 DTEND:20260426T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · Bursa Tur
+LOCATION:Bursa / Gemlik → Bursa Tur
+DESCRIPTION:Müşteri: -\nŞoför: Yaşar Taşdemir / 0 (537) 563 78 19\nİşi v
+ eren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprint
+ er\nGüzergah: Bursa / Gemlik → Bursa Tur\nÖdeme: Müşteri: 7.200 TRY | Ar
+ aç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jodmhailhjmaebaphpnapoonpfimfipl@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777151274910_b86rsx@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260426T093000
 DTEND:20260426T103000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:30 · Bursa Tur
+LOCATION:Leluxe Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Nabeel Bukem\nŞoför: Yasin Dilmenli / +90 (535) 573
+  87 42\nİşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç
+ : Vito / 16 LMZ 55\nGüzergah: Leluxe Hotel → Bursa Tur\nÖdeme: Müşteri ö
+ demez | Araç: 4.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-alcichcfmkcphkcmncncjikppglmkggf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777282225658_uaxza7@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260427T110000
 DTEND:20260427T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Leluxe Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Nabeel Bukem\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: V
+ ito / 16 LMZ 55\nGüzergah: Leluxe Hotel → Bursa Tur\nÖdeme: Müşteri ödem
+ ez | Araç: 4.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gkjlpoblldnoflajbmadooaanohanjjh@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777282349200_99zpc6@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260427T130000
 DTEND:20260427T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al aseeri\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Şenol 
+ Hemitli\nAraç: Vito\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müş
+ teri: 4.500 TRY | Hesap bana geldi | Araç: 4.050 ₺ | Alt acenta: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mcncbgpflbpcjegedadbhdjpifambnkf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777467961469_6kr1y3@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260429T130000
 DTEND:20260429T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Şenol 
+ Hemitli\nAraç: Vito\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müş
+ teri: 4.500 TRY | Hesap bana geldi | Araç: 4.050 ₺ | Alt acenta: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-bnmbdnjobddjoiiiglkakcneimpgdodm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777497633611_6df1qb@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260430T120000
 DTEND:20260430T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşte
+ ri: 4.500 TRY | Hesap bana geldi | Araç: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cadcocmpeolcpdmhhfgmocgjeafdojck@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777582055692_ucwkg1@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260430T130000
 DTEND:20260430T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa → Bursa / Uludağ
+DESCRIPTION:Müşteri: Ahmed Almuhamad\nŞoför: Şenol Hemitli / +90 (537) 4
+ 75 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ş
+ enol Hemitli\nAraç: Vito\nGüzergah: Bursa → Bursa / Uludağ\nÖdeme: Müşte
+ ri: 6.750 TRY | Araç: 4.950 ₺ | Alt acenta: 4.950 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lgllgificmofdihgcgdkmehmlgggljcj@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777576766720_0qvle2@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260501T140000
 DTEND:20260501T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşte
+ ri: 4.500 TRY | Araç: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ifchfmgknkcogldlaolbdojnaihdlclp@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1777675256775_rshu9z@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260512T073500Z
 SEQUENCE:1778571352
 DTSTART:20260502T120000
 DTEND:20260502T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa / Osmangazi → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa / Osmangazi → Bursa Tur\nÖdeme: Müşte
+ ri: 4.500 TRY | Araç: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mhhknbonnbhgkjpjoaaepleijobhdbhj@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1778756577632_xvb68w@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260624T174800Z
 SEQUENCE:1782323297
 DTSTART:20260515T110000
 DTEND:20260515T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · İstanbul Tur
+LOCATION:İstanbul / Şişli → İstanbul Tur
+DESCRIPTION:Müşteri: Faten Merza\nŞoför: Salih / +90 534 075 65 17\nİşi 
+ veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\nAraç: Vito\
+ nGüzergah: İstanbul / Şişli → İstanbul Tur\nÖdeme: Müşteri: 4.450 TRY | 
+ Araç: 4.150 ₺ | Alt acenta: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-piemgapghffdkolaaokblpjkkfkgjocd@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1778963551687_nkrbaw@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260624T174800Z
 SEQUENCE:1782323297
 DTSTART:20260517T110000
 DTEND:20260517T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · İstanbul Tur
+LOCATION:İstanbul / Şişli → İstanbul Asya Tur
+DESCRIPTION:Müşteri: Fetan Merza\nŞoför: Salih / +90 534 075 65 17\nİşi 
+ veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\nAraç: Vito\
+ nGüzergah: İstanbul / Şişli → İstanbul Asya Tur\nÖdeme: Müşteri: 5.450 T
+ RY | Araç: 5.150 ₺ | Alt acenta: 4.900 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-bpcmaodlekkdomkfnciepbdnfkkammpl@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1779649563439_o9s1w0@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260624T174800Z
 SEQUENCE:1782323296
 DTSTART:20260519T110000
 DTEND:20260519T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · İstanbul Tur
+LOCATION:İstanbul / Şişli → İstanbul Tur
+DESCRIPTION:Müşteri: Fateh Mera\nŞoför: Salih / +90 534 075 65 17\nİşi v
+ eren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\nAraç: Vito\n
+ Güzergah: İstanbul / Şişli → İstanbul Tur\nÖdeme: Müşteri: 4.540 TRY | A
+ raç: 4.250 ₺ | Alt acenta: 4.100 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-fadnkllmmhpjpapdpidaiplhhinfmpfo@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1780080500477_guewt7@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260706T200000Z
 SEQUENCE:1783368008
 DTSTART:20260530T100000
 DTEND:20260530T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Oylat Tur Tur
+LOCATION:Bursa → Oylat Tur
+DESCRIPTION:Müşteri: Mohammad masarra\nŞoför: Yaşar Taşdemir / 0 (537) 5
+ 63 78 19\nİşi veren: Salah\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tu
+ r\nAraç: Sprinter\nGüzergah: Bursa → Oylat Tur\nÖdeme: Müşteri ödemez | 
+ Araç: 7.800 ₺ | Alt acenta: 7.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-moamlgaibbgieamoojbgpdichieliomd@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781429531095_1hxfxb@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260617T173500Z
 SEQUENCE:1781717723
 DTSTART:20260612T120000
 DTEND:20260612T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Sapanca Tur
+LOCATION:Rixos Tershane → Sapanca
+DESCRIPTION:Müşteri: Adel Alejmi\nŞoför: Dİğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Rixos Tershane → Sapanca\nÖdeme: Müşteri: 220 USD | Araç: 8.330 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-nakamanlkajmgdiocflphbejbkdokelc@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781340818155_tpa0xb@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260613T085300Z
 SEQUENCE:1781340818
 DTSTART:20260613T130000
 DTEND:20260613T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD 
+ | Hesap bana geldi | Araç: 4.628 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gimaghmmpcaiahbonnbcjdeibagolook@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781429611081_x3k9q1@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260617T173500Z
 SEQUENCE:1781717724
 DTSTART:20260613T140000
 DTEND:20260613T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · İstanbul Tur
+LOCATION:Rixos Tershane → İstanbul Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Dİğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Rixos Tershane → İstanbul Tur\nÖdeme: Müşteri: 150 USD | Araç: 6.479 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lgjmpeljkobnjhjeifhjiaoofjiedohk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781429664260_lv3arg@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260617T173500Z
 SEQUENCE:1781717725
 DTSTART:20260614T120000
 DTEND:20260614T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · İstanbul Tur
+LOCATION:Rixos Tershane → İstanbul Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Dİğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Rixos Tershane → İstanbul Tur\nÖdeme: Müşteri: 150 USD | Araç: 6.479 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gaeenahleaiidcnnegfdhhogglidneod@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781437351166_yapk59@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260614T114200Z
 SEQUENCE:1781437351
 DTSTART:20260614T150000
 DTEND:20260614T160000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:15:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD 
+ | Hesap bana geldi | Araç: 4.628 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jlfhodjobajnecklekkjdokhnenmhagn@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782033252754_a8u6wv@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260621T091400Z
 SEQUENCE:1782033252
 DTSTART:20260621T130000
 DTEND:20260621T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD 
+ | Hesap bana geldi | Araç: 4.645 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jhfnnpaianeddajldcbdnpicfnejpnbk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782078510840_s8j76v@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260621T214800Z
 SEQUENCE:1782078510
 DTSTART:20260622T110000
 DTEND:20260622T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD 
+ | Hesap bana geldi | Araç: 4.646 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-aecnldndhhlhlmcojokplainlkmdmjob@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1781806581085_fgeral@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260709T144200Z
 SEQUENCE:1783608174
 DTSTART:20260622T133000
 DTEND:20260622T143000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:30 · İstanbul Tur
+LOCATION:Bursa → İstanbul  Tur
+DESCRIPTION:Müşteri: Ahmad Alnaqbı\nŞoför: Kadir Elçiboğa / +90 (539) 21
+ 9 01 82\nİşi veren: Vail\nİşi yapan: Ölmeztur\nAlt acenta: Kadir Elçiboğ
+ a\nAraç: Vito\nGüzergah: Bursa → İstanbul  Tur\nÖdeme: Müşteri ödemez | 
+ Araç: 13.009 ₺ | Alt acenta: 12.544 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mkndaidenmkfmmllhaloehpmlkgbhehf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782671904122_2feavc@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260705T125400Z
 SEQUENCE:1783256082
 DTSTART:20260628T090000
 DTEND:20260628T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · Bursa Tur
+LOCATION:İzmit → Bursa Transfer ve Tur
+DESCRIPTION:Müşteri: Mohammad Haddad\nŞoför: Mehmet Bilem\nİşi veren: Sa
+ dettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Mehmet Bilem\nAraç: Vito
+ \nGüzergah: İzmit → Bursa Transfer ve Tur\nÖdeme: Müşteri: 210 USD | Ara
+ ç: 7.461 ₺ | Alt acenta: 7.461 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-difbecacfieiibiobafhlnonnnbdomhd@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782591585660_3nwvyc@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260629T115400Z
 SEQUENCE:1782734058
 DTSTART:20260628T160000
 DTEND:20260628T170000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:16:00 · Nefes-MisiKöyü-Yemek Tur
+LOCATION:Bursa Modern Cevizli Kule 2-B → Nefes-MisiKöyü-Yemek
+DESCRIPTION:Müşteri: Zainab Alansari\nŞoför: Kadir Elçiboğa / +90 (539) 
+ 219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa Modern Cevizli Kule 2-B → Nefes-MisiKöyü-Y
+ emek\nÖdeme: Araç: 4.663 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-kbgbefaifkghipjocbndnldioajpfpbb@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782767788370_bug0p2@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260629T211600Z
 SEQUENCE:1782767788
 DTSTART:20260629T140000
 DTEND:20260629T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Uludağ Tur Tur
+LOCATION:Bursa → Uludağ Tur
+DESCRIPTION:Müşteri: Ali al aseeei\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Uludağ Tur\nÖdeme: Müşteri: 120 USD
+  | Hesap bana geldi | Araç: 5.592 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-pdjjekjdnildcogonigcaemgocgplkkm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782759837266_ia9d36@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260904T074100Z
 SEQUENCE:1788507708
 DTSTART:20260630T140000
 DTEND:20260630T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Zainab alansari\nŞoför: Kadir Elçiboğa / +90 (539) 
+ 219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD | Ara
+ ç: 4.660 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mjipdfipfnfiihaohchbopndplgphijo@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782990402115_p8uhpm@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260904T074100Z
 SEQUENCE:1788507711
 DTSTART:20260702T120000
 DTEND:20260702T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Zainab Alansari\nŞoför: Kadir Elçiboğa / +90 (539) 
+ 219 01 82\nİşi veren: Ölmeztur\nİşi yapan: Kadir Elçiboğa\nAlt acenta: -
+ \nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD | Ara
+ ç: 4.666 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-fcllihcbdiodlpmfghblhkfjjgbmmfid@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1782990516480_84h40u@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260706T064800Z
 SEQUENCE:1783320488
 DTSTART:20260704T113000
 DTEND:20260704T123000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:30 · İstanbul Tur
+LOCATION:Bursa → İstanbul Günübirlik Tur
+DESCRIPTION:Müşteri: Zainab Alansari\nŞoför: Mehmet Ateş\nİşi veren: Ölm
+ eztur\nİşi yapan: Mehmet Ateş\nAlt acenta: -\nAraç: Vito\nGüzergah: Burs
+ a → İstanbul Günübirlik Tur\nÖdeme: Müşteri: 300 USD | Araç: 13.107 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mljpbjcacjjhniaafhempnnhdbchhiaf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1783190686480_0653xx@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260704T184400Z
 SEQUENCE:1783190686
 DTSTART:20260705T130000
 DTEND:20260705T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Ölmez / +90 (543) 287 0
+ 6 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç:
+  Vito / 16 LMZ 55\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD 
+ | Hesap bana geldi | Araç: 4.681 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-igoiioejkkohafiiiehnmnoopocggoon@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1783608719764_sryq1w@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260806T145600Z
 SEQUENCE:1786028213
 DTSTART:20260709T133000
 DTEND:20260709T143000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:30 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Şenol 
+ Hemitli\nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 US
+ D | Hesap bana geldi | Araç: 4.688 ₺ | Alt acenta: 4.688 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-nkpaeaghfbhhcjnabajbmnbmjokcgfon@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1783957533654_xx914j@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260717T122400Z
 SEQUENCE:1784291076
 DTSTART:20260714T100000
 DTEND:20260714T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Karadan Uludağ Tur Tur
+LOCATION:Leluxe Hotel → Karadan Uludağ Tur
+DESCRIPTION:Müşteri: Mohammad Almutairi\, Maraheb Almutairi\, Fahad Almu
+ tairi\, Taraf Almutairi\, Maryam Almutairi\, Farah Almutairi\nŞoför: -\n
+ İşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt acenta: İbrahim Taz\nAr
+ aç: Vito\nGüzergah: Leluxe Hotel → Karadan Uludağ Tur\nÖdeme: Araç: 6.35
+ 0 ₺ | Alt acenta: 5.641 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cmcceohajbhlkniekjbggeocalaikkkk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784055940887_c3g6nr@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260724T173800Z
 SEQUENCE:1784914696
 DTSTART:20260715T103000
 DTEND:20260715T113000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:30 · Teleferik Tur Tur
+LOCATION:Holiday İnn Hotel → Teleferik Tur
+DESCRIPTION:Müşteri: Khaled Alhashali\nŞoför: Tugay\nİşi veren: Aziz Yap
+ ıtek\nİşi yapan: Ölmeztur\nAlt acenta: Tugay\nAraç: Vito\nGüzergah: Holi
+ day İnn Hotel → Teleferik Tur\nÖdeme: Müşteri ödemez | Araç: 4.250 ₺ | A
+ lt acenta: 4.231 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-amphjambccbnihhacgjfkeeoflandiog@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784136007012_8td30n@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260724T173800Z
 SEQUENCE:1784914695
 DTSTART:20260716T103000
 DTEND:20260716T113000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:30 · Bursa Tur
+LOCATION:Holiday İnn Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Khaled Alhashalı\nŞoför: Tugay\nİşi veren: Aziz Yap
+ ıtek\nİşi yapan: Ölmeztur\nAlt acenta: Tugay\nAraç: Vito\nGüzergah: Holi
+ day İnn Bursa → Bursa Tur\nÖdeme: Müşteri ödemez | Araç: 4.250 ₺ | Alt a
+ centa: 4.233 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-bblfpgpldbhidehopbocidjdgagbdcdb@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784374473081_twn0wy@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260718T185700Z
 SEQUENCE:1784401072
 DTSTART:20260718T090000
 DTEND:20260718T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · Bursa Tur
+LOCATION:Lillum Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Abu Abdulrahman\nŞoför: Kadir Ölmez / +90 (543) 287
+  06 87\nİşi veren: Abu Fettah Lillum\nİşi yapan: Ölmeztur\nAlt acenta: -
+ \nAraç: Vito / 16 LMZ 55\nGüzergah: Lillum Hotel → Bursa Tur\nÖdeme: Müş
+ teri: 100 USD | Araç: 4.250 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jfbjohkonjggingcahgabeblihlgalma@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784313839911_q221fu@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260724T173800Z
 SEQUENCE:1784914694
 DTSTART:20260718T140000
 DTEND:20260718T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Bursa Tur
+LOCATION:Holiday İnn Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Khaled Alhashali\nŞoför: Tugay\nİşi veren: Aziz Yap
+ ıtek\nİşi yapan: Ölmeztur\nAlt acenta: Tugay\nAraç: Vito\nGüzergah: Holi
+ day İnn Bursa → Bursa Tur\nÖdeme: Müşteri ödemez | Araç: 4.250 ₺ | Alt a
+ centa: 4.239 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jomonmkkdkmiljjnfdjhkcpidppaokbf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784461333661_p10b27@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260806T145600Z
 SEQUENCE:1786028210
 DTSTART:20260719T080000
 DTEND:20260719T090000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:08:00 · İstanbul Tur
+LOCATION:Bursa → Sapanca Tur - İstanbul Bırakma
+DESCRIPTION:Müşteri: -\nŞoför: Şenol Hemitli / +90 (537) 475 41 83\nİşi 
+ veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şenol Hemitli\n
+ Araç: Vito\nGüzergah: Bursa → Sapanca Tur - İstanbul Bırakma\nÖdeme: Müş
+ teri: 290 USD | Araç: 11.800 ₺ | Alt acenta: 10.849 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-eldjfchkofepjmaongjppaokmiidpadd@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784459051131_yxlij0@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260721T170600Z
 SEQUENCE:1784653615
 DTSTART:20260719T133000
 DTEND:20260719T143000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:30 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: Kadir Elçiboğa / +90 (539) 21
+ 9 01 82\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Kadir
+  Elçiboğa\nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 
+ USD | Hesap bana geldi | Araç: 4.700 ₺ | Alt acenta: 4.717 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-bjpbcmfhljlpfjdjjonleciihllbobog@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784459331528_k0526z@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260720T140000Z
 SEQUENCE:1784556023
 DTSTART:20260719T143000
 DTEND:20260719T153000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:30 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Asra Najem\nŞoför: -\nİşi veren: Salah\nİşi yapan: 
+ Ölmeztur\nAlt acenta: Nihat Abi\nAraç: Vito\nGüzergah: Bursa → Bursa Tur
+ \nÖdeme: Müşteri: 120 USD | Araç: 5.200 ₺ | Alt acenta: 5.190 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jljgfmelenkodilikgcbpkdompgbfdim@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784468382565_expmd7@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260816T141000Z
 SEQUENCE:1786889412
 DTSTART:20260720T090000
 DTEND:20260720T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · İstanbul Tur
+LOCATION:Leluxe Hotel → İstanbul Tur
+DESCRIPTION:Müşteri: Abdullah Khadada\nŞoför: Yaşar Taşdemir / 0 (537) 5
+ 63 78 19\nİşi veren: Aziz Yapıtek\nİşi yapan: Ölmeztur\nAlt acenta: Taşd
+ emir Tur\nAraç: Sprinter\nGüzergah: Leluxe Hotel → İstanbul Tur\nÖdeme: 
+ Müşteri ödemez | Araç: 14.150 ₺ | Alt acenta: 14.151 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-onlemiidmgobhphkbeglkmemkgmeaiea@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1784657170070_6qfntq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260726T044100Z
 SEQUENCE:1785040918
 DTSTART:20260722T130000
 DTEND:20260722T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Ali Al Aseeri\nŞoför: İbrahim Taz\nİşi veren: Trias
+  Turizm\nİşi yapan: Ölmeztur\nAlt acenta: İbrahim Taz\nAraç: Vito\nGüzer
+ gah: Bursa → Bursa Tur\nÖdeme: Müşteri: 100 USD | Hesap bana geldi | Ara
+ ç: 4.700 ₺ | Alt acenta: 4.257 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ogmojjlnndbljfcajacdfkiiopoddjcb@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1785335408376_kmietc@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260729T143000Z
 SEQUENCE:1785335434
 DTSTART:20260802T100000
 DTEND:20260802T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Uludağ Tur Swiss Hotel Tur
+LOCATION:Bursa Toki Odunluk → Uludağ Tur Swiss Hotel Transfer
+DESCRIPTION:Müşteri: Adnan Al Qattan\nŞoför: Kadir Ölmez / +90 (543) 287
+  06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
+ ç: Vito / 16 LMZ 55\nGüzergah: Bursa Toki Odunluk → Uludağ Tur Swiss Hot
+ el Transfer\nÖdeme: Müşteri: 140 USD | Araç: 5.900 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mdhaieebllnfpjmpogdmgknfjcgclnha@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1785765575978_tk193g@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260816T110300Z
 SEQUENCE:1786878197
 DTSTART:20260802T180000
 DTEND:20260802T190000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:18:00 · Extrempark Tur
+LOCATION:Bursa Downtown → Extrempark
+DESCRIPTION:Müşteri: Sadettin Müş.\nŞoför: Cihat Öter\nİşi veren: Sadett
+ in Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nGüze
+ rgah: Bursa Downtown → Extrempark\nÖdeme: Müşteri: 4.000 TRY | Araç: 3.5
+ 00 ₺ | Alt acenta: 3.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ikdcpbdagoehhbigelfgkokfocmpfnna@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1785755378517_51fw9l@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260803T124800Z
 SEQUENCE:1785761282
 DTSTART:20260803T110000
 DTEND:20260803T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Bursa Modern Evleri → Bursa Tur Mudanya
+DESCRIPTION:Müşteri: Abdullah Basharhil\nŞoför: Kadir Ölmez / +90 (543) 
+ 287 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: 
+ -\nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa Modern Evleri → Bursa Tur Mud
+ anya\nÖdeme: Müşteri: 110 USD | Araç: 4.750 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-oopjgnfneefcamgjmejacackdenhmeml@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1785769533489_xp871i@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260803T205500Z
 SEQUENCE:1785790554
 DTSTART:20260804T163000
 DTEND:20260804T173000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:16:30 · Gölyazı-mudanya Turu Tur
+LOCATION:Bursa Downtown → Gölyazı-mudanya Turu
+DESCRIPTION:Müşteri: Huda Alanezi\nŞoför: Kadir Ölmez / +90 (543) 287 06
+  87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
+ ç: Vito / 16 LMZ 55\nGüzergah: Bursa Downtown → Gölyazı-mudanya Turu\nÖd
+ eme: Müşteri: 140 USD | Araç: 5.700 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-fihlliapoddckcmpmpohaamhjpdammlh@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1785859387349_tnsf17@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260903T111400Z
 SEQUENCE:1788434077
 DTSTART:20260805T083000
 DTEND:20260805T093000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:08:30 · Bursa Tur
+LOCATION:Almira Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Zülküf Ay\, Tomoko Shaw\nŞoför: İrfan Göyceli / +90
+  530 304 48 66\nİşi veren: Nippon\nİşi yapan: Ölmeztur\nAlt acenta: İrfa
+ n Göyceli\nAraç: Vito / 16 BIS 589\nGüzergah: Almira Hotel → Bursa Tur\n
+ Ödeme: Müşteri ödemez | Araç: 5.000 ₺ | Alt acenta: 4.500 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cjofdofkkjhpilhgfpamekgeefpggppk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786027411089_418a2t@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260826T201300Z
 SEQUENCE:1787775199
 DTSTART:20260806T120000
 DTEND:20260806T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Bursa Suite Hotel → Bursa Tur Karadan Uludağ
+DESCRIPTION:Müşteri: Abdulrahman Almutairi\nŞoför: Eren Çalışkan / +90 (
+ 536) 509 00 22\nİşi veren: Salih Dada\nİşi yapan: Ölmeztur\nAlt acenta: 
+ Nuri Çalışkan\nAraç: Vito\nGüzergah: Bursa Suite Hotel → Bursa Tur Karad
+ an Uludağ\nÖdeme: Müşteri ödemez | Araç: 1.450 ₺ | Alt acenta: 1.428 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-aofhgfhpogjjohigndgidggjojjflbcm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786171814995_jfthw2@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260809T123200Z
 SEQUENCE:1786278759
 DTSTART:20260808T110000
 DTEND:20260808T120000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Halemah Almeflehi\nŞoför: Ahmet Güler\nİşi veren: S
+ adettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ahmet Güler\nAraç: Vito
+ \nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 120 USD | Araç: 5.250 ₺ |
+  Alt acenta: 5.248 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gnccndmhlcephiafcmiojdopjflpifkk@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786134450280_yh94do@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260808T065700Z
 SEQUENCE:1786172266
 DTSTART:20260808T113500
 DTEND:20260808T123500
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:11:35 · İstanbul Tur
+LOCATION:İstanbul Havalimanı → İstanbul Otel- Tur
+DESCRIPTION:Müşteri: Abdullah Alkandari\nŞoför: Tolga Bey / 0 (531) 893 
+ 70 99\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salah\n
+ Araç: Sprinter / 34 DPB 933\nGüzergah: İstanbul Havalimanı → İstanbul Ot
+ el- Tur\nUçuş: KU155\nÖdeme: Müşteri: 200 USD | Araç: 9.050 ₺ | Alt acen
+ ta: 8.577 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-pilnkhoehlfhggdkbcbgllmkhidmggdn@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786277128819_gsifdq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998093
 DTSTART:20260810T100000
 DTEND:20260810T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: 1. 👤 Saeed Saleh Abu Saleh 2. 👤 Obaid Abu Salih 3
+ . 👤 Ayda Mohammad Abu Salih 4. 👤 Nurhasana Sidik\nŞoför: Şenol Hemitli
+  / +90 (537) 475 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\
+ nAlt acenta: Şenol Hemitli\nAraç: Sprinter\nGüzergah: Sia Hotel → Bursa 
+ Tur\nÖdeme: Müşteri ödemez | Araç: 4.300 ₺ | Alt acenta: 4.295 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-cppocmjedkehedkckioaopfimkchadje@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786374916165_tcswr1@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260816T141000Z
 SEQUENCE:1786889411
 DTSTART:20260811T090000
 DTEND:20260811T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · İstanbul Tur
+LOCATION:Millet Mahallesi - Bursa Modern → İstanbul Tur
+DESCRIPTION:Müşteri: Khaled Alfailakawi -tahani Alfailakawi -shaikhah Al
+ failakawi -khadija Alfailakawi -abdullah Alfailakawi -shaikhah Alfailaka
+ wi -rawan Anani -nadiah Alansari- Anwar Alaslawi -turki Alaslawi\nŞoför:
+  Yaşar Taşdemir / 0 (537) 563 78 19\nİşi veren: Trias Turizm\nİşi yapan:
+  Ölmeztur\nAlt acenta: Taşdemir Tur\nAraç: Sprinter\nGüzergah: Millet Ma
+ hallesi - Bursa Modern → İstanbul Tur\nNot: GİDİŞ FERİBOT - DÖNÜŞ KÖPRÜ 
+ \nÖdeme: Müşteri: 15.850 TRY | Araç: 15.850 ₺ | Alt acenta: 15.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gppgadkhjlmljdngkdhjdpfaaiilcbph@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786375701159_a3dssy@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998093
 DTSTART:20260811T100000
 DTEND:20260811T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saaed Abu Saleh\nŞoför: Şenol Hemitli / +90 (537) 4
+ 75 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ş
+ enol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur\nÖdeme: Müşter
+ i ödemez | Araç: 4.300 ₺ | Alt acenta: 4.294 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-akgbibnpkiehibgihnakpiibbngdnbeg@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786478914754_fl24dv@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260816T141000Z
 SEQUENCE:1786889416
 DTSTART:20260812T090000
 DTEND:20260812T100000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:09:00 · İstanbul Tur
+LOCATION:Bursa → İstanbul Tur
+DESCRIPTION:Müşteri: Khaled Alhashel\nŞoför: Yaşar Taşdemir / 0 (537) 56
+ 3 78 19\nİşi veren: Ölmeztur\nİşi yapan: Taşdemir Tur\nAlt acenta: -\nAr
+ aç: Vito\nGüzergah: Bursa → İstanbul Tur\nÖdeme: Müşteri: 300 USD | Araç
+ : 16.000 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-lpnmeidolkameokciibnipdffnafemdb@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786449852344_llgv3r@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998092
 DTSTART:20260812T100000
 DTEND:20260812T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Saud Al Saleh\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şen
+ ol Hemitli\nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri ödem
+ ez | Araç: 4.300 ₺ | Alt acenta: 4.295 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ifhjppekogcedeohhnohfeaibkeobfmo@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786566546852_z0fohq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998091
 DTSTART:20260813T100000
 DTEND:20260813T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saud Abu Saleh\nŞoför: Şenol Hemitli / +90 (537) 47
+ 5 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şe
+ nol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur\nÖdeme: Müşteri
+  ödemez | Araç: 4.300 ₺ | Alt acenta: 4.297 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ihgonafclbccbbkamaobdiejimgaaepa@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786566482406_c9ziuj@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T131000Z
 SEQUENCE:1786972256
 DTSTART:20260813T103000
 DTEND:20260813T113000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:30 · Yalova Tur
+LOCATION:Almira Hotel → Yalova Tur
+DESCRIPTION:Müşteri: Mahmoud Hecham Wahbi - Mona Assil\nŞoför: Kadir Elç
+ iboğa / +90 (539) 219 01 82\nİşi veren: Sadettin Darkal\nİşi yapan: Ölme
+ ztur\nAlt acenta: Kadir Elçiboğa\nAraç: Vito\nGüzergah: Almira Hotel → Y
+ alova Tur\nÖdeme: Müşteri: 150 USD | Araç: 6.200 ₺ | Alt acenta: 6.206 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-phmdlfaabibnbhnoajijdpiimighlaid@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786566900167_ay54be@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T131000Z
 SEQUENCE:1786972230
 DTSTART:20260813T130000
 DTEND:20260813T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · İstanbul Tur
+LOCATION:Radisson Blu Bosphorus → İstanbul Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: D&m&d Travel\nİşi veren: Ölmezt
+ ur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: Rad
+ isson Blu Bosphorus → İstanbul Tur\nÖdeme: Müşteri: 150 USD | Araç: 6.70
+ 0 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-ibommamcgpehnlhhflnjahceblefhggm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786886964730_7fsnh2@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998091
 DTSTART:20260814T100000
 DTEND:20260814T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Bursa Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saud Al Saleh\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şen
+ ol Hemitli\nAraç: Vito\nGüzergah: Bursa Sia Hotel → Bursa Tur\nÖdeme: Mü
+ şteri ödemez | Araç: 4.300 ₺ | Alt acenta: 4.310 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-mnlalbbeebcfeminobibidfiogfcimid@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786781506794_ukoesv@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T131000Z
 SEQUENCE:1786972229
 DTSTART:20260814T130000
 DTEND:20260814T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · İzmit Tur Tur
+LOCATION:Radisson Blu Boshporus → İzmit Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Diğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Radisson Blu Boshporus → İzmit Tur\nÖdeme: Müşteri: 250 USD | Araç: 10.0
+ 50 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-addfiondbgdfpcmdjdaiobmhapabongn@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786886897298_669k85@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998090
 DTSTART:20260815T100000
 DTEND:20260815T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur Karadan Uludağ
+DESCRIPTION:Müşteri: Saud Al Saleh\nŞoför: Şenol Hemitli / +90 (537) 475
+  41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şen
+ ol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur Karadan Uludağ\n
+ Ödeme: Müşteri ödemez | Araç: 6.250 ₺ | Alt acenta: 6.226 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-agkcfehicobblbkgipjidoapaodonpok@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786781580375_v6eqo7@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T131000Z
 SEQUENCE:1786972228
 DTSTART:20260815T133000
 DTEND:20260815T143000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:30 · İstanbul Tur
+LOCATION:Radisson Blu Boshporus → İstanbul Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Diğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: İstanbul Acenta\nAlt acenta: -\nAraç: Vito\nGüzergah: 
+ Radisson Blu Boshporus → İstanbul Tur\nÖdeme: Müşteri: 150 USD | Araç: 6
+ .700 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-daipjlhnkmkpmabpfdopnpagbgcmifed@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786869541249_0zjls1@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998089
 DTSTART:20260816T100000
 DTEND:20260816T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Bursa Sia Hotel → Bursa Tur Karadan Uludağ Giriş Dahil
+DESCRIPTION:Müşteri: Saud Al Saleh\nŞoför: Kadir Elçiboğa / +90 (539) 21
+ 9 01 82\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Şe
+ nol Hemitli\nAraç: Vito\nGüzergah: Bursa Sia Hotel → Bursa Tur Karadan U
+ ludağ Giriş Dahil\nÖdeme: Müşteri ödemez | Araç: 6.250 ₺ | Alt acenta: 6
+ .226 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-djpanlganfennkkkieddmkddnbgaikhm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786869172406_u6uv7e@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260816T110300Z
 SEQUENCE:1786878190
 DTSTART:20260816T120000
 DTEND:20260816T130000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:00 · Bursa Tur
+LOCATION:Radisson Blu Boshporus → Bursa Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Sezgin Sağlam\nİşi veren: Ölmez
+ tur\nİşi yapan: Cihat Öter\nAlt acenta: -\nAraç: Vito\nGüzergah: Radisso
+ n Blu Boshporus → Bursa Tur\nÖdeme: Müşteri: 370 USD | Araç: 16.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-olllejccbohjccjnpaeingbjjponpgpm@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786886380451_l0tx65@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T085600Z
 SEQUENCE:1786956985
 DTSTART:20260816T153000
 DTEND:20260816T163000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:15:30 · Euphoria At Çiftliği Tur
+LOCATION:Downtown → Euphoria At Çiftliği
+DESCRIPTION:Müşteri: Downtown Müşterisi\nŞoför: Kadir Ölmez / +90 (543) 
+ 287 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: 
+ -\nAraç: Vito / 16 LMZ 55\nGüzergah: Downtown → Euphoria At Çiftliği\nÖd
+ eme: Müşteri: 100 USD | Araç: 4.050 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-hckocamplieihkllloillacdkdekopmo@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786956593687_9unlgr@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260818T122600Z
 SEQUENCE:1787055964
 DTSTART:20260817T100000
 DTEND:20260817T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saud Abu Saleh\nŞoför: Nihat Abi\nİşi veren: Sadett
+ in Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Nihat Abi\nAraç: Vito\nGüzer
+ gah: Sia Hotel → Bursa Tur\nÖdeme: Müşteri ödemez | Araç: 4.300 ₺ | Alt 
+ acenta: 4.309 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-hfkiponilkmhnnjjopapjojjhjkmgpih@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1786973960761_ltndeq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260817T133900Z
 SEQUENCE:1786973960
 DTSTART:20260817T133000
 DTEND:20260817T143000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:30 · İstanbul Tur
+LOCATION:Radisson Blu → İstanbul Tur
+DESCRIPTION:Müşteri: Adel Alajmi\nŞoför: Diğer Kaptanlar\nİşi veren: Ölm
+ eztur\nİşi yapan: Cihat Öter\nAlt acenta: -\nAraç: Vito\nGüzergah: Radis
+ son Blu → İstanbul Tur\nÖdeme: Müşteri: 150 USD | Araç: 6.700 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jmmkbdmmnicpbloiekccmafiinmaapdf@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1787308327910_rkphxe@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260822T134600Z
 SEQUENCE:1787406391
 DTSTART:20260821T100000
 DTEND:20260821T110000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:00 · Bursa Tur
+LOCATION:Leluxe Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Omair Aldhafeeri\nŞoför: Kadir Ölmez / +90 (543) 28
+ 7 06 87\nİşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt acenta: -\nAra
+ ç: Minibüs / 16 LMZ 55\nGüzergah: Leluxe Hotel → Bursa Tur\nÖdeme: Müşte
+ ri: 120 USD | Araç: 4.800 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-pobkgmcdnplnanjlllankkalddebicpg@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1787383608169_0uv809@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T100800Z
 SEQUENCE:1787998088
 DTSTART:20260821T130000
 DTEND:20260821T140000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:13:00 · Bursa Tur
+LOCATION:Sia Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Saleh Abu Saleh\nŞoför: Şenol Hemitli / +90 (537) 4
+ 75 41 83\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: Ş
+ enol Hemitli\nAraç: Vito\nGüzergah: Sia Hotel → Bursa Tur\nÖdeme: Müşter
+ i ödemez | Araç: 4.300 ₺ | Alt acenta: 4.325 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-gnnfijdehgepoldncojedeoemcffhllp@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1787473837703_xscogx@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260823T201700Z
 SEQUENCE:1787516234
 DTSTART:20260823T123000
 DTEND:20260823T133000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:12:30 · Bursa Tur
+LOCATION:Soğanlı Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Soğanlı K\nŞoför: Yaşar Taşdemir / 0 (537) 563 78 1
+ 9\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Taşdemir Tu
+ r\nAraç: Vito\nGüzergah: Soğanlı Bursa → Bursa Tur\nÖdeme: Müşteri: 140 
+ USD | Araç: 6.250 ₺ | Alt acenta: 6.008 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-enieeopplglokggfagohpnfljagllfma@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1787935646784_hvixtq@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260829T172200Z
 SEQUENCE:1788024159
 DTSTART:20260828T140000
 DTEND:20260828T150000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:00 · Bursa Tur
+LOCATION:Movenpick Hotel → Bursa Tur
+DESCRIPTION:Müşteri: Athari Rashed\nŞoför: Muhammet Arıkan / +90 (531) 9
+ 66 94 49\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: A
+ rıkan Turizm\nAraç: Vito\nGüzergah: Movenpick Hotel → Bursa Tur\nÖdeme: 
+ Müşteri: 120 USD | Araç: 4.800 ₺ | Alt acenta: 4.816 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-fkjmjmhcnoojlddmmfafbdnlolmiomib@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1787935463467_js5jyy@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260828T164400Z
 SEQUENCE:1787935463
 DTSTART:20260828T143000
 DTEND:20260828T153000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:14:30 · IST Tur
+LOCATION:Holiday İnn Şişli → İstanbul Havalimanı
+DESCRIPTION:Müşteri: Bashah Alfaghm\nŞoför: Cihat Öter\nİşi veren: Gani 
+ Balta\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nAraç: Vito\nGüzergah
+ : Holiday İnn Şişli → İstanbul Havalimanı\nÖdeme: Müşteri: 80 USD | Araç
+ : 3.600 ₺ | Alt acenta: 3.612 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-jajlfhmgifhjekmkmpdogcnlkpgndcmj@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1788024894958_nvma8o@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260903T111300Z
 SEQUENCE:1788434038
 DTSTART:20260830T103000
 DTEND:20260830T113000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:30 · Bursa Tur
+LOCATION:Bursa → Bursa Tur
+DESCRIPTION:Müşteri: Um Fahad\nŞoför: Muhammet Arıkan / +90 (531) 966 94
+  49\nİşi veren: Dua Yapıtek\nİşi yapan: Ölmeztur\nAlt acenta: Arıkan Tur
+ izm\nAraç: Vito\nGüzergah: Bursa → Bursa Tur\nÖdeme: Müşteri: 110 USD | 
+ Araç: 4.800 ₺ | Alt acenta: 4.823 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-public-debpnlgmpjljmdankekomaphganmkekj@olmeztur
-DTSTAMP:20260905T154000Z
+UID:ko-transfer-1788349515738_diembg@olmeztur
+DTSTAMP:20260905T202700Z
 LAST-MODIFIED:20260903T203800Z
 SEQUENCE:1788467888
 DTSTART:20260903T103000
 DTEND:20260903T113000
-SUMMARY:Turlar
-DESCRIPTION:Ayrıntılar güvenli KÖ Transfer uygulamasındadır.
+SUMMARY:10:30 · Yalova Tur
+LOCATION:Bursa → Yalova Tur
+DESCRIPTION:Müşteri: Khansa Kareem\, Samah Saad Mahmood Majeed\, Shahd A
+ hmed Attia Hassan Elsalamouny\, Alkhansaa Ahmed Attia Hassan Elsalamouny
+ \, Musk Ahmed Attia Hassan Elsalamouny\nŞoför: Kadir Ölmez / +90 (543) 2
+ 87 06 87\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt acenta: -
+ \nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa → Yalova Tur\nÖdeme: Müşteri: 
+ 140 USD | Araç: 5.800 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
