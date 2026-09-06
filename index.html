@@ -11249,80 +11249,55 @@ function App() {
         const typeClass = 't-' + (t.transferType || 'arrival');
         const currencySym = payCurrency === 'USD' ? '$' : payCurrency === 'EUR' ? '€' : payCurrency === 'KWD' ? 'KD' : '₺';
         const kdvInfo = transferKdvInfo(t);
-        return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : ''), "data-transfer-id": t.id },
-            React.createElement("div", { className: 'tcard-header', onClick: () => toggleExpanded(t.id) },
-                React.createElement("div", { className: 'tcard-stripe' }),
-                React.createElement("div", { className: 'tcard-body' },
-                    React.createElement("div", { className: 'tcard-time' },
-                        React.createElement("div", { className: 'tcard-time-big' }, t.time || '--:--'),
-                        tp && React.createElement("div", { className: 'tcard-time-type', title: tp.n }, tp.ico)
-                    ),
-                    React.createElement("div", { className: 'tcard-main' },
-                        React.createElement("div", { className: 'tcard-pills' },
-                            React.createElement("span", { className: 'tcard-pill ' + statusClass }, sl),
-                            t.isReturnLeg && React.createElement("span", { className: 'tcard-pill', style: { background: 'var(--p-info-soft)', color: 'var(--p-info)', border: '1px solid var(--p-ink-4)', fontWeight: 600 } }, '↩ Dönüş'),
-                            t.flightCode && React.createElement("span", { className: 'tcard-pill tcard-pill-flight' }, flightCodeClean(t.flightCode)),
-                            t.paymentToMe && React.createElement("span", { className: 'tcard-pill ko-payment-to-me-pill' }, 'HESAP BANA GELDİ'),
-                            t.altAcenta && React.createElement("span", { className: 'tcard-pill tcard-pill-alt' }, 'ALT: ' + t.altAcenta)
-                        )
-                    ),
-                    React.createElement("div", { className: 'tcard-flow' },
-                        React.createElement("div", { className: 'tcard-agency' },
-                            React.createElement("span", null, gvn),
-                            t.assignedTo && React.createElement("span", { className: 'arrow' }, '→'),
-                            t.assignedTo && React.createElement("span", null, asg)
-                        ),
-                        React.createElement("div", { className: 'tcard-route' },
-                            React.createElement("span", null, pickup),
-                            pickupLM.url && React.createElement("a", { href: pickupLM.url, target: '_blank', rel: 'noopener noreferrer', onClick: e => e.stopPropagation(), title: 'Alış haritada', style: { marginLeft: 4, textDecoration: 'none', fontSize: '11px' } }, '🗺️'),
-                            React.createElement("span", { className: 'arrow' }, '→'),
-                            React.createElement("span", null, dropoff),
-                            dropoffLM.url && React.createElement("a", { href: dropoffLM.url, target: '_blank', rel: 'noopener noreferrer', onClick: e => e.stopPropagation(), title: 'Varış haritada', style: { marginLeft: 4, textDecoration: 'none', fontSize: '11px' } }, '🗺️'),
-                            vh && React.createElement("span", { style: { marginLeft: 8, color: 'var(--ink-4)', fontWeight: 450 } }, vh.ico + ' ' + vh.n)
-                        ),
-                        (pasName || t.passengerCount) && React.createElement("div", { className: 'tcard-passenger' },
-                            '👤 ' + (pasName || 'Misafir') + ' · ' + (t.passengerCount || 1) + ' kişi'
-                        )
-                    ,
-                        t.isKarsilikli && (() => {
-                            const kp = t.linkedTransferId ? (T || []).find(x => x && x.id === t.linkedTransferId) : null;
-                            const col = ksPairColor(t);
-                            const kc = kp ? (getCollectionState(kp) === 'collected') : false;
-                            return React.createElement("div", { style: { marginTop: 7, paddingTop: 7, borderTop: '1px dashed rgba(31,42,68,.16)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
-                                React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 7, background: col.bg, border: '1.5px solid ' + col.bd, color: col.tx, WebkitTextFillColor: col.tx, whiteSpace: 'nowrap' } }, '\u21C4 ' + (kp ? ksPairLabel(kp) : ksPairLabel(t))));
-                        })()
-                    ),
-                    React.createElement("div", { className: 'tcard-right' },
-                        React.createElement("div", null,
-                            React.createElement("div", { className: 'tcard-amount' + (showNoPayment ? ' is-none' : ''), style: showNoPayment ? null : { color: G } },
+        const _tc = (tp && tp.c) || 'var(--p-ink)';
+        const _tchip = (tp && (tp.chip || tp.bg)) || 'var(--p-bg-lo)';
+        const _bags = bagCount(t);
+        const _payDone = collectionState === 'collected';
+        const _stTxt = _payDone ? '✓ Tahsil edildi' : (showNoPayment ? 'Ödeme yok' : 'Bekliyor');
+        const _stBg = _payDone ? '#E8F5EE' : (showNoPayment ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
+        const _stCol = _payDone ? '#0B7C55' : (showNoPayment ? 'var(--p-ink-3)' : 'var(--p-warn)');
+        const _stBd = _payDone ? '#BEE3CB' : (showNoPayment ? 'var(--p-line)' : 'var(--p-warn-bd)');
+        const _agencyParts = [['İşi Veren', gvn], ['İşi Alan', (t.assignedTo ? asg : '')], ['Alt Acenta', t.altAcenta || '']].filter(x => x[1] && x[1] !== '—');
+        return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : ''), "data-transfer-id": t.id, style: { borderLeft: '4px solid ' + _tc } },
+            React.createElement("div", { className: 'tcard-header', onClick: () => toggleExpanded(t.id), style: { padding: '12px 13px', display: 'block' } },
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 12 } },
+                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minWidth: 52, padding: '8px 7px', borderRadius: 13, background: _tchip } },
+                        React.createElement("div", { style: { fontSize: 14, fontWeight: 640, color: _tc, WebkitTextFillColor: _tc, lineHeight: 1, fontVariantNumeric: 'tabular-nums' } }, t.time || '--:--'),
+                        React.createElement("div", { style: { fontSize: 12, lineHeight: 1, marginTop: 1 } }, transferCalendarIcon(t))),
+                    React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 } },
+                        React.createElement("div", { style: { fontSize: 14, fontWeight: 560, color: 'var(--p-ink)', WebkitTextFillColor: 'var(--p-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.25 } }, pickup + ' → ' + dropoff),
+                        React.createElement("div", { style: { fontSize: 11, color: 'var(--p-ink-3)', WebkitTextFillColor: 'var(--p-ink-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                            React.createElement("span", { style: { fontWeight: 500, color: 'var(--p-ink-2)', WebkitTextFillColor: 'var(--p-ink-2)' } }, pasName || 'Misafir'),
+                            (t.passengerCount || 0) > 1 ? (' · ' + t.passengerCount + ' kişi') : ''),
+                        (vh || _bags > 0 || t.flightCode || t.paymentToMe || t.isKarsilikli) && React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2px 9px', fontSize: 10.5, color: 'var(--p-ink-4)', WebkitTextFillColor: 'var(--p-ink-4)' } },
+                            vh && React.createElement("span", { style: { flexShrink: 0 } }, '🚐 ' + vh.n),
+                            _bags > 0 && React.createElement("span", { style: { flexShrink: 0 } }, '🧳 ' + _bags),
+                            t.flightCode && React.createElement("span", { style: { flexShrink: 0, fontVariantNumeric: 'tabular-nums' } }, '✈ ' + flightCodeClean(t.flightCode)),
+                            t.paymentToMe && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '↩ bana ödeme'),
+                            t.isKarsilikli && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '⇄ karşılıklı'))),
+                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 6, flexShrink: 0, paddingLeft: 4 } },
+                        React.createElement("div", { style: { textAlign: 'right' } },
+                            React.createElement("div", { style: { fontSize: 14, fontWeight: 620, color: showNoPayment ? 'var(--p-ink-4)' : 'var(--p-ink)', WebkitTextFillColor: showNoPayment ? 'var(--p-ink-4)' : 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', lineHeight: 1.05 } },
                                 headlineAmount,
-                                headlineSubTL && React.createElement("span", { style: { fontSize: '0.62em', fontWeight: 450, color: 'var(--p-ink-4)', marginLeft: 4, fontVariantNumeric: 'tabular-nums' } }, headlineSubTL)
-                            ),
-                            React.createElement("div", { className: 'tcard-amount-sub' }, t.paymentToMe ? 'hesap bana geldi' : (showNoPayment && noCollectRaw > 0 ? 'tahsilat yok' : 'müşteriden')),
-                            remDisp && React.createElement("div", { className: 'tcard-amount-sub', style: { color: 'var(--p-brand)' } },
-                                'kalan iş verenden: ' + remDisp.main + (remDisp.sub ? ' (' + remDisp.sub + ')' : '')),
-                            kdvInfo.enabled && React.createElement("div", { className: 'tcard-amount-sub', style: { color: G, fontWeight: 650, lineHeight: 1.25 } },
-                                "KDV: " + fr(kdvInfo.base) + " + " + fr(kdvInfo.amount) + " = " + fr(kdvInfo.total) + "\u20BA")
-                        ),
-                        React.createElement("div", {
-                                onClick: e => { e.stopPropagation(); toggleSettled(t.id); },
-                                className: 'tcard-paystatus ' + (collectionState === 'collected' ? 'is-paid' : 'is-pending')
-                            },
-                            collectionState === 'collected' ? 'Tahsil edildi' : 'Ödeme bekliyor'
-                        ),
-                        (vehiclePayNum > 0 || t.driverName) && (() => {
-                            const paid = !!t.vehiclePaid;
-                            const who = t.driverName || t.assignedTo || 'Araç';
-                            return React.createElement("div", {
-                                onClick: vehiclePayNum > 0 ? (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }) : undefined,
-                                className: 'tcard-paystatus',
-                                style: { marginTop: 4, background: paid ? 'var(--p-pos-soft)' : 'var(--p-tint-3)', border: '1px solid ' + (paid ? 'var(--p-pos-bd)' : 'var(--p-line-3)'), color: paid ? 'var(--p-pos-ink)' : 'var(--p-brand)', WebkitTextFillColor: paid ? 'var(--p-pos-ink)' : 'var(--p-brand)', borderRadius: 8, fontWeight: 600, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.25, padding: '3px 8px', cursor: vehiclePayNum > 0 ? 'pointer' : 'default' }
-                            }, '👨🏻‍✈️ ' + who + (vehiclePayNum > 0 ? ' · ' + vehiclePayTxt + (paid ? ' ✓' : '') : ''));
-                        })(),
-                        t.altAcenta && React.createElement("div", { className: 'tcard-paystatus', style: { marginTop: 4, background: 'var(--p-warn-soft)', border: '1px solid var(--p-warn-bd)', color: 'var(--p-warn)', WebkitTextFillColor: 'var(--p-warn)', borderRadius: 8, fontWeight: 600, maxWidth: '100%', whiteSpace: 'normal', textAlign: 'center', lineHeight: 1.25, padding: '3px 8px' } },
-                            '↳ Alt: ' + t.altAcenta + ' · ' + (moneyValue(t.altAcentaUcreti) > 0 ? moneyValue(t.altAcentaUcreti).toLocaleString('tr-TR') + '₺' : '—'))
-                    )
-                )
+                                headlineSubTL && React.createElement("span", { style: { fontSize: '.62em', fontWeight: 450, color: 'var(--p-ink-4)', marginLeft: 3 } }, headlineSubTL)),
+                            React.createElement("div", { style: { fontSize: 9, fontWeight: 500, color: 'var(--p-ink-4)', WebkitTextFillColor: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 2 } }, t.paymentToMe ? 'bana ödeme' : (showNoPayment ? 'tahsilat yok' : 'müşteriden'))),
+                        React.createElement("button", { onClick: e => { e.stopPropagation(); toggleSettled(t.id); }, style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap', border: '1px solid ' + _stBd, background: _stBg, color: _stCol, WebkitTextFillColor: _stCol } }, _stTxt)),
+                    isOpen && vh && vehiclePayNum > 0 && React.createElement("div", { style: { gridColumn: '1 / -1', marginTop: 2, fontSize: 10, color: 'var(--p-ink-4)', WebkitTextFillColor: 'var(--p-ink-4)' } }, '👨🏻‍✈️ ' + (t.driverName || asg || 'Araç') + ' · ' + vehiclePayTxt + (t.vehiclePaid ? ' ✓' : ''))),
+                _agencyParts.length > 0 && React.createElement("div", { style: { marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(46,58,78,.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '2px 7px', fontSize: 9.5, lineHeight: 1.25 } },
+                    _agencyParts.map((pr, i) => React.createElement(React.Fragment, { key: 'tag' + i },
+                        i > 0 && React.createElement("span", { style: { color: 'var(--p-ink-5)', WebkitTextFillColor: 'var(--p-ink-5)' } }, '·'),
+                        React.createElement("span", { style: { display: 'inline-flex', alignItems: 'baseline', gap: 4, minWidth: 0 } },
+                            React.createElement("span", { style: { fontSize: 8, fontWeight: 600, letterSpacing: .4, textTransform: 'uppercase', color: 'var(--p-ink-4)', WebkitTextFillColor: 'var(--p-ink-4)', flexShrink: 0 } }, pr[0].toLocaleUpperCase('tr-TR')),
+                            React.createElement("span", { style: { fontWeight: 500, color: 'var(--p-ink-2)', WebkitTextFillColor: 'var(--p-ink-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 } }, pr[1]))))),
+                (() => {
+                    const chips = [];
+                    chips.push({ k: 'st', txt: sl, bg: t.status === 'tam' ? 'var(--p-info-soft)' : t.status === 'iptal' ? 'var(--p-neg-soft)' : 'var(--p-warn-soft)', col: t.status === 'tam' ? 'var(--p-info)' : t.status === 'iptal' ? 'var(--p-neg)' : 'var(--p-warn)' });
+                    if (vehiclePayNum > 0 || t.driverName) chips.push({ k: 'drv', txt: '👨🏻‍✈️ ' + (t.driverName || asg || 'Araç') + (vehiclePayNum > 0 ? (' · ' + vehiclePayTxt + (t.vehiclePaid ? ' ✓' : '')) : ''), bg: t.vehiclePaid ? '#E8F5EE' : 'var(--p-tint-3)', col: t.vehiclePaid ? '#0B7C55' : 'var(--p-ink-3)', onClick: vehiclePayNum > 0 ? (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }) : null });
+                    if (t.altAcenta && moneyValue(t.altAcentaUcreti) > 0) chips.push({ k: 'alt', txt: '↳ Alt · ' + moneyValue(t.altAcentaUcreti).toLocaleString('tr-TR') + '₺', bg: 'var(--p-warn-soft)', col: 'var(--p-warn)' });
+                    if (remDisp) chips.push({ k: 'rem', txt: 'Kalan: ' + remDisp.main, bg: 'var(--p-tint-3)', col: 'var(--p-brand)' });
+                    return React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 9 } },
+                        chips.map(c => React.createElement(c.onClick ? "button" : "span", { key: c.k, onClick: c.onClick || undefined, style: { fontSize: 9.5, fontWeight: 560, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, background: c.bg, color: c.col, WebkitTextFillColor: c.col, border: '1px solid transparent', cursor: c.onClick ? 'pointer' : 'default', whiteSpace: 'nowrap' } }, c.txt)));
+                })()
             ),
             isOpen && React.createElement("div", { className: 'tcard-expanded' },
                 (() => {
@@ -12371,7 +12346,7 @@ function App() {
                         key: t.id,
                         className: "ko-htx-card",
                         onClick: () => setExpandedT(p => ({ ...p, __homeCard: t.id, [t.id]: true })),
-                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.06)', borderRadius: 18, padding: '13px 15px', boxShadow: '0 1px 2px rgba(24,35,29,.03), 0 16px 30px -20px rgba(24,35,29,.14)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
+                        style: { background: 'var(--p-white)', border: '1px solid rgba(24,35,29,.06)', borderLeft: '4px solid ' + (tip.c || 'var(--p-line-2)'), borderRadius: 18, padding: '13px 15px', boxShadow: '0 1px 2px rgba(24,35,29,.03), 0 16px 30px -20px rgba(24,35,29,.14)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }
                     },
                         React.createElement("div", { className: "ko-htx-grid", style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 13 } },
                             React.createElement("div", { className: "ko-htx-time", style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minWidth: 54, padding: '9px 7px 8px', borderRadius: 13, background: __chipBg } },
@@ -15552,6 +15527,17 @@ img,svg{content-visibility:visible !important}
     box-shadow:0 10px 22px -6px rgba(21,35,62,.5) !important;
   }
   .tab-fab:active{transform:translateY(-13px) scale(.95) !important}
+}
+/* === Ana sayfa listesi — ferah ve sade (zaman-çizgisi kaldırıldı, kartlar nefes alıyor) === */
+.lg-home-transfer-list,.lg-today-list-standalone{padding-left:0 !important;gap:12px !important}
+.lg-home-transfer-list::before,.lg-today-list-standalone::before{display:none !important;content:none !important}
+.lg-home-transfer-list .tcard,.lg-today-list-standalone .tcard{position:relative !important}
+@media(max-width:700px){
+  .lg-home-transfer-list,.lg-today-list-standalone{gap:11px !important;padding-left:0 !important}
+  .ko-htx-card{padding:14px 15px !important;border-radius:18px !important}
+}
+@media(min-width:701px){
+  .ko-htx-card{padding:16px 18px !important}
 }
 </style>
 </body>
