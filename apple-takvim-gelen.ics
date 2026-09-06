@@ -5030,17 +5030,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1788284912426_wifnx7@olmeztur
 DTSTAMP:20260906T083300Z
-LAST-MODIFIED:20260906T064600Z
-SEQUENCE:1788677164
+LAST-MODIFIED:20260906T083300Z
+SEQUENCE:1788683632
 DTSTART:20260906T122000
 DTEND:20260906T132000
 SUMMARY:12:20 · IST→İstanbul
 LOCATION:İstanbul Havalimanı → Radisson Blu Vadi İstanbul Residance
 DESCRIPTION:Müşteri: Mohammad Alhumaidan\, Fajer Alhumaidan\, Nawal Alsh
- amroukh\, Noura Alshamroukh\nŞoför: Salah\nİşi veren: Ölmeztur\nİşi yapa
- n: Salah\nAlt acenta: -\nAraç: Sprinter\nGüzergah: İstanbul Havalimanı →
-  Radisson Blu Vadi İstanbul Residance\nUçuş: KU155\nÖdeme: Müşteri: 40 U
- SD | Araç: 1.450 ₺
+ amroukh\, Noura Alshamroukh\nŞoför: Muhammed Salah / +90 535 877 08 16\n
+ İşi veren: Ölmeztur\nİşi yapan: Salah\nAlt acenta: -\nAraç: Sprinter / 3
+ 4 CZE 160\nGüzergah: İstanbul Havalimanı → Radisson Blu Vadi İstanbul Re
+ sidance\nUçuş: KU155\nÖdeme: Müşteri: 40 USD | Araç: 1.450 ₺
 CATEGORIES:KÖ Gelen Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
