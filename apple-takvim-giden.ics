@@ -4383,23 +4383,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788346583420_8o3zfo@olmeztur
-DTSTAMP:20260907T203400Z
-LAST-MODIFIED:20260906T163000Z
-SEQUENCE:1788712228
-DTSTART:20260907T100000
-DTEND:20260907T110000
-SUMMARY:10:00 · Bursa→SAW
-LOCATION:Bursa Downtown A Blok → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Laila Alenezi\nŞoför: Balentur\nİşi veren: Trias Tu
- rizm\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: B
- ursa Downtown A Blok → Sabiha Gökçen Havalimanı\nUçuş: KU158\nÖdeme: Müş
- teri: 180 USD | Hesap bana geldi | Araç: 7.000 ₺ | Alt acenta: 5.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1788711542637_n48oy8@olmeztur
 DTSTAMP:20260907T203400Z
 LAST-MODIFIED:20260906T161900Z
@@ -4412,6 +4395,23 @@ DESCRIPTION:Müşteri: Rashed Aladwani\nŞoför: Kadir Ölmez / +90 (543) 287
   06 87\nİşi veren: Kadir Elçiboğa\nİşi yapan: Ölmeztur\nAlt acenta: -\nA
  raç: Vito / 16 LMZ 55\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme
  : Müşteri: 165 USD | Araç: 6.000 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788346583420_8o3zfo@olmeztur
+DTSTAMP:20260907T203400Z
+LAST-MODIFIED:20260907T203400Z
+SEQUENCE:1788813283
+DTSTART:20260907T113000
+DTEND:20260907T123000
+SUMMARY:11:30 · Bursa→SAW
+LOCATION:Bursa Downtown A Blok → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Laila Alenezi\nŞoför: Balentur\nİşi veren: Trias Tu
+ rizm\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Vito\nGüzergah: B
+ ursa Downtown A Blok → Sabiha Gökçen Havalimanı\nUçuş: KU158\nÖdeme: Müş
+ teri: 180 USD | Hesap bana geldi | Araç: 7.000 ₺ | Alt acenta: 5.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
