@@ -11263,12 +11263,11 @@ function App() {
         const _tripBg  = t.status === 'iptal' ? 'var(--p-neg-soft)' : (t.status === 'tam' ? 'var(--p-tint-2)' : 'var(--p-warn-soft)');
         const _tripCol = t.status === 'iptal' ? 'var(--p-neg)' : (t.status === 'tam' ? 'var(--p-brand)' : 'var(--p-warn)');
         const _tripBd  = t.status === 'iptal' ? 'var(--p-neg-bd)' : (t.status === 'tam' ? 'var(--p-line-3)' : 'var(--p-warn-bd)');
-        const _payoutAlt = (t.altAcenta && moneyValue(t.altAcentaUcreti) > 0) ? moneyValue(t.altAcentaUcreti) : 0;
-        const _payoutDrv = (!_payoutAlt && vehiclePayNum > 0) ? vehiclePayNum : 0;
+        const _altPay = (t.altAcenta && moneyValue(t.altAcentaUcreti) > 0) ? moneyValue(t.altAcentaUcreti) : 0;
         const _payRows = [];
         _payRows.push(['Müşteri', headlineAmount + (headlineSubTL ? (' ' + headlineSubTL) : ''), 620, null, showNoPayment ? 'var(--p-ink-4)' : 'var(--p-ink)']);
-        if (_payoutAlt > 0) _payRows.push(['Alt Acenta', _payoutAlt.toLocaleString('tr-TR') + '₺', 500, null, 'var(--p-ink-2)']);
-        else if (_payoutDrv > 0) _payRows.push(['Kaptan', (t.driverName ? t.driverName + ' · ' : '') + _payoutDrv.toLocaleString('tr-TR') + '₺' + (t.vehiclePaid ? '  ✓' : ''), 500, (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }), t.vehiclePaid ? '#0B7C55' : 'var(--p-ink-2)']);
+        if (vehiclePayNum > 0) _payRows.push(['İşi Yapan', vehiclePayNum.toLocaleString('tr-TR') + '₺' + (t.vehiclePaid ? '  ✓' : ''), 500, (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }), t.vehiclePaid ? '#0B7C55' : 'var(--p-ink-2)']);
+        if (_altPay > 0) _payRows.push(['Alt Acenta', _altPay.toLocaleString('tr-TR') + '₺', 500, null, 'var(--p-ink-2)']);
         if (remDisp) _payRows.push(['Kalan', remDisp.main, 620, null, 'var(--p-brand)']);
         return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : ''), "data-transfer-id": t.id, style: { borderLeft: '4px solid ' + _tc } },
             React.createElement("div", { className: 'tcard-header', onClick: () => toggleExpanded(t.id), style: { padding: '13px 14px', display: 'block' } },
@@ -15559,6 +15558,33 @@ img,svg{content-visibility:visible !important}
   .ko-type-group-cards{gap:12px !important}
   .ko-type-groups-wrap .tcard-header{padding:13px 14px !important}
 }
+/* === Takvimler · Araç kartları · Hesap firma kartları — premium (en son söz) === */
+/* Takvim kartı (transfer + araç) */
+.lg-month-cal-card,.ko-real-cal-card{border:1px solid rgba(46,62,102,.12) !important;box-shadow:0 16px 38px -22px rgba(18,35,63,.36),0 1px 2px rgba(18,35,63,.04) !important;padding:14px !important}
+.lg-month-weekdays div{color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important;font-weight:600 !important;letter-spacing:.4px !important;text-transform:uppercase !important;font-size:9.5px !important}
+/* Gün hücreleri (transfer + araç) */
+.lg-month-day,.ko-arac-day{border:1px solid rgba(46,62,102,.09) !important;background:var(--p-white) !important;box-shadow:0 1px 2px rgba(18,35,63,.045) !important;border-radius:14px !important;transition:transform .14s cubic-bezier(.22,.61,.36,1),box-shadow .14s ease !important}
+.lg-month-day.has-work:not(.is-selected),.ko-arac-day.has-work:not(.is-selected){background:var(--p-tint-3) !important;border-color:rgba(46,62,102,.20) !important}
+.lg-month-day.is-today:not(.is-selected),.ko-arac-day.is-today:not(.is-selected){border-color:var(--p-accent) !important;box-shadow:inset 0 0 0 1.5px var(--p-accent),0 1px 3px rgba(18,35,63,.06) !important}
+.lg-month-day-num,.ko-arac-day-num{color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important;font-weight:600 !important}
+@media(min-width:701px){
+  .lg-month-day:hover:not(.is-selected),.ko-arac-day:hover:not(.is-selected){transform:translateY(-1px) !important;box-shadow:0 8px 18px -10px rgba(18,35,63,.30) !important}
+}
+/* Araç iş kartları — premium, sistem aynı */
+.ko-arac-job-card{border:1px solid rgba(46,62,102,.10) !important;border-left:4px solid var(--p-brand) !important;border-radius:16px !important;box-shadow:0 8px 20px -13px rgba(18,35,63,.30),0 1px 2px rgba(18,35,63,.04) !important;overflow:hidden !important}
+.ko-arac-job-head{padding:13px 14px !important}
+.ko-arac-job-title{font-size:14px !important;font-weight:560 !important;color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important}
+.ko-arac-job-sub{font-size:11px !important;color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important;margin-top:2px !important}
+.ko-arac-day-panel{border:1px solid rgba(46,62,102,.12) !important;box-shadow:0 10px 26px -18px rgba(18,35,63,.30) !important;border-radius:18px !important}
+/* Hesap firma kartları — premium, transferler gibi */
+.ko-account-firm-card{border:1px solid rgba(46,62,102,.10) !important;border-radius:16px !important;box-shadow:0 8px 20px -13px rgba(18,35,63,.26),0 1px 2px rgba(18,35,63,.04) !important;padding:12px 13px !important;padding-right:22px !important}
+.ko-account-firm-card.is-rec{border-left:4px solid var(--p-brand) !important;border-left-color:var(--p-brand) !important}
+.ko-account-firm-card.is-pay{border-left:4px solid var(--p-neg) !important;border-left-color:var(--p-neg) !important}
+.ko-account-firm-card.is-selected{box-shadow:0 0 0 2px var(--p-bg),0 0 0 3.5px var(--p-accent),0 10px 24px -12px rgba(18,35,63,.4) !important}
+/* Hesap firma içi transfer kartları — premium, tek tip lacivert şerit */
+.ko-account-transfer-row{border:1px solid rgba(46,62,102,.10) !important;border-left:4px solid var(--p-brand) !important;border-radius:14px !important;box-shadow:0 5px 16px -11px rgba(18,35,63,.26),0 1px 2px rgba(18,35,63,.04) !important;padding:11px 12px !important}
+.ko-account-transfer-row.is-open{border-left-color:var(--p-accent) !important}
+.ko-account-net-cell b{font-weight:600 !important}
 </style>
 </body>
 </html>
