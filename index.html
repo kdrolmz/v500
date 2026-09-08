@@ -15585,6 +15585,35 @@ img,svg{content-visibility:visible !important}
 .ko-account-transfer-row{border:1px solid rgba(46,62,102,.10) !important;border-left:4px solid var(--p-brand) !important;border-radius:14px !important;box-shadow:0 5px 16px -11px rgba(18,35,63,.26),0 1px 2px rgba(18,35,63,.04) !important;padding:11px 12px !important}
 .ko-account-transfer-row.is-open{border-left-color:var(--p-accent) !important}
 .ko-account-net-cell b{font-weight:600 !important}
+/* === Alacak/Borç açılan hesap kartı (ledger) — premium, kibar yazılar (en son söz) === */
+.ko-debt-ledger{border:1px solid rgba(46,62,102,.10) !important;border-left:4px solid var(--debt-accent,var(--p-brand)) !important;border-radius:18px !important;padding:15px !important;box-shadow:0 14px 32px -18px rgba(18,35,63,.34),0 1px 2px rgba(18,35,63,.05) !important;background:var(--p-white) !important}
+.ko-debt-ledger-head{grid-template-columns:32px minmax(0,1fr) auto 30px !important;gap:11px !important;align-items:center !important;padding-bottom:13px !important;border-bottom:1px solid rgba(46,62,102,.09) !important}
+.ko-debt-ledger-copy{min-width:0 !important}
+.ko-debt-ledger-name{font-size:14.5px !important;font-weight:560 !important;letter-spacing:-.01em !important;color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important;line-height:1.25 !important;white-space:normal !important;overflow-wrap:anywhere !important}
+.ko-debt-ledger-meta{font-size:11px !important;font-weight:400 !important;color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important;margin-top:3px !important}
+.ko-debt-ledger-balance b{font-size:15px !important;font-weight:600 !important}
+.ko-debt-ledger-balance small{font-size:10px !important;font-weight:450 !important;margin-top:3px !important}
+.ko-debt-check{width:32px !important;height:32px !important;min-height:32px !important;border:1.5px solid rgba(46,62,102,.22) !important;background:var(--p-white) !important}
+.ko-debt-check.is-done{background:var(--p-pos) !important;border-color:var(--p-pos) !important;color:#fff !important;-webkit-text-fill-color:#fff !important}
+.ko-debt-ledger-close{width:30px !important;height:30px !important;min-height:30px !important;border:1px solid rgba(46,62,102,.14) !important;background:var(--p-white) !important;border-radius:10px !important;color:var(--p-ink-3) !important;-webkit-text-fill-color:var(--p-ink-3) !important;font-size:15px !important}
+.ko-debt-ledger-stats{gap:8px !important;margin-top:13px !important}
+.ko-debt-ledger-stat{background:var(--p-tint-3) !important;border:1px solid rgba(46,62,102,.08) !important;padding:9px 8px !important;border-radius:12px !important;text-align:center !important}
+.ko-debt-ledger-stat small{display:block !important;font-size:9px !important;font-weight:600 !important;letter-spacing:.3px !important;text-transform:uppercase !important;color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important;white-space:normal !important;line-height:1.2 !important}
+.ko-debt-ledger-stat b{display:block !important;font-size:13.5px !important;font-weight:600 !important;margin-top:4px !important;color:var(--p-ink) !important;-webkit-text-fill-color:var(--p-ink) !important;white-space:nowrap !important}
+.ko-debt-ledger-rows{gap:0 !important;margin-top:13px !important;border:1px solid rgba(46,62,102,.09) !important;border-radius:12px !important;overflow:hidden !important;background:var(--p-white) !important}
+.ko-debt-ledger-row{grid-template-columns:48px minmax(0,1fr) auto 20px !important;border-radius:0 !important;border-bottom:1px solid rgba(46,62,102,.07) !important;min-height:44px !important;padding:10px 12px !important;background:var(--p-white) !important;gap:9px !important}
+.ko-debt-ledger-row:last-of-type{border-bottom:0 !important}
+.ko-debt-ledger-date{font-size:10.5px !important;font-weight:450 !important;color:var(--p-ink-4) !important;-webkit-text-fill-color:var(--p-ink-4) !important}
+.ko-debt-ledger-note{font-size:12px !important;font-weight:500 !important;color:var(--p-ink-2) !important;-webkit-text-fill-color:var(--p-ink-2) !important}
+.ko-debt-ledger-row-amount b{font-size:12.5px !important;font-weight:600 !important}
+.ko-debt-ledger-row-amount small{font-size:10px !important;font-weight:450 !important}
+.ko-debt-ledger-more{width:100% !important;min-height:34px !important;margin-top:9px !important;border-radius:10px !important;font-size:11px !important;font-weight:500 !important;background:var(--p-tint-3) !important;border:1px solid rgba(46,62,102,.10) !important;color:var(--p-brand) !important;-webkit-text-fill-color:var(--p-brand) !important}
+.ko-debt-ledger-actions{gap:8px !important;margin-top:12px !important}
+.ko-debt-ledger-actions button{min-height:38px !important;padding:8px 12px !important;border-radius:11px !important;font-size:12px !important;font-weight:520 !important;border:1px solid rgba(46,62,102,.14) !important;background:var(--p-white) !important;color:var(--p-ink-2) !important;-webkit-text-fill-color:var(--p-ink-2) !important}
+.ko-debt-ledger-actions .is-primary{border-color:var(--debt-accent,var(--p-brand)) !important;background:var(--debt-accent,var(--p-brand)) !important;color:#fff !important;-webkit-text-fill-color:#fff !important}
+.ko-debt-ledger-actions .is-delete{margin-left:auto !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important;border-color:var(--p-neg-bd) !important}
+.ko-debt-ledger-form{margin-top:10px !important;padding:10px !important;border:1px solid rgba(46,62,102,.10) !important;border-radius:12px !important;background:var(--p-tint-3) !important}
+.ko-debt-ledger-form button{font-size:12px !important;font-weight:520 !important}
 </style>
 </body>
 </html>
