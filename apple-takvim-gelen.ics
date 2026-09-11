@@ -5148,23 +5148,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788887870925_3o45ew@olmeztur
-DTSTAMP:20260911T200400Z
-LAST-MODIFIED:20260911T181700Z
-SEQUENCE:1789150653
-DTSTART:20260912T093000
-DTEND:20260912T103000
-SUMMARY:09:30 · Bursa→SAW
-LOCATION:Bursa B4 Blok → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Fahad Alkandarı\, Sameerah Alkandarı\, Labrador Jen
- elyn\nŞoför: Mustafa Usta\nİşi veren: Ölmeztur\nİşi yapan: Mustafa Usta\
- nAlt acenta: -\nAraç: Vito\nGüzergah: Bursa B4 Blok → Sabiha Gökçen Hava
- limanı\nÖdeme: Müşteri: 8.200 TRY | Araç: 7.000 ₺
-CATEGORIES:KÖ Gelen Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1789157069480_2es41l@olmeztur
 DTSTAMP:20260911T200400Z
 LAST-MODIFIED:20260911T200400Z
