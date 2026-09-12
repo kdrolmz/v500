@@ -4539,6 +4539,23 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+UID:ko-transfer-1789044467598_4l3g8f@olmeztur
+DTSTAMP:20260912T144900Z
+LAST-MODIFIED:20260912T144900Z
+SEQUENCE:1789224552
+DTSTART:20260913T100000
+DTEND:20260913T110000
+SUMMARY:10:00 · Bursa→IST
+LOCATION:Bursa → İstanbul Havalimanı
+DESCRIPTION:Müşteri: Abdullah Alotaibi\, Muna Alotaibi\nŞoför: Cihat Öte
+ r\nİşi veren: Gani Balta\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nA
+ raç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri: 8.500 
+ TRY | Araç: 8.500 ₺ | Alt acenta: 8.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
 UID:ko-transfer-1785859050152RD_sskjsn@olmeztur
 DTSTAMP:20260912T144900Z
 LAST-MODIFIED:20260912T144800Z
@@ -4551,23 +4568,6 @@ DESCRIPTION:Müşteri: Layali Alshehab\nŞoför: Balentur\nİşi veren: Trias
  Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Balentur\nAraç: Sprinter\nGüzer
  gah: Bursa → İstanbul Havalimanı\nUçuş: KU155\nÖdeme: Müşteri: 210 USD |
   Araç: 10.200 ₺ | Alt acenta: 10.206 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
-UID:ko-transfer-1789044467598_4l3g8f@olmeztur
-DTSTAMP:20260912T144900Z
-LAST-MODIFIED:20260912T144800Z
-SEQUENCE:1789224538
-DTSTART:20260913T103000
-DTEND:20260913T113000
-SUMMARY:10:30 · Bursa→IST
-LOCATION:Bursa → İstanbul Havalimanı
-DESCRIPTION:Müşteri: Abdullah Alotaibi\, Muna Alotaibi\nŞoför: Cihat Öte
- r\nİşi veren: Gani Balta\nİşi yapan: Ölmeztur\nAlt acenta: Cihat Öter\nA
- raç: Vito\nGüzergah: Bursa → İstanbul Havalimanı\nÖdeme: Müşteri: 8.500 
- TRY | Araç: 8.500 ₺ | Alt acenta: 8.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
