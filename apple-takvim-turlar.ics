@@ -1606,16 +1606,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789200654147_ffxpe1@olmeztur
 DTSTAMP:20260912T144900Z
-LAST-MODIFIED:20260912T081000Z
-SEQUENCE:1789200654
+LAST-MODIFIED:20260912T144900Z
+SEQUENCE:1789224584
 DTSTART:20260913T100000
 DTEND:20260913T110000
 SUMMARY:10:00 · Bursa Tur
 LOCATION:Leluxe Hotel → Bursa Tur
 DESCRIPTION:Müşteri: Tarıq Almaari\, Said Almamari\, Ahmed Almamari\, Ta
- lal Almamari\nŞoför: -\nİşi veren: Leluxe Mert\nİşi yapan: Ölmeztur\nAlt
-  acenta: -\nAraç: Vito\nGüzergah: Leluxe Hotel → Bursa Tur\nÖdeme: Müşte
- ri: 120 USD | Araç: 4.850 ₺
+ lal Almamari\nŞoför: İbrahim Taz\nİşi veren: Leluxe Mert\nİşi yapan: Ölm
+ eztur\nAlt acenta: İbrahim Taz\nAraç: Vito\nGüzergah: Leluxe Hotel → Bur
+ sa Tur\nÖdeme: Müşteri: 120 USD | Araç: 4.850 ₺ | Alt acenta: 4.374 ₺
 CATEGORIES:KÖ Turlar
 STATUS:CONFIRMED
 TRANSP:OPAQUE
