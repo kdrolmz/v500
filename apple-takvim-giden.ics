@@ -4626,16 +4626,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789225865100_fyfwuv@olmeztur
 DTSTAMP:20260913T171700Z
-LAST-MODIFIED:20260912T151100Z
-SEQUENCE:1789225865
+LAST-MODIFIED:20260913T171700Z
+SEQUENCE:1789319853
 DTSTART:20260914T123000
 DTEND:20260914T133000
 SUMMARY:12:30 · Lillium Hotel→Miracle Hotel Asya
 LOCATION:Lillium Hotel → Miracle Hotel Asya
 DESCRIPTION:Müşteri: Abdullah Alshamlan\, Faisal Alshamlan\, Norah Alanz
- i\nŞoför: -\nİşi veren: Abu Fettah Lillum\nİşi yapan: Ölmeztur\nAlt acen
- ta: -\nAraç: Vito\nGüzergah: Lillium Hotel → Miracle Hotel Asya\nÖdeme: 
- Müşteri: 160 USD | Araç: 7.800 ₺
+ i\nŞoför: Kadir Ölmez / +90 (543) 287 06 87\nİşi veren: Abu Fettah Lillu
+ m\nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Vito / 16 LMZ 55\nGüzergah:
+  Lillium Hotel → Miracle Hotel Asya\nÖdeme: Müşteri: 160 USD | Araç: 7.8
+ 00 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
