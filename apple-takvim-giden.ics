@@ -4590,23 +4590,6 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
-UID:ko-transfer-1788533107351_zyamtl@olmeztur
-DTSTAMP:20260914T065100Z
-LAST-MODIFIED:20260913T171700Z
-SEQUENCE:1789319823
-DTSTART:20260914T093000
-DTEND:20260914T103000
-SUMMARY:09:30 · Bursa→SAW
-LOCATION:Bursa → Sabiha Gökçen Havalimanı
-DESCRIPTION:Müşteri: Abeer Alfaılakawı\, Jasem Alsayyar\, Fatemah Alsayy
- ar\nŞoför: Balentur\nİşi veren: Ölmeztur\nİşi yapan: Balentur\nAlt acent
- a: -\nAraç: Vito\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müş
- teri: 160 USD | Araç: 5.500 ₺
-CATEGORIES:KÖ Giden Yolcu
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-BEGIN:VEVENT
 UID:ko-transfer-1789319676633_hqu8am@olmeztur
 DTSTAMP:20260914T065100Z
 LAST-MODIFIED:20260913T171400Z
@@ -4619,6 +4602,23 @@ DESCRIPTION:Müşteri: Abdullah Alzaid\, Rabah Alkandari\nŞoför: Salih Dağ
  \nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\nAlt acenta: Salih Dağ\nA
  raç: Vito\nGüzergah: Bursa Fomara Toki D3 Blok → Sabiha Gökçen Havaliman
  ı\nÖdeme: Müşteri: 8.000 TRY | Araç: 7.300 ₺ | Alt acenta: 6.500 ₺
+CATEGORIES:KÖ Giden Yolcu
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:ko-transfer-1788533107351_zyamtl@olmeztur
+DTSTAMP:20260914T065100Z
+LAST-MODIFIED:20260914T065100Z
+SEQUENCE:1789368699
+DTSTART:20260914T100000
+DTEND:20260914T110000
+SUMMARY:10:00 · Bursa→SAW
+LOCATION:Bursa → Sabiha Gökçen Havalimanı
+DESCRIPTION:Müşteri: Abeer Alfaılakawı\, Jasem Alsayyar\, Fatemah Alsayy
+ ar\nŞoför: Balentur\nİşi veren: Ölmeztur\nİşi yapan: Balentur\nAlt acent
+ a: -\nAraç: Vito\nGüzergah: Bursa → Sabiha Gökçen Havalimanı\nÖdeme: Müş
+ teri: 160 USD | Araç: 5.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
