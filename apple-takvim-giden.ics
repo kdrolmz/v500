@@ -4642,8 +4642,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789319676633_hqu8am@olmeztur
 DTSTAMP:20260915T112700Z
-LAST-MODIFIED:20260914T065200Z
-SEQUENCE:1789368735
+LAST-MODIFIED:20260915T112700Z
+SEQUENCE:1789471641
 DTSTART:20260914T140000
 DTEND:20260914T150000
 SUMMARY:14:00 · Bursa→SAW
@@ -4651,7 +4651,7 @@ LOCATION:Bursa Fomara Toki D3 Blok → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Abdullah Alzaid\, Rabah Alkandari\nŞoför: Kadir Ölm
  ez / +90 (543) 287 06 87\nİşi veren: Trias Turizm\nİşi yapan: Ölmeztur\n
  Alt acenta: -\nAraç: Minibüs / 16 LMZ 55\nGüzergah: Bursa Fomara Toki D3
-  Blok → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 8.000 TRY | Araç: 7.00
+  Blok → Sabiha Gökçen Havalimanı\nÖdeme: Müşteri: 8.000 TRY | Araç: 7.10
  0 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
