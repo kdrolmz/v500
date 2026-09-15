@@ -11318,7 +11318,7 @@ function App() {
                         React.createElement("div", { style: { fontSize: 10, color: SB, fontWeight: 450, letterSpacing: .4, textTransform: 'uppercase' } }, lbl),
                         React.createElement("div", { style: { fontSize: 16, fontWeight: 450, color: netColor, fontVariantNumeric: 'tabular-nums' } }, (potKar >= 0 ? '+' : '') + Math.round(potKar).toLocaleString('tr-TR') + '₺'));
                 })(),
-                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7, marginBottom: 10 } },
+                React.createElement("div", { className: 'ko-transfer-expanded-facts', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7, marginBottom: 10 } },
                     React.createElement("div", { style: { background: 'var(--p-white)', borderRadius: 9, padding: '8px 10px', border: '1px solid var(--p-line-3)' } },
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, fontWeight: 470, letterSpacing: .5, textTransform: 'uppercase' } }, '👤 Misafir'),
                         React.createElement("div", { style: { fontSize: 12, fontWeight: 470, color: TX, marginTop: 2, wordBreak: 'break-word' } }, (pasName || '—') + ' · ' + (t.passengerCount || 0) + ' kişi')
@@ -11476,22 +11476,48 @@ function App() {
                 (acc[tp] || (acc[tp] = [])).push(t);
                 return acc;
             }, {});
-            const HOME_ORDER = ['arrival', 'departure', 'tour', 'dugun', 'intercity', 'shortpass', 'takas'];
-            const orderedTypeIds = HOME_ORDER.filter(k => grouped[k] && grouped[k].length)
-                .concat(Object.keys(grouped).filter(k => !HOME_ORDER.includes(k)));
-            const sections = orderedTypeIds
-                .filter(tid => grouped[tid] && grouped[tid].length)
-                .map((tid, gi) => {
-                    const meta = TIPLER.find(tp => tp.id === tid) || { id: tid, n: tid, ico: '📌', c: 'var(--p-ink-3)', bg: 'var(--p-tint-3)' };
-                    const secRows = grouped[tid].slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
-                    return React.createElement("div", { key: tid, className: 'ko-type-group', style: { marginBottom: 0 } },
-                        React.createElement("div", { className: 'ko-htx-group-hd', style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 2px', marginTop: gi > 0 ? 18 : 4, marginBottom: 10 } },
-                            React.createElement("span", { style: { width: 9, height: 9, borderRadius: 999, background: meta.c, flexShrink: 0, boxShadow: '0 0 0 3px ' + (meta.bg || 'var(--p-tint-3)') } }),
-                            React.createElement("span", { style: { fontSize: 12, fontWeight: 700, letterSpacing: .3, color: 'var(--p-ink-2)', WebkitTextFillColor: 'var(--p-ink-2)' } }, (meta.n || '').toLocaleUpperCase('tr-TR')),
-                            React.createElement("span", { style: { fontSize: 10.5, fontWeight: 700, color: meta.c, WebkitTextFillColor: meta.c, background: meta.bg || 'var(--p-tint-3)', borderRadius: 999, minWidth: 20, textAlign: 'center', padding: '2px 8px', lineHeight: 1.1 } }, secRows.length)),
-                        React.createElement("div", { className: 'ko-type-group-cards', style: { display: 'flex', flexDirection: 'column', gap: 12 } }, secRows.map(renderTransferItem)));
-                });
-            return React.createElement("div", { className: 'ko-type-groups-wrap' }, sections);
+            const TYPE_PAIRS = [
+                ['departure', 'arrival'],
+                ['dugun', 'tour'],
+                ['shortpass', 'intercity']
+            ];
+            const knownTypeIds = TYPE_PAIRS.flat();
+            const sortedTypeRows = tid => (grouped[tid] || []).slice().sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
+            const renderTypeHeader = (tid, count, gi) => {
+                const meta = TIPLER.find(tp => tp.id === tid) || { id: tid, n: tid, ico: '📌', c: 'var(--p-ink-3)', bg: 'var(--p-tint-3)' };
+                return React.createElement("div", { className: 'ko-htx-group-hd', style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 2px', marginTop: gi > 0 ? 18 : 4, marginBottom: 10 } },
+                    React.createElement("span", { style: { width: 9, height: 9, borderRadius: 999, background: meta.c, flexShrink: 0, boxShadow: '0 0 0 3px ' + (meta.bg || 'var(--p-tint-3)') } }),
+                    React.createElement("span", { style: { fontSize: 12, fontWeight: 700, letterSpacing: .3, color: 'var(--p-ink-2)', WebkitTextFillColor: 'var(--p-ink-2)' } }, (meta.n || '').toLocaleUpperCase('tr-TR')),
+                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 700, color: meta.c, WebkitTextFillColor: meta.c, background: meta.bg || 'var(--p-tint-3)', borderRadius: 999, minWidth: 20, textAlign: 'center', padding: '2px 8px', lineHeight: 1.1 } }, count));
+            };
+            const renderSection = (tid, gi) => {
+                const secRows = sortedTypeRows(tid);
+                return React.createElement("div", { key: tid, className: 'ko-type-group', style: { marginBottom: 0 } },
+                    renderTypeHeader(tid, secRows.length, gi),
+                    React.createElement("div", { className: 'ko-type-group-cards', style: { display: 'flex', flexDirection: 'column', gap: 12 } }, secRows.map(renderTransferItem)));
+            };
+            const pairRows = TYPE_PAIRS.map(([leftId, rightId], pairIndex) => {
+                const leftRows = sortedTypeRows(leftId);
+                const rightRows = sortedTypeRows(rightId);
+                const hasLeft = leftRows.length > 0;
+                const hasRight = rightRows.length > 0;
+                if (!hasLeft && !hasRight) return null;
+                if (!hasLeft || !hasRight)
+                    return React.createElement("div", { key: leftId + '-' + rightId, className: 'ko-type-pair-row is-single-column' },
+                        React.createElement("div", { className: 'ko-type-column' }, renderSection(hasLeft ? leftId : rightId, pairIndex)));
+                const cardRows = Array.from({ length: Math.max(leftRows.length, rightRows.length) }, (_, cardIndex) => React.createElement("div", { key: cardIndex, className: 'ko-type-pair-row ko-type-pair-card-row' },
+                    React.createElement("div", { className: 'ko-type-column ko-type-column-left' }, leftRows[cardIndex] && renderTransferItem(leftRows[cardIndex])),
+                    React.createElement("div", { className: 'ko-type-column ko-type-column-right' }, rightRows[cardIndex] && renderTransferItem(rightRows[cardIndex]))));
+                return React.createElement("div", { key: leftId + '-' + rightId, className: 'ko-type-paired-section' },
+                    React.createElement("div", { className: 'ko-type-pair-row ko-type-pair-head-row' },
+                        React.createElement("div", { className: 'ko-type-column ko-type-column-left ko-type-group' }, renderTypeHeader(leftId, leftRows.length, pairIndex)),
+                        React.createElement("div", { className: 'ko-type-column ko-type-column-right ko-type-group' }, renderTypeHeader(rightId, rightRows.length, pairIndex))),
+                    cardRows);
+            }).filter(Boolean);
+            const otherTypeIds = Object.keys(grouped).filter(k => !knownTypeIds.includes(k) && grouped[k] && grouped[k].length);
+            const otherRows = otherTypeIds.map((tid, index) => React.createElement("div", { key: tid, className: 'ko-type-pair-row is-single-column' },
+                React.createElement("div", { className: 'ko-type-column ko-type-column-left' }, renderSection(tid, index))));
+            return React.createElement("div", { className: 'ko-type-groups-wrap' }, pairRows, otherRows);
         };
         const renderSectionDays = rows => {
             const dayMap = rows.reduce((acc, t) => {
@@ -11573,10 +11599,17 @@ function App() {
             return acc;
         }, {});
         const rangeRows = (monthDayMap[activeDayKey] || []).slice();
+        const dayTypeCounts = rangeRows.reduce((counts, t) => {
+            const tid = (t && t.transferType) || 'arrival';
+            counts[tid] = (counts[tid] || 0) + 1;
+            return counts;
+        }, {});
+        const daySummaryOrder = ['departure', 'arrival', 'tour', 'dugun', 'intercity', 'shortpass', 'takas'];
+        const daySummaryTypes = daySummaryOrder.filter(tid => dayTypeCounts[tid])
+            .concat(Object.keys(dayTypeCounts).filter(tid => !daySummaryOrder.includes(tid)));
         const rangeProfit = olmezDisplayNet(rangeRows);
         const monthProfit = olmezDisplayNet(monthRows);
         const monthLabel = monthCursor.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        const rangeLabel = activeDayDate.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
         const firstOfMonth = new Date(monthYear, monthIndex, 1);
         const firstOffset = (firstOfMonth.getDay() + 6) % 7;
         const daysInThisMonth = new Date(monthYear, monthIndex + 1, 0).getDate();
@@ -11644,11 +11677,14 @@ function App() {
                             React.createElement("span", { className: "lg-month-day-count" }, cnt > 0 ? cnt + ' transfer' : ''),
                             cnt > 0 && dayHasOlmezNet && React.createElement("span", { className: "lg-month-day-net" + (dayProfit < 0 ? " is-neg" : "") }, (dayProfit >= 0 ? '+' : '') + dayProfit.toLocaleString('tr-TR') + '\u2009₺')));
                 })),
-            React.createElement("div", { className: "lg-month-selected-line" },
-                React.createElement("div", null,
-                    React.createElement("div", { className: "lg-month-selected-kicker" }, "Seçili gün"),
-                    React.createElement("div", { className: "lg-month-selected-title" }, rangeLabel)),
-                React.createElement("div", { className: "lg-month-selected-count" }, rangeRows.length + ' transfer' + (rangeRows.length ? (' · ' + rangeRows.filter(x => x.status === 'tam').length + ' tamam') : ''))),
+            daySummaryTypes.length > 0 && React.createElement("div", { className: 'ko-day-type-summary', role: 'list', 'aria-label': 'Seçili gün transfer türleri' },
+                daySummaryTypes.map(tid => {
+                    const meta = TIPLER.find(tp => tp.id === tid) || { n: tid, c: 'var(--p-ink-3)' };
+                    return React.createElement("div", { key: tid, className: 'ko-day-type-count', role: 'listitem' },
+                        React.createElement("span", { className: 'ko-day-type-dot', style: { background: meta.c } }),
+                        React.createElement("strong", null, dayTypeCounts[tid]),
+                        React.createElement("span", null, meta.n));
+                })),
             rangeRows.length > 0
                 ? React.createElement("div", { style: { padding: '4px 8px 8px' } }, renderTypeGroups(rangeRows))
                 : React.createElement("div", { style: { textAlign: 'center', padding: '18px 10px' } },
@@ -15614,6 +15650,169 @@ img,svg{content-visibility:visible !important}
 .ko-debt-ledger-actions .is-delete{margin-left:auto !important;color:var(--p-neg) !important;-webkit-text-fill-color:var(--p-neg) !important;border-color:var(--p-neg-bd) !important}
 .ko-debt-ledger-form{margin-top:10px !important;padding:10px !important;border:1px solid rgba(46,62,102,.10) !important;border-radius:12px !important;background:var(--p-tint-3) !important}
 .ko-debt-ledger-form button{font-size:12px !important;font-weight:520 !important}
+/* Transferler: Gidiş/Geliş, Düğün/Tur, Kısa Pas/VIP eşleşir. Kart davranışları aynı. */
+.ko-type-groups-wrap{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:clamp(14px,2.3vw,24px) !important;
+  width:100% !important;
+}
+.ko-type-pair-row{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  align-items:start !important;
+  gap:clamp(8px,1.8vw,18px) !important;
+  width:100% !important;
+}
+.ko-type-pair-row.is-single-column{grid-template-columns:minmax(0,1fr) !important}
+.ko-type-paired-section{display:flex !important;flex-direction:column !important;gap:12px !important;min-width:0 !important}
+.ko-type-pair-head-row .ko-type-column .ko-htx-group-hd{margin-bottom:0 !important}
+.ko-type-pair-card-row{align-items:stretch !important}
+.ko-type-pair-card-row .ko-type-column{align-self:stretch !important}
+.ko-type-pair-card-row .tcard{width:100% !important;height:100% !important}
+.ko-day-type-summary{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:4px 13px !important;
+  margin:3px 8px 5px !important;
+  padding:6px 10px !important;
+  min-height:30px !important;
+  border:1px solid rgba(46,62,102,.14) !important;
+  border-radius:10px !important;
+  background:var(--p-white) !important;
+  box-shadow:0 3px 10px rgba(18,35,63,.045) !important;
+}
+.ko-day-type-count{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:4px !important;
+  white-space:nowrap !important;
+  color:var(--p-ink-2) !important;
+  -webkit-text-fill-color:var(--p-ink-2) !important;
+  font-size:10px !important;
+  line-height:1.2 !important;
+}
+.ko-day-type-count strong{font-size:11px !important;font-weight:700 !important;font-variant-numeric:tabular-nums !important}
+.ko-day-type-dot{display:inline-block !important;width:5px !important;height:5px !important;border-radius:50% !important;flex:none !important}
+.ko-type-column{display:flex !important;flex-direction:column !important;gap:24px !important;min-width:0 !important}
+.ko-type-column .ko-type-group{
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.ko-type-column .ko-htx-group-hd{
+  display:grid !important;
+  grid-template-columns:9px minmax(0,1fr) auto !important;
+  align-items:center !important;
+  gap:8px !important;
+  min-height:30px !important;
+  margin:0 2px 10px !important;
+  padding:0 3px 7px !important;
+  border-bottom:1px solid rgba(46,62,102,.15) !important;
+}
+.ko-type-column .ko-htx-group-hd>span:nth-child(2){
+  min-width:0 !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  overflow-wrap:anywhere !important;
+  line-height:1.18 !important;
+}
+.ko-type-column .ko-type-group-cards{gap:14px !important;min-width:0 !important}
+.ko-type-column .tcard{
+  min-width:0 !important;
+  margin:0 !important;
+  border:1px solid rgba(36,56,93,.13) !important;
+  border-left-width:4px !important;
+  border-radius:20px !important;
+  background:var(--p-white) !important;
+  box-shadow:0 15px 32px -25px rgba(18,35,63,.45),0 2px 6px rgba(18,35,63,.045) !important;
+}
+.ko-type-column .tcard-header{display:block !important}
+.ko-type-column .tcard.t-arrival{border-left-color:var(--p-t-arr) !important}
+.ko-type-column .tcard.t-departure{border-left-color:var(--p-t-dep) !important}
+.ko-type-column .tcard.t-tour{border-left-color:var(--p-t-tur) !important}
+.ko-type-column .tcard.t-dugun{border-left-color:var(--p-t-dug) !important}
+.ko-type-column .tcard.t-intercity{border-left-color:var(--p-t-vip) !important}
+.ko-type-column .tcard.t-shortpass{border-left-color:var(--p-t-kisa) !important}
+.ko-type-column .tcard.t-takas{border-left-color:var(--p-ink-3) !important}
+.ko-type-column .tcard *{min-width:0 !important;text-overflow:clip !important;overflow-wrap:anywhere !important}
+.ko-type-column .tcard-header :where(div,span,button),
+.ko-type-column .tcard-expanded :where(div,span,button){
+  white-space:normal !important;
+  text-overflow:clip !important;
+}
+@media(max-width:899px){
+  .ko-type-groups-wrap{gap:16px !important}
+  .ko-type-pair-row{gap:10px !important}
+  .ko-type-paired-section{gap:10px !important}
+  .ko-type-column{gap:18px !important}
+  .ko-type-column .ko-htx-group-hd{gap:5px !important;margin-bottom:7px !important}
+  .ko-type-column .ko-htx-group-hd>span:nth-child(2){font-size:10px !important;letter-spacing:.03em !important}
+  .ko-type-column .ko-htx-group-hd>span:last-child{font-size:9px !important;padding:2px 5px !important}
+  .ko-type-column .ko-type-group-cards{gap:11px !important}
+  .ko-type-column .tcard{border-radius:16px !important}
+  .ko-type-column .tcard-header{padding:10px !important}
+  .ko-type-column .tcard-header>div:first-child{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:6px !important;
+  }
+  .ko-type-column .tcard-header>div:first-child>div:first-child{
+    justify-self:start !important;
+    min-width:50px !important;
+    padding:6px !important;
+  }
+  .ko-type-column .tcard-header>div:first-child>div:nth-child(2)>div:first-child{
+    font-size:12px !important;
+    line-height:1.32 !important;
+  }
+  .ko-type-column .tcard-header>div:first-child>div:nth-child(2)>div:nth-child(2){font-size:10px !important}
+  .ko-type-column .tcard-header>div:first-child>div:last-child{
+    flex-direction:row !important;
+    flex-wrap:wrap !important;
+    justify-content:flex-start !important;
+    align-items:flex-start !important;
+    gap:4px !important;
+  }
+  .ko-type-column .tcard-header>div:first-child>div:last-child>span,
+  .ko-type-column .tcard-header>div:first-child>div:last-child>button{
+    max-width:100% !important;
+    padding:4px 7px !important;
+    font-size:9px !important;
+    line-height:1.16 !important;
+  }
+  .ko-type-column .tcard-header>div:nth-child(2){
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+    margin-top:8px !important;
+    padding-top:8px !important;
+  }
+  .ko-type-column .tcard-header>div:nth-child(2)>div:first-child{
+    border-right:1px solid rgba(46,58,78,.14) !important;
+    border-bottom:0 !important;
+    padding:0 8px 0 0 !important;
+  }
+  .ko-type-column .tcard-header>div:nth-child(2)>div:last-child{padding:0 !important}
+  .ko-type-column .tcard-header>div:nth-child(2)>div>div{min-width:0 !important}
+  .ko-type-column .ko-transfer-expanded-facts{grid-template-columns:minmax(0,1fr) !important}
+  .ko-type-column .tcard-expanded{padding:8px !important}
+}
+@media(max-width:374px){
+  .ko-type-pair-row{grid-template-columns:minmax(0,1fr) !important}
+  .ko-type-column .tcard-header>div:first-child{
+    grid-template-columns:55px minmax(0,1fr) !important;
+  }
+  .ko-type-column .tcard-header>div:first-child>div:last-child{grid-column:1/-1 !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ko-type-column .tcard{animation:none !important;transition:none !important}
+}
 </style>
 </body>
 </html>
