@@ -4677,17 +4677,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789242324127_3fy6sf@olmeztur
 DTSTAMP:20260915T112500Z
-LAST-MODIFIED:20260912T194500Z
-SEQUENCE:1789242324
+LAST-MODIFIED:20260915T112500Z
+SEQUENCE:1789471555
 DTSTART:20260915T090000
 DTEND:20260915T100000
 SUMMARY:09:00 · İstanbul→IST
 LOCATION:Radisson Blu Vadi İstanbul → İstanbul Havalimanı
 DESCRIPTION:Müşteri: Mohammad Alhumaidan\, Fajer Alhumaidan\, Nawal Alsh
  amroukh\, Noura Alshamroukh\nŞoför: Diğer Kaptanlar\nİşi veren: Ölmeztur
- \nİşi yapan: Ölmeztur\nAlt acenta: -\nAraç: Minibüs\nGüzergah: Radisson 
- Blu Vadi İstanbul → İstanbul Havalimanı\nÖdeme: Müşteri: 40 USD | Araç: 
- 1.600 ₺
+ \nİşi yapan: Salah\nAlt acenta: -\nAraç: Minibüs\nGüzergah: Radisson Blu
+  Vadi İstanbul → İstanbul Havalimanı\nÖdeme: Müşteri: 40 USD | Araç: 1.5
+ 00 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
