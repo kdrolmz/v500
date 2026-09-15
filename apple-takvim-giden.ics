@@ -4695,16 +4695,16 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789323358514_f5oql9@olmeztur
 DTSTAMP:20260915T112500Z
-LAST-MODIFIED:20260913T181500Z
-SEQUENCE:1789323358
+LAST-MODIFIED:20260915T112500Z
+SEQUENCE:1789471524
 DTSTART:20260915T093000
 DTEND:20260915T103000
 SUMMARY:09:30 · Bursa→SAW
 LOCATION:Bursa Mudanya → Sabiha Gökçen Havalimanı
 DESCRIPTION:Müşteri: Veysel Arslan\, Altun Arslan\nŞoför: Kadir Ölmez / 
  +90 (543) 287 06 87\nİşi veren: Ölmeztur\nİşi yapan: Ölmeztur\nAlt acent
- a: -\nAraç: Vito\nGüzergah: Bursa Mudanya → Sabiha Gökçen Havalimanı\nÖd
- eme: Müşteri: 8.500 TRY | Araç: 8.500 ₺
+ a: -\nAraç: Vito / 16 LMZ 55\nGüzergah: Bursa Mudanya → Sabiha Gökçen Ha
+ valimanı\nÖdeme: Müşteri: 8.500 TRY | Araç: 8.500 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
