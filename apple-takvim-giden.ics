@@ -4729,16 +4729,17 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ko-transfer-1789494046732_9ieve9@olmeztur
 DTSTAMP:20260915T175500Z
-LAST-MODIFIED:20260915T175400Z
-SEQUENCE:1789494899
+LAST-MODIFIED:20260915T175500Z
+SEQUENCE:1789494955
 DTSTART:20260916T110000
 DTEND:20260916T120000
 SUMMARY:11:00 · Bursa→Movenpick Hotel Marmara Sea
 LOCATION:Marigold Hotel Bursa → Movenpick Hotel Marmara Sea
 DESCRIPTION:Müşteri: Abdulazız Mohammed Alsubaıh\, Sumayyah Abdullah Alb
- arghash\nŞoför: -\nİşi veren: Sadettin Darkal\nİşi yapan: Ölmeztur\nAlt 
- acenta: -\nAraç: Vito\nGüzergah: Marigold Hotel Bursa → Movenpick Hotel 
- Marmara Sea\nÖdeme: Müşteri ödemez | Araç: 6.500 ₺
+ arghash\nŞoför: Emre Taner Arkadaş\nİşi veren: Sadettin Darkal\nİşi yapa
+ n: Ölmeztur\nAlt acenta: Emre Taner Arkadaş\nAraç: Vito\nGüzergah: Marig
+ old Hotel Bursa → Movenpick Hotel Marmara Sea\nÖdeme: Müşteri ödemez | A
+ raç: 6.500 ₺ | Alt acenta: 6.000 ₺
 CATEGORIES:KÖ Giden Yolcu
 STATUS:CONFIRMED
 TRANSP:OPAQUE
