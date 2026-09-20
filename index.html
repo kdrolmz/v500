@@ -4136,6 +4136,65 @@ const buildAppleCalendarPublishFiles = transfers => APPLE_CALENDAR_TYPES
         const rows = (transfers || []).filter(t => transferCalendarBucket(t) === meta.id);
         return { filename: meta.filename, mime: 'text/calendar;charset=utf-8', text: buildAppleCalendarIcs(rows, meta), meta };
     });
+const IOS_REMINDER_SHORTCUT_NAME = 'KÖ Transfer Anımsatıcı';
+const isAppleMobileDevice = () => {
+    const ua = String((navigator && navigator.userAgent) || '');
+    return /iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(ua);
+};
+const transferReminderListName = t => ({
+    arrival: 'Gelen Yolcu',
+    departure: 'Giden Yolcu',
+    tour: 'Tur',
+    dugun: 'Düğün',
+    intercity: 'VIP Tahsis',
+    shortpass: 'Kısa Pas'
+})[transferCalendarBucket(t)] || 'Gelen Yolcu';
+const appleReminderFullLoc = name => {
+    const raw = String(name || '').trim();
+    const code = appleCalendarTitleLoc(raw).toUpperCase();
+    return ({
+        IST: 'İstanbul Havalimanı',
+        SAW: 'Sabiha Gökçen Havalimanı',
+        ESB: 'Ankara Esenboğa Havalimanı',
+        ADB: 'İzmir Adnan Menderes Havalimanı',
+        AYT: 'Antalya Havalimanı',
+        DLM: 'Dalaman Havalimanı',
+        BJV: 'Bodrum Milas Havalimanı',
+        TZX: 'Trabzon Havalimanı',
+        BTZ: 'Bursa Yenişehir Havalimanı'
+    })[code] || raw || code;
+};
+const transferReminderTitle = t => {
+    const type = transferCalendarBucket(t);
+    const tm = String((t && t.time) || '').slice(0, 5) || '09:00';
+    const from = appleReminderFullLoc(t && t.pickup);
+    const to = appleReminderFullLoc(t && t.dropoff);
+    let route = [from, to].filter(Boolean).join(' → ') || 'Transfer';
+    if (type === 'tour') route = (to || from || 'Tur') + ' Turu';
+    if (type === 'dugun') route = 'Düğün' + (from || to ? ' · ' + route : '');
+    return transferCalendarIcon(t) + ' ' + tm + ' · ' + route;
+};
+const transferReminderShortcutItem = t => {
+    if (!t || !t.id || !t.date || t.status === 'iptal') return null;
+    const time = String(t.time || '09:00').slice(0, 5);
+    const location = [t.pickup, t.dropoff].filter(Boolean).join(' → ');
+    return {
+        listName: transferReminderListName(t),
+        title: transferReminderTitle(t),
+        notes: appleCalendarDescription(t) + (location ? '\n\nKonum: ' + location : ''),
+        dueDate: String(t.date) + 'T' + time + ':00+03:00',
+        uid: 'ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'
+    };
+};
+const runTransferReminderShortcut = transfers => {
+    if (!isAppleMobileDevice()) return false;
+    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(transferReminderShortcutItem).filter(Boolean);
+    if (!rows.length) return false;
+    const url = 'shortcuts://run-shortcut?name=' + encodeURIComponent(IOS_REMINDER_SHORTCUT_NAME)
+        + '&input=text&text=' + encodeURIComponent(JSON.stringify(rows));
+    window.location.href = url;
+    return true;
+};
 const githubCalendarHeaders = token => ({
     Authorization: 'Bearer ' + token,
     Accept: 'application/vnd.github+json'
@@ -8930,8 +8989,8 @@ function App() {
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } });
-    const [githubCalendarToken, setGithubCalendarToken] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || ''; }catch(e){ return ''; } });
-    const [githubCalendarAuto, setGithubCalendarAuto] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_AUTO_KEY) === '1'; }catch(e){ return false; } });
+    const [githubCalendarToken, setGithubCalendarToken] = useState('');
+    const [githubCalendarAuto, setGithubCalendarAuto] = useState(false);
     const [githubCalendarBusy, setGithubCalendarBusy] = useState(false);
     const [githubCalendarMsg, setGithubCalendarMsg] = useState('');
     const [storageReady, setStorageReady] = useState(false);
@@ -8974,14 +9033,10 @@ function App() {
     }, [tab]);
     useEffect(() => {
         try {
-            const tok = (githubCalendarToken || '').replace(/\s+/g, '').trim();
-            if (tok) localStorage.setItem(GITHUB_CALENDAR_TOKEN_KEY, tok);
-            else localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
+            localStorage.removeItem(GITHUB_CALENDAR_TOKEN_KEY);
+            localStorage.removeItem(GITHUB_CALENDAR_AUTO_KEY);
         } catch (e) {}
-    }, [githubCalendarToken]);
-    useEffect(() => {
-        try { localStorage.setItem(GITHUB_CALENDAR_AUTO_KEY, githubCalendarAuto ? '1' : '0'); } catch (e) {}
-    }, [githubCalendarAuto]);
+    }, []);
     useEffect(() => {
         if (tab !== 'new' || editId) return;
         if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
@@ -10139,6 +10194,7 @@ function App() {
             isReturnLeg: true,
             linkedTransferId: linkedId || outBase.id
         }); };
+        let reminderShortcutRows = [];
         if (editId) {
             const nowIso = new Date().toISOString();
             const baseDraft = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
@@ -10163,6 +10219,7 @@ function App() {
                 persistTransfersImmediately(next);
                 return next;
             });
+            reminderShortcutRows = [t, ...extraKs];
             setEditId(null);
             tip(extraKs.length ? 'Güncellendi \u2014 karşılıklı eşleştirildi' : 'Güncellendi');
         } else {
@@ -10207,6 +10264,7 @@ function App() {
                 persistTransfersImmediately(next);
                 return next;
             });
+            reminderShortcutRows = [...transfersToAdd, ...extraLinks];
             tip(transfersToAdd.length + ' kart eklendi' + (datedReturn && form.returnDate ? ' \u2014 dönüş: ' + form.returnDate : '') + (extraLinks.length ? ' \u2014 karşılıklı' : ''));
         }
         try { localStorage.removeItem('ko_transfer_draft_v1'); } catch (e) {}
@@ -10221,6 +10279,7 @@ function App() {
                 }
             } catch (e) {}
         }
+        runTransferReminderShortcut(reminderShortcutRows);
         setForm(BF);
         setTab('list');
         releaseSubmitLock();
@@ -14145,10 +14204,10 @@ function App() {
             return React.createElement("div", { className: "mo", onClick: () => setBkpM(false) },
                 React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 22 } },
                     React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
-                        React.createElement("div", { style: { fontWeight: 450, fontSize: 16, color: TX } }, "🛡️ Yedek & Takvim"),
+                        React.createElement("div", { style: { fontWeight: 450, fontSize: 16, color: TX } }, "🛡️ Yedek & Anımsatıcılar"),
                         React.createElement("button", { onClick: () => setBkpM(false), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, background: INP, border: '1px solid ' + BOR, borderRadius: 12, padding: 4, marginBottom: 14 } },
-                        [['yedek', '🛡️ Yedek'], ['takvim', '🗓️ Apple Takvim']].map(([k, l]) =>
+                        [['yedek', '🛡️ Yedek'], ['takvim', '✅ Anımsatıcılar']].map(([k, l]) =>
                             React.createElement("button", {
                                 key: k, type: "button", onClick: () => setBkpTab(k),
                                 style: {
@@ -14236,6 +14295,25 @@ function App() {
                         React.createElement("div", { style: { fontSize: 10, color: SB, lineHeight: 1.45, marginTop: 10, textAlign: 'center' } },
                             "Geri yükleme mevcut verinin üstüne yazar; onay sorulur.")),
                     !isYedek && React.createElement(React.Fragment, null,
+                        React.createElement("div", { style: { background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', borderRadius: 14, padding: '14px 13px', marginBottom: 14 } },
+                            React.createElement("div", { style: { fontSize: 14, fontWeight: 550, color: 'var(--p-pos-deep)', marginBottom: 5 } }, "✅ iPhone Anımsatıcı Eşitlemesi"),
+                            React.createElement("div", { style: { fontSize: 11.5, color: TX, lineHeight: 1.5 } },
+                                "Transferi iPhone veya Mac’te kaydettiğinde KÖ Transfer Anımsatıcı kestirmesi açılır. Kayıt, tarihine göre doğru listeye eklenir; mevcut kayıtlar silinmez ve kopyalanmaz.")),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 12 } },
+                            ['🛬 Gelen Yolcu', '🛫 Giden Yolcu', '🏔️ Tur', '💍 Düğün', '🚐 VIP Tahsis', '⚡ Kısa Pas'].map(label =>
+                                React.createElement("div", { key: label, style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 10, padding: '9px 10px', fontSize: 11.5, fontWeight: 470, color: TX } }, label))),
+                        React.createElement("button", {
+                            type: "button",
+                            onClick: () => {
+                                const sample = (T || []).filter(t => t && t.date && t.status !== 'iptal').slice().sort((a, b) => String((b.date || '') + (b.time || '')).localeCompare(String((a.date || '') + (a.time || ''))))[0];
+                                if (!sample) { tip('Test edilecek transfer bulunamadı'); return; }
+                                if (!runTransferReminderShortcut([sample])) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
+                            },
+                            style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
+                        }, "Kestirmeyi Aç ve Son Transferle Test Et"),
+                        React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
+                            "İlk çalıştırmada Apple izin sorabilir. Sonraki kayıtlar aynı UID ile güncellenir. GitHub tokeni ve herkese açık takvim yayını kullanılmaz.")),
+                    false && !isYedek && React.createElement(React.Fragment, null,
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: '12px 13px', marginBottom: 14 } },
                             React.createElement("div", { style: { minWidth: 0 } },
                                 React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, "Otomatik yayın"),
