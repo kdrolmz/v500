@@ -4175,19 +4175,7 @@ const transferReminderTitle = t => {
     return transferCalendarIcon(t) + ' ' + tm + ' · ' + route;
 };
 const transferReminderCompactNotes = t => {
-    const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
-    const customer = passengers || (t && (t.passengerName || t.customerName || t.clientName)) || '';
-    return [
-        customer ? ('Yolcu: ' + customer) : '',
-        (t && (t.driverName || t.driverPhone)) ? ('Şoför: ' + [t.driverName, t.driverPhone].filter(Boolean).join(' / ')) : '',
-        (t && t.givenBy) ? ('İşi veren: ' + t.givenBy) : '',
-        (t && t.assignedTo) ? ('İşi yapan: ' + t.assignedTo) : '',
-        (t && t.altAcenta) ? ('Alt acenta: ' + t.altAcenta) : '',
-        [appleCalendarVehicle(t), inferPlate(t)].filter(Boolean).length ? ('Araç: ' + [appleCalendarVehicle(t), inferPlate(t)].filter(Boolean).join(' / ')) : '',
-        (t && t.flightCode) ? ('Uçuş: ' + flightCodeClean(t.flightCode)) : '',
-        (t && t.notes) ? ('Not: ' + t.notes) : '',
-        appleCalendarPaymentText(t)
-    ].filter(Boolean).join('\n');
+    return '';
 };
 const transferReminderShortcutItem = (t, compact) => {
     if (!t || !t.id || !t.date || t.status === 'iptal') return null;
