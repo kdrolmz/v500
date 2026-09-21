@@ -14029,20 +14029,28 @@ function App() {
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 12 } },
                             ['🛬 Gelen Yolcu', '🛫 Giden Yolcu', '🏔️ Tur', '💍 Düğün', '🚐 VIP Tahsis', '⚡ Kısa Pas'].map(label =>
                                 React.createElement("div", { key: label, style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 10, padding: '9px 10px', fontSize: 11.5, fontWeight: 470, color: TX } }, label))),
-                        React.createElement("button", {
-                            type: "button",
-                            onClick: () => {
-                                const reminderToday = new Date();
-                                const reminderTodayKey = reminderToday.getFullYear() + '-' + String(reminderToday.getMonth() + 1).padStart(2, '0') + '-' + String(reminderToday.getDate()).padStart(2, '0');
-                                const activeRows = (T || [])
-                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= reminderTodayKey)
-                                    .slice()
-                                    .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
-                                if (!activeRows.length) { tip('Bugün veya gelecekte eşitlenecek aktif transfer bulunamadı'); return; }
-                                if (!runTransferReminderShortcut(activeRows, { compact: true })) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
-                            },
-                            style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
-                        }, "Bugün ve Gelecekteki Tüm Transferleri Eşitle"),
+                        (function () {
+                            const reminderToday = new Date();
+                            const reminderTodayKey = reminderToday.getFullYear() + '-' + String(reminderToday.getMonth() + 1).padStart(2, '0') + '-' + String(reminderToday.getDate()).padStart(2, '0');
+                            const activeRows = (T || [])
+                                .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= reminderTodayKey)
+                                .slice()
+                                .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
+                            const reminderRows = activeRows.map(t => transferReminderShortcutItem(t, true)).filter(Boolean);
+                            const reminderHref = reminderRows.length && isAppleMobileDevice()
+                                ? 'shortcuts://run-shortcut?name=' + encodeURIComponent(IOS_REMINDER_SHORTCUT_NAME) + '&input=text&text=' + encodeURIComponent(JSON.stringify(reminderRows))
+                                : '#';
+                            return React.createElement("a", {
+                                href: reminderHref,
+                                onClick: e => {
+                                    if (reminderHref === '#') {
+                                        e.preventDefault();
+                                        tip(activeRows.length ? 'Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır' : 'Bugün veya gelecekte eşitlenecek aktif transfer bulunamadı');
+                                    }
+                                },
+                                style: { display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', textDecoration: 'none', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
+                            }, "Bugün ve Gelecekteki Tüm Transferleri Eşitle");
+                        })(),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
                             "Tüm transferler tek Kestirme çalışmasında tarih sırasıyla işlenir. Aynı UID güncellenir; kopya oluşmaz. GitHub tokeni ve herkese açık takvim yayını kullanılmaz."))));
         })()));
