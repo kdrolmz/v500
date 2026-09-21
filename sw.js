@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v1';
+const CACHE_NAME = 'ko-v500-shell-v2';
 
 const LOCAL_SHELL = [
   './',
@@ -47,7 +47,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  // Takvim, veri, Firebase ve GitHub istekleri hiçbir zaman service worker
+  // Veri, Firebase ve GitHub istekleri hiçbir zaman service worker
   // önbelleğine yazılmaz. Böylece kişisel/operasyonel veri cihaz önbelleğinde
   // ikinci bir kopya oluşturmaz.
   if (isSensitivePublicFile(url)) return;
