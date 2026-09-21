@@ -4174,7 +4174,22 @@ const transferReminderTitle = t => {
     if (type === 'dugun') route = 'Düğün' + (from || to ? ' · ' + route : '');
     return transferCalendarIcon(t) + ' ' + tm + ' · ' + route;
 };
-const transferReminderShortcutItem = t => {
+const transferReminderCompactNotes = t => {
+    const passengers = Array.isArray(t && t.passengers) ? t.passengers.map(p => p && p.name).filter(Boolean).join(', ') : '';
+    const customer = passengers || (t && (t.passengerName || t.customerName || t.clientName)) || '';
+    return [
+        customer ? ('Yolcu: ' + customer) : '',
+        (t && (t.driverName || t.driverPhone)) ? ('Şoför: ' + [t.driverName, t.driverPhone].filter(Boolean).join(' / ')) : '',
+        (t && t.givenBy) ? ('İşi veren: ' + t.givenBy) : '',
+        (t && t.assignedTo) ? ('İşi yapan: ' + t.assignedTo) : '',
+        (t && t.altAcenta) ? ('Alt acenta: ' + t.altAcenta) : '',
+        [appleCalendarVehicle(t), inferPlate(t)].filter(Boolean).length ? ('Araç: ' + [appleCalendarVehicle(t), inferPlate(t)].filter(Boolean).join(' / ')) : '',
+        (t && t.flightCode) ? ('Uçuş: ' + flightCodeClean(t.flightCode)) : '',
+        (t && t.notes) ? ('Not: ' + t.notes) : '',
+        appleCalendarPaymentText(t)
+    ].filter(Boolean).join('\n');
+};
+const transferReminderShortcutItem = (t, compact) => {
     if (!t || !t.id || !t.date || t.status === 'iptal') return null;
     const time = String(t.time || '09:00').slice(0, 5);
     const location = [t.pickup, t.dropoff].filter(Boolean).join(' → ');
@@ -4182,7 +4197,7 @@ const transferReminderShortcutItem = t => {
         action: 'upsert',
         listName: transferReminderListName(t),
         title: transferReminderTitle(t),
-        notes: appleCalendarDescription(t) + (location ? '\n\nKonum: ' + location : ''),
+        notes: compact ? transferReminderCompactNotes(t) : (appleCalendarDescription(t) + (location ? '\n\nKonum: ' + location : '')),
         dueDate: String(t.date) + 'T' + time + ':00+03:00',
         uid: 'ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'
     };
@@ -4202,8 +4217,9 @@ const runTransferReminderShortcutPayload = rows => {
     window.location.href = url;
     return true;
 };
-const runTransferReminderShortcut = transfers => {
-    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(transferReminderShortcutItem).filter(Boolean);
+const runTransferReminderShortcut = (transfers, options) => {
+    const compact = !!(options && options.compact);
+    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(t => transferReminderShortcutItem(t, compact)).filter(Boolean);
     return runTransferReminderShortcutPayload(rows);
 };
 const deleteTransferReminderShortcut = transfers => {
@@ -14330,7 +14346,7 @@ function App() {
                                     .slice()
                                     .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
                                 if (!activeRows.length) { tip('Bugün eşitlenecek aktif transfer bulunamadı'); return; }
-                                if (!runTransferReminderShortcut(activeRows)) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
+                                if (!runTransferReminderShortcut(activeRows, { compact: true })) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
                             },
                             style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
                         }, "Bugünün Transferlerini Kontrol Et ve Eşitle"),
