@@ -14039,12 +14039,12 @@ function App() {
                                     .slice()
                                     .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
                                 if (!activeRows.length) { tip('Bugün veya gelecekte eşitlenecek aktif transfer bulunamadı'); return; }
-                                if (!startTransferReminderQueue(activeRows)) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
+                                if (!runTransferReminderShortcut(activeRows, { compact: true })) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
                             },
                             style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
                         }, "Bugün ve Gelecekteki Tüm Transferleri Eşitle"),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
-                            "Her transfer güvenli sırayla tek tek işlenir. Aynı UID güncellenir; kopya oluşmaz. GitHub tokeni ve herkese açık takvim yayını kullanılmaz."))));
+                            "Tüm transferler tek Kestirme çalışmasında tarih sırasıyla işlenir. Aynı UID güncellenir; kopya oluşmaz. GitHub tokeni ve herkese açık takvim yayını kullanılmaz."))));
         })()));
 }
 class AppErrorBoundary extends React.Component {
