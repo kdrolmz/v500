@@ -14326,14 +14326,14 @@ function App() {
                             type: "button",
                             onClick: () => {
                                 const activeRows = (T || [])
-                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= String(todayKey))
+                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) === String(todayKey))
                                     .slice()
                                     .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
-                                if (!activeRows.length) { tip('Eşitlenecek aktif transfer bulunamadı'); return; }
+                                if (!activeRows.length) { tip('Bugün eşitlenecek aktif transfer bulunamadı'); return; }
                                 if (!runTransferReminderShortcut(activeRows)) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
                             },
                             style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
-                        }, "Tüm Aktif Transferleri Anımsatıcılarla Eşitle"),
+                        }, "Bugünün Transferlerini Kontrol Et ve Eşitle"),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
                             "İlk çalıştırmada Apple izin sorabilir. Sonraki kayıtlar aynı UID ile güncellenir. GitHub tokeni ve herkese açık takvim yayını kullanılmaz.")),
                     false && !isYedek && React.createElement(React.Fragment, null,
