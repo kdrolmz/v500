@@ -4179,6 +4179,7 @@ const transferReminderShortcutItem = t => {
     const time = String(t.time || '09:00').slice(0, 5);
     const location = [t.pickup, t.dropoff].filter(Boolean).join(' → ');
     return {
+        action: 'upsert',
         listName: transferReminderListName(t),
         title: transferReminderTitle(t),
         notes: appleCalendarDescription(t) + (location ? '\n\nKonum: ' + location : ''),
@@ -4186,14 +4187,28 @@ const transferReminderShortcutItem = t => {
         uid: 'ko-transfer-' + String(t.id || transferDuplicateKey(t)) + '@olmeztur'
     };
 };
-const runTransferReminderShortcut = transfers => {
-    if (!isAppleMobileDevice()) return false;
-    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(transferReminderShortcutItem).filter(Boolean);
-    if (!rows.length) return false;
+const transferReminderDeleteItem = transferOrId => {
+    const id = transferOrId && typeof transferOrId === 'object' ? transferOrId.id : transferOrId;
+    if (!id) return null;
+    return {
+        action: 'delete',
+        uid: 'ko-transfer-' + String(id) + '@olmeztur'
+    };
+};
+const runTransferReminderShortcutPayload = rows => {
+    if (!isAppleMobileDevice() || !Array.isArray(rows) || !rows.length) return false;
     const url = 'shortcuts://run-shortcut?name=' + encodeURIComponent(IOS_REMINDER_SHORTCUT_NAME)
         + '&input=text&text=' + encodeURIComponent(JSON.stringify(rows));
     window.location.href = url;
     return true;
+};
+const runTransferReminderShortcut = transfers => {
+    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(transferReminderShortcutItem).filter(Boolean);
+    return runTransferReminderShortcutPayload(rows);
+};
+const deleteTransferReminderShortcut = transfers => {
+    const rows = (Array.isArray(transfers) ? transfers : [transfers]).map(transferReminderDeleteItem).filter(Boolean);
+    return runTransferReminderShortcutPayload(rows);
 };
 const githubCalendarHeaders = token => ({
     Authorization: 'Bearer ' + token,
@@ -10397,6 +10412,7 @@ function App() {
             persistTransfersImmediately(list);
             return list;
         });
+        runTransferReminderShortcut([next]);
         quickDraftRef.current = null;
         setQuickEditT(null);
         tip('Transfer güncellendi');
@@ -10428,6 +10444,7 @@ function App() {
             } catch (e) { console.error('[DEL Q] localStorage anında güncelleme hatası', e); }
             return filtered;
         });
+        deleteTransferReminderShortcut([draft]);
         quickDraftRef.current = null;
         setQuickEditT(null);
         calendarPublishSigRef.current = '';
@@ -10442,6 +10459,7 @@ function App() {
         const nowIso = new Date().toISOString();
         const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
         setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
+        runTransferReminderShortcut([newT]);
         tip('Kopyalandı');
     };
     const toggleSettled = id => {
@@ -10483,6 +10501,7 @@ function App() {
             } catch (e) { console.error('[DEL] localStorage anında güncelleme hatası', e); }
             return filtered;
         });
+        deleteTransferReminderShortcut([id]);
         calendarPublishSigRef.current = '';
         try { if ((githubCalendarToken || '').trim()) setTimeout(() => publishAppleCalendarToGithub(true), 300); } catch (e) {}
         tip('Silindi');
@@ -10512,6 +10531,7 @@ function App() {
             } catch (e) { console.error('[DEL BY ID] localStorage hatası', e); }
             return filtered;
         });
+        deleteTransferReminderShortcut([id]);
         setAracK(p => (Array.isArray(p) ? p : []).filter(k =>
             !(k && (String(k.transferId || '') === sid || String(k.id || '') === ('plate16_auto_' + sid)))
         ));
@@ -14305,12 +14325,15 @@ function App() {
                         React.createElement("button", {
                             type: "button",
                             onClick: () => {
-                                const sample = (T || []).filter(t => t && t.date && t.status !== 'iptal').slice().sort((a, b) => String((b.date || '') + (b.time || '')).localeCompare(String((a.date || '') + (a.time || ''))))[0];
-                                if (!sample) { tip('Test edilecek transfer bulunamadı'); return; }
-                                if (!runTransferReminderShortcut([sample])) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
+                                const activeRows = (T || [])
+                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= String(todayKey))
+                                    .slice()
+                                    .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
+                                if (!activeRows.length) { tip('Eşitlenecek aktif transfer bulunamadı'); return; }
+                                if (!runTransferReminderShortcut(activeRows)) tip('Bu özellik Apple Kestirmeler bulunan iPhone veya Mac’te çalışır');
                             },
                             style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
-                        }, "Kestirmeyi Aç ve Son Transferle Test Et"),
+                        }, "Tüm Aktif Transferleri Anımsatıcılarla Eşitle"),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
                             "İlk çalıştırmada Apple izin sorabilir. Sonraki kayıtlar aynı UID ile güncellenir. GitHub tokeni ve herkese açık takvim yayını kullanılmaz.")),
                     false && !isYedek && React.createElement(React.Fragment, null,
