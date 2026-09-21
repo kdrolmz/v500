@@ -10111,7 +10111,6 @@ function App() {
                 }
             } catch (e) {}
         }
-        runTransferReminderShortcut(reminderShortcutRows);
         setForm(BF);
         setTab('list');
         releaseSubmitLock();
@@ -10229,7 +10228,6 @@ function App() {
             persistTransfersImmediately(list);
             return list;
         });
-        runTransferReminderShortcut([next]);
         quickDraftRef.current = null;
         setQuickEditT(null);
         tip('Transfer güncellendi');
@@ -10261,7 +10259,6 @@ function App() {
             } catch (e) { console.error('[DEL Q] localStorage anında güncelleme hatası', e); }
             return filtered;
         });
-        deleteTransferReminderShortcut([draft]);
         quickDraftRef.current = null;
         setQuickEditT(null);
         tip('Silindi');
@@ -10274,7 +10271,6 @@ function App() {
         const nowIso = new Date().toISOString();
         const newT = normalizeTransfer({ ...t, id: newId, editRootId: newId, copyOf: t.id || '', createdAt: nowIso, updatedAt: nowIso, settled: companyCollected, customerCollected, companyCollected, vehiclePaid: !!t.vehiclePaid });
         setT(p => dedupeTransfers(p.some(x => x.id === newT.id) ? p : [...p, newT]));
-        runTransferReminderShortcut([newT]);
         tip('Kopyalandı');
     };
     const toggleSettled = id => {
@@ -10316,7 +10312,6 @@ function App() {
             } catch (e) { console.error('[DEL] localStorage anında güncelleme hatası', e); }
             return filtered;
         });
-        deleteTransferReminderShortcut([id]);
         tip('Silindi');
     } };
     const deleteTransferById = id => {
@@ -10344,7 +10339,6 @@ function App() {
             } catch (e) { console.error('[DEL BY ID] localStorage hatası', e); }
             return filtered;
         });
-        deleteTransferReminderShortcut([id]);
         setAracK(p => (Array.isArray(p) ? p : []).filter(k =>
             !(k && (String(k.transferId || '') === sid || String(k.id || '') === ('plate16_auto_' + sid)))
         ));
@@ -14025,7 +14019,7 @@ function App() {
                         React.createElement("div", { style: { background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', borderRadius: 14, padding: '14px 13px', marginBottom: 14 } },
                             React.createElement("div", { style: { fontSize: 14, fontWeight: 550, color: 'var(--p-pos-deep)', marginBottom: 5 } }, "✅ iPhone Anımsatıcı Eşitlemesi"),
                             React.createElement("div", { style: { fontSize: 11.5, color: TX, lineHeight: 1.5 } },
-                                "Transferi iPhone veya Mac’te kaydettiğinde KÖ Transfer Anımsatıcı kestirmesi açılır. Kayıt, tarihine göre doğru listeye eklenir; mevcut kayıtlar silinmez ve kopyalanmaz.")),
+                                "Transfer ekleme, düzeltme ve silme sırasında Kestirmeler açılmaz. İşlemlerini bitirdikten sonra aşağıdaki düğmeye bir kez dokun; aktif kayıtlar güncellenir, silinenler Anımsatıcılar’dan kaldırılır.")),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 12 } },
                             ['🛬 Gelen Yolcu', '🛫 Giden Yolcu', '🏔️ Tur', '💍 Düğün', '🚐 VIP Tahsis', '⚡ Kısa Pas'].map(label =>
                                 React.createElement("div", { key: label, style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 10, padding: '9px 10px', fontSize: 11.5, fontWeight: 470, color: TX } }, label))),
@@ -14036,7 +14030,11 @@ function App() {
                                 .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= reminderTodayKey)
                                 .slice()
                                 .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
-                            const reminderRows = activeRows.map(t => transferReminderShortcutItem(t, true)).filter(Boolean);
+                            const deletedRows = readDeletedTransferIds().map(transferReminderDeleteItem).filter(Boolean);
+                            const reminderRows = [
+                                ...deletedRows,
+                                ...activeRows.map(t => transferReminderShortcutItem(t, true)).filter(Boolean)
+                            ];
                             const reminderHref = reminderRows.length && isAppleMobileDevice()
                                 ? 'shortcuts://run-shortcut?name=' + encodeURIComponent(IOS_REMINDER_SHORTCUT_NAME) + '&input=text&text=' + encodeURIComponent(JSON.stringify(reminderRows))
                                 : '#';
@@ -14049,10 +14047,10 @@ function App() {
                                     }
                                 },
                                 style: { display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', textDecoration: 'none', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 9 }
-                            }, "Bugün ve Gelecekteki Tüm Transferleri Eşitle");
+                            }, "Anımsatıcıları Şimdi Eşitle");
                         })(),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.5, textAlign: 'center' } },
-                            "Tüm transferler tek Kestirme çalışmasında tarih sırasıyla işlenir. Aynı UID güncellenir; kopya oluşmaz. GitHub tokeni ve herkese açık takvim yayını kullanılmaz."))));
+                            "Tek dokunuşla ekleme, düzeltme ve silmeler birlikte işlenir. Aynı UID güncellenir; kopya oluşmaz. GitHub tokeni ve herkese açık takvim yayını kullanılmaz."))));
         })()));
 }
 class AppErrorBoundary extends React.Component {
