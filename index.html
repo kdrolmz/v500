@@ -14032,8 +14032,10 @@ function App() {
                         React.createElement("button", {
                             type: "button",
                             onClick: () => {
+                                const reminderToday = new Date();
+                                const reminderTodayKey = reminderToday.getFullYear() + '-' + String(reminderToday.getMonth() + 1).padStart(2, '0') + '-' + String(reminderToday.getDate()).padStart(2, '0');
                                 const activeRows = (T || [])
-                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= String(todayKey))
+                                    .filter(t => t && t.date && t.status !== 'iptal' && String(t.date) >= reminderTodayKey)
                                     .slice()
                                     .sort((a, b) => String((a.date || '') + (a.time || '')).localeCompare(String((b.date || '') + (b.time || ''))));
                                 if (!activeRows.length) { tip('Bugün veya gelecekte eşitlenecek aktif transfer bulunamadı'); return; }
