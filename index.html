@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="v500-release" content="2026-09-22-roundtrip-mrz-1">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -195,6 +196,11 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .lg-month-selected-count{font-size:16px !important;color:var(--accent) !important;font-weight:560 !important}
 .ko-new-form{display:flex;flex-direction:column;gap:12px}
 .ko-new-form .card,.ko-passenger-card,.ko-payment-card,.ko-status-card,.ko-schedule-card{padding:13px !important}
+.ko-new-form>.card{padding:18px !important;border-radius:20px;border:1px solid var(--line);box-shadow:0 3px 14px rgba(20,30,45,.035)}
+.ko-new-form .lbl{display:block;font-size:12px;line-height:1.5;margin-bottom:6px;color:var(--muted);font-weight:550}
+.ko-new-form .inp{min-height:46px;border-radius:12px;line-height:1.4}
+.ko-new-form .ko-schedule-card>.ko-sefer-summary{padding:12px 14px;margin-bottom:16px;border:1px solid var(--brand-bd);border-radius:14px;background:var(--brand-soft);font-size:13px;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+@media(max-width:700px){.ko-new-form .inp{font-size:16px!important}.ko-new-form>.card{padding:15px!important}.ko-new-form .ko-wiz-head button{min-height:44px}}
 .lg-choice{min-height:40px;border:1px solid var(--line-2) !important;border-radius:12px !important;background:var(--p-white) !important;padding:9px 10px !important;font-size:13px;font-weight:600;color:var(--ink) !important}
 .ko-party-row,.ko-party-alt-row,.ko-driver-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .ko-smart-pick{position:relative}
@@ -1603,9 +1609,7 @@ function mrzFixField(field, expected) {
     }
     if (solutions.size === 1) return { val: Array.from(solutions)[0], ok: true, amb: false };
     if (solutions.size > 1) {
-        const penalty = s => (s.split('O').length - 1) * 10 - s.replace(/[^0-9]/g, '').length;
-        const best = Array.from(solutions).sort((a, b) => penalty(a) - penalty(b))[0];
-        return { val: best, ok: false, amb: true };
+        return { val: field, ok: false, amb: true };
     }
     return { val: field, ok: false, amb: false };
 }
@@ -1635,9 +1639,14 @@ function mrzNamePart(s) {
         .replace(/\s+/g, ' ')
         .trim()
         .split(' ')
-        .filter(w => !(w.length >= 2 && /^([A-Z])\1+$/.test(w)))
         .join(' ')
         .trim();
+}
+function mrzDisplayName(given, surname) {
+    // Yalnızca aradaki tek harfli kısaltmalar kaldırılır; tam isimler ve soyadı korunur.
+    const words = String(given || '').trim().split(/\s+/).filter(Boolean);
+    const firstNames = words.filter((w, i) => i === 0 || !/^[A-Z]\.?$/i.test(w));
+    return [...firstNames, String(surname || '').trim()].filter(Boolean).join(' ');
 }
 function mrzLooksLikeLine2(s) {
     if (!s || s.length < 28) return false;
@@ -1650,6 +1659,7 @@ function mrzResolveWithComposite(line2) {
     const expComp = dg(line2[43]);
     if (expField < 0 || expComp < 0) return null;
     const field = line2.slice(0, 9);
+    if (mrzCheckDigit(field) === expField && mrzValidateLine2(line2).composite) return field;
     const chars = field.split('');
     const cands = [];
     const tryCand = str => {
@@ -1674,49 +1684,24 @@ function mrzResolveWithComposite(line2) {
     }
     if (!cands.length) return null;
     if (cands.length === 1) return cands[0];
-    const editDist = c => { let n = 0; for (let i = 0; i < 9; i++) if (c[i] !== field[i]) n++; return n; };
-    const rank = c => editDist(c) * 100
-        + (c.split('O').length - 1) * 12
-        + (c.split('Q').length - 1) * 6
-        - c.replace(/[^0-9]/g, '').length;
-    return cands.slice().sort((x, y) => rank(x) - rank(y))[0];
+    return null; // Birden fazla olasılık varsa harf/rakam tahmini yapılmaz.
 }
 function mrzReadLine2(line2, iss3) {
-    const std = () => {
-        const f = line2.slice(0, 9);
-        const c = line2[9];
-        const exp = /[0-9]/.test(c) ? parseInt(c, 10) : NaN;
-        const fx = mrzFixField(f, exp);
-        const n3 = line2.slice(10, 13).replace(/</g, '');
-        return { fixed: fx, passportNo: fx.val.replace(/</g, '').trim(), natKey: MRZ_ISO3_TO_APP[n3] || MRZ_ISO3_TO_APP[iss3] || 'OTHER' };
+    let fixedLine = line2;
+    const before = mrzValidateLine2(line2);
+    if (!before.pass && before.dob && before.exp && line2.length === 44) {
+        const candidate = mrzResolveWithComposite(line2);
+        if (candidate) fixedLine = candidate + line2.slice(9);
+    }
+    const checks = mrzValidateLine2(fixedLine);
+    const field = fixedLine.slice(0, 9);
+    const n3 = fixedLine.slice(10, 13).replace(/</g, '');
+    return {
+        fixed: { val: field, ok: checks.count === 4, amb: checks.count !== 4 },
+        passportNo: field.replace(/</g, '').trim(),
+        natKey: MRZ_ISO3_TO_APP[n3] || 'OTHER',
+        line2Fixed: fixedLine
     };
-    const a = std();
-    if (a.fixed.ok) return a; // standart hizalama check-digit'i tutuyor → en güvenilir
-    const byComposite = mrzResolveWithComposite(line2);
-    if (byComposite) {
-        const n3 = line2.slice(10, 13).replace(/</g, '');
-        return {
-            fixed: { val: byComposite, ok: true, amb: false },
-            passportNo: byComposite.replace(/</g, '').trim(),
-            natKey: MRZ_ISO3_TO_APP[n3] || MRZ_ISO3_TO_APP[iss3] || 'OTHER',
-            line2Fixed: byComposite + line2.slice(9)
-        };
-    }
-    const anchor = /([A-Z<]{3})([0-9]{6})([0-9])([MFX<])([0-9]{6})([0-9])/g;
-    let m;
-    while ((m = anchor.exec(line2)) !== null) {
-        const at = m.index;              // uyruk kodunun başladığı yer (standart: 10)
-        if (at < 6 || at > 14) continue; // makul kayma aralığı dışındaysa atla
-        const field = line2.slice(Math.max(0, at - 10), at - 1);
-        const chk = line2[at - 1];
-        const exp = /[0-9]/.test(chk) ? parseInt(chk, 10) : NaN;
-        const fx = mrzFixField(field.padEnd(9, '<').slice(0, 9), exp);
-        if (fx.ok || fx.amb) {
-            const n3 = m[1].replace(/</g, '');
-            return { fixed: fx, passportNo: fx.val.replace(/</g, '').trim(), natKey: MRZ_ISO3_TO_APP[n3] || MRZ_ISO3_TO_APP[iss3] || 'OTHER' };
-        }
-    }
-    return a; // çapa da tutmadı → standart okuma, "doğrulanmadı" işaretiyle
 }
 function parseMRZFromText(rawText) {
     let allLines = String(rawText || '').split(/\r?\n/).map(mrzNormalizeLine).filter(Boolean);
@@ -1733,16 +1718,13 @@ function parseMRZFromText(rawText) {
         }
     });
     allLines = expanded;
-    const cand = allLines.filter(mrzIsCandidate);
+    const cand = allLines.filter(l => mrzIsCandidate(l) || mrzLooksLikeLine2(l));
     if (cand.length === 1 && mrzLooksLikeLine2(cand[0])) {
-        const only = (cand[0] + '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0, 44);
-        const chk = only[9];
-        const exp = /[0-9]/.test(chk) ? parseInt(chk, 10) : NaN;
-        const fx = mrzFixField(only.slice(0, 9), exp);
-        const pno = fx.val.replace(/</g, '').trim();
-        const n3 = only.slice(10, 13).replace(/</g, '');
+        const only = cand[0];
+        const result = mrzReadLine2(only, '');
+        const pno = result.passportNo;
         if (!pno) return null;
-        return { ok: true, name: '', surname: '', given: '', passportNo: pno, nationality: MRZ_ISO3_TO_APP[n3] || 'OTHER', passportVerified: fx.ok, raw: only };
+        return { ok: true, name: '', surname: '', given: '', passportNo: pno, nationality: result.natKey, passportVerified: result.fixed.ok, checks: mrzValidateLine2(result.line2Fixed).count, raw: only };
     }
     if (cand.length < 2) return null;
     let l1 = -1;
@@ -1767,17 +1749,14 @@ function parseMRZFromText(rawText) {
     if (l1 === -1 || l1 + 1 >= cand.length) return null;
     let line1 = cand[l1];
     let line2 = cand[l1 + 1];
-    const td = (line1.length >= 40 || line2.length >= 40) ? 44 : 36;
-    const pad = s => (s + '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0, td);
-    line1 = pad(line1);
-    line2 = pad(line2);
+    // Eksik satırı doldurmak veya kaydırmak yanlış kimliği geçerli gösterebilir.
     let namesRaw = line1[0] === 'P' ? line1.slice(5) : line1.replace(/^[A-Z0-9<]{5}/, '');
     namesRaw = namesRaw.split(/<{3,}/)[0] || '';
     const iss3 = line1.slice(2, 5).replace(/</g, '');
     const parts = namesRaw.split('<<');
     const surname = mrzNamePart(parts[0]);
     const given = mrzNamePart(parts.slice(1).join(' '));
-    const fullName = ((given ? given + ' ' : '') + surname).replace(/\s+/g, ' ').trim();
+    const fullName = mrzDisplayName(given, surname);
     const l2res = mrzReadLine2(line2, iss3);
     const fixed = l2res.fixed;
     const passportNo = l2res.passportNo;
@@ -1791,7 +1770,7 @@ function parseMRZFromText(rawText) {
         given: given,
         passportNo: passportNo,
         nationality: natKey,
-        passportVerified: fixed.ok,
+        passportVerified: fixed.ok && line1.length === 44 && /^P[A-Z<][A-Z<]{3}/.test(line1),
         checks: v.count,
         checksAll: v,
         raw: line1 + '\n' + line2
@@ -1831,7 +1810,7 @@ function mrzRotatedCanvas(img, deg, maxW) {
     const cw = Math.max(1, Math.round(ow * scale)), ch = Math.max(1, Math.round(oh * scale));
     const c = document.createElement('canvas'); c.width = cw; c.height = ch;
     const x = c.getContext('2d');
-    x.fillStyle = 'var(--p-tint-4)'; x.fillRect(0, 0, cw, ch);
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, cw, ch);
     x.imageSmoothingEnabled = true;
     try { x.imageSmoothingQuality = 'high'; } catch (e) {}
     x.save();
@@ -1983,7 +1962,7 @@ function mrzBandCanvas(img, deg, rect, targetW, flip180, binarizeMode) {
     if (cw < 40 || ch < 16 || cw > 6000 || ch > 3200) return null;
     const c = document.createElement('canvas'); c.width = cw; c.height = ch;
     const x = c.getContext('2d');
-    x.fillStyle = 'var(--p-tint-4)'; x.fillRect(0, 0, cw, ch);
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, cw, ch);
     x.imageSmoothingEnabled = true;
     try { x.imageSmoothingQuality = 'high'; } catch (e) {}
     x.save();
@@ -2162,11 +2141,16 @@ function mrzFillerCut(heights) {
 }
 function mrzValidateLine2(line2) {
     const r = { pass: false, dob: false, exp: false, composite: false, count: 0 };
-    if (!line2 || line2.length < 44) return r;
+    if (!line2 || line2.length !== 44 || !/^[A-Z0-9<]{9}[0-9][A-Z<]{3}[0-9]{7}[MFX<][0-9]{7}[A-Z0-9<]{14}[0-9<][0-9]$/.test(line2)) return r;
+    const validDate = value => {
+        const y = 2000 + Number(value.slice(0, 2)), m = Number(value.slice(2, 4)), d = Number(value.slice(4, 6));
+        const date = new Date(Date.UTC(y, m - 1, d));
+        return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+    };
     const dg = c => /[0-9]/.test(c) ? parseInt(c, 10) : -1;
     r.pass = mrzCheckDigit(line2.slice(0, 9)) === dg(line2[9]);
-    r.dob = mrzCheckDigit(line2.slice(13, 19)) === dg(line2[19]);
-    r.exp = mrzCheckDigit(line2.slice(21, 27)) === dg(line2[27]);
+    r.dob = validDate(line2.slice(13, 19)) && mrzCheckDigit(line2.slice(13, 19)) === dg(line2[19]);
+    r.exp = validDate(line2.slice(21, 27)) && mrzCheckDigit(line2.slice(21, 27)) === dg(line2[27]);
     const comp = line2.slice(0, 10) + line2.slice(13, 20) + line2.slice(21, 43);
     r.composite = mrzCheckDigit(comp) === dg(line2[43]);
     r.count = (r.pass ? 1 : 0) + (r.dob ? 1 : 0) + (r.exp ? 1 : 0) + (r.composite ? 1 : 0);
@@ -2258,7 +2242,32 @@ async function mrzOcr(worker, canvas) {
         return (res && res.data) || null;
     } catch (e) { return null; }
 }
-async function mrzReadFromFile(file, onProgress) {
+function mrzChooseResult(results) {
+    if (!results.length) return null;
+    const checked = results.filter(r => r.passportVerified && r.checks === 4);
+    const candidates = checked.length ? checked : results;
+    const groups = new Map();
+    candidates.forEach(r => {
+        const key = r.passportNo || '';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(r);
+    });
+    const ranked = [...groups.values()].sort((a, b) => b.length - a.length || Math.max(...b.map(mrzScore)) - Math.max(...a.map(mrzScore)));
+    const pool = ranked[0];
+    const best = pool.slice().sort((a, b) => {
+        const count = r => pool.filter(x => x.name === r.name && !!r.name).length;
+        return count(b) - count(a) || mrzScore(b) - mrzScore(a);
+    })[0];
+    const conflicting = checked.length && groups.size > 1;
+    return { ...best,
+        passportVerified: !!best.passportVerified && !conflicting && pool.length >= 2,
+        agreed: pool.length >= 2 && !conflicting,
+        nameAgreed: !!best.name && pool.filter(r => r.name === best.name).length >= 2,
+        readings: results.length, distinctReadings: groups.size,
+        needsReview: !best.passportVerified || !!conflicting || pool.length < 2
+    };
+}
+async function mrzReadFromFile(file, onProgress, isCancelled = () => false) {
     const worker = await mrzGetWorker();
     let img;
     try { img = await mrzLoadImage(file); }
@@ -2271,6 +2280,8 @@ async function mrzReadFromFile(file, onProgress) {
         const cands = [];
         for (const base of [0, 90]) {
             for (const tilt of [0, -9, 9, -4.5, 4.5]) {
+                if (isCancelled()) return null;
+                await new Promise(resolve => setTimeout(resolve, 0));
                 const deg = base + tilt;
                 let c = null;
                 try { c = mrzEnhance(mrzRotatedCanvas(img, deg, 820)); } catch (e) { continue; }
@@ -2289,6 +2300,7 @@ async function mrzReadFromFile(file, onProgress) {
         const scoredCands = [];
         let sawAny = false;
         for (const c of tried) {
+            if (isCancelled()) return null;
             let canvas = null;
             try { canvas = mrzBandCanvas(img, c.deg, c.rect, 1900, false); } catch (e) { continue; }
             if (!canvas) continue;
@@ -2299,10 +2311,12 @@ async function mrzReadFromFile(file, onProgress) {
             if (r) { sawAny = true; }
             const loc = mrzLocateFromSymbols(data, canvas.width, canvas.height);
             scoredCands.push({ deg: c.deg, rect: c.rect, flip: false, angle: (loc && loc.angle) || 0, score: sc });
+            if (results.filter(mrzIsSolid).length >= 2) break;
         }
         if (!sawAny) {
             note('Fotoğraf yönü deneniyor…');
             for (const c of tried.slice(0, 4)) {
+                if (isCancelled()) return null;
                 let canvas = null;
                 try { canvas = mrzBandCanvas(img, c.deg, c.rect, 1900, true); } catch (e) { continue; }
                 if (!canvas) continue;
@@ -2318,7 +2332,8 @@ async function mrzReadFromFile(file, onProgress) {
         if (finals.length) {
             note('Bilgiler doğrulanıyor…');
             for (const win of finals) {
-                for (const v of [{ w: 2600, bin: false }, { w: 3300, bin: false }]) {
+                for (const v of [{ w: 2600, bin: false }, { w: 2600, bin: true }]) {
+                    if (isCancelled()) return null;
                     const rect = Object.assign({}, win.rect, { angle: win.angle });
                     let canvas = null;
                     try { canvas = mrzBandCanvas(img, win.deg, rect, v.w, win.flip, v.bin); } catch (e) { continue; }
@@ -2328,24 +2343,7 @@ async function mrzReadFromFile(file, onProgress) {
                 }
             }
         }
-        if (!results.length) return null;
-        const votes = {};
-        results.forEach(r => { if (r.passportNo) votes[r.passportNo] = (votes[r.passportNo] || 0) + 1; });
-        let topNo = '', topVotes = 0;
-        Object.keys(votes).forEach(k => { if (votes[k] > topVotes) { topVotes = votes[k]; topNo = k; } });
-        const pool = topNo ? results.filter(r => r.passportNo === topNo) : results;
-        let best = null, bestScore = -1;
-        pool.forEach(r => { const sc = mrzScore(r); if (sc > bestScore) { best = r; bestScore = sc; } });
-        if (!best) return null;
-        const nameAgree = best.name ? pool.filter(r => r.name === best.name).length : 0;
-        const distinct = Object.keys(votes).length;
-        return Object.assign({}, best, {
-            passportVerified: best.passportVerified && (distinct === 1 || topVotes >= 2),
-            agreed: topVotes >= 2,
-            nameAgreed: nameAgree >= 2,
-            readings: results.length,
-            distinctReadings: distinct
-        });
+        return mrzChooseResult(results);
     } finally {
         try { URL.revokeObjectURL(img.__url); } catch (e) {}
     }
@@ -9759,7 +9757,7 @@ function App() {
             });
             let parsed = null;
             try {
-                parsed = await mrzReadFromFile(list[i], m => setPassportScan(s => (s ? { ...s, msg: (list.length > 1 ? (i + 1) + '/' + list.length + ' · ' : '') + m } : s)));
+                parsed = await mrzReadFromFile(list[i], m => setPassportScan(s => (s ? { ...s, msg: (list.length > 1 ? (i + 1) + '/' + list.length + ' · ' : '') + m } : s)), () => scanCancelRef.current);
             } catch (e) { console.error('MRZ okuma hatası', e); }
             if (parsed && (parsed.passportNo || parsed.name)) {
                 results.push({
@@ -9768,7 +9766,9 @@ function App() {
                     uyruk: parsed.nationality || 'TR',
                     verified: !!parsed.passportVerified && (parsed.checks || 0) >= 3,
                     checks: parsed.checks || 0,
-                    agreed: !!parsed.agreed
+                    agreed: !!parsed.agreed,
+                    nameAgreed: !!parsed.nameAgreed,
+                    note: parsed.nameAgreed ? 'Ara harfler çıkarıldı. Belgeyle karşılaştırın.' : 'Ad soyad farklı okunmuş olabilir; belgeyle karşılaştırın.'
                 });
             } else unread++;
         }
@@ -9785,7 +9785,7 @@ function App() {
             const r = results[0];
             setPaxModal({
                 idx: -1, name: r.name, phone: '', id: r.id, uyruk: r.uyruk,
-                scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, hadName: !!r.name, hadNo: !!r.id }
+                scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, nameAgreed: r.nameAgreed, hadName: !!r.name, hadNo: !!r.id }
             });
             tip(r.verified ? 'Pasaport okundu ✓' : 'Pasaport okundu — lütfen kontrol edin');
             return;
@@ -10058,15 +10058,24 @@ function App() {
         const datedReturn = form.tripMode === 'roundtrip' || !!form.hasReturn;
         const wantsReturnTransfer = sameDayReturn || datedReturn;
         const returnTimeValue = String(form.returnTime || '').trim();
-        if (!editId && wantsReturnTransfer && !returnTimeValue) {
+        if (wantsReturnTransfer && !/^([01]\d|2[0-3]):[0-5]\d$/.test(returnTimeValue)) {
             releaseSubmitLock();
             tip('Dönüş saati girin');
             return;
         }
-        if (!editId && datedReturn && !String(form.returnDate || '').trim()) {
+        if (datedReturn && !String(form.returnDate || '').trim()) {
             releaseSubmitLock();
             tip('Dönüş tarihi girin');
             return;
+        }
+        if (wantsReturnTransfer) {
+            const returnDay = datedReturn ? String(form.returnDate).trim() : form.date;
+            const returnMoment = new Date(returnDay + 'T' + returnTimeValue);
+            const firstMoment = new Date(form.date + 'T' + (form.time || '00:00'));
+            if (Number.isNaN(returnMoment.getTime()) || returnMoment < firstMoment) {
+                releaseSubmitLock(); setWizStep(1);
+                tip('Dönüş tarihi ve saati ilk seferden önce olamaz'); return;
+            }
         }
         const __cur = String(form.paymentCurrency || 'TRY').toUpperCase();
         const __amt = moneyValue(form.paymentAmount);
@@ -10144,6 +10153,9 @@ function App() {
             updatedAt: new Date().toISOString(),
             clientUpdatedAt: new Date().toISOString(),
             isReturnLeg: true,
+            isKarsilikli: false,
+            settled: false, companyCollected: false, customerCollected: false, vehiclePaid: false,
+            settledFirms: {}, paymentStatus: 'pending',
             linkedTransferId: linkedId || outBase.id
         }); };
         if (editId) {
@@ -10152,6 +10164,26 @@ function App() {
             const base = { ...baseDraft, ...buildKdvFields(baseDraft) };
             let baseFixed = base;
             const extraKs = [];
+            let returnCard = null;
+            if (wantsReturnTransfer) {
+                const linkedReturns = (T || []).filter(x => x && x.isReturnLeg && !x.isKarsilikli && String(x.linkedTransferId || '') === String(editId));
+                if (linkedReturns.length > 1) {
+                    releaseSubmitLock(); tip('Birden fazla bağlı dönüş var. Dönüş kartlarını ayrı ayrı düzenleyin.'); return;
+                }
+                const oldReturn = linkedReturns[0] || null;
+                const retId = oldReturn ? oldReturn.id : Date.now().toString() + 'RD_' + Math.random().toString(36).slice(2, 8);
+                const built = buildReturnTransfer(base, retId, datedReturn ? form.returnDate : form.date, editId);
+                if (oldReturn) {
+                    // Sadece dönüş formundaki alanlar değişir; kaptan, notlar, tahsilat ve bağımsız detaylar korunur.
+                    const updatedReturn = { ...oldReturn };
+                    ['date', 'time', 'pickup', 'dropoff', 'transferType', 'givenBy', 'assignedTo', 'altAcenta',
+                     'paymentAmount', 'paymentCurrency', 'customerTRY', 'driverPayment', 'driverPaymentRaw', 'driverPaymentCurrency'].forEach(k => { updatedReturn[k] = built[k]; });
+                    returnCard = normalizeTransfer({ ...updatedReturn, profit: olmezKar(updatedReturn), ...buildKdvFields(updatedReturn), updatedAt: nowIso, clientUpdatedAt: nowIso });
+                } else returnCard = normalizeTransfer(built);
+                baseFixed = { ...base, tripMode: 'single', hasReturn: false, isReturn: false, isRecurring: false,
+                    returnDate: '', returnTime: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '',
+                    returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
+            }
             if (form.tripMode === 'karsilikli' && form.__ksLinkExisting) {
                 const nowIso2 = new Date().toISOString();
                 const partner = (T || []).find(x => x && x.id === form.__ksLinkExisting);
@@ -10160,18 +10192,19 @@ function App() {
                     baseFixed = { ...base, isKarsilikli: true, linkedTransferId: partner.id };
                 }
             } else if (form.tripMode !== 'karsilikli') {
-                if (base.isKarsilikli || base.linkedTransferId) baseFixed = { ...base, isKarsilikli: false, linkedTransferId: '' };
+                if (base.isKarsilikli || (prev && prev.isKarsilikli)) baseFixed = { ...baseFixed, isKarsilikli: false, linkedTransferId: '' };
             }
             const t = normalizeTransfer(baseFixed);
             setT(p => {
                 let arr = removeEditedTransferClones(p || [], editId, prev);
                 if (extraKs.length) { const kid = extraKs[0].id; arr = arr.filter(x => x && x.id !== kid); }
-                const next = dedupeTransfers([...arr, t, ...extraKs]);
+                if (returnCard) arr = arr.filter(x => x && String(x.id) !== String(returnCard.id));
+                const next = dedupeTransfers([...arr, t, ...extraKs, ...(returnCard ? [returnCard] : [])]);
                 persistTransfersImmediately(next);
                 return next;
             });
             setEditId(null);
-            tip(extraKs.length ? 'Güncellendi \u2014 karşılıklı eşleştirildi' : 'Güncellendi');
+            tip(returnCard ? 'İlk sefer ve dönüş kaydedildi — ' + returnCard.date + ' ' + returnCard.time : extraKs.length ? 'Güncellendi \u2014 karşılıklı eşleştirildi' : 'Güncellendi');
         } else {
             const transfersToAdd = [];
             const extraLinks = [];
@@ -10217,7 +10250,7 @@ function App() {
             tip(transfersToAdd.length + ' kart eklendi' + (datedReturn && form.returnDate ? ' \u2014 dönüş: ' + form.returnDate : '') + (extraLinks.length ? ' \u2014 karşılıklı' : ''));
         }
         try { localStorage.removeItem('ko_transfer_draft_v1'); } catch (e) {}
-        if (!editId && datedReturn && String(form.returnDate || '').trim()) {
+        if (datedReturn && String(form.returnDate || '').trim()) {
             const __rd = String(form.returnDate).trim();
             try {
                 const __rdD = new Date(__rd + 'T12:00:00');
@@ -10263,6 +10296,16 @@ function App() {
         setDrIn(false);
         setNewAg('');
         setNewDr({ name: '', phone: '' });
+        const linkedReturn = !n.isKarsilikli && !n.isReturnLeg ? (T || []).find(x => x && x.isReturnLeg && !x.isKarsilikli && String(x.linkedTransferId || '') === String(n.id)) : null;
+        const returnForm = linkedReturn ? {
+            tripMode: linkedReturn.date === n.date ? 'sameday' : 'roundtrip',
+            hasReturn: linkedReturn.date !== n.date, isReturn: linkedReturn.date === n.date,
+            returnDate: linkedReturn.date, returnTime: linkedReturn.time,
+            returnGivenBy: linkedReturn.givenBy || '', returnAssignedTo: linkedReturn.assignedTo || '', returnAltAcenta: linkedReturn.altAcenta || '',
+            returnPaymentAmount: linkedReturn.paymentAmount ?? '', returnPaymentCurrency: linkedReturn.paymentCurrency || 'TRY',
+            returnDriverPayment: linkedReturn.driverPaymentRaw !== '' && linkedReturn.driverPaymentRaw != null ? linkedReturn.driverPaymentRaw : (linkedReturn.driverPayment ?? ''),
+            returnDriverPaymentCurrency: linkedReturn.driverPaymentCurrency || 'TRY'
+        } : {};
         setForm({
             ...BF,
             ...n,
@@ -10283,9 +10326,11 @@ function App() {
             customerCollected: !!n.customerCollected,
             companyCollected: !!(n.companyCollected || n.settled),
             settled: !!(n.companyCollected || n.settled),
-            vehiclePaid: !!n.vehiclePaid
+            vehiclePaid: !!n.vehiclePaid,
+            ...returnForm
         });
         setEditId(n.id);
+        setWizStep(1);
         setTab('new');
         tip('Düzenleme formu açıldı');
     };
@@ -13193,8 +13238,14 @@ function App() {
                             }, pl.ok ? '✓ Forma Uygula' : 'Önce bileti yapıştır')));
                 })(),
                 wizStep === 1 && React.createElement("div", { className: "card ko-schedule-card" },
+                    React.createElement("div", { className: "ko-sefer-summary" },
+                        React.createElement("strong", null, form.tripMode === 'roundtrip' || form.tripMode === 'sameday' ? 'İlk sefer + dönüş' : 'Sefer bilgileri'),
+                        React.createElement("div", null, form.tripMode === 'roundtrip' || form.tripMode === 'sameday'
+                            ? 'İki ayrı kart kaydedilir. Her sefer kendi tarih ve saatinde görünür.'
+                            : 'Tür, tarih ve saati seçin; ardından güzergâhı girin.')),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
+                            React.createElement("span", { className: "lbl" }, 'Transfer türü'),
                             (function(){
                                 const sel = TIPLER.find(x => x.id === form.transferType) || TIPLER[1];
                                 const isOpen = !!expandedT.__newType;
@@ -13230,9 +13281,11 @@ function App() {
                                     )
                                 );
                             })(),
-                            React.createElement("input", { type: "date", value: form.date, onChange: e => sf({ date: e.target.value }), className: "inp" })
+                            React.createElement("span", { className: "lbl", style: { marginTop: 12 } }, 'İlk sefer tarihi'),
+                            React.createElement("input", { type: "date", value: form.date, onChange: e => sf({ date: e.target.value }), className: "inp", 'aria-label': 'İlk sefer tarihi' })
                         ),
                         React.createElement("div", null,
+                            React.createElement("span", { className: "lbl" }, 'Sefer düzeni'),
                             (function(){
                                 const MODES = [
                                     { id: 'single', n: 'Tek Sefer', ico: '\uD83C\uDFAB' },
@@ -13242,41 +13295,12 @@ function App() {
                                     { id: 'recurring', n: 'Herg\u00FCn Tekrarla', ico: '\uD83D\uDCC5' }
                                 ];
                                 const curMode = form.tripMode || 'single';
-                                const sel = MODES.find(m => m.id === curMode) || MODES[0];
-                                const isOpen = !!expandedT.__newMode;
-                                return React.createElement("div", { style: { position: 'relative', marginBottom: 4 } },
-                                    React.createElement("button", {
-                                        type: "button",
-                                        className: "lg-choice" + (curMode !== 'single' || isOpen ? " is-active ko-selected-gold" : ""),
-                                        onClick: () => setExpandedT(p => ({ ...p, __newMode: !p.__newMode, __newType: false })),
-                                        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '6px 9px', background: curMode !== 'single' ? 'var(--brand-soft)' : INP, color: curMode !== 'single' ? 'var(--brand)' : TX, border: '1.5px solid ' + (curMode !== 'single' ? 'var(--brand-bd)' : BOR), borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 450, transition: 'all .15s ease' }
-                                    },
-                                        React.createElement("span", { style: { display: 'flex', alignItems: 'center', gap: 5 } },
-                                            React.createElement("span", { style: { fontSize: 13 } }, sel.ico),
-                                            React.createElement("span", null, sel.n)
-                                        ),
-                                        React.createElement("span", { style: { fontSize: 10.5, opacity: .7, transition: 'transform .2s', transform: isOpen ? 'rotate(180deg)' : 'none' } }, '\u25BC')
-                                    ),
-                                    isOpen && React.createElement("div", {
-	                                        style: { position: 'relative', marginTop: 4, left: 0, right: 0, background: 'var(--p-white)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 5, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06)', display: 'flex', flexDirection: 'column', gap: 3 }
-                                    },
-                                        MODES.map(m => {
-                                            const a = curMode === m.id;
-                                            return React.createElement("button", {
-                                                key: m.id,
-                                                type: "button",
-                                                className: "lg-choice" + (a ? " is-active ko-selected-gold" : ""),
-                                                onClick: () => { sf({ tripMode: m.id, hasReturn: m.id === 'roundtrip', isReturn: m.id === 'sameday', isRecurring: m.id === 'recurring', isKarsilikli: m.id === 'karsilikli' }); setExpandedT(p => ({ ...p, __newMode: false })); },
-                                                style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: a ? 'var(--brand-soft)' : 'transparent', color: a ? 'var(--brand)' : TX, border: a ? '1px solid var(--brand-bd)' : '1px solid transparent', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: a ? 800 : 600, textAlign: 'left' }
-                                            },
-                                                React.createElement("span", { style: { fontSize: 16, width: 22, textAlign: 'center' } }, m.ico),
-                                                React.createElement("span", null, m.n)
-                                            );
-                                        })
-                                    )
-                                );
+                                return React.createElement('select', { className: 'inp', value: curMode, 'aria-label': 'Sefer düzeni', style: { width: '100%', marginBottom: 4, fontWeight: 550 },
+                                    onChange: e => { const id = e.target.value; sf({ tripMode: id, hasReturn: id === 'roundtrip', isReturn: id === 'sameday', isRecurring: id === 'recurring', isKarsilikli: id === 'karsilikli' }); }
+                                }, MODES.map(m => React.createElement('option', { key: m.id, value: m.id }, m.id === 'roundtrip' ? 'Gidiş–Dönüş' : m.n)));
                             })(),
-                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp" })
+                            React.createElement("span", { className: "lbl", style: { marginTop: 12 } }, 'İlk sefer saati'),
+                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp", 'aria-label': 'İlk sefer saati' })
                         )
                     ),
                     form.tripMode === 'roundtrip' && React.createElement("div", { style: { background: 'linear-gradient(135deg, var(--brand-soft) 0%, var(--surface) 100%)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
@@ -13540,7 +13564,7 @@ function App() {
                                 photoBtn('\uD83E\uDEAA', 'Pasaport', '\u00E7oklu se\u00E7ilebilir', openPassportPicker),
                                 photoBtn('\uD83D\uDCDD', '\u0130sim Listesi', 'WhatsApp / bilet', openNameShotPicker)),
                             React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '6px 0 7px', lineHeight: 1.35 } },
-                                "Galeriden se\u00E7 \u2014 okunanlar onay listesinde g\u00F6sterilir, onaylay\u0131nca s\u0131rayla eklenir."),
+                                "Pasaportun altındaki iki satır tam görünsün; parlamasız ve düz çekin. Okuma cihazda yapılır. Kaydetmeden önce ad, soyad ve numarayı kontrol edin."),
                             React.createElement("button", {
                                 type: "button", onClick: openPasteBox,
                                 style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,62,102,.22)' }
