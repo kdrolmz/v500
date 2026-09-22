@@ -4181,6 +4181,8 @@ async function getGithubCalendarBranch(token) {
         throw e;
     }
 }
+const comparableAppleCalendar = text => String(text || '').replace(/\r\n/g, '\n')
+    .split('\n').filter(line => !/^(DTSTAMP|LAST-MODIFIED|SEQUENCE):/.test(line)).join('\n');
 async function putGithubCalendarFile(token, filename, text, branch) {
     const api = 'https://api.github.com/repos/' + GITHUB_CALENDAR_OWNER + '/' + GITHUB_CALENDAR_REPO + '/contents/' + encodeURIComponent(filename);
     const headers = githubCalendarHeaders(token);
@@ -4193,6 +4195,14 @@ async function putGithubCalendarFile(token, filename, text, branch) {
         if (current.ok) {
             const data = await current.json();
             sha = data && data.sha;
+            // Do not create commits or deployments for unchanged calendars.
+            if (data && data.encoding === 'base64' && typeof data.content === 'string') {
+                try {
+                    const bytes = Uint8Array.from(atob(data.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+                    const previous = new TextDecoder().decode(bytes);
+                    if (comparableAppleCalendar(previous) === comparableAppleCalendar(text)) return true;
+                } catch (e) { /* A decode failure falls back to the normal safe write. */ }
+            }
         } else if (current.status !== 404) {
             const detail = await githubCalendarBodyText(current);
             throw new Error(githubCalendarError(current.status, detail));
@@ -11026,7 +11036,7 @@ function App() {
             console.error('[APPLE CALENDAR GITHUB]', e);
             let msg = (e && e.message) ? e.message : 'Yayınlanamadı';
             if (/load failed|failed to fetch|networkerror|network error/i.test(msg)) {
-                msg = 'GitHub isteği tarayıcı tarafından engellendi. Sayfayı tamamen kapatıp tekrar aç; sorun sürerse farklı bir ağ/VPN dene.';
+                msg = 'GitHub’a ulaşılamadı. İnternet bağlantını kontrol et; otomatik yayın açıksa yeniden denenecek.';
             }
             setGithubCalendarMsg(msg);
             if (!silent) tip(msg);
@@ -11061,6 +11071,8 @@ function App() {
             t && t.date,
             t && t.time,
             t && t.transferType,
+            t && t.transcferType,
+            t && t.isDugun,
             t && t.status,
             t && t.pickup,
             t && t.dropoff,
@@ -14256,22 +14268,22 @@ function App() {
                     !isYedek && React.createElement(React.Fragment, null,
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: INP, border: '1px solid ' + BOR, borderRadius: 14, padding: '12px 13px', marginBottom: 14 } },
                             React.createElement("div", { style: { minWidth: 0 } },
-                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, "Otomatik yayın"),
-                                React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, "Transfer değişince takvim kendiliğinden güncellenir")),
+                                React.createElement("div", { style: { fontSize: 12.5, fontWeight: 500, color: TX } }, githubCalendarAuto ? "Otomatik yayın açık" : "Otomatik yayın kapalı"),
+                                React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.35 } }, "Ekleme, düzeltme ve silmeler yayımlanır; Apple Takvim kendi yenileme aralığında alır.")),
                             React.createElement("button", {
-                                type: "button", onClick: () => setGithubCalendarAuto(v => !v),
+                                type: "button", role: "switch", "aria-checked": githubCalendarAuto, "aria-label": "Otomatik takvim yayını", onClick: () => setGithubCalendarAuto(v => !v),
                                 style: {
                                     flexShrink: 0, width: 52, height: 30, borderRadius: 999, border: 'none', cursor: 'pointer', padding: 3,
                                     background: githubCalendarAuto ? G : 'var(--p-ink-5)', display: 'flex',
                                     justifyContent: githubCalendarAuto ? 'flex-end' : 'flex-start', transition: 'all .18s ease'
                                 }
                             }, React.createElement("span", { style: { width: 24, height: 24, borderRadius: '50%', background: 'var(--p-white)', boxShadow: '0 1px 3px rgba(0,0,0,.25)', display: 'block' } }))),
-                        bolumBaslik('GitHub Erişimi'),
+                        bolumBaslik('GitHub Erişimi · Eski Anahtarın'),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 7, marginBottom: 7 } },
                             React.createElement("input", {
                                 type: "password", inputMode: "text", value: githubCalendarToken,
                                 onChange: e => setGithubCalendarToken(e.target.value),
-                                placeholder: "github_pat_…", autoComplete: "off", autoCorrect: "off",
+                                placeholder: "Eski GitHub anahtarını buraya yapıştır", "aria-label": "GitHub erişim anahtarı", autoComplete: "off", autoCorrect: "off",
                                 autoCapitalize: "off", spellCheck: false, name: "ko-gh-token-field",
                                 "data-1p-ignore": "true", "data-lpignore": "true", "data-form-type": "other",
                                 className: "inp", style: { width: '100%', fontSize: 12, padding: '11px 12px', background: 'var(--p-info-soft)' }
@@ -14292,9 +14304,14 @@ function App() {
                                     color: ok ? 'var(--p-pos-deep)' : 'var(--p-warn)', background: ok ? 'var(--p-pos-soft)' : 'var(--p-warn-soft)',
                                     border: '1px solid ' + (ok ? 'var(--p-pos-bd)' : 'var(--p-warn-bd)')
                                 }
-                            }, ok ? ('✓ Token kayıtlı · ' + tk.length + ' karakter · …' + tk.slice(-4))
+                            }, ok ? '✓ Anahtar bu tarayıcıda kayıtlı; yayınla bağlantıyı doğrulayabilirsin.'
                                   : ('⚠ Bu metin token gibi görünmüyor — github_pat_ ile başlamalı (' + tk.length + ' karakter)'));
                         })(),
+                        React.createElement("button", {
+                            type: "button", disabled: githubCalendarBusy || !(githubCalendarToken || '').trim(),
+                            onClick: () => { setGithubCalendarAuto(true); calendarPublishSigRef.current = ''; publishAppleCalendarToGithub(false); },
+                            style: { width: '100%', background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 8, opacity: githubCalendarBusy || !(githubCalendarToken || '').trim() ? .5 : 1 }
+                        }, "Anahtarı Kaydet ve Otomatik Eşitle"),
                         React.createElement("button", {
                             type: "button", onClick: () => publishAppleCalendarToGithub(false), disabled: githubCalendarBusy,
                             style: {

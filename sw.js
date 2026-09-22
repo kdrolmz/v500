@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v3-calendar-restore';
+const CACHE_NAME = 'ko-v500-shell-v4-calendar-key';
 
 const LOCAL_SHELL = [
   './',
