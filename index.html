@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-09-22-roundtrip-mrz-1">
+<meta name="v500-release" content="2026-09-27-firm-broker-1">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1177,7 +1177,7 @@ function uyrukOzeti(passengers) {
 }
 const BF = {
     date: new Date().toISOString().split('T')[0], time: '09:00', flightCode: '',
-    transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '',
+    transferType: 'arrival', givenBy: '', assignedTo: '', altAcenta: '', altAcentaUcreti: '', brokerFirm: '', brokerFee: '', __showBroker: false,
     pickup: '', dropoff: '', pickupMaps: '', dropoffMaps: '', extraStops: [], route: 'free', vehicle: 'vito', plate: '',
     driverName: '', driverPhone: '',
     passengerCount: 1, passengers: [{ name: '', phone: '', idNo: '', tc: '', pasaport: '', uyruk: 'TR' }],
@@ -3317,7 +3317,7 @@ const recordVersionToken = row => {
         r.id, r.updatedAt, r.clientUpdatedAt, r.createdAt,
         r.date, r.time, r.status, r.transferType, r.givenBy, r.assignedTo, r.altAcenta,
         r.pickup, r.dropoff, r.plate, r.driverName, r.driverPhone, r.notes,
-        r.paymentAmount, r.paymentCurrency, r.customerTRY, r.driverPayment, r.altAcentaUcreti,
+        r.paymentAmount, r.paymentCurrency, r.customerTRY, r.driverPayment, r.altAcentaUcreti, r.brokerFirm, r.brokerFee, r.tourCommission, r.tourCommissionShop,
         r.closed ? 1 : 0, r.settled ? 1 : 0, r.companyCollected ? 1 : 0,
         r.customerCollected ? 1 : 0, r.vehiclePaid ? 1 : 0,
         r.takasSettled ? 1 : 0, r.dugunSettled ? 1 : 0,
@@ -4230,6 +4230,7 @@ async function putGithubCalendarFile(token, filename, text, branch) {
 function tourCommissionTotal(t) {
     if (!t)
         return 0;
+    if (t.kaynak === 'broker') return 0;
     if ((t.transferType || '') !== 'tour')
         return 0;
     const explicit = moneyValue(t.tourCommission);
@@ -4402,7 +4403,7 @@ function transferKdvInfo(t) {
     };
 }
 function accountKdvInfoForRow(t) {
-    if (!t || t.kaynak === 'alt' || t.kaynak === 'manual' || t.kaynak === 'odelo' || t.yon === 'alt')
+    if (!t || t.kaynak === 'broker' || t.kaynak === 'alt' || t.kaynak === 'manual' || t.kaynak === 'odelo' || t.yon === 'alt')
         return { active: false, rate: 0, base: 0, amount: 0, total: 0 };
     const rate = normalizeKdvRate(t && t.kdvRate);
     const amount = Math.round(moneyValue(t && t.kdvAmount));
@@ -4485,6 +4486,7 @@ function accountRawUsdNet(t) {
     return moneyValue(t && t.netOl) < 0 ? -collected : collected;
 }
 function accountRowUsdAmount(t) {
+    if (t && t.kaynak === 'broker') return moneyValue(t.netOl) / accountUsdRateForRow(t);
     const rawUsdNet = accountRawUsdNet(t);
     if (rawUsdNet !== null) {
         const kdv = accountKdvInfoForRow(t);
@@ -4529,6 +4531,13 @@ function accountUsdTlSummary(liste) {
 }
 const signedUsdText = n => (moneyValue(n) >= 0 ? '+' : '−') + fmtUsd(n);
 function olmezKar(t) {
+    return olmezKarBeforeBroker(t) - brokerFeeTRY(t);
+}
+function brokerFeeTRY(t) {
+    return t && String(t.brokerFirm || '').trim() && hasOlmezturSide(t)
+        ? Math.max(0, moneyValue(t.brokerFee)) : 0;
+}
+function olmezKarBeforeBroker(t) {
     if (!hasOlmezturSide(t))
         return 0;
     const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
@@ -4556,6 +4565,9 @@ function olmezKar(t) {
     return c - d + comTotal;
 }
 function olmezPotentialKar(t) {
+    return olmezPotentialKarBeforeBroker(t) - brokerFeeTRY(t);
+}
+function olmezPotentialKarBeforeBroker(t) {
     if (!t) return 0;
     if (!hasOlmezturSide(t))
         return 0;
@@ -4618,6 +4630,10 @@ function calcBal(t) {
         return null;
     const firm = veren ? t.assignedTo : t.givenBy;
     if (alan) {
+        // Explicit partial collection already records the full outstanding amount.
+        // Callers add remainingFromFirmTRY once; do not add driverPayment - collection again.
+        if (t.partialFromFirm && !t.altAcenta && yes)
+            return { firm, netOl: -com };
         const altPaylasim = calcAltAcentaPaylasim(t);
         if (altPaylasim)
             return { firm, netOl: altPaylasim.giverNetOl };
@@ -4777,8 +4793,13 @@ const transferPassengerName = t => {
     return String((p && (p.name || p.fullName)) || (t && (t.passengerName || t.customerName || t.clientName)) || '').trim();
 };
 const plate16TransferTripIncome = t => {
+    // Own-vehicle revenue is the whole job, not just the customer collection.
+    if (t && t.partialFromFirm && !t.altAcenta && transferHasCustomerPayment(t)
+        && isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy))
+        return Math.round(transferCustomerTRYValue(t) + remainingFromFirmTRY(t)
+            + tourCommissionShare(t) - brokerFeeTRY(t));
     const net = Math.round(olmezPotentialKar(t));
-    if (net !== 0)
+    if (net !== 0 || brokerFeeTRY(t) > 0)
         return net;
     return Math.round(transferCustomerTRYValue(t) || moneyValue(t && t.driverPayment));
 };
@@ -4801,7 +4822,7 @@ const plate16TransferToTrip = (t, existing) => {
         yolcu: passenger || (existing && existing.yolcu) || 'Transfer',
         guzergah: plate16TransferRoute(t) || (existing && existing.guzergah) || '',
         musteri: Math.round(transferCustomerTRYValue(t)) || (existing && existing.musteri) || '',
-        arac: gelir || (existing && existing.arac) || 0,
+        arac: gelir,
         not: t.notes || (existing && existing.not) || '',
         transferUpdatedAt: t.clientUpdatedAt || t.updatedAt || t.createdAt || '',
         updatedAt: t.clientUpdatedAt || t.updatedAt || t.createdAt || (existing && existing.updatedAt) || ''
@@ -5868,7 +5889,7 @@ function debtNativeText(d, amount, signed) {
 function accountActivityFirmNames(T, adjustments) {
     const names = [];
     (Array.isArray(T) ? T : []).forEach(t => {
-        [t && t.givenBy, t && t.assignedTo, t && t.altAcenta].filter(Boolean).forEach(x => names.push(String(x).trim()));
+        [t && t.givenBy, t && t.assignedTo, t && t.altAcenta, t && t.brokerFirm].filter(Boolean).forEach(x => names.push(String(x).trim()));
     });
     (Array.isArray(adjustments) ? adjustments : []).forEach(a => {
         const name = String(a && a.firm || '').trim();
@@ -6136,6 +6157,43 @@ function DebtLedgerCard({ d, setDebts, rates, tip, onClose }) {
                 React.createElement("input", { value: edit.note, onChange: e => setEdit(p => ({ ...p, note: e.target.value })), placeholder: "Ana açıklama" }),
                 React.createElement("button", { type: "button", onClick: saveDetails }, "Kaydet"))));
 }
+function FirmCommissionEditor({ rows, sT, tip }) {
+    const tours = [...new Map((rows || []).filter(t => t.transferType === 'tour' && t.kaynak !== 'broker' && t.kaynak !== 'manual').map(t => [String(t.id), t])).values()];
+    const [id, setId] = useState('');
+    const [amount, setAmount] = useState('');
+    const [note, setNote] = useState('');
+    const selected = tours.find(t => String(t.id) === id);
+    const choose = value => {
+        const t = tours.find(x => String(x.id) === value);
+        setId(value); setAmount(t ? String(t.tourCommission || '') : ''); setNote(t ? String(t.tourCommissionShop || '') : '');
+    };
+    const save = () => {
+        const n = moneyValue(amount);
+        if (!selected || !/^\d[\d.,\s]*$/.test(String(amount).trim()) || !Number.isFinite(n) || n < 0) { tip('Tur seçin ve sıfır veya pozitif tutar girin'); return; }
+        const stamp = new Date().toISOString();
+        sT(prev => {
+            const next = prev.map(t => {
+                if (String(t.id) !== id) return t;
+                const updated = { ...t, tourCommission: n, tourCommissionShop: note.trim(), updatedAt: stamp, clientUpdatedAt: stamp };
+                return { ...updated, profit: olmezKar(updated), ...buildKdvFields(updated) };
+            });
+            persistTransfersImmediately(next);
+            return next;
+        });
+        tip(n === 0 ? 'Hakediş sıfırlandı; tur kaydı korundu' : 'Hakediş ve firma bakiyesi güncellendi');
+    };
+    return React.createElement('div', { className: 'ko-commission-editor' },
+        React.createElement('div', { className: 'lbl' }, 'Hakediş ekle / düzenle'),
+        React.createElement('select', { className: 'inp', value: id, onChange: e => choose(e.target.value), 'aria-label': 'Hakediş için tur seç' },
+            React.createElement('option', { value: '' }, tours.length ? 'Tur seçin' : 'Bu firmada tur kaydı yok'),
+            tours.map(t => React.createElement('option', { key: t.id, value: String(t.id) }, [t.date, t.time, t.pickup, '→', t.dropoff].filter(Boolean).join(' ')))),
+        selected && React.createElement(React.Fragment, null,
+            React.createElement('label', { className: 'lbl' }, 'Toplam hakediş (₺) · yarısı her tarafa'),
+            React.createElement('input', { className: 'inp', inputMode: 'decimal', value: amount, onChange: e => setAmount(e.target.value), 'aria-label': 'Toplam hakediş', placeholder: '0' }),
+            React.createElement('input', { className: 'inp', value: note, onChange: e => setNote(e.target.value), 'aria-label': 'Hakediş açıklaması', placeholder: 'Mağaza / açıklama' }),
+            React.createElement('div', { className: 'ko-calm-help' }, 'Kaldırmak için tutarı 0 yapın. Paylaşım yarı yarıyadır. Kapatılmış hesaplar kapalı kalır; bakiyeye katmak için ilgili hesabı yeniden açın.'),
+            React.createElement('button', { type: 'button', className: 'ko-calm-action', onClick: save }, 'Hakedişi kaydet')));
+}
 function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates }) {
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
@@ -6301,6 +6359,19 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     else
                         ver += Math.abs(ba.netOl);
                 }
+            }
+        });
+        T.forEach(t => {
+            const fee = brokerFeeTRY(t);
+            if (fee > 0 && nm(t.brokerFirm) === nm(firm)) {
+                const keys = accountSettleKeys(firm, 'broker');
+                const settled = isFirmSettled(t, firm, 'broker');
+                detay.push({ ...t, netOl: -fee, kaynak: 'broker', yon: 'benVerdim', firmSettled: settled,
+                    paymentAmount: '', paymentCurrency: 'TRY', customerTRY: 0, driverPayment: fee,
+                    driverPaymentCurrency: 'TRY', driverPaymentRaw: fee, paymentCollect: 'no', paymentToMe: false,
+                    tourCommission: 0, altAcenta: '', altAcentaUcreti: '', notes: 'Aracı firma payı · ' + (t.notes || ''),
+                    settleFirmKey: keys[0], settleFirmKeys: keys, kdvEnabled: false, kdvRate: 0, kdvAmount: 0 });
+                if (!settled) ver += fee;
             }
         });
         normalizedAccountAdjustments.forEach(adj => {
@@ -6967,6 +7038,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return t.yon || '';
     };
     const hesapRouteParts = t => {
+        if (t.kaynak === 'broker') return [OL, t.brokerFirm];
         if (t.kaynak === 'manual') return (t.adjustmentType === 'paid' || t.adjustmentType === 'plus') ? [OL, sel] : [sel, OL];
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? ['Odelo', 'Balentur'] : ['Odelo', OL];
         return hesapDisplayDirection(t) === 'oVerdi' ? [sel, OL] : [OL, sel];
@@ -7197,11 +7269,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const hesapOpenRows = liste => (liste || []).filter(t => !t.firmSettled);
     const hesapOpenNet = liste => Math.round(hesapOpenRows(liste).reduce((s, t) => s + moneyValue(t.netOl), 0));
     const hesapCustomerAmount = t => {
+        if (t.kaynak === 'broker') return 0;
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
         if (transferNoCustomerPayment(t)) return 0;
         return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
     };
     const hesapDriverAmount = t => {
+        if (t.kaynak === 'broker') return brokerFeeTRY(t);
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
         if (t.kaynak === 'alt') return moneyValue(t.altAcentaUcreti || 0);
         return moneyValue(t.driverPayment || 0);
@@ -7292,7 +7366,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("div", { className: "ko-account-flow" }, renderAccountRoute(hesapRouteParts(t), hesapRouteSuffix(t), true)),
                 React.createElement("small", null, routeText)),
             (() => {
-                const cd = (t.kaynak === 'odelo') ? { isForeign: false } : transferCustomerDisplay(t);
+                const cd = (t.kaynak === 'odelo' || t.kaynak === 'broker') ? { isForeign: false } : transferCustomerDisplay(t);
                 const customerLabel = transferNoCustomerPayment(t) ? 'Tahsilat yok' : 'Müşteri';
                 if (cd.isForeign) {
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
@@ -7310,7 +7384,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             })(),
             (() => {
                 const dAmt = moneyValue(hesapDriverAmount(t));
-                const dLbl = (driverText && driverText !== '—') ? driverText : ((carText && carText !== '—') ? carText : 'Araç');
+                const dLbl = t.kaynak === 'broker' ? 'Aracı payı' : (driverText && driverText !== '—') ? driverText : ((carText && carText !== '—') ? carText : 'Araç');
                 if (!(dAmt > 0))
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell is-empty" });
                 return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
@@ -7326,7 +7400,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("b", null, hesapMoney(netVal)),
                     rowKdv.active
                         ? React.createElement("small", null, "KDV'siz " + fr(rowKdv.base) + "₺ + KDV " + fr(rowKdv.amount) + "₺")
-                        : (kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar))))),
+                        : (t.kaynak === 'broker' ? React.createElement('small', null, 'Aracı payı') : kar !== 0 && React.createElement("small", null, 'Kar ' + hesapMoney(kar))))),
             React.createElement("div", { className: "ko-account-cell ko-account-status-cell" },
                 React.createElement("button", {
                     type: "button",
@@ -7439,7 +7513,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
     const renderHakedisPanel = (firm, rows) => {
         if (!firm) return null;
-        const list = (rows || []).filter(t => t && t.kaynak !== 'manual' && tourCommissionTotal(t) > 0);
+        const list = [...new Map((rows || []).filter(t => t && t.kaynak !== 'manual' && t.kaynak !== 'broker' && tourCommissionTotal(t) > 0).map(t => [t.id, t])).values()];
         const aldigim = [], verdigim = [];
         list.forEach(t => {
             const total = Math.round(tourCommissionTotal(t));
@@ -7480,7 +7554,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             onToggle: () => setOpenHakedisPanel(v => !v),
             value: bosMu ? null : ((net >= 0 ? '+' : '−') + fr(net) + '₺'),
             valueTone: net >= 0 ? 'pos' : 'neg'
-        },
+        }, React.createElement(React.Fragment, null,
+            React.createElement(FirmCommissionEditor, { key: firm, rows, sT, tip }),
             bosMu
                 ? React.createElement("div", { style: { fontSize: 11, color: SB, textAlign: 'center', padding: '12px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR, lineHeight: 1.45 } },
                     'Bu firmayla yapılan turlarda hakediş girilmemiş.')
@@ -7501,7 +7576,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("span", { style: { fontSize: 11, fontWeight: 500, color: TX } }, 'Bakiyeye etkisi'),
                             React.createElement("span", { style: { fontSize: 14, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: net >= 0 ? G : R } }, (net >= 0 ? '+' : '−') + fr(net) + '₺')),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 7, lineHeight: 1.45, textAlign: 'center' } },
-                            'Bu tutarlar transfer satırlarında hesaplandı; üstteki bakiyeye zaten dahildir.'))));
+                            'Bu tutarlar transfer satırlarında hesaplandı; üstteki bakiyeye zaten dahildir.')))));
     };
     const renderHesapBolum = (baslik, liste, renk) => {
         const title = String(baslik || '');
@@ -7588,7 +7663,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const mVer = Math.round(mtsOpen.filter(t => moneyValue(t.netOl) < 0).reduce((s, t) => s + Math.abs(moneyValue(t.netOl)), 0));
                 const sirali = ts.slice().sort(sortHesapTs);
                 const manualKayitlar = sirali.filter(t => t.kaynak === 'manual');
-                const normalSirali = sirali.filter(t => t.kaynak !== 'odelo' && t.kaynak !== 'manual');
+                const brokerRows = sirali.filter(t => t.kaynak === 'broker');
+                const normalSirali = sirali.filter(t => t.kaynak !== 'odelo' && t.kaynak !== 'manual' && t.kaynak !== 'broker');
                 const onunVerdikleri = normalSirali.filter(t => hesapDisplayDirection(t) === 'oVerdi');
                 const benimVerdiklerim = normalSirali.filter(t => hesapDisplayDirection(t) === 'benVerdim');
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
@@ -7677,6 +7753,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement(React.Fragment, null,
                             manualKayitlar.length > 0 && renderHesapBolum("Ödeme / Bakiye", manualKayitlar, NAV),
+                            brokerRows.length > 0 && renderHesapBolum('Aracı firma payları', brokerRows, R),
                             renderHesapBolum("Ölmeztur - " + sel, benimVerdiklerim, R),
                             renderHesapBolum(sel + " - Ölmeztur", onunVerdikleri, NAV),
                             (isBalenturAccount || odeloKayitlar.length > 0) && renderHesapBolum('Odelo', odeloKayitlar, G))
@@ -10041,6 +10118,11 @@ function App() {
         if (submitBusyRef.current) return;
         submitBusyRef.current = true;
         const releaseSubmitLock = () => setTimeout(() => { submitBusyRef.current = false; }, 650);
+        if (String(form.brokerFirm || '').trim() || moneyValue(form.brokerFee)) {
+            if (!String(form.brokerFirm || '').trim() || !(moneyValue(form.brokerFee) > 0) || !hasOlmezturSide(form) || isOlmezturParty(form.brokerFirm)) {
+                releaseSubmitLock(); setWizStep(1); tip('Aracı firma ve pozitif TL tutarı girin. İşin bir tarafı Ölmeztur olmalı.'); return;
+            }
+        }
         if (!form.pickup || !form.dropoff) {
             releaseSubmitLock();
             setWizStep(1);
@@ -10109,10 +10191,11 @@ function App() {
             const retDriverCur = retHasDriver ? (form.returnDriverPaymentCurrency || 'TRY') : 'TRY';
             const retDriverRaw = retHasDriver ? form.returnDriverPayment : '';
             const retDriverTRY = retHasDriver ? (retDriverCur === 'TRY' ? form.returnDriverPayment : Math.round(toTRY(form.returnDriverPayment, retDriverCur, dateValue || outBase.date) / 50) * 50) : '';
-            const retProfitBase = { ...outBase, givenBy: returnGivenBy, assignedTo: returnAssignedTo, altAcenta: returnAltAcenta, paymentAmount: retAmount, paymentCurrency: retCurrency, customerTRY: retCustomerTRY, driverPayment: retDriverTRY };
+            const retProfitBase = { ...outBase, brokerFirm: '', brokerFee: '', givenBy: returnGivenBy, assignedTo: returnAssignedTo, altAcenta: returnAltAcenta, paymentAmount: retAmount, paymentCurrency: retCurrency, customerTRY: retCustomerTRY, driverPayment: retDriverTRY };
             const retKdvFields = buildKdvFields(retProfitBase);
             return ({
             ...outBase,
+            brokerFirm: '', brokerFee: '', __showBroker: false,
             id: retId,
             editRootId: retId,
             date: dateValue || outBase.date,
@@ -13465,7 +13548,16 @@ function App() {
                             form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY' && moneyValue(form.altAcentaRaw) > 0 && React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 4 } }, "\u2248 " + fr(toTRY(form.altAcentaRaw, form.altAcentaCurrency, form.date)) + " \u20BA"))),
                         React.createElement("button", { type: "button", onClick: () => sf({ altAcenta: '', altAcentaUcreti: '', altAcentaRaw: '', altAcentaCurrency: 'TRY', __showAltAcenta: false }), title: "Alt acentayı kapat", style: { border: '1px solid ' + BOR, background: 'var(--p-white)', color: R, borderRadius: 10, minHeight: 43, padding: 0, fontSize: 14, cursor: 'pointer', alignSelf: 'flex-end' } }, '✕')
                     ) : React.createElement("button", { type: "button", onClick: () => sf({ __showAltAcenta: true }), title: "Alt acenta ekle", style: { border: '1px dashed ' + BOR, background: 'transparent', color: SB, borderRadius: 11, padding: '0 14px', minHeight: 38, fontSize: 12, fontWeight: 540, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' } }, '+ Alt acenta'),
-                    null),
+                    (form.brokerFirm || form.__showBroker) ? React.createElement('div', { className: 'ko-broker-form' },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'lbl' }, 'Aracı firma'),
+                            React.createElement(SmartPick, { value: form.brokerFirm || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ brokerFirm: v }), onSelect: a => sf({ brokerFirm: a.name }), placeholder: 'Firma adı' })),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'lbl' }, 'Aracı payı (₺)'),
+                            React.createElement('input', { className: 'inp', inputMode: 'decimal', value: form.brokerFee || '', onChange: e => sf({ brokerFee: e.target.value }), placeholder: '500', 'aria-label': 'Aracı firma payı' })),
+                        React.createElement('div', { className: 'ko-calm-help' }, 'Ölmeztur kârından düşer; aracı hesabına borç yazılır. Yalnızca bu sefer içindir; dönüşe ayrıca ekleyebilirsiniz.'),
+                        React.createElement('button', { type: 'button', className: 'ko-calm-action is-secondary', onClick: () => sf({ brokerFirm: '', brokerFee: '', __showBroker: false }) }, 'Aracı alanını kaldır'))
+                    : React.createElement('button', { type: 'button', className: 'ko-calm-action is-secondary', onClick: () => sf({ __showBroker: true }) }, '+ Aracı firma')),
                 wizStep === 1 && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement(LocIn, { field: "pickup", lbl: "\uD83D\uDCCD Al\u0131\u015F Noktas\u0131", value: form.pickup, sugg: sugg.pickup, show: showSg.pickup, onChange: chL, onSel: selL, onFocus: () => { if (form.pickup.length > 1)
                             setShowSg(p => ({ ...p, pickup: true })); }, onBlur: () => setTimeout(() => setShowSg(p => ({ ...p, pickup: false })), 180) }),
@@ -15930,6 +16022,47 @@ img,svg{content-visibility:visible !important}
 }
 @media(prefers-reduced-motion:reduce){
   .ko-type-column .tcard{animation:none !important;transition:none !important}
+}
+</style>
+<style id="ko-calm-firm-broker">
+.ko-account-root-card{max-width:1080px;margin:0 auto!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;align-items:start!important}
+.ko-account-root-card .ko-account-firm-bucket{border:1px solid rgba(36,49,66,.12)!important;border-radius:18px!important;box-shadow:0 4px 16px -12px rgba(20,30,44,.2)!important}
+.ko-account-root-card .ko-account-firm-bucket-head{padding:16px!important;background:var(--p-bg-hi)!important;border-bottom:1px solid rgba(36,49,66,.09)!important}
+.ko-account-root-card .ko-account-firm-bucket-title{font-size:11px!important;letter-spacing:.05em!important}
+.ko-account-root-card .ko-account-firm-bucket-total{font-size:20px!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.ko-account-root-card .ko-account-firm-bucket-cards{padding:0!important;gap:0!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card{padding:15px!important;border:0!important;border-bottom:1px solid rgba(36,49,66,.08)!important;border-radius:0!important;box-shadow:none!important;background:var(--p-white)!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card:last-child{border-bottom:0!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-title{display:flex!important;flex-direction:column!important;align-items:stretch!important;min-height:0!important;padding:0!important;gap:10px!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-title b{font-size:14px!important;line-height:1.35!important;white-space:normal!important;overflow:visible!important;-webkit-line-clamp:unset!important;word-break:normal!important;overflow-wrap:break-word!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-copy small{font-size:10.5px!important;white-space:normal!important;line-height:1.4!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-amount-stack{position:static!important;align-self:flex-end!important;gap:4px!important;min-width:0!important;max-width:100%!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-tl-chip{font-size:14px!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-usd-chip{font-size:10.5px!important;line-height:1.3!important;border:0!important;background:transparent!important;opacity:.7!important;white-space:normal!important}
+.ko-account-root-card .ko-account-summary-card,.ko-account-root-card .ko-account-sheet-section{box-shadow:0 3px 14px -12px rgba(20,30,44,.2)!important;border:1px solid rgba(36,49,66,.11)!important;border-radius:18px!important}
+.ko-account-root-card .ko-account-summary-card>div:first-child{background:var(--p-bg-hi)!important}
+.ko-account-root-card .ko-account-section-head{padding:14px!important;gap:12px!important;min-height:58px!important}
+.ko-account-root-card .ko-account-section-stats{flex-wrap:wrap!important;justify-content:flex-end!important;gap:4px 8px!important}
+.ko-account-root-card .ko-account-section-title{font-family:var(--ko-ui-font)!important;font-size:13px!important;line-height:1.4!important}
+.ko-commission-editor,.ko-broker-form{display:flex;flex-direction:column;gap:10px;padding:15px;margin:12px 0;border:1px solid rgba(36,49,66,.12);border-radius:15px;background:var(--p-bg-hi)}
+.ko-calm-help{font-size:12px;line-height:1.6;color:var(--p-ink-3);overflow-wrap:break-word}
+.ko-calm-action{min-height:44px;border:1px solid var(--p-brand);border-radius:11px;padding:10px 14px;background:var(--p-brand);color:var(--p-white);cursor:pointer;font-size:13px}
+.ko-calm-action.is-secondary{background:var(--p-white);color:var(--p-brand);margin-top:10px;border-color:rgba(36,49,66,.16)}
+.ko-new-form{max-width:900px!important;margin:0 auto!important;gap:15px!important}
+.ko-new-form>.card{border-radius:19px!important;padding:18px!important;box-shadow:0 4px 16px -14px rgba(20,30,44,.2)!important;border:1px solid rgba(36,49,66,.11)!important}
+.ko-new-form .inp,.ko-commission-editor .inp{min-height:46px!important;font-size:16px!important;border-radius:12px!important}
+.ko-new-form .lbl{line-height:1.4!important;letter-spacing:.025em!important;margin-bottom:7px!important}
+.ko-new-form .lg-choice:not(.is-active){box-shadow:none!important;background:var(--p-bg-hi)!important;border:1px solid rgba(36,49,66,.1)!important}
+.ko-new-form .lg-choice.is-active{box-shadow:none!important}
+@media(max-width:700px){
+ .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid){gap:9px!important}
+ .ko-account-root-card .ko-account-firm-bucket-head{padding:12px!important}
+ .ko-account-root-card .ko-account-firm-bucket-total{font-size:17px!important}
+ .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card{padding:12px!important}
+ .ko-account-root-card .ko-account-split-grid:not(.ko-debt-split-grid) .ko-account-firm-card-title b{font-size:13px!important}
+ .ko-account-root-card .ko-account-section-head{flex-wrap:wrap!important}
+ .ko-new-form>.card{padding:15px!important}
 }
 </style>
 </body>
