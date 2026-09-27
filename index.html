@@ -3318,6 +3318,7 @@ const recordVersionToken = row => {
         r.date, r.time, r.status, r.transferType, r.givenBy, r.assignedTo, r.altAcenta,
         r.pickup, r.dropoff, r.plate, r.driverName, r.driverPhone, r.notes,
         r.paymentAmount, r.paymentCurrency, r.customerTRY, r.driverPayment, r.altAcentaUcreti, r.brokerFirm, r.brokerFee, r.tourCommission, r.tourCommissionShop,
+        r.tourCommissionMode, r.tourCommissionCollector, r.tourCommissionGiver,
         r.closed ? 1 : 0, r.settled ? 1 : 0, r.companyCollected ? 1 : 0,
         r.customerCollected ? 1 : 0, r.vehiclePaid ? 1 : 0,
         r.takasSettled ? 1 : 0, r.dugunSettled ? 1 : 0,
@@ -4237,8 +4238,21 @@ function tourCommissionTotal(t) {
     return explicit > 0 ? explicit : 0;
 }
 function tourCommissionShare(t) {
+    const split = customTourCommission(t);
+    if (split) return split.giver;
     const total = tourCommissionTotal(t);
     return total > 0 ? total / 2 : 0;
+}
+function customTourCommission(t) {
+    if (!t || t.tourCommissionMode !== 'collector-split' || t.transferType !== 'tour'
+        || !isOlmezturParty(t.assignedTo) || !t.altAcenta || isOlmezturParty(t.givenBy)) return null;
+    const total = tourCommissionTotal(t);
+    const collector = Math.min(total, Math.max(0, moneyValue(t.tourCommissionCollector)));
+    const giver = Math.min(total - collector, Math.max(0, moneyValue(t.tourCommissionGiver)));
+    return { total, collector, giver, receivable: total - collector, own: total - collector - giver };
+}
+function withoutTourCommission(t) {
+    return { ...t, tourCommission: 0, tourCommissionMode: '' };
 }
 function transferPaymentComesToOlmeztur(t) {
     return !!(t && t.paymentToMe);
@@ -4538,6 +4552,8 @@ function brokerFeeTRY(t) {
         ? Math.max(0, moneyValue(t.brokerFee)) : 0;
 }
 function olmezKarBeforeBroker(t) {
+    const split = customTourCommission(t);
+    if (split) return olmezKarBeforeBroker(withoutTourCommission(t)) + split.own;
     if (!hasOlmezturSide(t))
         return 0;
     const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
@@ -4568,6 +4584,8 @@ function olmezPotentialKar(t) {
     return olmezPotentialKarBeforeBroker(t) - brokerFeeTRY(t);
 }
 function olmezPotentialKarBeforeBroker(t) {
+    const split = customTourCommission(t);
+    if (split) return olmezPotentialKarBeforeBroker(withoutTourCommission(t)) + split.own;
     if (!t) return 0;
     if (!hasOlmezturSide(t))
         return 0;
@@ -4617,6 +4635,11 @@ function calcAltAcentaPaylasim(t) {
     };
 }
 function calcBal(t) {
+    const split = customTourCommission(t);
+    if (split) {
+        const base = calcBal(withoutTourCommission(t));
+        return base ? { ...base, netOl: base.netOl - split.giver } : base;
+    }
     const c = transferCustomerTRYValue(t);
     const d = moneyValue(t.driverPayment);
     const alt = moneyValue(t.altAcentaUcreti);
@@ -4650,6 +4673,11 @@ function calcBal(t) {
     return { firm, netOl: -d + (t.altAcenta ? 0 : com) };
 }
 function calcAltBal(t) {
+    const split = customTourCommission(t);
+    if (split) {
+        const base = calcAltBal(withoutTourCommission(t));
+        return { firm: t.altAcenta, netOl: (base ? base.netOl : 0) + split.receivable };
+    }
     if (!t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
         return null;
     const c = transferCustomerTRYValue(t);
@@ -6162,19 +6190,32 @@ function FirmCommissionEditor({ rows, sT, tip }) {
     const [id, setId] = useState('');
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
+    const [collector, setCollector] = useState('');
+    const [giver, setGiver] = useState('');
     const selected = tours.find(t => String(t.id) === id);
+    const canSplit = !!(selected && selected.altAcenta && isOlmezturParty(selected.assignedTo) && !isOlmezturParty(selected.givenBy));
     const choose = value => {
         const t = tours.find(x => String(x.id) === value);
         setId(value); setAmount(t ? String(t.tourCommission || '') : ''); setNote(t ? String(t.tourCommissionShop || '') : '');
+        setCollector(t && t.tourCommissionMode === 'collector-split' ? String(t.tourCommissionCollector || 0) : '');
+        setGiver(t && t.tourCommissionMode === 'collector-split' ? String(t.tourCommissionGiver || 0) : '');
     };
     const save = () => {
         const n = moneyValue(amount);
         if (!selected || !/^\d[\d.,\s]*$/.test(String(amount).trim()) || !Number.isFinite(n) || n < 0) { tip('Tur seçin ve sıfır veya pozitif tutar girin'); return; }
         const stamp = new Date().toISOString();
+        const collectorAmount = n === 0 ? 0 : moneyValue(collector);
+        const giverAmount = n === 0 ? 0 : moneyValue(giver);
+        if (canSplit && n > 0 && (![collector, giver].every(v => /^\d[\d.,\s]*$/.test(String(v).trim()))
+            || collectorAmount < 0 || giverAmount < 0 || collectorAmount + giverAmount > n)) {
+            tip('İki payı da girin (pay yoksa 0). Payların toplamı hakedişi aşamaz.'); return;
+        }
         sT(prev => {
             const next = prev.map(t => {
                 if (String(t.id) !== id) return t;
-                const updated = { ...t, tourCommission: n, tourCommissionShop: note.trim(), updatedAt: stamp, clientUpdatedAt: stamp };
+                const updated = { ...t, tourCommission: n, tourCommissionShop: note.trim(),
+                    ...(canSplit ? { tourCommissionMode: 'collector-split', tourCommissionCollector: collectorAmount, tourCommissionGiver: giverAmount } : {}),
+                    updatedAt: stamp, clientUpdatedAt: stamp };
                 return { ...updated, profit: olmezKar(updated), ...buildKdvFields(updated) };
             });
             persistTransfersImmediately(next);
@@ -6188,10 +6229,19 @@ function FirmCommissionEditor({ rows, sT, tip }) {
             React.createElement('option', { value: '' }, tours.length ? 'Tur seçin' : 'Bu firmada tur kaydı yok'),
             tours.map(t => React.createElement('option', { key: t.id, value: String(t.id) }, [t.date, t.time, t.pickup, '→', t.dropoff].filter(Boolean).join(' ')))),
         selected && React.createElement(React.Fragment, null,
-            React.createElement('label', { className: 'lbl' }, 'Toplam hakediş (₺) · yarısı her tarafa'),
+            React.createElement('label', { className: 'lbl' }, 'Toplanan toplam hakediş (₺)'),
             React.createElement('input', { className: 'inp', inputMode: 'decimal', value: amount, onChange: e => setAmount(e.target.value), 'aria-label': 'Toplam hakediş', placeholder: '0' }),
+            canSplit && React.createElement(React.Fragment, null,
+                React.createElement('label', { className: 'lbl' }, selected.altAcenta + ' · tahsil edenin kendi payı (₺)'),
+                React.createElement('input', { className: 'inp', inputMode: 'decimal', value: collector, onChange: e => setCollector(e.target.value), 'aria-label': 'Tahsil edenin payı', placeholder: 'Tutar girin' }),
+                React.createElement('label', { className: 'lbl' }, selected.givenBy + ' · ödenecek pay (₺)'),
+                React.createElement('input', { className: 'inp', inputMode: 'decimal', value: giver, onChange: e => setGiver(e.target.value), 'aria-label': 'İş verenin payı', placeholder: 'Pay yoksa 0' }),
+                React.createElement('div', { className: 'ko-calm-help' },
+                    selected.altAcenta + ' hesabına alacak: ' + (moneyValue(amount) - moneyValue(collector)) + ' ₺ · '
+                    + selected.givenBy + ' hesabına borç: ' + moneyValue(giver) + ' ₺ · Ölmeztur payı: '
+                    + (moneyValue(amount) - moneyValue(collector) - moneyValue(giver)) + ' ₺')),
             React.createElement('input', { className: 'inp', value: note, onChange: e => setNote(e.target.value), 'aria-label': 'Hakediş açıklaması', placeholder: 'Mağaza / açıklama' }),
-            React.createElement('div', { className: 'ko-calm-help' }, 'Kaldırmak için tutarı 0 yapın. Paylaşım yarı yarıyadır. Kapatılmış hesaplar kapalı kalır; bakiyeye katmak için ilgili hesabı yeniden açın.'),
+            React.createElement('div', { className: 'ko-calm-help' }, (canSplit ? 'Hakedişi alt acenta toplar. Payları siz belirlersiniz; kalan Ölmeztur’a kalır. ' : 'Bu turda mevcut yarı yarıya paylaşım uygulanır. ') + 'Kaldırmak için toplamı 0 yapın. Kapatılmış hesaplar kapalı kalır.'),
             React.createElement('button', { type: 'button', className: 'ko-calm-action', onClick: save }, 'Hakedişi kaydet')));
 }
 function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates }) {
@@ -7517,14 +7567,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const aldigim = [], verdigim = [];
         list.forEach(t => {
             const total = Math.round(tourCommissionTotal(t));
-            const pay = Math.round(tourCommissionShare(t));
+            const split = customTourCommission(t);
+            const isCollector = split && firm === t.altAcenta;
+            const pay = Math.round(isCollector ? split.receivable : tourCommissionShare(t));
             const rec = {
                 id: t.id, date: t.date, total: total, pay: pay,
                 ad: ((t.passengers || [])[0] || {}).name || t.passengerName || '—',
                 yer: t.dropoff || t.pickup || '',
                 dukkan: String(t.tourCommissionShop || '').trim()
             };
-            if (t.yon === 'benVerdim') verdigim.push(rec); else aldigim.push(rec);
+            if (isCollector || (!split && t.yon === 'benVerdim')) verdigim.push(rec); else aldigim.push(rec);
         });
         const payAl = verdigim.reduce((s, x) => s + x.pay, 0);    /* bana eklenir */
         const payVer = aldigim.reduce((s, x) => s + x.pay, 0);    /* bakiyeden düşer */
@@ -7560,8 +7612,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 ? React.createElement("div", { style: { fontSize: 11, color: SB, textAlign: 'center', padding: '12px 8px', background: INP, borderRadius: 10, border: '1px dashed ' + BOR, lineHeight: 1.45 } },
                     'Bu firmayla yapılan turlarda hakediş girilmemiş.')
                 : React.createElement(React.Fragment, null,
-                    grup(koEkA(firm) + ' verdiğim turlar · payım alacak', verdigim, true),
-                    grup(koEkDen(firm) + ' aldığım turlar · payı borç', aldigim, false),
+                    grup('Hakediş · firmadan alacağım', verdigim, true),
+                    grup('Hakediş · firmaya ödeyeceğim', aldigim, false),
                     React.createElement("div", { style: { borderTop: '1px solid ' + BOR, paddingTop: 9, marginTop: 2 } },
                         React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: SB, marginBottom: 3 } },
                             React.createElement("span", null, 'Toplam hakediş (' + list.length + ' tur)'),
