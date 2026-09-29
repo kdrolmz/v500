@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-09-29-rental-firm-ledger-3">
+<meta name="v500-release" content="2026-09-29-firm-premium-4">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -3959,6 +3959,26 @@ const APPLE_CALENDAR_WEBCAL_BASE = 'webcal://kdrolmz.github.io/v500/';
 const appleCalendarTypeMeta = id => APPLE_CALENDAR_TYPES.find(x => x.id === id) || APPLE_CALENDAR_TYPES[0];
 const appleCalendarUrl = meta => APPLE_CALENDAR_WEB_BASE + meta.filename;
 const appleCalendarWebcalUrl = meta => APPLE_CALENDAR_WEBCAL_BASE + meta.filename;
+function CalendarSubscriptionDialog({meta,onClose}) {
+    const h=React.createElement;
+    const [message,setMessage]=useState('');
+    const url=appleCalendarUrl(meta);
+    return h('div',{className:'ko-calendar-link-overlay',onClick:onClose},h('section',{className:'ko-calendar-link-dialog',role:'dialog','aria-modal':true,'aria-label':'Apple Takvim aboneliği',onClick:e=>e.stopPropagation(),onKeyDown:e=>{if(e.key==='Escape')onClose();}},
+        h('header',null,h('div',null,h('small',null,'APPLE TAKVİM'),h('h2',null,meta.name)),h('button',{type:'button','aria-label':'Takvim bağlantısını kapat',onClick:onClose},'×')),
+        h('p',null,'Uygulama içi tarayıcı webcal bağlantısını açamıyorsa aşağıdaki HTTPS adresini Apple Takvim aboneliğine yapıştırın.'),
+        h('label',null,'Takvim adresi',h('input',{readOnly:true,value:url,'aria-label':'HTTPS takvim adresi',onFocus:e=>e.target.select()})),
+        h('button',{type:'button',className:'ko-calendar-copy',onClick:async()=>{const ok=await copyText(url);setMessage(ok?'Bağlantı kopyalandı. Apple Takvim’e yapıştırabilirsiniz.':'Otomatik kopyalanamadı. Adres alanına basılı tutup tamamını kopyalayın.');}},'HTTPS bağlantısını kopyala'),
+        h('div',{className:'ko-calendar-help'},h('b',null,'iPhone'),h('p',null,'Takvim → Takvimler → Takvim Ekle → Abonelik Takvimi Ekle. Adresi yapıştırın.'),h('b',null,'Mac'),h('p',null,'Takvim → Dosya → Yeni Takvim Aboneliği. Adresi yapıştırın.')),
+        h('a',{href:appleCalendarWebcalUrl(meta)},'Safari’den Apple Takvim’i doğrudan aç ↗'),
+        h('small',null,'Aynı takvime tekrar abone olmayın. Boş takvim, kiralama kayıtları yayımlandığında güncellenir; yenileme zamanını Apple belirler.'),
+        h('p',{role:'status'},message)));
+}
+function CalendarSubscribeButton({meta}) {
+    const [open,setOpen]=useState(false);
+    return React.createElement(React.Fragment,null,
+        React.createElement('button',{type:'button',onClick:()=>setOpen(true)},meta.name+' · takvime ekle'),
+        open&&React.createElement(CalendarSubscriptionDialog,{meta,onClose:()=>setOpen(false)}));
+}
 const utf8Base64 = text => btoa(unescape(encodeURIComponent(String(text || ''))));
 const icsPad = n => String(n).padStart(2, '0');
 const icsEscape = v => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
@@ -7492,7 +7512,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const renderAccountBox = (opts, children) => {
         const open = !!opts.open;
         return React.createElement("div", {
-            className: "ko-account-action-box",
+            className: "ko-account-action-box" + (open ? " is-expanded" : ""),
             style: {
                 background: 'var(--p-white)', border: '1px solid ' + BOR, borderLeft: '3px solid ' + opts.accent,
                 borderRadius: 13, overflow: 'hidden'
@@ -7500,7 +7520,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         },
             React.createElement("button", {
                 className: "ko-account-action-head",
-                type: "button", onClick: opts.onToggle,
+                type: "button", onClick: opts.onToggle, 'aria-expanded': open,
                 style: {
                     width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                     background: 'transparent', border: 'none', padding: '11px 12px',
@@ -7536,8 +7556,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const previewNet = accountAdjustmentNet(adjForm.type, adjForm.amount);
         const hasAmount = tutar > 0;
         return renderAccountBox({
-            ico: '💳', title: 'Ödeme / Bakiye',
-            sub: openAdjustmentPanel ? null : 'Ödeme al, ödeme yap veya borç ver',
+            ico: '↔', title: 'Ödemeler ve bakiye',
+            sub: 'Tahsilat, ödeme ve hesap düzeltmeleri',
             accent: NAV,
             open: openAdjustmentPanel,
             onToggle: () => setOpenAdjustmentPanel(v => !v),
@@ -7549,7 +7569,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     ACCOUNT_ADJUSTMENT_PICKS.map(x => {
                         const on = adjForm.type === x.id;
                         return React.createElement("button", {
-                            key: x.id, type: "button", onClick: () => setAdjForm(f => ({ ...f, type: x.id })),
+                            key: x.id, type: "button", 'aria-pressed': on, onClick: () => setAdjForm(f => ({ ...f, type: x.id })),
                             style: {
                                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                                 background: on ? NAV : 'var(--p-white)', color: on ? 'var(--p-white)' : TX,
@@ -7625,8 +7645,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             (isPlus ? '+' : '−') + fr(x.pay) + '₺'),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 1 } }, 'hakediş ' + fr(x.total) + '₺')))))) : null;
         return renderAccountBox({
-            ico: '🪙', title: 'Tur Hakedişi',
-            sub: openHakedisPanel ? null : (bosMu ? 'Bu firmada hakedişli tur yok' : list.length + ' turda ' + fr(toplamHakedis) + '₺ hakediş'),
+            ico: '%', title: 'Tur hakedişleri',
+            sub: bosMu ? 'Komisyon ve pay dağılımı' : list.length + ' tur · ' + fr(toplamHakedis) + '₺ toplam hakediş',
             accent: 'var(--p-accent)',
             open: openHakedisPanel,
             onToggle: () => setOpenHakedisPanel(v => !v),
@@ -7817,7 +7837,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         renderManualAdjustmentPanel(sel),
                         renderHakedisPanel(sel, ts),
                         debtRows.length > 0 && renderAccountBox({
-                            ico: '🤝', title: 'Birleşen Alacak / Borç',
+                            ico: '±', title: 'Ek alacak ve borçlar',
                             sub: openDebtPanel ? null : debtRows.length + ' bağımsız kayıt bu firmayla birleşti',
                             accent: 'var(--p-info)',
                             open: openDebtPanel,
@@ -9103,8 +9123,8 @@ function RentalFirmPanel({rows, firm, onOpen}) {
     const [limit,setLimit] = useState(20);
     const al = rows.reduce((s,r)=>s+Math.max(0,r.net),0), ver = rows.reduce((s,r)=>s+Math.max(0,-r.net),0);
     const sorted = React.useMemo(()=>rows.slice().sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
-    return h('section',{className:'rent-firm-panel'},
-        h('button',{className:'rent-firm-toggle',onClick:()=>setOpen(!open),'aria-expanded':open},h('span',null,h('b',null,'Kiralık araçlar'),h('small',null,rows.length+' hesap kalemi · transferlerden ayrı')),h('b',null,rentalMoney(al-ver)+' '+(open?'−':'+'))),
+    return h('section',{className:'rent-firm-panel ko-account-action-box'+(open?' is-expanded':'')},
+        h('button',{type:'button',className:'rent-firm-toggle ko-account-action-head',onClick:()=>setOpen(!open),'aria-expanded':open},h('span',{className:'ko-account-action-ico','aria-hidden':true},'◇'),h('span',{className:'ko-account-action-copy'},h('b',{className:'ko-account-action-title'},'Kiralık araçlar'),h('small',{className:'ko-account-action-sub'},rows.length+' hesap kalemi · komisyon ve tahsilat')),h('b',{className:'ko-account-action-value'},rentalMoney(al-ver)),h('span',{className:'ko-account-action-chevron','aria-hidden':true},open?'−':'+')),
         open && h('div',{className:'rent-firm-content'},h('div',{className:'rent-firm-totals'},h('div',null,h('small',null,'ALACAĞIM'),h('b',null,rentalMoney(al))),h('div',null,h('small',null,'ÖDEYECEĞİM'),h('b',null,rentalMoney(ver)))),
             h('p',{className:'rent-subtle'},'Bu tutarlar yukarıdaki firma toplamına dahildir. Ödemeyi kiralama kaydında güncelleyin; tekrar bakiye kaydı eklemeyin.'),
             sorted.slice(0,limit).map(r=>h('article',{className:'rent-firm-row',key:r.id},h('div',null,h('small',null,r.role),h('b',null,r.model+' · '+r.plate),h('span',null,rentalDateText(r.start)+' → '+rentalDateText(r.end))),h('div',{className:'rent-firm-amount'},h('small',null,r.net>0?'ALACAĞIM':r.net<0?'ÖDEYECEĞİM':'KAPANDI'),h('b',null,rentalMoney(Math.abs(r.net)))),h('details',null,h('summary',null,'Hesap ayrıntısı'),h('p',null,'Anlaşma: '+rentalMoney(r.accrued)+' · Ödenen: '+rentalMoney(r.paid)+(r.vat?' · KDV kesintisi: '+rentalMoney(r.vat):'')),r.explanation&&h('p',null,r.explanation)),h('button',{className:'rent-secondary',onClick:()=>onOpen({id:r.rentalId})},'Ödemeyi / kaydı düzenle'))),
@@ -9141,7 +9161,7 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
             h('p',null,'Yalnızca araç modeli ve teslim/dönüş zamanı yayımlanır. İsim, pasaport, plaka, ücret ve notlar paylaşılmaz. Yayın bağlantıları herkese açıktır.'),
             h('label',null,h('input',{type:'checkbox',checked:calendarEnabled===true,onChange:e=>setCalendarEnabled(e.target.checked)}),' Araç modeli ve saatlerinin açık bağlantıda yayımlanmasını onaylıyorum.'),
             h('div',{className:'rent-actions'},h('button',{disabled:calendarBusy||calendarEnabled===null,onClick:publishCalendar},calendarBusy?'Yayımlanıyor…':'Takvimi yayımla'),
-                calendarEnabled&&RENTAL_CALENDARS.map(meta=>h('a',{key:meta.id,href:appleCalendarWebcalUrl(meta)},meta.name+' · abone ol'))),
+                calendarEnabled&&RENTAL_CALENDARS.map(meta=>h(CalendarSubscribeButton,{key:meta.id,meta}))),
             h('p',null,calendarMessage||'Önce yayımla, ardından iki takvime bir kez abone ol. Yedekleme bölümündeki mevcut GitHub anahtarı ve otomatik takvim yayını kullanılır.'),
             h('small',null,'İki takvim de turuncu renk bilgisi taşır. Apple mevcut abonelik rengini korursa Takvim > Takvimler içinden turuncuyu seçin. Apple’ın yenileme süresini uygulama zorlayamaz. Onayı kaldırıp yayımlamak kiralık takvimlerini boşaltır; transfer takvimleri korunur.')),
         h('div',{className:'rent-collection-summary'},h('button',{onClick:()=>{setOnlyUnpaid(!onlyUnpaid);setArchive(false);},'aria-pressed':onlyUnpaid},h('small',null,'MÜŞTERİLERDEN BEKLEYEN'),h('strong',null,rentalMoney(rentalRound(waiting.customer)))),h('button',{onClick:()=>{setOnlyUnpaid(!onlyUnpaid);setArchive(false);},'aria-pressed':onlyUnpaid},h('small',null,'ARACILARDAN ALACAĞIM'),h('strong',null,rentalMoney(rentalRound(waiting.broker)))),h('div',{className:'rent-payable-strip'},'Aracılara ödeyeceğim komisyon: ',h('b',null,rentalMoney(rentalRound(waiting.payable))))),
@@ -9274,6 +9294,7 @@ function App() {
     const [aracK, setAracK] = useState([]);
     const [rentals, setRentals] = useState([]);
     const [rentalOpenRequest, setRentalOpenRequest] = useState(null);
+    const [calendarSubscriptionMeta,setCalendarSubscriptionMeta] = useState(null);
     const [debts, setDebts] = useState([]);
     const [accountAdjustments, setAccountAdjustments] = useState([]);
     const [todos, setTodos] = useState([]);
@@ -11459,7 +11480,7 @@ function App() {
     };
     calendarPublishLatestRef.current = publishAppleCalendarToGithub;
     const openAppleCalendarSubscription = meta => {
-        window.location.href = appleCalendarWebcalUrl(meta);
+        setCalendarSubscriptionMeta(meta);
     };
     const exportAppleCalendar = async () => {
         const files = buildAppleCalendarFiles(T);
@@ -12441,6 +12462,7 @@ function App() {
                 )
             )
         ),
+        calendarSubscriptionMeta&&React.createElement(CalendarSubscriptionDialog,{meta:calendarSubscriptionMeta,onClose:()=>setCalendarSubscriptionMeta(null)}),
         React.createElement("main", { className: "main-cont view-" + tab },
             tab === 'home' && (() => {
                 const now = new Date();
@@ -16396,6 +16418,44 @@ body nav.tabbar .tab.is-active{background:#eaf0f5!important;color:#24435c!import
 <style id="ko-rental-firm-ledger">
 .rent-home-delivery{display:flex;align-items:center;gap:12px;width:100%;background:white;border:1px solid #e1e9e5;border-radius:15px;padding:14px;margin:10px 0;text-align:left;color:#3a5f54;cursor:pointer}.rent-home-delivery>span:not(.rent-brand){display:grid;gap:5px;flex:1;min-width:0}.rent-home-delivery b{font-size:12px;font-weight:550;overflow-wrap:anywhere}.rent-home-delivery small{font-size:10px;line-height:1.5;color:#7c8f86}.rent-home-delivery>strong{font-size:18px;font-weight:550}
 .rent-firm-panel{border:1px solid #dce6e3;background:#fafcfb;border-radius:18px;overflow:hidden;margin:10px 0}.rent-firm-toggle{width:100%;border:0;background:transparent;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px;text-align:left;color:#355c54;cursor:pointer}.rent-firm-toggle span{display:grid;gap:5px}.rent-firm-toggle small{font-size:11px;color:#7a8e88}.rent-firm-toggle b{font-weight:550;font-size:14px}.rent-firm-content{padding:0 16px 17px}.rent-firm-totals{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rent-firm-totals>div{display:grid;gap:7px;background:#edf5f1;border-radius:12px;padding:13px}.rent-firm-totals>div+div{background:#f4f0e9}.rent-firm-totals small,.rent-firm-row small{font-size:10px;color:#73867f}.rent-firm-totals b{font-size:19px;font-weight:550}.rent-firm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:13px;background:white;border:1px solid #e5ebe8;border-radius:13px;padding:15px;margin:12px 0}.rent-firm-row>div{display:grid;gap:6px}.rent-firm-row b{font-size:13px;font-weight:550;overflow-wrap:anywhere}.rent-firm-row span,.rent-firm-row details{font-size:11px;line-height:1.7;color:#74867f}.rent-firm-row details,.rent-firm-row>button{grid-column:1/-1}.rent-firm-amount{text-align:right;align-content:start}.rent-firm-row summary{cursor:pointer}.rent-firm-row p{overflow-wrap:anywhere}.rent-firm-content>.rent-secondary{margin-top:8px}
+</style>
+<style id="ko-firm-editorial-premium-v4">
+.ko-calendar-link-overlay{position:fixed;inset:0;z-index:100000;background:#20364466;display:grid;place-items:center;padding:20px}.ko-calendar-link-dialog{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;background:#fcfdfd;color:#2c4652;width:100%;max-width:470px;box-sizing:border-box;max-height:90dvh;overflow:auto;border-radius:25px;padding:25px;box-shadow:0 22px 80px #172e4030}.ko-calendar-link-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.ko-calendar-link-dialog h2{font-size:22px;letter-spacing:-.5px;font-weight:600;margin:8px 0}.ko-calendar-link-dialog header small{font-size:10px;letter-spacing:.14em}.ko-calendar-link-dialog header button{border:0;border-radius:50%;width:40px;height:40px;background:#edf2f2;font-size:23px;color:#58717a}.ko-calendar-link-dialog p{font-size:13px;line-height:1.7;color:#607983}.ko-calendar-link-dialog label{display:grid;gap:8px;font-size:12px;font-weight:550}.ko-calendar-link-dialog input{box-sizing:border-box;width:100%;font-size:16px;border:1px solid #d5e0e1;border-radius:12px;padding:13px;background:white;color:#304d5d}.ko-calendar-copy{width:100%;border:0;border-radius:13px;background:#355b60;color:white;padding:14px;font-size:14px;margin-top:13px;cursor:pointer}.ko-calendar-help{background:#f0f5f3;border:1px solid #e0eae5;padding:15px;border-radius:15px;margin:18px 0;font-size:13px}.ko-calendar-help p{margin:5px 0 14px}.ko-calendar-help p:last-child{margin-bottom:0}.ko-calendar-link-dialog>a{display:block;font-size:13px;color:#3f6a6c;padding:7px 0 16px}.ko-calendar-link-dialog>small{display:block;font-size:11px;line-height:1.65;color:#778a8e}.ko-calendar-link-dialog button:focus-visible,.ko-calendar-link-dialog input:focus-visible{outline:2px solid #8dadac;outline-offset:3px}
+/* Account-only presentation: no financial or storage behavior is changed. */
+.view-hesap{--account-ink:#263d48;--account-muted:#697d86;--account-line:#e2e9e9;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif!important;letter-spacing:-.015em;color:var(--account-ink)}
+.view-hesap .ko-account-root-card{padding:4px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+.view-hesap .ko-account-action-box{background:#fff!important;border:1px solid var(--account-line)!important;border-left:1px solid var(--account-line)!important;border-radius:20px!important;box-shadow:0 4px 16px #24424b04!important;margin:5px 0!important;overflow:hidden}
+.view-hesap .ko-account-action-box.is-expanded{border-color:#bfcfcd!important;background:#fcfdfd!important}
+.view-hesap .ko-account-action-head{display:grid!important;grid-template-columns:36px minmax(0,1fr) auto 24px!important;align-items:center!important;gap:11px!important;min-height:84px;padding:18px!important;font-family:inherit!important;text-align:left!important;color:var(--account-ink)!important}
+.view-hesap .ko-account-action-ico{display:grid!important;place-items:center!important;width:36px;height:36px;border-radius:12px;background:#edf3f3!important;color:#486b70!important;font-size:19px!important;font-weight:450!important;line-height:1!important}
+.view-hesap .ko-account-action-title{display:block!important;font-family:inherit!important;font-size:15px!important;font-weight:600!important;letter-spacing:-.025em!important;line-height:1.4!important;color:#2d4651!important;white-space:normal!important;overflow:visible!important}
+.view-hesap .ko-account-action-sub{display:block!important;margin-top:5px!important;font-size:11.5px!important;font-weight:400!important;line-height:1.5!important;color:#71828a!important;white-space:normal!important;letter-spacing:0!important}
+.view-hesap .ko-account-action-value{font-family:inherit!important;font-size:15px!important;font-weight:550!important;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap;color:#496b60!important}
+.view-hesap .ko-account-action-chevron{display:grid!important;place-items:center!important;width:24px!important;height:24px!important;border-radius:50%!important;background:#f0f4f4!important;color:#6a8288!important;font-size:14px!important}
+.view-hesap .ko-account-action-body,.view-hesap .rent-firm-content{padding:18px!important;border-top:1px solid #e9eeee!important}
+.view-hesap .ko-account-action-body .inp,.view-hesap .ko-calm-editor .inp{min-height:48px!important;padding:12px 14px!important;border:1px solid #dce5e6!important;border-radius:12px!important;background:#fff!important;color:#293e48!important;font-size:16px!important;line-height:1.4!important;box-shadow:none!important;box-sizing:border-box;max-width:100%}
+.view-hesap .inp:focus-visible{outline:2px solid #8caaa9!important;outline-offset:2px;border-color:#8caaa9!important}
+.view-hesap button:focus-visible{outline:2px solid #7d9d9b!important;outline-offset:3px}
+.view-hesap .ko-account-action-picks{gap:8px!important;margin-bottom:16px!important}
+.view-hesap .ko-account-action-picks>button{min-height:64px!important;border:1px solid #e0e8e8!important;border-radius:13px!important;background:#f6f8f8!important;color:#536b74!important;padding:12px 6px!important;box-shadow:none!important}
+.view-hesap .ko-account-action-picks>button[aria-pressed=true]{background:#e9f1ef!important;border-color:#a8c0b9!important;color:#315b4e!important}
+.view-hesap .ko-account-action-picks>button>span:first-child{display:none!important}
+.view-hesap .ko-account-action-picks>button>span:last-child{font-size:12px!important;line-height:1.5!important;font-weight:550!important}
+.view-hesap .ko-calm-editor{padding:16px!important;border-radius:16px!important;background:#f4f7f6!important;border:1px solid #e4ece8!important;gap:12px!important}
+.view-hesap .lbl{font-size:12px!important;font-weight:550!important;letter-spacing:0!important;text-transform:none!important;color:#536a73!important;line-height:1.5!important}
+.view-hesap .ko-calm-help,.view-hesap .rent-subtle{font-size:12px!important;color:#6e8187!important;line-height:1.7!important}
+.view-hesap .ko-account-summary-card{border:1px solid #e2e9e9!important;border-radius:23px!important;box-shadow:0 6px 22px #25424b04!important}
+.view-hesap .ko-account-firm-card{border-radius:18px!important;box-shadow:none!important;border:1px solid #e0e8e6!important;padding:16px!important;background:#fcfdfc!important}
+.view-hesap .ko-account-firm-card.is-pay{background:#fdfbf8!important;border-color:#e9e3d9!important}
+.view-hesap .ko-account-firm-card-copy b{font-size:14px!important;font-weight:600!important;line-height:1.45!important;white-space:normal!important}
+.view-hesap .ko-account-firm-card-copy small{font-size:11px!important;line-height:1.6!important;white-space:normal!important;color:#72818a!important}
+.view-hesap .ko-account-section-head{padding:15px!important;min-height:64px!important;border-radius:15px!important;gap:12px!important}
+.view-hesap .ko-account-section-title{font-size:13px!important;line-height:1.5!important;font-weight:550!important}
+.view-hesap .ko-account-empty-state{padding:22px!important;font-size:12px!important;color:#788b91!important}
+.view-hesap .rent-firm-row{border-radius:16px;padding:17px;gap:15px;box-shadow:none}.view-hesap .rent-firm-row b{font-size:14px;line-height:1.5}.view-hesap .rent-firm-row span{font-size:11.5px;line-height:1.7}.view-hesap .rent-firm-row small{font-size:10.5px;line-height:1.5}.view-hesap .rent-secondary{min-height:44px;font-size:12px;border-radius:12px;background:#f6f9f8!important;color:#3d6558!important;border:1px solid #dce6e1!important;padding:11px 14px}.view-hesap .rent-firm-row summary{min-height:36px;padding-top:8px;font-size:12px}
+.view-hesap .mo{background:rgba(26,43,53,.3)!important}.view-hesap .ms{background:#fafcfc!important;border:1px solid #e0e9e8!important;border-radius:26px!important;padding:24px!important;box-shadow:0 20px 70px #213c4926!important;max-height:88dvh!important;overflow:auto!important}.view-hesap .ms input,.view-hesap .ms select,.view-hesap .ms textarea{font-size:16px!important;min-height:44px!important}
+@media(max-width:600px){.view-hesap .ko-account-action-head{grid-template-columns:32px minmax(0,1fr) 24px!important;gap:10px!important;padding:16px!important;min-height:80px}.view-hesap .ko-account-action-ico{width:32px;height:36px;border-radius:11px;font-size:18px!important;grid-column:1;grid-row:1/3}.view-hesap .ko-account-action-copy{grid-column:2;grid-row:1!important}.view-hesap .ko-account-action-chevron{grid-column:3;grid-row:1/3!important}.view-hesap .ko-account-action-value{grid-column:2;grid-row:2;font-size:14px!important;justify-self:start;line-height:1.4}.view-hesap .ko-account-action-title{font-size:15px!important}.view-hesap .ko-account-action-sub{font-size:11.5px!important;line-height:1.6!important}.view-hesap .ko-account-action-body,.view-hesap .rent-firm-content{padding:16px!important}.view-hesap .rent-firm-row{grid-template-columns:minmax(0,1fr)!important}.view-hesap .rent-firm-amount{border-top:1px solid #edf1ef;padding-top:12px;text-align:left;grid-template-columns:1fr auto!important;align-items:center}.view-hesap .rent-firm-row details,.view-hesap .rent-firm-row>button{grid-column:1!important}.view-hesap .ms{padding:19px!important;border-radius:23px 23px 0 0!important}.view-hesap .ko-account-action-box{border-radius:19px!important}}
+@media(prefers-reduced-motion:reduce){.view-hesap *{transition:none!important;animation:none!important}}
 </style>
 </body>
 </html>
