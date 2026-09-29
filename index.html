@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-09-29-firm-premium-4">
+<meta name="v500-release" content="2026-09-29-rental-dates-payments-5">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -7531,22 +7531,22 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("span", { className: "ko-account-action-copy", style: { flex: 1, minWidth: 0 } },
                     React.createElement("span", { className: "ko-account-action-title", style: { display: 'block', fontSize: 12.5, fontWeight: 500, color: TX, lineHeight: 1.2 } }, opts.title),
                     opts.sub && React.createElement("span", { className: "ko-account-action-sub", style: { display: 'block', fontSize: 10.5, color: SB, marginTop: 2, lineHeight: 1.3 } }, opts.sub)),
-                opts.value != null && React.createElement("span", {
+                React.createElement("span", {
                     className: "ko-account-action-value",
                     style: {
                         flexShrink: 0, fontSize: 12.5, fontWeight: 500, fontVariantNumeric: 'tabular-nums',
                         color: opts.valueTone === 'neg' ? R : opts.valueTone === 'pos' ? G : SB
                     }
-                }, opts.value),
+                }, opts.value != null ? opts.value : '—'),
                 React.createElement("span", {
                     className: "ko-account-action-chevron",
                     style: {
                         flexShrink: 0, width: 20, height: 20, borderRadius: 7, background: INP,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 10.5, color: SB, transition: 'transform .18s ease',
-                        transform: open ? 'rotate(180deg)' : 'none'
+                        transform: 'none'
                     }
-                }, '▾')),
+                }, open ? '−' : '+')),
             open && React.createElement("div", { className: "ko-account-action-body", style: { padding: '0 12px 12px' } }, children));
     };
     const renderManualAdjustmentPanel = firm => {
@@ -7556,7 +7556,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const previewNet = accountAdjustmentNet(adjForm.type, adjForm.amount);
         const hasAmount = tutar > 0;
         return renderAccountBox({
-            ico: '↔', title: 'Ödemeler ve bakiye',
+            ico: '↔', title: 'Bakiye ve borç',
             sub: 'Tahsilat, ödeme ve hesap düzeltmeleri',
             accent: NAV,
             open: openAdjustmentPanel,
@@ -7900,7 +7900,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net + debtNetTL + rentalNet : null;
 	                    const signVal = jabirFirm ? netUsd : netVal;
 	                    const totalVal = jabirFirm ? netUsdTl : netVal;
-	                    if ((openTs.length === 0 && openDebtRows.length === 0 && rentalRows.length === 0) || Math.abs(signVal) < 0.005) return null;
+	                    if ((openTs.length === 0 && openDebtRows.length === 0 && rentalRows.length === 0) || (Math.abs(signVal) < 0.005 && rentalRows.length === 0)) return null;
                     return { firm, netVal, netUsd, netUsdTl, signVal, totalVal, transferCount: openTs.length, debtCount: openDebtRows.length, rentalCount: rentalRows.length };
                 }).filter(Boolean).sort((a, b) => Math.abs(b.totalVal) - Math.abs(a.totalVal) || String(a.firm).localeCompare(String(b.firm), 'tr'));
                 const alacakSummaries = firmSummaries.filter(x => x.signVal > 0);
@@ -7953,7 +7953,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             : React.createElement("div", { className: "ko-account-firm-bucket-empty" }, "Yok")));
                 return React.createElement("div", { className: "ko-account-split-grid" },
                     koFirmGroup('rec', 'Alacak', totalAlacak, alacakSummaries),
-                    koFirmGroup('pay', 'Verecek', totalVerecek, verecekSummaries));
+                    koFirmGroup('pay', 'Verecek', totalVerecek, verecekSummaries),
+                    firmSummaries.some(x=>Math.abs(x.signVal)<0.005)&&React.createElement('details',{className:'rent-closed-firms',style:{gridColumn:'1/-1'}},React.createElement('summary',null,'Kapalı kiralık hesapları'),firmSummaries.filter(x=>Math.abs(x.signVal)<0.005).map(x=>React.createElement('button',{key:x.firm,type:'button',onClick:()=>setSel(x.firm)},x.firm+' · ✓ Kapalı'))));
             })()
         )));
 }
@@ -9019,9 +9020,34 @@ function rentalAmount(row, key) {
     const rate = cur === 'TRY' ? 1 : Number((row.fx || {})[cur]);
     return moneyValue(row[key]) * rate;
 }
+function rentalDuration(row) {
+    const start = new Date(row.start).getTime();
+    const end = row.end ? new Date(row.end).getTime() : start + Number(row.days)*RENT_DAY + Number(row.extraHours||0)*3600000;
+    const minutes = Math.round((end-start)/60000);
+    const days = row.end ? Math.max(1,Math.floor(minutes/1440)) : Number(row.days);
+    const hours = row.end ? (minutes>=1440 ? (minutes%1440)/60 : 0) : Number(row.extraHours||0);
+    return {start,end,days,hours,minutes,baseEnd:start+days*RENT_DAY};
+}
+function rentalLocalInput(time) {
+    const d=new Date(time);return Number.isFinite(d.getTime()) ? rentalDateKey(d.getTime())+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0') : '';
+}
+function rentalDurationLabel(row) {
+    const d=rentalDuration(row);if(!Number.isFinite(d.minutes)||d.minutes<=0)return 'Dönüş teslimden sonra olmalı';
+    const full=Math.floor(d.minutes/1440),hours=Math.floor(d.minutes%1440/60),minutes=d.minutes%60;
+    return [full?full+' gün':'',hours?hours+' saat':'',minutes?minutes+' dk':''].filter(Boolean).join(' ')+(hours||minutes||!full?' · '+d.days+' günlük bedel':'');
+}
+function rentalPaymentUpdate(row,kind) {
+    if(row.cancelled)throw new Error('İptal kaydına ödeme işlenemez.');
+    const key=kind==='owner'?'ownerPaid':'paidUs', undoKey=kind==='owner'?'ownerPaymentUndo':'customerPaymentUndo';
+    const c=rentalCalc(row), due=kind==='owner'?rentalRound(c.ownerNet-rentalAmount(row,key)):c.customerDue;
+    let next={...row};
+    if(due>0.005){next[undoKey]={amount:row[key]??'',currency:row[key+'Currency']||'TRY'};next[key]=rentalRound(rentalAmount(row,key)+due);next[key+'Currency']='TRY';}
+    else if(row[undoKey]){next[key]=row[undoKey].amount;next[key+'Currency']=row[undoKey].currency;delete next[undoKey];}
+    else return row;
+    const stamp=new Date().toISOString();return {...next,updatedAt:stamp,clientUpdatedAt:stamp};
+}
 function rentalCalc(row, month) {
-    const start = new Date(row.start).getTime(), days = Number(row.days), hours = Number(row.extraHours || 0);
-    const baseEnd = start + days * RENT_DAY, end = baseEnd + hours * 3600000;
+    const {start,end,days,hours,baseEnd}=rentalDuration(row);
     let countedDays = days;
     if (month) { countedDays = 0; for(let i=0;i<days;i++) if(rentalDateKey(start+i*RENT_DAY).slice(0,7) === month) countedDays++; }
     const extraInMonth = !month || rentalDateKey(baseEnd).slice(0,7) === month;
@@ -9040,13 +9066,16 @@ function rentalCalc(row, month) {
         ownerNet:rentalRound(ownerGross-vat),broker:rentalRound(customer-wholesale),profit:rentalRound(wholesale-ownerGross)};
 }
 function rentalValidate(row, all) {
+    if(!String(row.model||'').trim()) return 'Araç modelini girin.';
+    const duration=rentalDuration(row);
+    if(row.end && (!Number.isFinite(duration.end)||duration.end<=duration.start||duration.minutes>3660*1440)) return 'Dönüş teslimden sonra, en fazla 3660 gün içinde olmalı.';
     if (row.renterIsFirm && !String(row.renterFirm || '').trim()) return 'Kiracı firma adını girin.';
     if (!Number.isFinite(rentalAmount(row,'ownerPaid')) || rentalAmount(row,'ownerPaid') < 0 || rentalAmount(row,'ownerPaid') > rentalCalc(row).ownerNet) return 'Araç sahibine ödeme net hakedişi aşamaz; tutarı kontrol edin.';
     if (!row.renter.trim() || !row.ownerName.trim() || !row.brokerName.trim() || !row.plate.trim()) return 'Kiracı, araç sahibi, aracı ve plaka gerekli.';
-    if (!Number.isInteger(Number(row.days)) || Number(row.days)<1 || Number(row.days)>3660) return 'Gün sayısı 1–3660 arasında tam sayı olmalı.';
-    if (!Number.isFinite(Number(row.extraHours)) || Number(row.extraHours)<0 || Number(row.extraHours)>=24) return 'Ek saat 0–24 arasında olmalı; 24 saat için gün sayısını artırın.';
+    if (!row.end && (!Number.isInteger(Number(row.days)) || Number(row.days)<1 || Number(row.days)>3660)) return 'Gün sayısı 1–3660 arasında tam sayı olmalı.';
+    if (!row.end && (!Number.isFinite(Number(row.extraHours)) || Number(row.extraHours)<0 || Number(row.extraHours)>=24)) return 'Ek saat 0–24 arasında olmalı; 24 saat için gün sayısını artırın.';
     if (!Number.isFinite(new Date(row.start).getTime())) return 'Geçerli teslim tarihi ve saati girin.';
-    for(const key of ['customer','wholesale','owner','vatBase','customerExtra','wholesaleExtra','ownerExtra','vatBaseExtra','delivery','deposit','paidUs','paidBroker','brokerCommissionPaid','brokerReceived']) {
+    for(const key of ['customer','wholesale','owner','vatBase','customerExtra','wholesaleExtra','ownerExtra','vatBaseExtra','delivery','deposit','paidUs','paidBroker','brokerCommissionPaid','brokerReceived','ownerPaid']) {
         if (!/^\d+(?:[.,]\d+)*$/.test(String(row[key] || '0').trim()) || !Number.isFinite(rentalAmount(row,key)) || rentalAmount(row,key)<0) return 'Tutarları ve kullanılan döviz kurunu kontrol edin.';
     }
     const c=rentalCalc(row);
@@ -9061,9 +9090,9 @@ function rentalValidate(row, all) {
 }
 function RentalBadge({model}) {
     const h=React.createElement, toyota=model==='Toyota Proace City';
-    return h('span',{className:'rent-brand','aria-label':toyota?'Toyota':'Fiat'},toyota
+    return h('span',{className:'rent-brand','aria-label':toyota?'Toyota':model==='Fiat Egea'?'Fiat':model},toyota
         ? h('svg',{viewBox:'0 0 64 40',width:48,height:30,'aria-hidden':true},h('ellipse',{cx:32,cy:20,rx:29,ry:17,fill:'none',stroke:'currentColor',strokeWidth:2}),h('ellipse',{cx:32,cy:20,rx:9,ry:17,fill:'none',stroke:'currentColor',strokeWidth:2}),h('ellipse',{cx:32,cy:13,rx:22,ry:8,fill:'none',stroke:'currentColor',strokeWidth:2}))
-        : h('strong',null,'FIAT'));
+        : h('strong',null,model==='Fiat Egea'?'FIAT':'ARAÇ'));
 }
 function rentalDueLabel(date, end) {
     const key=date||rentalDateKey(end);
@@ -9103,7 +9132,7 @@ function rentalAccountIndex(rows) {
         if (!firm || isOlmezturParty(firm) || !Number.isFinite(net)) return;
         const key = nm(firm);
         if (!index.has(key)) index.set(key, []);
-        const entry = { id: row.id + ':' + role, rentalId: row.id, firm, role, net: rentalRound(net), accrued, paid, vat, start: row.start, end: new Date(row.start).getTime()+Number(row.days)*RENT_DAY+Number(row.extraHours||0)*3600000, model: row.model, plate: row.plate };
+        const entry = { id: row.id + ':' + role, rentalId: row.id, firm, role, net: rentalRound(net), accrued, paid, vat, start: row.start, end: rentalDuration(row).end, model: row.model, plate: row.plate, canReopenOwner:!!row.ownerPaymentUndo };
         index.get(key).push(entry);
         return entry;
     };
@@ -9126,8 +9155,8 @@ function RentalFirmPanel({rows, firm, onOpen}) {
     return h('section',{className:'rent-firm-panel ko-account-action-box'+(open?' is-expanded':'')},
         h('button',{type:'button',className:'rent-firm-toggle ko-account-action-head',onClick:()=>setOpen(!open),'aria-expanded':open},h('span',{className:'ko-account-action-ico','aria-hidden':true},'◇'),h('span',{className:'ko-account-action-copy'},h('b',{className:'ko-account-action-title'},'Kiralık araçlar'),h('small',{className:'ko-account-action-sub'},rows.length+' hesap kalemi · komisyon ve tahsilat')),h('b',{className:'ko-account-action-value'},rentalMoney(al-ver)),h('span',{className:'ko-account-action-chevron','aria-hidden':true},open?'−':'+')),
         open && h('div',{className:'rent-firm-content'},h('div',{className:'rent-firm-totals'},h('div',null,h('small',null,'ALACAĞIM'),h('b',null,rentalMoney(al))),h('div',null,h('small',null,'ÖDEYECEĞİM'),h('b',null,rentalMoney(ver)))),
-            h('p',{className:'rent-subtle'},'Bu tutarlar yukarıdaki firma toplamına dahildir. Ödemeyi kiralama kaydında güncelleyin; tekrar bakiye kaydı eklemeyin.'),
-            sorted.slice(0,limit).map(r=>h('article',{className:'rent-firm-row',key:r.id},h('div',null,h('small',null,r.role),h('b',null,r.model+' · '+r.plate),h('span',null,rentalDateText(r.start)+' → '+rentalDateText(r.end))),h('div',{className:'rent-firm-amount'},h('small',null,r.net>0?'ALACAĞIM':r.net<0?'ÖDEYECEĞİM':'KAPANDI'),h('b',null,rentalMoney(Math.abs(r.net)))),h('details',null,h('summary',null,'Hesap ayrıntısı'),h('p',null,'Anlaşma: '+rentalMoney(r.accrued)+' · Ödenen: '+rentalMoney(r.paid)+(r.vat?' · KDV kesintisi: '+rentalMoney(r.vat):'')),r.explanation&&h('p',null,r.explanation)),h('button',{className:'rent-secondary',onClick:()=>onOpen({id:r.rentalId})},'Ödemeyi / kaydı düzenle'))),
+            h('p',{className:'rent-subtle'},'Firma toplamına dahildir. Araç sahibine ödeme yaptığınızda Açık düğmesine dokunun; kısmi ödemeyi kaydı düzenleyerek girin.'),
+            sorted.slice(0,limit).map(r=>h('article',{className:'rent-firm-row'+(Math.abs(r.net)<0.005?' is-closed':' is-open'),key:r.id},h('div',null,h('small',null,r.role),h('b',null,r.model+' · '+r.plate),h('span',null,rentalDateText(r.start)+' → '+rentalDateText(r.end))),h('div',{className:'rent-firm-amount'},h('small',null,r.net>0?'ALACAĞIM':r.net<0?'ÖDEYECEĞİM':'KAPANDI'),h('b',null,rentalMoney(Math.abs(r.net)))),r.role==='Araç sahibi'&&h('button',{className:'rent-settle '+(Math.abs(r.net)<0.005?'is-closed':''),disabled:Math.abs(r.net)<0.005&&!r.canReopenOwner,onClick:()=>onOpen({id:r.rentalId,settleOwner:true})},Math.abs(r.net)<0.005?'✓ Kapalı · ödendi':'○ Açık · ödeme yapıldı işaretle'),h('details',null,h('summary',null,'Hesap ayrıntısı'),h('p',null,'Anlaşma: '+rentalMoney(r.accrued)+' · Ödenen: '+rentalMoney(r.paid)+(r.vat?' · KDV kesintisi: '+rentalMoney(r.vat):'')),r.explanation&&h('p',null,r.explanation)),h('button',{className:'rent-secondary',onClick:()=>onOpen({id:r.rentalId})},'Ödemeyi / kaydı düzenle'))),
             sorted.length>limit&&h('button',{className:'rent-secondary',onClick:()=>setLimit(n=>n+20)},'20 kayıt daha göster'),
             h('button',{className:'rent-secondary',onClick:()=>onOpen({firm})},'+ Kiralama / komisyon ekle')));
 }
@@ -9143,10 +9172,15 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
     const monthly=monthRows.reduce((s,x)=>{const c=rentalCalc(x,month);return {profit:s.profit+c.profit,vat:s.vat+c.vat};},{profit:0,vat:0});
     const waiting=active.reduce((s,x)=>{const c=rentalCalc(x);return {customer:s.customer+Math.max(0,c.customerDue),broker:s.broker+Math.max(0,c.brokerDue),payable:s.payable+Math.max(0,-c.brokerDue)};},{customer:0,broker:0,payable:0});
     const [onlyUnpaid,setOnlyUnpaid]=useState(false);
+    const [addOwner,setAddOwner]=useState(false),[addVehicle,setAddVehicle]=useState(false);
+    const owners=React.useMemo(()=>[...new Set(['Recep Ölmez','Eren Çalışkan',...(rows||[]).map(r=>r.ownerName)].filter(Boolean))],[rows]);
+    const models=React.useMemo(()=>[...new Set(['Toyota Proace City','Fiat Egea',...(rows||[]).map(r=>r.model)].filter(Boolean))],[rows]);
+    const vehicles=React.useMemo(()=>[...new Map((rows||[]).filter(r=>r.plate).map(r=>[String(r.plate).replace(/\s/g,'').toUpperCase(),{plate:r.plate,model:r.model,ownerName:r.ownerName}])).values()],[rows]);
     const update=(key,val)=>setDraft(d=>({...d,[key]:val}));
-    const fresh=(firm='')=>{setError('');setDraft({id:'rental_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2)),model:'Toyota Proace City',plate:'',renter:'',passport:'',ownerName:'',brokerName:typeof firm==='string'?firm:'',start:(day||today)+'T14:00',days:1,extraHours:0,customer:'',wholesale:'',owner:'',vatBase:'',customerExtra:0,wholesaleExtra:0,ownerExtra:0,vatBaseExtra:0,fx:{USD:rates.USD,EUR:rates.EUR},fxDate:rateDate||'',notes:''});};
-    useEffect(()=>{if(!openRequest)return;const found=(rows||[]).find(r=>r.id===openRequest.id);if(found){setDraft({...found,fx:{...found.fx}});setError('');}else if(!openRequest.id)fresh(openRequest.firm||'');onRequestHandled();},[openRequest]);
-    const save=()=>{const warning=rentalValidate(draft,active);if(warning){setError(warning);return;} const now=new Date().toISOString();try{setRows(prev=>[...prev.filter(x=>x.id!==draft.id),{...draft,plate:draft.plate.trim().toUpperCase(),renter:draft.renter.trim(),createdAt:draft.createdAt||now,updatedAt:now,clientUpdatedAt:now}]);setDraft(null);tip('Kiralama kaydedildi; transfer hesapları değişmedi');}catch(e){setError('Kayıt saklanamadı. Form açık tutuldu; tekrar deneyin.');}};
+    const fresh=(firm='')=>{setError('');setAddOwner(false);setAddVehicle(false);const start=(day||today)+'T14:00';setDraft({id:'rental_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2)),model:'Toyota Proace City',plate:'',renter:'',passport:'',ownerName:'',brokerName:typeof firm==='string'?firm:'',start,end:rentalLocalInput(new Date(start).getTime()+RENT_DAY),days:1,extraHours:0,customer:'',wholesale:'',owner:'',vatBase:'',customerExtra:0,wholesaleExtra:0,ownerExtra:0,vatBaseExtra:0,fx:{USD:rates.USD,EUR:rates.EUR},fxDate:rateDate||'',notes:''});};
+    useEffect(()=>{if(!openRequest)return;const found=(rows||[]).find(r=>r.id===openRequest.id);if(found){setDraft({...found,end:found.end||rentalLocalInput(rentalCalc(found).end),fx:{...found.fx}});setError('');}else if(!openRequest.id)fresh(openRequest.firm||'');onRequestHandled();},[openRequest]);
+    const save=()=>{const warning=rentalValidate(draft,active);if(warning){setError(warning);return;} const now=new Date().toISOString(),d=rentalDuration(draft);try{setRows(prev=>[...prev.filter(x=>x.id!==draft.id),{...draft,days:d.days,extraHours:d.hours,ownerName:draft.ownerName.trim(),model:draft.model.trim(),plate:draft.plate.trim().toUpperCase(),renter:draft.renter.trim(),createdAt:draft.createdAt||now,updatedAt:now,clientUpdatedAt:now}]);setDraft(null);tip('Kiralama kaydedildi; firma hesabı güncellendi');}catch(e){setError('Kayıt saklanamadı. Form açık tutuldu; tekrar deneyin.');}};
+    const markCustomerPaid=x=>{const c=rentalCalc(x);if(!window.confirm(c.customerDue>0?'Kalan '+rentalMoney(c.customerDue)+' tutarını doğrudan tahsil ettiniz mi? Aracı aldıysa veya kısmi ödeme ise Düzenle bölümünü kullanın.':'Bu tikle eklenen tahsilat geri alınsın mı? Önceki kısmi ödemeler korunur.'))return;try{setRows(prev=>prev.map(r=>r.id===x.id?rentalPaymentUpdate(r,'customer'):r));tip('Tahsilat durumu güncellendi');}catch(e){tip('Kayıt saklanamadı; durum değiştirilmedi');}};
     const toggleArchive=x=>{try{const now=new Date().toISOString();if(x.cancelled){const warning=rentalValidate({...x,cancelled:false},active);if(warning){tip(warning);return;}}setRows(prev=>prev.map(r=>r.id===x.id?{...r,cancelled:!r.cancelled,updatedAt:now,clientUpdatedAt:now}:r));tip(x.cancelled?'Kiralama geri alındı':'Kiralama iptal edildi; arşivde korundu');}catch(e){tip('Kayıt saklanamadı; tekrar deneyin');}};
     const readPassport=async file=>{if(!file)return;const token=++scanToken.current;setScan('Pasaport okunuyor…');setError('');try{const result=await mrzReadFromFile(file,msg=>{if(token===scanToken.current)setScan(msg);},()=>token!==scanToken.current);if(token!==scanToken.current)return;if(!result || (!result.name&&!result.passportNo)){setError('Okunamadı. Net bir fotoğraf seçin veya elle girin.');return;}setDraft(d=>d?{...d,renter:result.name||d.renter,passport:result.passportNo||d.passport,passportReview:true}:d);setError('Okunan ad ve pasaport numarasını belgeyle karşılaştırıp kontrol kutusunu işaretleyin.');}catch(e){if(token===scanToken.current)setError('Pasaport okunamadı; bilgileri elle girebilirsiniz.');}finally{if(token===scanToken.current)setScan('');}};
     const field=(label,key,type='text')=>h('label',{className:'rent-field'},h('span',null,label),h('input',{className:'inp',type,value:draft[key]??'',onChange:e=>update(key,e.target.value),min:type==='number'?0:undefined}));
@@ -9171,29 +9205,35 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
             h('div',{className:'rent-days'},Array.from({length:offset},(_,i)=>h('span',{key:'blank'+i})),Array.from({length:count},(_,i)=>{
                 const key=month+'-'+String(i+1).padStart(2,'0');
                 const busy=monthRows.filter(x=>rentalDateKey(rentalCalc(x).start)<=key&&rentalDateKey(rentalCalc(x).end-1)>=key);
-                const toyota=busy.filter(x=>x.model==='Toyota Proace City').length, fiat=busy.length-toyota;
+                const toyota=busy.filter(x=>x.model==='Toyota Proace City').length, fiat=busy.filter(x=>x.model==='Fiat Egea').length, other=busy.length-toyota-fiat;
                 return h('button',{key,className:(day===key?'selected ':'')+(key===today?'today':''),'aria-label':key+', '+busy.length+' kiralık araç: '+busy.map(x=>x.model+' '+x.plate).join(', '),'aria-pressed':day===key,onClick:()=>{setDay(day===key?'':key);setArchive(false);setOnlyUnpaid(false);}},h('b',null,i+1),
                     toyota>0&&h('span',{className:'rent-day-car toyota'},'Toyota'+(toyota>1?' '+toyota:'')),
                     fiat>0&&h('span',{className:'rent-day-car fiat'},'Fiat'+(fiat>1?' '+fiat:'')),
+                    other>0&&h('span',{className:'rent-day-car'},'Diğer '+other),
                     !busy.length&&h('small',null,'Boş'));
             })),h('div',{className:'rent-legend'},h('span',{className:'rent-day-car toyota'},'Toyota Proace City'),h('span',{className:'rent-day-car fiat'},'Fiat Egea'),h('small',null,'Güne dokun · araçları gör'))),
         h('div',{className:'rent-list-heading'},h('h3',null,archive?'İptal edilenler':day?new Date(day+'T12:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long'}):'Bu ayın kiralamaları'),h('button',{onClick:()=>{setDay('');setOnlyUnpaid(false);setArchive(!archive);}},archive?'Takvime dön':'İptal arşivi'),day&&h('button',{onClick:()=>setDay('')},'Tüm ay')),
         h('div',{className:'rent-cards'},(onlyUnpaid?active.filter(x=>{const c=rentalCalc(x);return c.customerDue>0||c.brokerDue!==0;}):shown).map(x=>{const v=rentalCalc(x),future=v.start>Date.now(),ended=v.end<=Date.now();return h('article',{className:'rent-card',key:x.id},h('div',{className:'rent-card-top'},h(RentalBadge,{model:x.model}),h('div',null,h('h3',null,x.model),h('small',null,x.plate)),h('span',{className:'rent-status'},x.cancelled?'İptal':future?'Planlandı':ended?'Süre doldu':'Kirada')),
-            h('h4',null,x.renter),h('div',{className:'rent-timeline'},h('div',null,h('small',null,'TESLİM'),h('b',null,rentalDateText(v.start))),h('div',null,h('small',null,'DÖNÜŞ'),h('b',null,rentalDateText(v.end)))),h('p',{className:'rent-subtle'},v.days+' gün'+(v.hours?' + '+v.hours+' saat':'')+' · Sahibi: '+x.ownerName+' · Aracı: '+x.brokerName),
-            h('div',{className:'rent-customer-due'},h('small',{className:'rent-payment-label'},'TAHSİLAT TAKİBİ'),line('Müşteri toplamı',v.customerTotal),v.deposit>0&&line('Alınan kapora',-v.deposit),v.paidUs>0&&line('Size yapılan ek ödeme',-v.paidUs),v.paidBroker>0&&line('Müşterinin aracıya ödediği',-v.paidBroker),line('Müşteriden kalan',v.customerDue,true),h('small',null,v.customerDue>0?rentalDueLabel(x.customerDueDate,v.end):'Müşteri ödemesi tamam'),v.brokerDue!==0&&h('div',{className:'rent-broker-due'},line(x.brokerName+(v.brokerDue>0?' · alacağım':' · ödeyeceğim'),Math.abs(v.brokerDue),true),h('small',null,rentalDueLabel(x.brokerDueDate,v.end)))),
+            h('div',{className:'rent-person-row'},h('h4',null,x.renter),h('small',null,rentalDurationLabel(x))),h('div',{className:'rent-timeline'},h('div',null,h('small',null,'TESLİM'),h('b',null,rentalDateText(v.start))),h('div',null,h('small',null,'DÖNÜŞ'),h('b',null,rentalDateText(v.end)))),
+            h('div',{className:'rent-compact-balance'},h('span',null,'Müşteriden kalan'),h('b',null,rentalMoney(v.customerDue)),h('label',{className:'rent-paid-check'},h('input',{type:'checkbox',checked:v.customerDue<=0.005,disabled:!!x.cancelled||(v.customerDue<=0.005&&!x.customerPaymentUndo),onChange:()=>markCustomerPaid(x)}),v.customerDue<=0.005?'Tahsil edildi':'Tahsil edildi işaretle')),
             h('details',null,h('summary',null,'Kiralama hesabı'),line('Kira + ek süre bedeli',v.customer),line('Havalimanı teslim ücreti',v.delivery),line('Müşteri toplamı',v.customerTotal),line('Alınan kapora',-v.deposit),line('Müşteriden kalan',v.customerDue,true),line(x.brokerName+' · komisyon',v.broker),line('Ölmeztur · kazanç (KDV hariç)',v.profit),line(x.ownerName+' · kesinti öncesi toplam',v.ownerGross),line('KDV matrahı',v.vatBase),line('KDV kesintisi · %20',-v.vat),line(x.ownerName+' · net ödenecek',v.ownerNet,true),h('p',{className:'rent-subtle'},'Teslim ücreti müşteri toplamına dahildir; araç sahibi, komisyoncu ve Ölmeztur kazanç paylaşımından ayrı izlenir. Kapora kazancı değiştirmez. Bu alan ödeme yapmaz.')),
-            h('div',{className:'rent-actions'},h('button',{onClick:()=>{setError('');setDraft({...x});}},'Düzenle / ödeme gir'),h('button',{onClick:()=>toggleArchive(x)},x.cancelled?'Geri al':'İptal et')));}),!shown.length&&!onlyUnpaid&&h('div',{className:'rent-empty'},'Bu görünümde kiralama yok. “Aracı kiraya ver” ile ekleyebilirsin.')),
-        h('footer',{className:'rent-month-summary'},h('small',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})+' · AYLIK ÖLMEZTUR'),h('strong',null,rentalMoney(rentalRound(monthly.profit))),h('span',null,'Kazanç · KDV hariç'),h('p',null,'Ayrı KDV kesintisi: '+rentalMoney(rentalRound(monthly.vat))),h('small',null,'Günlük bedeller 24 saatlik dönemin başladığı aya; ek ücret uzatma başlangıcının ayına yazılır. Transferler bu toplama dahil değildir.')),
+            h('div',{className:'rent-actions'},h('button',{onClick:()=>{setError('');setAddOwner(false);setAddVehicle(false);setDraft({...x,end:x.end||rentalLocalInput(v.end)});}},'Düzenle / ödeme'),h('button',{onClick:()=>toggleArchive(x)},x.cancelled?'Geri al':'İptal et')));}),!shown.length&&!onlyUnpaid&&h('div',{className:'rent-empty'},'Bu görünümde kiralama yok. “Aracı kiraya ver” ile ekleyebilirsin.')),
+        h('footer',{className:'rent-net-strip'},h('details',null,h('summary',null,h('span',null,'Aylık Net Kar'),h('strong',null,rentalMoney(rentalRound(monthly.profit))),h('small',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})+' · Ölmeztur')),h('p',null,'KDV hariç net kazanç. Ayrı KDV kesintisi: '+rentalMoney(rentalRound(monthly.vat))),h('p',null,'Günlük bedeller 24 saatlik dönemin başladığı aya; ek ücret uzatma başlangıcının ayına yazılır. Transferler bu toplama dahil değildir.'))),
         draft&&h('div',{className:'rent-overlay'},h('section',{className:'rent-dialog',role:'dialog','aria-modal':true,'aria-label':'Aracı kiraya ver'},h('header',null,h('h2',null,'Aracı kiraya ver'),h('button',{'aria-label':'Formu kapat',onClick:()=>{scanToken.current++;setScan('');setDraft(null);}},'✕')),
-            h('div',{className:'rent-form-grid'},h('label',{className:'rent-field'},h('span',null,'Araç modeli'),h('select',{className:'inp',value:draft.model,onChange:e=>update('model',e.target.value)},['Toyota Proace City','Fiat Egea'].map(v=>h('option',{key:v},v)))),field('Plaka','plate'),field('Kiracı · ad soyad','renter'),field('Pasaport no','passport'),
+            h('div',{className:'rent-form-grid'},h('h3',{className:'rent-wide'},'Araç ve kiracı'),
+                h('div',{className:'rent-wide rent-select-add'},h('label',{className:'rent-field'},h('span',null,'Kayıtlı araç'),h('select',{className:'inp',value:vehicles.some(v=>v.plate===draft.plate)?draft.plate:'',onChange:e=>{const v=vehicles.find(v=>v.plate===e.target.value);if(v)setDraft(d=>({...d,plate:v.plate,model:v.model,ownerName:v.ownerName}));}},h('option',{value:''},'Araç seçin veya + ile ekleyin'),vehicles.map(v=>h('option',{key:v.plate,value:v.plate},v.model+' · '+v.plate)))),h('button',{type:'button',className:'rent-add-option','aria-label':'Yeni araç ekle',onClick:()=>{setAddVehicle(!addVehicle);if(!addVehicle)setDraft(d=>({...d,plate:''}));}},addVehicle?'−':'+')),
+                (addVehicle||!vehicles.some(v=>v.plate===draft.plate))&&h('div',{className:'rent-wide rent-form-grid rent-inline-add'},h('label',{className:'rent-field'},h('span',null,'Araç modeli · yaz veya seç'),h('input',{className:'inp',list:'rental-model-options',value:draft.model,onChange:e=>update('model',e.target.value)}),h('datalist',{id:'rental-model-options'},models.map(v=>h('option',{key:v,value:v})))),field('Plaka','plate'),h('small',{className:'rent-wide rent-subtle'},'Kiralamayı kaydedince araç seçime eklenir.')),
+                field('Kiracı · ad soyad','renter'),field('Pasaport no','passport'),
                 h('div',{className:'rent-wide'},h('input',{type:'file',accept:'image/*',ref:fileRef,style:{display:'none'},onChange:e=>{const file=e.target.files[0];e.target.value='';readPassport(file);}}),h('button',{className:'rent-secondary',disabled:!!scan,onClick:()=>fileRef.current.click()},scan||'Pasaporttan bilgileri oku'),h('p',{className:'rent-subtle'},'Fotoğraf kaydedilmez. Okunan bilgileri belgeyle kontrol edin.'),draft.passportReview&&h('label',null,h('input',{type:'checkbox',checked:false,onChange:()=>update('passportReview',false)}),' Adı ve pasaport numarasını kontrol ettim')),
-                field('Araç sahibi','ownerName'),field('Komisyoncu / aracı','brokerName'),field('Teslim tarihi ve saati','start','datetime-local'),field('Kiralama günü · her 24 saat','days','number'),field('Ek süre · saat (tam gün sayılmaz)','extraHours','number'),h('div',{className:'rent-return'},h('small',null,'HESAPLANAN DÖNÜŞ'),h('b',null,Number.isFinite(c.end)?rentalDateText(c.end):'Tarih girin')),
+                h('div',{className:'rent-wide rent-select-add'},h('label',{className:'rent-field'},h('span',null,'Araç sahibi'),h('select',{className:'inp',value:owners.includes(draft.ownerName)?draft.ownerName:'',onChange:e=>update('ownerName',e.target.value)},h('option',{value:''},'Araç sahibini seçin'),owners.map(v=>h('option',{key:v,value:v},v)))),h('button',{type:'button',className:'rent-add-option','aria-label':'Yeni araç sahibi ekle',onClick:()=>setAddOwner(!addOwner)},addOwner?'−':'+')),
+                addOwner&&field('Yeni araç sahibi · ad soyad','ownerName'),field('Komisyoncu / aracı','brokerName'),
+                h('h3',{className:'rent-wide'},'Teslim ve dönüş'),field('Teslim tarihi ve saati','start','datetime-local'),field('Dönüş tarihi ve saati','end','datetime-local'),h('div',{className:'rent-return rent-wide'},h('small',null,'KİRALAMA SÜRESİ'),h('b',null,rentalDurationLabel(draft)),h('p',{className:'rent-subtle'},'24 saat = 1 gün. Bir günden kısa kiralamada 1 günlük bedel uygulanır. Artan saat ücretini Ek süre bölümünden belirleyin.')),
                 h('label',{className:'rent-wide rent-subtle'},h('input',{type:'checkbox',checked:!!draft.renterIsFirm,onChange:e=>update('renterIsFirm',e.target.checked)}),' Kiralama alacağını firma hesaplarına dahil et'),
                 draft.renterIsFirm&&field('Borçlu kiracı firma · ör. Teşdemir Tur','renterFirm'),
                 h('p',{className:'rent-wide rent-subtle'},'Aracı komisyonu ve araç sahibinin bakiyesi firma hesaplarında otomatik görünür. Kiracı bireysel müşteri ise kutuyu kapalı bırakın. Firma adı mevcut hesapla aynı olmalı.'),
-                h('h3',{className:'rent-wide'},'Günlük anlaşma'),amountField('Müşteri günlük bedeli','customer'),amountField('Aracıya günlük araç bedeli','wholesale'),amountField('Araç sahibinin günlük bedeli','owner'),amountField('Günlük KDV matrahı · %20','vatBase'),
+                h('details',{className:'rent-wide rent-form-section',open:true},h('summary',null,'Günlük anlaşma ve paylar'),h('div',{className:'rent-form-grid'},amountField('Müşteri günlük bedeli','customer'),amountField('Aracıya günlük araç bedeli','wholesale'),amountField('Araç sahibinin günlük bedeli','owner'),amountField('Günlük KDV matrahı · %20','vatBase'))),
                 h('h3',{className:'rent-wide'},'Müşteri · teslim ve kapora'),amountField('Havalimanı teslim ücreti · toplam','delivery'),amountField('Alınan kapora · toplam','deposit'),
-                h('details',{className:'rent-wide rent-payment-editor',open:true},h('summary',null,'Ödemeler · müşteriden ve aracıdan'),h('div',{className:'rent-form-grid'},
+                h('details',{className:'rent-wide rent-payment-editor'},h('summary',null,'Ödemeler · müşteriden ve aracıdan'),h('div',{className:'rent-form-grid'},
                     amountField('Size ödenen · kapora hariç toplam','paidUs'),amountField('Müşterinin aracıya ödediği toplam','paidBroker'),
                     amountField('Aracıya ödediğim komisyon toplamı','brokerCommissionPaid'),amountField('Aracıdan aldığım toplam','brokerReceived'),
                     field('Müşteri ödeme tarihi · boşsa dönüş günü','customerDueDate','date'),field('Aracı ödeme tarihi · boşsa dönüş günü','brokerDueDate','date'),amountField('Araç sahibine ödediğim toplam · KDV sonrası','ownerPaid')),
@@ -9201,7 +9241,7 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
                 h('p',{className:'rent-wide rent-subtle'},'Teslim ücreti bir kez eklenir; gün sayısıyla çarpılmaz. Kapora toplamdan düşer, kalan dönüşte tahsil edilir. Kapora yoksa boş bırakın veya 0 yazın. Döviz karşılıkları aşağıdaki kayıtlı kurla hesaplanır.'),
                 h('details',{className:'rent-wide'},h('summary',null,'Ek süre ücretleri · elle belirle'),h('p',{className:'rent-subtle'},'Ek saat yalnızca dönüşü uzatır. Aşağıdaki tutarlar tek seferlik ek ücrettir; saatle çarpılmaz.'),h('div',{className:'rent-form-grid'},amountField('Müşteriden ek ücret','customerExtra'),amountField('Aracıya ek araç bedeli','wholesaleExtra'),amountField('Araç sahibine ek bedel','ownerExtra'),amountField('Ek KDV matrahı','vatBaseExtra'))),
                 h('details',{className:'rent-wide'},h('summary',null,'Döviz kurları · kayıtta sabitlenir'),h('p',{className:'rent-subtle'},'Uygulamanın son kuru kullanılır. Kaynak zamanı: '+(draft.fxDate?new Date(draft.fxDate).toLocaleString('tr-TR'):'bilinmiyor; kuru kontrol edin')+'. Mevcut kiralama güncel kurla kendiliğinden değişmez.'),['USD','EUR'].map(cur=>h('label',{className:'rent-field',key:cur},h('span',null,'1 '+cur+' = TL'),h('input',{className:'inp',inputMode:'decimal',value:draft.fx[cur]||'',onChange:e=>setDraft(d=>({...d,fx:{...d.fx,[cur]:moneyValue(e.target.value)}}))})))),field('Not','notes')),
-            h('div',{className:'rent-calculation'},line('Kira + ek süre bedeli',c.customer),line('Havalimanı teslim ücreti',c.delivery),line('Müşteri toplamı',c.customerTotal),line('Alınan kapora',-c.deposit),line('Dönüşte müşteriden tahsil edilecek',c.customerDue,true),h('p',{className:'rent-subtle'},'Teslim ücreti aşağıdaki kazanç/pay dağılımına dahil değildir.'),line((draft.brokerName||'Aracı')+' · komisyon',c.broker),line('Ölmeztur · kazanç',c.profit),line('Araç sahibi · kesinti öncesi toplam',c.ownerGross),line('KDV kesintisi · %20',-c.vat),line((draft.ownerName||'Araç sahibi')+' · net ödenecek',c.ownerNet,true)),
+            h('details',{className:'rent-calculation'},h('summary',null,'Hesap özeti · '+rentalMoney(c.customerTotal)),line('Kira + ek süre bedeli',c.customer),line('Havalimanı teslim ücreti',c.delivery),line('Müşteri toplamı',c.customerTotal),line('Alınan kapora',-c.deposit),line('Dönüşte müşteriden tahsil edilecek',c.customerDue,true),h('p',{className:'rent-subtle'},'Teslim ücreti aşağıdaki kazanç/pay dağılımına dahil değildir.'),line((draft.brokerName||'Aracı')+' · komisyon',c.broker),line('Ölmeztur · kazanç',c.profit),line('Araç sahibi · kesinti öncesi toplam',c.ownerGross),line('KDV kesintisi · %20',-c.vat),line((draft.ownerName||'Araç sahibi')+' · net ödenecek',c.ownerNet,true)),
             error&&h('p',{className:'rent-error',role:'alert'},error),h('button',{className:'rent-primary rent-save',disabled:!!scan||!!draft.passportReview,onClick:save},'Kiralamayı kaydet'))));
 }
 function App() {
@@ -9694,7 +9734,7 @@ function App() {
                     queueCloudSnapshot(pendingCloudSnapshotRef.current, 140);
             });
         };
-        const waitMs = delay == null ? 500 : Math.max(0, Number(delay) || 0);
+        const waitMs = delay == null ? 180 : Math.max(0, Number(delay) || 0);
         if (waitMs <= 0) send();
         else cloudWriteTimerRef.current = setTimeout(send, waitMs);
     };
@@ -9877,13 +9917,22 @@ function App() {
             setSyncMessage('İnternet geldi; bulut yeniden kontrol ediliyor.');
             if(cloudReconnectRef.current) cloudReconnectRef.current();
         };
+        const onResume = () => {
+            if(!authUser || document.visibilityState === 'hidden' || !navigator.onLine) return;
+            const needsCheck = readCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY) || syncPhase === 'error' || syncPhase === 'offline';
+            if(needsCheck && cloudReconnectRef.current) cloudReconnectRef.current();
+        };
         window.addEventListener('offline', onOffline);
         window.addEventListener('online', onOnline);
+        window.addEventListener('focus', onResume);
+        document.addEventListener('visibilitychange', onResume);
         return () => {
             window.removeEventListener('offline', onOffline);
             window.removeEventListener('online', onOnline);
+            window.removeEventListener('focus', onResume);
+            document.removeEventListener('visibilitychange', onResume);
         };
-    }, [authUser]);
+    }, [authUser, syncPhase]);
     useEffect(() => {
         if (!storageReady) return;
         const onStorageSync = event => {
@@ -9993,9 +10042,9 @@ function App() {
                 const snapshot = { ...snapshotCore, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
                 try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)); } catch(e) { console.error('[LS] yazma hatası', e); }
                 if (cloudEnabled() && authUser && cloudLoadedRef.current && saveSig !== lastCloudServerSigRef.current && Date.now() >= cloudBackoffUntilRef.current)
-                    queueCloudSnapshot(snapshot, 120);
+                    queueCloudSnapshot(snapshot, 40);
             } catch(inner) { console.error('[SAVE inner]', inner); }
-        }, 180);
+        }, 70);
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, rentals, debts, accountAdjustments, todos, tkLedger, crossRates, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
@@ -11359,6 +11408,13 @@ function App() {
         writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
         persistRef.current = { ...current, rk: next };
         setRentals(next);
+    };
+    const openRentalFromAccount = request => {
+        if(!request.settleOwner){setRentalOpenRequest(request);setTab('rentals');return;}
+        const row=(persistRef.current.rk||[]).find(r=>r.id===request.id);if(!row)return;
+        const due=rentalRound(rentalCalc(row).ownerNet-rentalAmount(row,'ownerPaid'));
+        if(!window.confirm(due>0.005?row.ownerName+' için kalan '+rentalMoney(due)+' ödeme yapıldı olarak işaretlensin mi? Bu işlem para göndermez.':'Son tam ödeme işareti geri alınıp hesap açılsın mı? Önceki kısmi ödeme korunur.'))return;
+        try{saveRentals(prev=>prev.map(r=>r.id===request.id?rentalPaymentUpdate(r,'owner'):r));tip('Araç sahibi ödeme durumu güncellendi');}catch(e){tip('Ödeme durumu kaydedilemedi; tekrar deneyin');}
     };
     const doBackup = async () => {
         if (!storageReady) { tip('Kayıtların yüklenmesini bekleyin'); return; }
@@ -14344,7 +14400,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { rentals: rentals, onOpenRental: request=>{setRentalOpenRequest(request);setTab('rentals');}, T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { rentals: rentals, agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { rentals: rentals, onOpenRental: openRentalFromAccount, T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { rentals: rentals, agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
             tab === 'rentals' && React.createElement(RentalTab, { openRequest: rentalOpenRequest, onRequestHandled:()=>setRentalOpenRequest(null), rows: rentals, setRows: saveRentals, rates: rates, rateDate: lastRateUpdate, tip: tip, calendarEnabled: rentalCalendarEnabled, setCalendarEnabled: setRentalCalendarConsent, publishCalendar:()=>publishAppleCalendarToGithub(false), calendarBusy:githubCalendarBusy, calendarMessage:githubCalendarMsg }),
             tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         React.createElement("nav", { className: "tabbar" },
@@ -16456,6 +16512,30 @@ body nav.tabbar .tab.is-active{background:#eaf0f5!important;color:#24435c!import
 .view-hesap .mo{background:rgba(26,43,53,.3)!important}.view-hesap .ms{background:#fafcfc!important;border:1px solid #e0e9e8!important;border-radius:26px!important;padding:24px!important;box-shadow:0 20px 70px #213c4926!important;max-height:88dvh!important;overflow:auto!important}.view-hesap .ms input,.view-hesap .ms select,.view-hesap .ms textarea{font-size:16px!important;min-height:44px!important}
 @media(max-width:600px){.view-hesap .ko-account-action-head{grid-template-columns:32px minmax(0,1fr) 24px!important;gap:10px!important;padding:16px!important;min-height:80px}.view-hesap .ko-account-action-ico{width:32px;height:36px;border-radius:11px;font-size:18px!important;grid-column:1;grid-row:1/3}.view-hesap .ko-account-action-copy{grid-column:2;grid-row:1!important}.view-hesap .ko-account-action-chevron{grid-column:3;grid-row:1/3!important}.view-hesap .ko-account-action-value{grid-column:2;grid-row:2;font-size:14px!important;justify-self:start;line-height:1.4}.view-hesap .ko-account-action-title{font-size:15px!important}.view-hesap .ko-account-action-sub{font-size:11.5px!important;line-height:1.6!important}.view-hesap .ko-account-action-body,.view-hesap .rent-firm-content{padding:16px!important}.view-hesap .rent-firm-row{grid-template-columns:minmax(0,1fr)!important}.view-hesap .rent-firm-amount{border-top:1px solid #edf1ef;padding-top:12px;text-align:left;grid-template-columns:1fr auto!important;align-items:center}.view-hesap .rent-firm-row details,.view-hesap .rent-firm-row>button{grid-column:1!important}.view-hesap .ms{padding:19px!important;border-radius:23px 23px 0 0!important}.view-hesap .ko-account-action-box{border-radius:19px!important}}
 @media(prefers-reduced-motion:reduce){.view-hesap *{transition:none!important;animation:none!important}}
+</style>
+<style id="ko-rental-compact-v5">
+.rent-paid-check input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;min-height:19px!important;max-height:19px!important;height:19px!important;min-width:19px!important;max-width:19px!important;width:19px!important;padding:0!important;box-shadow:none!important;border-radius:4px!important}.rent-card .rent-paid-check{min-height:23px!important}.rent-card .rent-timeline{padding:8px 0!important}.rent-card h4{margin:8px 0!important}.rent-card .rent-actions{margin-top:5px!important}
+.rent-root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif!important}.rent-cards{gap:12px!important;align-items:start}.rent-card{padding:15px!important;border-radius:18px!important;box-shadow:0 3px 12px #203d4805!important;background:#fff!important;border:1px solid #e0e7e8!important}.rent-card-top{gap:10px!important}.rent-card .rent-brand{width:35px!important;height:35px!important;min-width:35px!important;border-radius:11px!important}.rent-card .rent-brand svg{width:28px;height:22px}.rent-card .rent-brand strong{font-size:10px}.rent-card h3{font-size:14px!important;line-height:1.4!important;font-weight:600!important;margin:0!important}.rent-card h4{font-size:14px!important;font-weight:500!important;margin:12px 0 8px!important;letter-spacing:-.15px!important;line-height:1.45}.rent-card-top small{font-size:11px!important}.rent-card .rent-status{font-size:9px!important;padding:5px 8px!important;border-radius:8px!important}.rent-timeline{gap:10px!important;padding:10px 0!important}.rent-timeline b{font-size:11.5px!important;line-height:1.55!important}.rent-card>.rent-subtle{font-size:11px!important;line-height:1.5!important;margin:8px 0!important}.rent-card>details{margin-top:8px;border-top:1px solid #edf1ef;padding-top:7px}.rent-card>details>summary{font-size:11.5px;min-height:34px;padding:8px 0;box-sizing:border-box;color:#607d75;cursor:pointer}.rent-card .rent-actions{margin-top:9px!important;gap:8px}.rent-card .rent-actions button{font-size:11px!important;padding:8px 12px!important;min-height:40px!important}.rent-compact-balance{display:grid;grid-template-columns:1fr auto;gap:9px;background:#f3f7f5;border:1px solid #e3ece7;border-radius:12px;padding:11px 12px;font-size:12px;color:#567369}.rent-compact-balance>b{font-size:15px;font-weight:600;color:#365e51;font-variant-numeric:tabular-nums}.rent-paid-check{grid-column:1/-1;display:flex;align-items:center;gap:9px;min-height:30px;font-size:11.5px;cursor:pointer}.rent-paid-check input{width:19px;height:19px;accent-color:#50786a;margin:0}.rent-settle{grid-column:1/-1;font-family:inherit;background:#faf4e9;border:1px solid #eadcc6;border-radius:11px;padding:11px 13px;min-height:42px;font-size:12px;color:#846b43;cursor:pointer}.rent-settle.is-closed{background:#eef5f0;border-color:#d7e6db;color:#4e775b}.rent-firm-row.is-closed{background:#f8fbf9;border-color:#dce8df}.rent-closed-firms{padding:15px;border:1px solid #dfe8e3;border-radius:16px;margin-top:12px;background:#f7faf8;color:#5b7769;font-size:12px}.rent-closed-firms summary{cursor:pointer;min-height:25px}.rent-closed-firms button{display:block;width:100%;text-align:left;padding:13px;border:1px solid #e2ebe6;background:white;color:#597568;border-radius:11px;margin-top:9px;font:inherit;cursor:pointer}
+.rent-dialog{max-width:650px!important;padding:23px!important;background:#fafcfc!important;border:1px solid #e1e9e8;border-radius:24px!important}.rent-dialog>header h2{font-size:21px!important;font-weight:600!important;letter-spacing:-.5px}.rent-dialog .rent-form-grid{gap:16px 12px!important}.rent-dialog .inp{font-size:16px!important;min-height:46px!important;border:1px solid #dce6e5!important;border-radius:11px!important;background:#fff!important;box-sizing:border-box!important;width:100%;max-width:100%;color:#35515b!important}.rent-field>span{font-size:11.5px!important;line-height:1.5!important;font-weight:500!important;color:#6b8188!important}.rent-dialog h3{font-size:14px!important;font-weight:600!important;color:#3c5d62!important}.rent-select-add{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:end;gap:9px}.rent-add-option{min-height:46px;background:#edf3f1;color:#4d7164;border:1px solid #d8e5de;border-radius:12px;font-size:23px;cursor:pointer}.rent-inline-add{background:#f1f6f3;border:1px solid #e0eae4;border-radius:14px;padding:14px}.rent-return{padding:13px!important;border-radius:13px!important;background:#edf4f1!important}.rent-return b{font-size:13px!important;line-height:1.5}.rent-return p{margin:7px 0 0;font-size:11px;line-height:1.6}.rent-dialog details.rent-wide,.rent-dialog .rent-calculation{background:#f5f8f7;border:1px solid #dfe9e3;border-radius:15px;padding:13px!important}.rent-dialog summary{font-size:13px;font-weight:550;line-height:1.5;color:#42675c;cursor:pointer;min-height:27px}.rent-dialog details[open]>summary{margin-bottom:13px}.rent-dialog .rent-subtle{font-size:11px!important;line-height:1.65!important}.rent-dialog .rent-money-input{grid-template-columns:minmax(0,1fr) 76px!important}.rent-save{margin-top:18px!important;background:#345b60!important;border-radius:13px!important;font-size:14px!important}.rent-dialog input:focus-visible,.rent-dialog select:focus-visible{outline:2px solid #90b0a3;outline-offset:2px}.view-hesap .ko-account-action-head{min-height:100px!important}.view-hesap .ko-account-action-ico,.view-hesap .ko-account-action-chevron{font-family:inherit!important}
+@media(max-width:600px){.rent-cards{grid-template-columns:minmax(0,1fr)!important}.rent-card{padding:14px!important}.rent-dialog{padding:17px!important;border-radius:22px!important}.rent-dialog .rent-form-grid{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}.rent-dialog .rent-wide{grid-column:1!important}.rent-heading{gap:10px!important}.rent-heading h2{font-size:23px!important}.rent-heading p{font-size:11px!important}.rent-heading .rent-primary{font-size:11px!important;padding:11px 12px!important}.rent-dialog .rent-form-grid h3{margin:8px 0 0!important}.rent-overlay{padding:10px!important}.view-hesap .ko-account-action-head{min-height:110px!important}.view-hesap .ko-account-action-copy{min-height:43px}.view-hesap .ko-account-action-value{min-height:20px}.view-hesap .ko-account-action-chevron{transform:none!important}}
+</style>
+<style id="ko-rental-short-cards">
+.rent-card{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:7px;padding:10px 12px!important;border-left:4px solid #90aaa0!important;border-radius:15px!important}
+.rent-card>.rent-card-top,.rent-card>.rent-person-row,.rent-card>.rent-timeline,.rent-card>.rent-compact-balance{grid-column:1/-1}
+.rent-person-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:6px 0}
+.rent-card .rent-person-row h4{margin:0!important;font-size:13px!important;overflow-wrap:anywhere}
+.rent-person-row>small{text-align:right;flex-shrink:0;font-size:10px;max-width:45%;line-height:1.5}
+.rent-card .rent-timeline{padding:6px 0!important}.rent-card .rent-timeline div{gap:2px}.rent-card .rent-timeline b{font-size:11px!important;white-space:nowrap}.rent-card .rent-timeline small{font-size:8px;letter-spacing:.06em}
+.rent-card .rent-compact-balance{grid-template-columns:minmax(0,1fr) auto;gap:1px 8px;padding:5px 0;background:none;border:0;border-radius:0;align-items:center}
+.rent-compact-balance>span{font-size:10px;grid-column:1;grid-row:1}.rent-card .rent-compact-balance>b{font-size:15px;grid-column:1;grid-row:2}
+.rent-card .rent-paid-check{grid-column:2;grid-row:1/3;font-size:10px;gap:6px;min-height:44px!important}
+.rent-card>details{grid-column:1;margin:0;padding:0;border:0;align-self:center;min-width:0}
+.rent-card>details>summary{min-height:40px;padding:12px 0;font-size:10.5px}
+.rent-card>details[open]{grid-column:1/-1;border-top:1px solid #edf1ef}.rent-card>details[open]+.rent-actions{grid-column:1/-1;justify-content:flex-end}
+.rent-card .rent-actions{margin:0!important;gap:4px;align-self:center}.rent-card .rent-actions button{padding:6px 8px!important;min-height:40px!important;font-size:9.5px!important;border-color:transparent;background:#f5f8f7}
+.rent-net-strip{margin-top:12px;padding:0;background:#fff;border:1px solid var(--line,#dfe6e8);border-radius:13px;color:#4a695d;box-shadow:var(--shadow,0 1px 2px rgba(37,40,35,.06))}
+.rent-net-strip>details{margin:0}.rent-net-strip summary{display:grid;grid-template-columns:1fr auto;gap:1px 12px;align-items:center;padding:8px 11px;cursor:pointer;list-style:none}.rent-net-strip summary::-webkit-details-marker{display:none}.rent-net-strip summary>span{font-size:10px;color:var(--p-ink-4,#74828a)}.rent-net-strip summary>strong{font-size:13.5px;font-weight:500;color:var(--p-brand,#37675b);font-variant-numeric:tabular-nums;grid-column:2;grid-row:1/3}.rent-net-strip summary>small{font-size:10px;color:var(--p-ink-4,#74828a);grid-column:1}.rent-net-strip p{font-size:10px;line-height:1.55;margin:0;padding:0 11px 7px;color:#778b81}
+@media(max-width:600px){.rent-card{padding:10px 11px!important}.rent-card .rent-brand{width:32px!important;height:32px!important;min-width:32px!important}.rent-card .rent-brand svg{width:25px;height:20px}.rent-card h3{font-size:12.5px!important}.rent-card-top small{font-size:10px!important}.rent-card .rent-status{padding:4px 7px!important}.rent-card .rent-paid-check{min-height:38px!important}.rent-net-strip{margin-bottom:4px}}
 </style>
 </body>
 </html>
