@@ -14357,12 +14357,21 @@ function App() {
                                 : React.createElement("button", { className: "ko-submit-btn", type: "button", onClick: submit, style: { flex: 1, background: 'var(--p-brand)', color: 'var(--p-white)', WebkitTextFillColor: 'var(--p-white)', border: '1px solid var(--p-ink-2)', borderRadius: 15, padding: '15px', fontWeight: 500, fontSize: '15px', boxShadow: '0 8px 22px rgba(31,39,51,.28)', cursor: 'pointer', letterSpacing: '.3px' } }, editId ? '✓ Güncelle' : '✓ Transfer Kaydet')));
                 })())),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                React.createElement("section", { className: "ko-transfer-page-head" },
+                    React.createElement("div", { className: "ko-transfer-page-copy" },
+                        React.createElement("small", null, "OPERASYON"),
+                        React.createElement("h2", null, "Transferler"),
+                        React.createElement("p", null, "Gidiş, geliş, tur ve diğer işler")),
+                    React.createElement("button", { type: "button", className: "ko-new-transfer-top", onClick: openNewTransferForm, "aria-label": "Yeni transfer ekle" },
+                        React.createElement("span", { "aria-hidden": "true" }, "+"),
+                        React.createElement("div", null,
+                            React.createElement("b", null, "Yeni Transfer"),
+                            React.createElement("small", null, "Hızlı ekle")))),
                 React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
                     React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Ara", className: "inp", style: { fontSize: '14px' } })),
                 visibleListRows.length === 0 ? (React.createElement("div", { style: { textAlign: 'center', paddingTop: 40 } },
                     React.createElement("div", { style: { fontSize: 46, marginBottom: 8 } }, "✈️"),
-                    React.createElement("div", { style: { fontWeight: 470, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'),
-                    T.length === 0 && React.createElement("button", { onClick: openNewTransferForm, style: { marginTop: 12, background: NAV, color: 'var(--p-white)', border: 'none', padding: '10px 24px', borderRadius: 13, fontWeight: 470, cursor: 'pointer' } }, "+ Yeni Transfer"))) : renderTransferList(),
+                    React.createElement("div", { style: { fontWeight: 470, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'))) : renderTransferList(),
                 React.createElement("div", { style: { marginTop: 18, marginBottom: 22 } }, renderNetKarSection()),
                 false && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
                     React.createElement("div", { onClick: () => setShowSt(v => !v), style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--p-tint-3)', borderRadius: 10, padding: '8px 12px', border: '1px solid var(--p-line-3)', cursor: 'pointer' } },
@@ -14413,9 +14422,6 @@ function App() {
                     React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.list)),
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
-                React.createElement("button", { className: "tab-fab", onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
-                    React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+"),
-                    React.createElement("span", { className: "rent-add-label", "aria-hidden": "true" }, "Ekle")),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.hesap)),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
@@ -16536,6 +16542,16 @@ body nav.tabbar .tab.is-active{background:#eaf0f5!important;color:#24435c!import
 .rent-net-strip{margin-top:12px;padding:0;background:#fff;border:1px solid var(--line,#dfe6e8);border-radius:13px;color:#4a695d;box-shadow:var(--shadow,0 1px 2px rgba(37,40,35,.06))}
 .rent-net-strip>details{margin:0}.rent-net-strip summary{display:grid;grid-template-columns:1fr auto;gap:1px 12px;align-items:center;padding:8px 11px;cursor:pointer;list-style:none}.rent-net-strip summary::-webkit-details-marker{display:none}.rent-net-strip summary>span{font-size:10px;color:var(--p-ink-4,#74828a)}.rent-net-strip summary>strong{font-size:13.5px;font-weight:500;color:var(--p-brand,#37675b);font-variant-numeric:tabular-nums;grid-column:2;grid-row:1/3}.rent-net-strip summary>small{font-size:10px;color:var(--p-ink-4,#74828a);grid-column:1}.rent-net-strip p{font-size:10px;line-height:1.55;margin:0;padding:0 11px 7px;color:#778b81}
 @media(max-width:600px){.rent-card{padding:8px 10px!important}.rent-card .rent-brand{width:29px!important;height:29px!important;min-width:29px!important;border-radius:9px!important}.rent-card .rent-brand svg{width:23px;height:18px}.rent-card h3{font-size:12px!important}.rent-card-top{gap:8px!important}.rent-card-top small{font-size:9.5px!important}.rent-card .rent-status{padding:3px 6px!important;font-size:8px!important}.rent-card .rent-paid-check{min-height:32px!important}.rent-paid-check input[type=checkbox]{width:17px!important;min-width:17px!important;max-width:17px!important;height:17px!important;min-height:17px!important;max-height:17px!important}.rent-net-strip{margin-bottom:4px}}
+</style>
+<style id="ko-transfer-top-action-v7">
+.ko-transfer-page-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 16px;border:1px solid rgba(42,70,83,.12);border-radius:20px;background:linear-gradient(145deg,#fff 48%,#eef5f3);box-shadow:0 5px 18px rgba(28,56,68,.055)}
+.ko-transfer-page-copy{min-width:0}.ko-transfer-page-copy>small{display:block;font-size:8px;font-weight:650;letter-spacing:.16em;color:#7c9297}.ko-transfer-page-copy h2{font-size:21px;line-height:1.15;letter-spacing:-.55px;font-weight:620;color:#263f4d;margin:4px 0 3px}.ko-transfer-page-copy p{font-size:10.5px;line-height:1.4;color:#7a898f;margin:0}
+.ko-new-transfer-top{flex:0 0 auto;display:flex;align-items:center;gap:9px;min-height:48px;padding:7px 13px 7px 8px;border:1px solid rgba(255,255,255,.42);border-radius:15px;background:linear-gradient(145deg,#31586c,#1b3a50);color:#fff;box-shadow:0 8px 18px rgba(30,60,77,.17),inset 0 1px 0 rgba(255,255,255,.2);font:inherit;cursor:pointer;text-align:left}
+.ko-new-transfer-top>span{display:grid;place-items:center;width:33px;height:33px;border-radius:11px;background:rgba(255,255,255,.14);font-size:26px;font-weight:280;line-height:1;color:#fff}.ko-new-transfer-top>div{display:flex;flex-direction:column;gap:1px}.ko-new-transfer-top b{font-size:11.5px;line-height:1.25;font-weight:620;white-space:nowrap}.ko-new-transfer-top small{font-size:8.5px;color:#dbe8ed;white-space:nowrap}.ko-new-transfer-top:active{transform:scale(.975)}.ko-new-transfer-top:focus-visible{outline:2px solid #6f969f;outline-offset:3px}
+body nav.tabbar .tabbar-inner{grid-template-columns:repeat(5,minmax(0,1fr))!important;max-width:620px!important;height:68px!important;min-height:68px!important;padding:6px 7px 5px!important;gap:4px!important}
+body nav.tabbar .tabbar-inner>.tab{height:55px!important;max-width:82px!important;padding:5px 2px!important;gap:5px!important}
+body nav.tabbar{border-radius:22px 22px 0 0!important}
+@media(max-width:600px){.ko-transfer-page-head{padding:12px 12px 12px 14px;border-radius:17px;gap:9px}.ko-transfer-page-copy h2{font-size:19px}.ko-transfer-page-copy p{max-width:145px;font-size:9.5px}.ko-new-transfer-top{min-height:44px;padding:6px 10px 6px 7px;border-radius:13px;gap:7px}.ko-new-transfer-top>span{width:30px;height:30px;border-radius:10px;font-size:23px}.ko-new-transfer-top b{font-size:10.5px}.ko-new-transfer-top small{font-size:8px}body nav.tabbar .tabbar-inner>.tab{max-width:68px!important}body nav.tabbar .tab-label{font-size:9px!important}}
 </style>
 </body>
 </html>
