@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-09-27-firm-broker-1">
+<meta name="v500-release" content="2026-09-29-rental-firm-ledger-3">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -3277,6 +3277,7 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
         }),
         ap: { ...((older && older.ap) || {}), ...((newer && newer.ap) || {}) },
         ak: mergeById('ak'),
+        rk: mergeRecordsByIdWithDeletes((preferred && preferred.rk) || [], (fallback && fallback.rk) || [], []),
         db: mergeById('db'),
         tk: mergeById('tk'),
         tl: mergeById('tl'),
@@ -3347,6 +3348,7 @@ const snapshotContentSignature = snap => {
     const s = snap || {};
     return [
         recordListSignature(s.t, false), recordListSignature(s.ak, true), recordListSignature(s.db, true),
+        recordListSignature(s.rk, true),
         recordListSignature(s.adj || s.accountAdjustments, true), recordListSignature(s.tk, true), recordListSignature(s.tl, true),
         objectContentSignature(s.a || []), objectContentSignature(s.ap || {}),
         objectContentSignature(s.dr || []), objectContentSignature(s.r || {}),
@@ -4815,7 +4817,8 @@ function shouldUseOnlyPlate16TabForSummary(t) {
 }
 const PLATE16_AUTO_TRIP_PREFIX = 'plate16_auto_';
 const plate16AutoTripId = t => PLATE16_AUTO_TRIP_PREFIX + String((t && t.id) || '');
-const isPlate16AutoTrip = k => !!(k && (k.autoPlate16 || String(k.id || '').startsWith(PLATE16_AUTO_TRIP_PREFIX)));
+const isPlate16AutoTrip = k => !!(k && (k.autoPlate16 || String(k.id || '').startsWith(PLATE16_AUTO_TRIP_PREFIX) || (k.type === 'sefer' && k.transferId)));
+const plate16LinkedAutoId = k => k && k.transferId ? PLATE16_AUTO_TRIP_PREFIX + String(k.transferId) : String(k && k.id || '');
 const transferPassengerName = t => {
     const p = Array.isArray(t && t.passengers) && t.passengers.length ? t.passengers[0] : null;
     return String((p && (p.name || p.fullName)) || (t && (t.passengerName || t.customerName || t.clientName)) || '').trim();
@@ -4953,10 +4956,13 @@ function syncPlate16TransfersIntoAracK(records, transfers) {
         .filter(t => t && t.id && isPlate16Transfer(t) && t.status !== 'iptal');
     const activeByAutoId = new Map(activeTransfers.map(t => [plate16AutoTripId(t), t]));
     const activeAutoIds = new Set(activeByAutoId.keys());
-    const staleAutoIds = new Set(base.filter(k => isPlate16AutoTrip(k) && !activeAutoIds.has(k.id)).map(k => k.id));
+    const staleAutoIds = new Set(base.filter(k => isPlate16AutoTrip(k) && !activeAutoIds.has(plate16LinkedAutoId(k))).map(k => k.id));
+    const linkedAutoIds = new Map(base.filter(isPlate16AutoTrip).map(k=>[k.id,plate16LinkedAutoId(k)]));
     const usedManualIds = new Set();
     const manualToAuto = new Map();
-    const manualCandidates = base.filter(k => k && k.type === 'sefer' && !isPlate16AutoTrip(k) && !k.transferId);
+    // Only explicit transfer links are owned by this synchronizer. A similar
+    // date/route/price does not authorize converting an independent manual trip.
+    const manualCandidates = [];
     if (manualCandidates.length) {
         activeTransfers.forEach(t => {
             const autoId = plate16AutoTripId(t);
@@ -4996,19 +5002,21 @@ function syncPlate16TransfersIntoAracK(records, transfers) {
             return;
         }
         if (isPlate16AutoTrip(k)) {
-            const transfer = activeByAutoId.get(k.id);
-            if (placedAutoIds.has(k.id))
+            const autoId = plate16LinkedAutoId(k);
+            const transfer = activeByAutoId.get(autoId);
+            if (placedAutoIds.has(autoId))
                 return;
             if (transfer) {
                 next.push(plate16TransferToTrip(transfer, k));
-                placedAutoIds.add(k.id);
+                placedAutoIds.add(autoId);
             }
             return;
         }
-        if (k.type === 'gider' && activeByAutoId.has(k.seferId)) {
-            const transfer = activeByAutoId.get(k.seferId);
+        if (k.type === 'gider' && activeByAutoId.has(linkedAutoIds.get(k.seferId) || k.seferId)) {
+            const autoId = linkedAutoIds.get(k.seferId) || k.seferId;
+            const transfer = activeByAutoId.get(autoId);
             const date = (transfer && transfer.date) || k.date;
-            next.push(String(k.date || '') === String(date || '') ? k : { ...k, date });
+            next.push(String(k.date || '') === String(date || '') && k.seferId === autoId ? k : { ...k, date, seferId:autoId });
             return;
         }
         next.push(k);
@@ -5914,7 +5922,7 @@ function debtNativeText(d, amount, signed) {
     }
     return cur === 'TRY' ? prefix + fr(amount) + ' ₺' : prefix + sym + fr(amount);
 }
-function accountActivityFirmNames(T, adjustments) {
+function accountActivityFirmNames(T, adjustments, rentals = []) {
     const names = [];
     (Array.isArray(T) ? T : []).forEach(t => {
         [t && t.givenBy, t && t.assignedTo, t && t.altAcenta, t && t.brokerFirm].filter(Boolean).forEach(x => names.push(String(x).trim()));
@@ -5923,8 +5931,9 @@ function accountActivityFirmNames(T, adjustments) {
         const name = String(a && a.firm || '').trim();
         if (name) names.push(name);
     });
+    rentals.filter(r => !r.cancelled).forEach(r => [r.brokerName, r.ownerName, r.renterIsFirm && r.renterFirm].filter(Boolean).forEach(n => names.push(String(n).trim())));
     const seen = new Set();
-    return names.filter(name => name && name !== OL && name !== 'Odelo').filter(name => {
+    return names.filter(name => name && !isOlmezturParty(name) && name !== 'Odelo').filter(name => {
         const key = nm(name);
         if (!key || seen.has(key)) return false;
         seen.add(key);
@@ -6244,7 +6253,8 @@ function FirmCommissionEditor({ rows, sT, tip }) {
             React.createElement('div', { className: 'ko-calm-help' }, (canSplit ? 'Hakedişi alt acenta toplar. Payları siz belirlersiniz; kalan Ölmeztur’a kalır. ' : 'Bu turda mevcut yarı yarıya paylaşım uygulanır. ') + 'Kaldırmak için toplamı 0 yapın. Kapatılmış hesaplar kapalı kalır.'),
             React.createElement('button', { type: 'button', className: 'ko-calm-action', onClick: save }, 'Hakedişi kaydet')));
 }
-function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates }) {
+function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelectedRangeDay, setDateRangeStart, setOpenDays, onEditTransfer, accountAdjustments = [], setAccountAdjustments, debts = [], setDebts, rates, rentals = [], onOpenRental }) {
+    const rentalAccounts = React.useMemo(() => rentalAccountIndex(rentals), [rentals]);
     const [sel, setSel] = useState(null);
     const [ara, setAra] = useState('');
     const [ay, setAy] = useState(new Date().toISOString().slice(0, 7));
@@ -6289,7 +6299,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     };
     const normalizedAccountAdjustments = React.useMemo(() => (Array.isArray(accountAdjustments) ? accountAdjustments : []).map(normalizeAccountAdjustment).filter(x => x.firm), [accountAdjustments]);
     const normalizedDebts = React.useMemo(() => Array.isArray(debts) ? debts : [], [debts]);
-    const activeFirmNames = React.useMemo(() => accountActivityFirmNames(T, normalizedAccountAdjustments), [T, normalizedAccountAdjustments]);
+    const activeFirmNames = React.useMemo(() => accountActivityFirmNames(T, normalizedAccountAdjustments, rentals), [T, normalizedAccountAdjustments, rentals]);
     const activeFirmKeys = React.useMemo(() => new Set(activeFirmNames.map(nm)), [activeFirmNames]);
     const isActiveFirm = firm => activeFirmKeys.has(nm(firm));
     const firmDebtRows = firm => isActiveFirm(firm) ? normalizedDebts.filter(d => nm(d && d.name) === nm(firm)) : [];
@@ -6442,7 +6452,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             if (d.type === 'borc') ver += value;
             else al += value;
         });
-        return { ts: detay, debtRows, al, ver, net: al - ver };
+        const rentalRows = rentalAccounts.get(nm(firm)) || [];
+        rentalRows.forEach(r => { al += Math.max(0, r.net); ver += Math.max(0, -r.net); });
+        return { ts: detay, debtRows, rentalRows, al, ver, net: al - ver };
     };
     const hesapSum = liste => {
         let al = 0, ver = 0;
@@ -6490,9 +6502,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         return {
             ts: [...regularTs, ...odelo.ts],
             debtRows: base.debtRows,
-            al: regular.al + odelo.al + debt.al,
-            ver: regular.ver + odelo.ver + debt.ver,
-            net: regular.net + odelo.net + debt.net,
+            rentalRows: base.rentalRows,
+            al: regular.al + odelo.al + debt.al + base.rentalRows.reduce((s,r)=>s+Math.max(0,r.net),0),
+            ver: regular.ver + odelo.ver + debt.ver + base.rentalRows.reduce((s,r)=>s+Math.max(0,-r.net),0),
+            net: regular.net + odelo.net + debt.net + base.rentalRows.reduce((s,r)=>s+r.net,0),
             regularTs,
             odelo
         };
@@ -6762,7 +6775,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const HESAP_NCOL = HESAP_COLS.length;
     const buildHesapSheet = (firm, opts) => {
         opts = opts || {};
-        const { ts: allTs, debtRows } = hesapData(firm);
+        const { ts: allTs, debtRows, rentalRows = [] } = hesapData(firm);
         const ts = allTs.filter(t => !t.firmSettled);
         const sortByDate = (a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1
             : String(a.time || '').localeCompare(String(b.time || '')));
@@ -6923,6 +6936,19 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             blankRow();
             grand.kalan += sumK;
         })();
+        if (rentalRows.length) {
+            rows.push({h:24,cells:Array.from({length:HESAP_NCOL},(_,i)=>({v:i===0?'KİRALIK ARAÇLAR · + ALACAK / − BORÇ':'',s:KOX.SECTION}))});
+            merges.push('A'+rowNo()+':L'+rowNo());
+            rows.push({h:30,cells:['TESLİM','SAAT','HESAP TÜRÜ','ARAÇ / PLAKA','DÖNÜŞ','FİRMA','ANLAŞMA ₺','ÖDENEN ₺','KDV KESİNTİSİ ₺','NET BAKİYE ₺','AÇIKLAMA','KAYIT NO'].map(v=>({v,s:KOX.HEAD}))});
+            rentalRows.slice().sort((a,b)=>String(a.start).localeCompare(String(b.start))).forEach(r=>{
+                rows.push({h:40,cells:[dateTxt(r.start.slice(0,10)),r.start.slice(11,16),r.role,r.model+' / '+r.plate,rentalDateText(r.end),r.firm,r.accrued,r.paid,r.vat,r.net,r.explanation||'Tahakkuk ve kayıtlı ödemeler sonrası bakiye',r.rentalId].map((v,i)=>({v,s:i>=6&&i<=9?KOX.MONEY:KOX.TXT,n:i>=6&&i<=9}))});
+            });
+            const rentalNet=rentalRound(rentalRows.reduce((s,r)=>s+r.net,0));
+            rows.push({h:24,cells:Array.from({length:HESAP_NCOL},(_,i)=>({v:i===0?'KİRALIK ARA TOPLAM':i===9?rentalNet:'',s:i===9?KOX.SUB_MONEY:KOX.SUB_TXT,n:i===9}))});
+            merges.push('A'+rowNo()+':F'+rowNo());
+            grand.kalan+=rentalNet;
+            blankRow();
+        }
         if (rows.length === headRow) {
             const empty = Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.TXT }));
             empty[2] = { v: 'AÇIK KAYIT YOK', s: KOX.TXT };
@@ -6930,7 +6956,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         }
         const tot = [];
         for (let i = 0; i < HESAP_NCOL; i++) tot.push({ v: '', s: KOX.TOTAL_TXT });
-        tot[0] = { v: 'TOPLAM HESAP', s: KOX.TOTAL_TXT };
+        tot[0] = { v: 'TOPLAM HESAP · TRANSFER + KİRALIK + BAKİYE', s: KOX.TOTAL_TXT };
         tot[6] = { v: grand.musteri, s: KOX.TOTAL_MONEY, n: true };
         tot[7] = { v: grand.araba, s: KOX.TOTAL_MONEY, n: true };
         tot[8] = { v: grand.komisyon, s: KOX.TOTAL_MONEY, n: true };
@@ -7721,7 +7747,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const benimVerdiklerim = normalSirali.filter(t => hesapDisplayDirection(t) === 'benVerdim');
                 const odeloKayitlar = sirali.filter(t => t.kaynak === 'odelo');
                 const isBalenturAccount = isBalenturFirm(sel);
-                const jabir = isJabirFirm(sel);
+                const jabir = isJabirFirm(sel) && !(hData.rentalRows || []).length;
                 const usdTotals = jabir ? accountUsdSummary(ts) : null;
                 const monthUsdTotals = jabir ? accountUsdSummary(mts) : null;
                 const usdTlTotals = jabir ? accountUsdTlSummary(ts) : null;
@@ -7747,7 +7773,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { style: { flex: 1, minWidth: 0 } },
                             React.createElement("div", { style: { fontSize: 16, fontWeight: 560, color: TX, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, sel),
                             React.createElement("div", { style: { fontSize: 10.5, color: SB, marginTop: 2 } },
-                                (ts.length + debtRows.length) + " kayıt" + (debtRows.length ? " · " + debtRows.length + " ek hesap" : ""))),
+                                ts.length + " transfer · " + (hData.rentalRows || []).length + " kiralık kalemi" + (debtRows.length ? " · " + debtRows.length + " ek hesap" : ""))),
                         React.createElement("div", { style: { flexShrink: 0, width: 34, height: 34, borderRadius: 11, background: INP, border: '1px solid ' + BOR, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 } }, '🏢')),
                     (function () {
                         const pos = displayNet >= 0;
@@ -7777,7 +7803,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                                 cell('ver', '↓ Borç', jabir ? '−' + fmtUsd(displayVer) : '−' + fr(ver) + ' ₺', R, jabir ? '(' + fmtTl(displayTlVer) + ')' : null, true)),
                             React.createElement("div", { style: { borderTop: '1px solid ' + BOR, background: 'var(--p-bg-hi)', padding: '10px 12px 11px' } },
                                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 } },
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: SB, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 } }, "Seçili ay"),
+                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: SB, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 } }, "Transfer ayı"),
                                     React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', flex: '0 0 auto', width: 'auto', minWidth: 0, maxWidth: 150, background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 9, padding: '5px 9px', color: TX, fontSize: 11.5, fontWeight: 500 } })),
                                 React.createElement("div", { className: "ko-hesap-month-grid", style: { display: 'flex', alignItems: 'stretch' } },
                                     cell('m0', 'İş', String(mtsOpen.length), TX, null, false),
@@ -7801,7 +7827,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         },
                             React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
                                 debtRows.map(d => React.createElement(DebtAccountCard, { key: d.id, d: d, setDebts: setDebts, rates: rates, tip: tip, embedded: true }))))),
-                    koKicker('Transferler', { marginTop: 6 }),
+                    React.createElement(RentalFirmPanel, { key: sel, firm: sel, rows: hData.rentalRows || [], onOpen: onOpenRental }),
+                    koKicker('Transferler · ayrı hesap dökümü', { marginTop: 6 }),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                         React.createElement(React.Fragment, null,
                             manualKayitlar.length > 0 && renderHesapBolum("Ödeme / Bakiye", manualKayitlar, NAV),
@@ -7841,19 +7868,20 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
 	            })()
 		            : (function() {
 	                const firmSummaries = filtered.map(firm => {
-	                    const { ts, debtRows = [] } = hesapData(firm);
+	                    const { ts, debtRows = [], rentalRows = [] } = hesapData(firm);
                     const openTs = ts.filter(t => !t.firmSettled);
                         const openDebtRows = debtRows.filter(d => debtRemainingAmount(d) > 0);
                         const debtNetTL = openDebtRows.reduce((s, d) => s + (d.type === 'borc' ? -1 : 1) * debtRemainingTRY(d, rates), 0);
-	                    const netVal = hesapOpenNet(openTs) + debtNetTL;
+                        const rentalNet = rentalRows.reduce((s,r)=>s+r.net,0);
+	                    const netVal = hesapOpenNet(openTs) + debtNetTL + rentalNet;
 	                    const jabirFirm = isJabirFirm(firm);
                         const usdRate = moneyValue(rates && rates.USD) || 44.35;
-	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net + (debtNetTL / usdRate) : null;
-	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net + debtNetTL : null;
+	                    const netUsd = jabirFirm ? accountUsdSummary(openTs).net + ((debtNetTL+rentalNet) / usdRate) : null;
+	                    const netUsdTl = jabirFirm ? accountUsdTlSummary(openTs).net + debtNetTL + rentalNet : null;
 	                    const signVal = jabirFirm ? netUsd : netVal;
 	                    const totalVal = jabirFirm ? netUsdTl : netVal;
-	                    if ((openTs.length === 0 && openDebtRows.length === 0) || Math.round(Math.abs(signVal)) === 0) return null;
-                    return { firm, netVal, netUsd, netUsdTl, signVal, totalVal, transferCount: openTs.length, debtCount: openDebtRows.length };
+	                    if ((openTs.length === 0 && openDebtRows.length === 0 && rentalRows.length === 0) || Math.abs(signVal) < 0.005) return null;
+                    return { firm, netVal, netUsd, netUsdTl, signVal, totalVal, transferCount: openTs.length, debtCount: openDebtRows.length, rentalCount: rentalRows.length };
                 }).filter(Boolean).sort((a, b) => Math.abs(b.totalVal) - Math.abs(a.totalVal) || String(a.firm).localeCompare(String(b.firm), 'tr'));
                 const alacakSummaries = firmSummaries.filter(x => x.signVal > 0);
                 const verecekSummaries = firmSummaries.filter(x => x.signVal < 0);
@@ -7869,10 +7897,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     if (lastDigit === 5) return whole;
                     return whole + (10 - lastDigit);
                 };
-                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount }) => {
+                const renderFirmRow = ({ firm, netVal, netUsd, netUsdTl, signVal, transferCount, debtCount, rentalCount }) => {
                     const isRec = signVal >= 0;
                     const cardTlRaw = Math.round(Math.abs(moneyValue(netVal)));
-                    const cardTl = firmCardRoundedTL(cardTlRaw);
+                    const cardTl = rentalCount ? Math.abs(netVal) : firmCardRoundedTL(cardTlRaw);
                     const cardUsd = firmCardUsdRate > 0 ? cardTlRaw / firmCardUsdRate : 0;
                     return React.createElement("button", {
                         key: firm,
@@ -7883,7 +7911,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         React.createElement("div", { className: "ko-account-firm-card-title" },
                             React.createElement("div", { className: "ko-account-firm-card-copy" },
                                 React.createElement("b", null, firm),
-                                React.createElement("small", null, transferCount + " açık iş" + (debtCount ? " · " + debtCount + " açık ek hesap" : ""))),
+                                React.createElement("small", null, transferCount + " transfer" + (rentalCount ? " · " + rentalCount + " kiralık kalemi" : "") + (debtCount ? " · " + debtCount + " ek hesap" : ""))),
                             isJabirFirm(firm)
                                 ? React.createElement("span", { className: isRec ? "is-pos" : "is-neg" },
                                     signedUsdText(netUsd),
@@ -8104,7 +8132,7 @@ function TakasHesap({ T, sT, crossRates, setCrossRates, tip }) {
                                 sel.openNet > 0 ? ('+' + fr(sel.openNet) + '\u20BA bana g\u00F6nderecek') : (sel.openNet < 0 ? ('\u2212' + fr(sel.openNet) + '\u20BA ben g\u00F6nderece\u011Fim') : 'Ba\u015Fa ba\u015F'))),
                         sel.rows.map(jobLine)))));
 }
-function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
+function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments, rentals = [] }) {
     const [openDebtMgr, setOpenDebtMgr] = useState(true);
     const [showDebtForm, setShowDebtForm] = useState(false);
     const [selectedDebtId, setSelectedDebtId] = useState(null);
@@ -8123,7 +8151,7 @@ function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
         tip(newDebt.type === 'borc' ? 'Borç eklendi' : 'Alacak eklendi');
         return true;
     };
-    const mergedFirmKeys = React.useMemo(() => new Set(accountActivityFirmNames(T, accountAdjustments).map(nm)), [T, accountAdjustments]);
+    const mergedFirmKeys = React.useMemo(() => new Set(accountActivityFirmNames(T, accountAdjustments, rentals).map(nm)), [T, accountAdjustments, rentals]);
     const standaloneDebts = (Array.isArray(debts) ? debts : []).filter(d => !mergedFirmKeys.has(nm(d && d.name)));
     const borclar = standaloneDebts.filter(d => d.type === 'borc');
     const alacaklar = standaloneDebts.filter(d => d.type === 'alacak');
@@ -8197,7 +8225,7 @@ function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
                     React.createElement(DebtLedgerCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, onClose: () => setSelectedDebtId(null) })))));
 }
 
-function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates }) {
+function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates, rentals }) {
     const [openAg, setOpenAg] = useState(false);
     const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
     const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
@@ -8262,7 +8290,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                                 () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); },
                                 () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }))))));
             })()),
-        React.createElement(DebtManager, { debts: debts, setDebts: setDebts, rates: rates, tip: tip, T: T, accountAdjustments: accountAdjustments }));
+        React.createElement(DebtManager, { debts: debts, setDebts: setDebts, rates: rates, tip: tip, T: T, accountAdjustments: accountAdjustments, rentals: rentals }));
 }
 function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -8958,6 +8986,204 @@ function TakvimTab({ T, tip, todos, setTodos, ledger, setLedger }) {
         )
     );
 }
+// Rental ledger: separate from all transfer and firm-account calculations.
+const RENT_DAY = 86400000;
+const rentalWholeFormatter = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
+const rentalDecimalFormatter = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const rentalMoney = n => (Number.isInteger(Number(n || 0)) ? rentalWholeFormatter : rentalDecimalFormatter).format(Number(n || 0)) + ' TL';
+const rentalRound = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const rentalDateKey = ms => { const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const rentalDateText = ms => new Date(ms).toLocaleString('tr-TR', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function rentalAmount(row, key) {
+    const cur = row[key + 'Currency'] || 'TRY';
+    const rate = cur === 'TRY' ? 1 : Number((row.fx || {})[cur]);
+    return moneyValue(row[key]) * rate;
+}
+function rentalCalc(row, month) {
+    const start = new Date(row.start).getTime(), days = Number(row.days), hours = Number(row.extraHours || 0);
+    const baseEnd = start + days * RENT_DAY, end = baseEnd + hours * 3600000;
+    let countedDays = days;
+    if (month) { countedDays = 0; for(let i=0;i<days;i++) if(rentalDateKey(start+i*RENT_DAY).slice(0,7) === month) countedDays++; }
+    const extraInMonth = !month || rentalDateKey(baseEnd).slice(0,7) === month;
+    const total = key => rentalRound(rentalAmount(row,key)*countedDays + (extraInMonth ? rentalAmount(row,key+'Extra') : 0));
+    const customer = total('customer'), wholesale = total('wholesale'), ownerGross = total('owner');
+    const vatBase = total('vatBase'), vat = rentalRound(vatBase * 0.20);
+    // Delivery is a one-off customer charge, never a daily fee or broker share.
+    const delivery = rentalRound((!month || rentalDateKey(start).slice(0,7) === month) ? rentalAmount(row,'delivery') : 0);
+    const deposit = rentalRound(rentalAmount(row,'deposit'));
+    const customerTotal = rentalRound(customer + delivery);
+    const paidUs=rentalRound(rentalAmount(row,'paidUs')), paidBroker=rentalRound(rentalAmount(row,'paidBroker'));
+    const brokerReceived=rentalRound(rentalAmount(row,'brokerReceived')), brokerCommissionPaid=rentalRound(rentalAmount(row,'brokerCommissionPaid'));
+    const customerDue = rentalRound(customerTotal - deposit - paidUs - paidBroker);
+    const brokerDue = rentalRound(paidBroker - (customer-wholesale) - brokerReceived + brokerCommissionPaid);
+    return {start,end,baseEnd,days,hours,customer,delivery,deposit,customerTotal,customerDue,paidUs,paidBroker,brokerCommissionPaid,brokerReceived,brokerDue,wholesale,ownerGross,vatBase,vat,
+        ownerNet:rentalRound(ownerGross-vat),broker:rentalRound(customer-wholesale),profit:rentalRound(wholesale-ownerGross)};
+}
+function rentalValidate(row, all) {
+    if (row.renterIsFirm && !String(row.renterFirm || '').trim()) return 'Kiracı firma adını girin.';
+    if (!Number.isFinite(rentalAmount(row,'ownerPaid')) || rentalAmount(row,'ownerPaid') < 0 || rentalAmount(row,'ownerPaid') > rentalCalc(row).ownerNet) return 'Araç sahibine ödeme net hakedişi aşamaz; tutarı kontrol edin.';
+    if (!row.renter.trim() || !row.ownerName.trim() || !row.brokerName.trim() || !row.plate.trim()) return 'Kiracı, araç sahibi, aracı ve plaka gerekli.';
+    if (!Number.isInteger(Number(row.days)) || Number(row.days)<1 || Number(row.days)>3660) return 'Gün sayısı 1–3660 arasında tam sayı olmalı.';
+    if (!Number.isFinite(Number(row.extraHours)) || Number(row.extraHours)<0 || Number(row.extraHours)>=24) return 'Ek saat 0–24 arasında olmalı; 24 saat için gün sayısını artırın.';
+    if (!Number.isFinite(new Date(row.start).getTime())) return 'Geçerli teslim tarihi ve saati girin.';
+    for(const key of ['customer','wholesale','owner','vatBase','customerExtra','wholesaleExtra','ownerExtra','vatBaseExtra','delivery','deposit','paidUs','paidBroker','brokerCommissionPaid','brokerReceived']) {
+        if (!/^\d+(?:[.,]\d+)*$/.test(String(row[key] || '0').trim()) || !Number.isFinite(rentalAmount(row,key)) || rentalAmount(row,key)<0) return 'Tutarları ve kullanılan döviz kurunu kontrol edin.';
+    }
+    const c=rentalCalc(row);
+    if(c.deposit>c.customerTotal) return 'Kapora müşteri toplamını aşamaz. Kira ve teslim ücretini kontrol edin.';
+    if(c.customerDue<0) return 'Müşterinin toplam ödemesi kira ve teslim bedelini aşıyor. Kaporayı ikinci kez eklemeyin.';
+    if(c.brokerCommissionPaid>c.broker) return 'Aracıya yapılan komisyon ödemesi anlaşılmış komisyonu aşamaz.';
+    if(c.brokerReceived>Math.max(0,c.paidBroker-c.broker+c.brokerCommissionPaid)) return 'Aracıdan aldığınız tutar, size göndereceği net tutarı aşıyor.';
+    if(c.customer<=0 || c.ownerGross<=0) return 'Müşteri ve araç sahibi bedeli sıfırdan büyük olmalı.';
+    if(c.broker<0 || c.profit<0 || c.ownerNet<0) return 'Paylaşım tutarsız: müşteri ≥ aracıya araç bedeli ≥ araç sahibi; KDV kesintisi sahibin bedelini aşamaz.';
+    const conflict=(all||[]).find(x=>x.id!==row.id&&!x.cancelled&&String(x.plate).replace(/\s/g,'').toUpperCase()===row.plate.replace(/\s/g,'').toUpperCase()&&rentalCalc(x).start<c.end&&rentalCalc(x).end>c.start);
+    return conflict ? 'Bu plaka seçilen tarihlerde başka kiralamada. Tarihleri kontrol edin.' : '';
+}
+function RentalBadge({model}) {
+    const h=React.createElement, toyota=model==='Toyota Proace City';
+    return h('span',{className:'rent-brand','aria-label':toyota?'Toyota':'Fiat'},toyota
+        ? h('svg',{viewBox:'0 0 64 40',width:48,height:30,'aria-hidden':true},h('ellipse',{cx:32,cy:20,rx:29,ry:17,fill:'none',stroke:'currentColor',strokeWidth:2}),h('ellipse',{cx:32,cy:20,rx:9,ry:17,fill:'none',stroke:'currentColor',strokeWidth:2}),h('ellipse',{cx:32,cy:13,rx:22,ry:8,fill:'none',stroke:'currentColor',strokeWidth:2}))
+        : h('strong',null,'FIAT'));
+}
+function rentalDueLabel(date, end) {
+    const key=date||rentalDateKey(end);
+    const readable=new Date(key+'T12:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+    return (key<rentalDateKey(Date.now())?'⚠ Gecikti · ':'Ödeme tarihi · ')+readable;
+}
+const RENTAL_CALENDARS = [
+    {id:'rental-delivery',filename:'apple-kiralik-teslim.ics',name:'Kiralık · Teslim',color:'#F59E42'},
+    {id:'rental-return',filename:'apple-kiralik-donus.ics',name:'Kiralık · Dönüş',color:'#F59E42'}
+];
+function buildRentalCalendarFiles(rows) {
+    const stamp=icsUtcDateTime(new Date());
+    return RENTAL_CALENDARS.map(meta=>{
+        const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Olmeztur//Kiralik//TR','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:'+icsEscape(meta.name),'X-WR-TIMEZONE:Europe/Istanbul','X-APPLE-CALENDAR-COLOR:'+meta.color,'REFRESH-INTERVAL;VALUE=DURATION:PT15M'];
+        (rows||[]).forEach(row=>{
+            const time=meta.id==='rental-delivery'?rentalCalc(row).start:rentalCalc(row).end;
+            if(!row.id || !Number.isFinite(time)) return;
+            const updated=Date.parse(row.clientUpdatedAt||row.updatedAt||row.createdAt||'')||time;
+            const model=['Toyota Proace City','Fiat Egea'].includes(row.model)?row.model:'Kiralık araç';
+            lines.push('BEGIN:VEVENT','UID:'+icsEscape(meta.id+'-'+row.id+'@olmeztur'),
+                'DTSTAMP:'+stamp,'LAST-MODIFIED:'+icsUtcDateTime(new Date(updated)),
+                'SEQUENCE:'+Math.floor(updated/1000),'DTSTART:'+icsUtcDateTime(new Date(time)),
+                'DTEND:'+icsUtcDateTime(new Date(time+30*60000)),
+                'SUMMARY:'+icsEscape(model+' · '+(meta.id==='rental-delivery'?'Teslim':'Dönüş')),
+                'DESCRIPTION:'+icsEscape('Ayrıntılar için Ölmeztur uygulamasındaki Kiralık bölümünü açın.'),
+                'STATUS:'+(row.cancelled?'CANCELLED':'CONFIRMED'),'TRANSP:TRANSPARENT','END:VEVENT');
+        });
+        lines.push('END:VCALENDAR');
+        return {meta,filename:meta.filename,mime:'text/calendar;charset=utf-8',text:lines.map(icsFold).join('\r\n')+'\r\n'};
+    });
+}
+// Derived once per rental collection change; never writes duplicate ledger records.
+function rentalAccountIndex(rows) {
+    const index = new Map();
+    const add = (firm, row, role, net, accrued, paid, vat = 0) => {
+        firm = String(firm || '').trim();
+        if (!firm || isOlmezturParty(firm) || !Number.isFinite(net)) return;
+        const key = nm(firm);
+        if (!index.has(key)) index.set(key, []);
+        const entry = { id: row.id + ':' + role, rentalId: row.id, firm, role, net: rentalRound(net), accrued, paid, vat, start: row.start, end: new Date(row.start).getTime()+Number(row.days)*RENT_DAY+Number(row.extraHours||0)*3600000, model: row.model, plate: row.plate };
+        index.get(key).push(entry);
+        return entry;
+    };
+    (rows || []).forEach(row => {
+        if (row.cancelled) return;
+        const c = rentalCalc(row);
+        const entry = add(row.brokerName, row, 'Aracı komisyonu / tahsilat', c.brokerDue, c.broker, c.brokerCommissionPaid, 0);
+        add(row.ownerName, row, 'Araç sahibi', -(c.ownerNet - rentalAmount(row,'ownerPaid')), c.ownerGross, rentalAmount(row,'ownerPaid'), c.vat);
+        if (row.renterIsFirm) add(row.renterFirm, row, 'Kiracı firma', c.customerDue, c.customerTotal, c.deposit + c.paidUs + c.paidBroker);
+        if (entry) entry.explanation = 'Müşteriden aldığı: ' + rentalMoney(c.paidBroker) + ' · Ölmeztur’a gönderdiği: ' + rentalMoney(c.brokerReceived) + ' · Komisyon ödemesi: ' + rentalMoney(c.brokerCommissionPaid);
+    });
+    return index;
+}
+function RentalFirmPanel({rows, firm, onOpen}) {
+    const h = React.createElement;
+    const [open,setOpen] = useState(false);
+    const [limit,setLimit] = useState(20);
+    const al = rows.reduce((s,r)=>s+Math.max(0,r.net),0), ver = rows.reduce((s,r)=>s+Math.max(0,-r.net),0);
+    const sorted = React.useMemo(()=>rows.slice().sort((a,b)=>String(b.start).localeCompare(String(a.start))),[rows]);
+    return h('section',{className:'rent-firm-panel'},
+        h('button',{className:'rent-firm-toggle',onClick:()=>setOpen(!open),'aria-expanded':open},h('span',null,h('b',null,'Kiralık araçlar'),h('small',null,rows.length+' hesap kalemi · transferlerden ayrı')),h('b',null,rentalMoney(al-ver)+' '+(open?'−':'+'))),
+        open && h('div',{className:'rent-firm-content'},h('div',{className:'rent-firm-totals'},h('div',null,h('small',null,'ALACAĞIM'),h('b',null,rentalMoney(al))),h('div',null,h('small',null,'ÖDEYECEĞİM'),h('b',null,rentalMoney(ver)))),
+            h('p',{className:'rent-subtle'},'Bu tutarlar yukarıdaki firma toplamına dahildir. Ödemeyi kiralama kaydında güncelleyin; tekrar bakiye kaydı eklemeyin.'),
+            sorted.slice(0,limit).map(r=>h('article',{className:'rent-firm-row',key:r.id},h('div',null,h('small',null,r.role),h('b',null,r.model+' · '+r.plate),h('span',null,rentalDateText(r.start)+' → '+rentalDateText(r.end))),h('div',{className:'rent-firm-amount'},h('small',null,r.net>0?'ALACAĞIM':r.net<0?'ÖDEYECEĞİM':'KAPANDI'),h('b',null,rentalMoney(Math.abs(r.net)))),h('details',null,h('summary',null,'Hesap ayrıntısı'),h('p',null,'Anlaşma: '+rentalMoney(r.accrued)+' · Ödenen: '+rentalMoney(r.paid)+(r.vat?' · KDV kesintisi: '+rentalMoney(r.vat):'')),r.explanation&&h('p',null,r.explanation)),h('button',{className:'rent-secondary',onClick:()=>onOpen({id:r.rentalId})},'Ödemeyi / kaydı düzenle'))),
+            sorted.length>limit&&h('button',{className:'rent-secondary',onClick:()=>setLimit(n=>n+20)},'20 kayıt daha göster'),
+            h('button',{className:'rent-secondary',onClick:()=>onOpen({firm})},'+ Kiralama / komisyon ekle')));
+}
+function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarEnabled,publishCalendar,calendarBusy,calendarMessage,openRequest,onRequestHandled}) {
+    const h=React.createElement;
+    const today=rentalDateKey(Date.now());
+    const [month,setMonth]=useState(today.slice(0,7)),[day,setDay]=useState(today),[draft,setDraft]=useState(null),[error,setError]=useState(''),[scan,setScan]=useState(''),[archive,setArchive]=useState(false);
+    const scanToken=useRef(0), fileRef=useRef(null);
+    useEffect(()=>()=>{scanToken.current++;},[]);
+    const active=(rows||[]).filter(x=>!x.cancelled);
+    const monthRows=active.filter(x=>{const c=rentalCalc(x);return rentalDateKey(c.start).slice(0,7)<=month && rentalDateKey(c.end-1).slice(0,7)>=month;});
+    const shown=(archive?(rows||[]).filter(x=>x.cancelled):monthRows.filter(x=>!day || (rentalDateKey(rentalCalc(x).start)<=day&&rentalDateKey(rentalCalc(x).end-1)>=day))).slice().sort((a,b)=>new Date(a.start)-new Date(b.start));
+    const monthly=monthRows.reduce((s,x)=>{const c=rentalCalc(x,month);return {profit:s.profit+c.profit,vat:s.vat+c.vat};},{profit:0,vat:0});
+    const waiting=active.reduce((s,x)=>{const c=rentalCalc(x);return {customer:s.customer+Math.max(0,c.customerDue),broker:s.broker+Math.max(0,c.brokerDue),payable:s.payable+Math.max(0,-c.brokerDue)};},{customer:0,broker:0,payable:0});
+    const [onlyUnpaid,setOnlyUnpaid]=useState(false);
+    const update=(key,val)=>setDraft(d=>({...d,[key]:val}));
+    const fresh=(firm='')=>{setError('');setDraft({id:'rental_'+(crypto.randomUUID?crypto.randomUUID():Date.now()+'_'+Math.random().toString(36).slice(2)),model:'Toyota Proace City',plate:'',renter:'',passport:'',ownerName:'',brokerName:typeof firm==='string'?firm:'',start:(day||today)+'T14:00',days:1,extraHours:0,customer:'',wholesale:'',owner:'',vatBase:'',customerExtra:0,wholesaleExtra:0,ownerExtra:0,vatBaseExtra:0,fx:{USD:rates.USD,EUR:rates.EUR},fxDate:rateDate||'',notes:''});};
+    useEffect(()=>{if(!openRequest)return;const found=(rows||[]).find(r=>r.id===openRequest.id);if(found){setDraft({...found,fx:{...found.fx}});setError('');}else if(!openRequest.id)fresh(openRequest.firm||'');onRequestHandled();},[openRequest]);
+    const save=()=>{const warning=rentalValidate(draft,active);if(warning){setError(warning);return;} const now=new Date().toISOString();try{setRows(prev=>[...prev.filter(x=>x.id!==draft.id),{...draft,plate:draft.plate.trim().toUpperCase(),renter:draft.renter.trim(),createdAt:draft.createdAt||now,updatedAt:now,clientUpdatedAt:now}]);setDraft(null);tip('Kiralama kaydedildi; transfer hesapları değişmedi');}catch(e){setError('Kayıt saklanamadı. Form açık tutuldu; tekrar deneyin.');}};
+    const toggleArchive=x=>{try{const now=new Date().toISOString();if(x.cancelled){const warning=rentalValidate({...x,cancelled:false},active);if(warning){tip(warning);return;}}setRows(prev=>prev.map(r=>r.id===x.id?{...r,cancelled:!r.cancelled,updatedAt:now,clientUpdatedAt:now}:r));tip(x.cancelled?'Kiralama geri alındı':'Kiralama iptal edildi; arşivde korundu');}catch(e){tip('Kayıt saklanamadı; tekrar deneyin');}};
+    const readPassport=async file=>{if(!file)return;const token=++scanToken.current;setScan('Pasaport okunuyor…');setError('');try{const result=await mrzReadFromFile(file,msg=>{if(token===scanToken.current)setScan(msg);},()=>token!==scanToken.current);if(token!==scanToken.current)return;if(!result || (!result.name&&!result.passportNo)){setError('Okunamadı. Net bir fotoğraf seçin veya elle girin.');return;}setDraft(d=>d?{...d,renter:result.name||d.renter,passport:result.passportNo||d.passport,passportReview:true}:d);setError('Okunan ad ve pasaport numarasını belgeyle karşılaştırıp kontrol kutusunu işaretleyin.');}catch(e){if(token===scanToken.current)setError('Pasaport okunamadı; bilgileri elle girebilirsiniz.');}finally{if(token===scanToken.current)setScan('');}};
+    const field=(label,key,type='text')=>h('label',{className:'rent-field'},h('span',null,label),h('input',{className:'inp',type,value:draft[key]??'',onChange:e=>update(key,e.target.value),min:type==='number'?0:undefined}));
+    const amountField=(label,key)=>h('label',{className:'rent-field'},h('span',null,label),h('div',{className:'rent-money-input'},h('input',{className:'inp',inputMode:'decimal',value:draft[key]??'',placeholder:'0',onChange:e=>update(key,e.target.value),'aria-label':label}),h('select',{className:'inp',value:draft[key+'Currency']||'TRY',onChange:e=>update(key+'Currency',e.target.value),'aria-label':label+' döviz'},['TRY','USD','EUR'].map(c=>h('option',{key:c,value:c},c)))),h('small',null,Number.isFinite(rentalAmount(draft,key))?rentalMoney(rentalAmount(draft,key)):'Kur girin'));
+    const line=(label,value,strong=false)=>h('div',{className:'rent-finance-line'+(strong?' strong':'')},h('span',null,label),h('b',null,rentalMoney(value)));
+    const shift=n=>{const d=new Date(month+'-01T12:00');d.setMonth(d.getMonth()+n);setMonth(rentalDateKey(d).slice(0,7));setDay('');};
+    const first=new Date(month+'-01T12:00'),offset=(first.getDay()+6)%7,count=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+    const c=draft?rentalCalc(draft):null;
+    return h('section',{className:'rent-root'},
+        h('header',{className:'rent-heading'},h('div',null,h('small',null,'ÖLMEZTUR · KİRALAMA'),h('h2',null,'Kiralık araçlar'),h('p',null,'Araçlar, dönüşler ve ayrı kiralama hesabı.')),h('button',{className:'rent-primary',onClick:fresh},'+ Aracı kiraya ver')),
+        h('details',{className:'rent-calendar-settings'},h('summary',null,'🟠 Apple Takvim · teslim ve dönüş'),
+            h('p',null,'Yalnızca araç modeli ve teslim/dönüş zamanı yayımlanır. İsim, pasaport, plaka, ücret ve notlar paylaşılmaz. Yayın bağlantıları herkese açıktır.'),
+            h('label',null,h('input',{type:'checkbox',checked:calendarEnabled===true,onChange:e=>setCalendarEnabled(e.target.checked)}),' Araç modeli ve saatlerinin açık bağlantıda yayımlanmasını onaylıyorum.'),
+            h('div',{className:'rent-actions'},h('button',{disabled:calendarBusy||calendarEnabled===null,onClick:publishCalendar},calendarBusy?'Yayımlanıyor…':'Takvimi yayımla'),
+                calendarEnabled&&RENTAL_CALENDARS.map(meta=>h('a',{key:meta.id,href:appleCalendarWebcalUrl(meta)},meta.name+' · abone ol'))),
+            h('p',null,calendarMessage||'Önce yayımla, ardından iki takvime bir kez abone ol. Yedekleme bölümündeki mevcut GitHub anahtarı ve otomatik takvim yayını kullanılır.'),
+            h('small',null,'İki takvim de turuncu renk bilgisi taşır. Apple mevcut abonelik rengini korursa Takvim > Takvimler içinden turuncuyu seçin. Apple’ın yenileme süresini uygulama zorlayamaz. Onayı kaldırıp yayımlamak kiralık takvimlerini boşaltır; transfer takvimleri korunur.')),
+        h('div',{className:'rent-collection-summary'},h('button',{onClick:()=>{setOnlyUnpaid(!onlyUnpaid);setArchive(false);},'aria-pressed':onlyUnpaid},h('small',null,'MÜŞTERİLERDEN BEKLEYEN'),h('strong',null,rentalMoney(rentalRound(waiting.customer)))),h('button',{onClick:()=>{setOnlyUnpaid(!onlyUnpaid);setArchive(false);},'aria-pressed':onlyUnpaid},h('small',null,'ARACILARDAN ALACAĞIM'),h('strong',null,rentalMoney(rentalRound(waiting.broker)))),h('div',{className:'rent-payable-strip'},'Aracılara ödeyeceğim komisyon: ',h('b',null,rentalMoney(rentalRound(waiting.payable))))),
+        onlyUnpaid&&h('p',{className:'rent-filter-note'},'Tüm tarihlerdeki bekleyen tahsilatlar gösteriliyor.',h('button',{onClick:()=>setOnlyUnpaid(false)},'Takvime dön')),
+        h('section',{className:'rent-calendar'},h('div',{className:'rent-month-nav'},h('button',{'aria-label':'Önceki ay',onClick:()=>shift(-1)},'‹'),h('h3',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})),h('button',{'aria-label':'Sonraki ay',onClick:()=>shift(1)},'›')),
+            h('div',{className:'rent-week'},['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map(x=>h('span',{key:x},x))),
+            h('div',{className:'rent-days'},Array.from({length:offset},(_,i)=>h('span',{key:'blank'+i})),Array.from({length:count},(_,i)=>{
+                const key=month+'-'+String(i+1).padStart(2,'0');
+                const busy=monthRows.filter(x=>rentalDateKey(rentalCalc(x).start)<=key&&rentalDateKey(rentalCalc(x).end-1)>=key);
+                const toyota=busy.filter(x=>x.model==='Toyota Proace City').length, fiat=busy.length-toyota;
+                return h('button',{key,className:(day===key?'selected ':'')+(key===today?'today':''),'aria-label':key+', '+busy.length+' kiralık araç: '+busy.map(x=>x.model+' '+x.plate).join(', '),'aria-pressed':day===key,onClick:()=>{setDay(day===key?'':key);setArchive(false);setOnlyUnpaid(false);}},h('b',null,i+1),
+                    toyota>0&&h('span',{className:'rent-day-car toyota'},'Toyota'+(toyota>1?' '+toyota:'')),
+                    fiat>0&&h('span',{className:'rent-day-car fiat'},'Fiat'+(fiat>1?' '+fiat:'')),
+                    !busy.length&&h('small',null,'Boş'));
+            })),h('div',{className:'rent-legend'},h('span',{className:'rent-day-car toyota'},'Toyota Proace City'),h('span',{className:'rent-day-car fiat'},'Fiat Egea'),h('small',null,'Güne dokun · araçları gör'))),
+        h('div',{className:'rent-list-heading'},h('h3',null,archive?'İptal edilenler':day?new Date(day+'T12:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long'}):'Bu ayın kiralamaları'),h('button',{onClick:()=>{setDay('');setOnlyUnpaid(false);setArchive(!archive);}},archive?'Takvime dön':'İptal arşivi'),day&&h('button',{onClick:()=>setDay('')},'Tüm ay')),
+        h('div',{className:'rent-cards'},(onlyUnpaid?active.filter(x=>{const c=rentalCalc(x);return c.customerDue>0||c.brokerDue!==0;}):shown).map(x=>{const v=rentalCalc(x),future=v.start>Date.now(),ended=v.end<=Date.now();return h('article',{className:'rent-card',key:x.id},h('div',{className:'rent-card-top'},h(RentalBadge,{model:x.model}),h('div',null,h('h3',null,x.model),h('small',null,x.plate)),h('span',{className:'rent-status'},x.cancelled?'İptal':future?'Planlandı':ended?'Süre doldu':'Kirada')),
+            h('h4',null,x.renter),h('div',{className:'rent-timeline'},h('div',null,h('small',null,'TESLİM'),h('b',null,rentalDateText(v.start))),h('div',null,h('small',null,'DÖNÜŞ'),h('b',null,rentalDateText(v.end)))),h('p',{className:'rent-subtle'},v.days+' gün'+(v.hours?' + '+v.hours+' saat':'')+' · Sahibi: '+x.ownerName+' · Aracı: '+x.brokerName),
+            h('div',{className:'rent-customer-due'},h('small',{className:'rent-payment-label'},'TAHSİLAT TAKİBİ'),line('Müşteri toplamı',v.customerTotal),v.deposit>0&&line('Alınan kapora',-v.deposit),v.paidUs>0&&line('Size yapılan ek ödeme',-v.paidUs),v.paidBroker>0&&line('Müşterinin aracıya ödediği',-v.paidBroker),line('Müşteriden kalan',v.customerDue,true),h('small',null,v.customerDue>0?rentalDueLabel(x.customerDueDate,v.end):'Müşteri ödemesi tamam'),v.brokerDue!==0&&h('div',{className:'rent-broker-due'},line(x.brokerName+(v.brokerDue>0?' · alacağım':' · ödeyeceğim'),Math.abs(v.brokerDue),true),h('small',null,rentalDueLabel(x.brokerDueDate,v.end)))),
+            h('details',null,h('summary',null,'Kiralama hesabı'),line('Kira + ek süre bedeli',v.customer),line('Havalimanı teslim ücreti',v.delivery),line('Müşteri toplamı',v.customerTotal),line('Alınan kapora',-v.deposit),line('Müşteriden kalan',v.customerDue,true),line(x.brokerName+' · komisyon',v.broker),line('Ölmeztur · kazanç (KDV hariç)',v.profit),line(x.ownerName+' · kesinti öncesi toplam',v.ownerGross),line('KDV matrahı',v.vatBase),line('KDV kesintisi · %20',-v.vat),line(x.ownerName+' · net ödenecek',v.ownerNet,true),h('p',{className:'rent-subtle'},'Teslim ücreti müşteri toplamına dahildir; araç sahibi, komisyoncu ve Ölmeztur kazanç paylaşımından ayrı izlenir. Kapora kazancı değiştirmez. Bu alan ödeme yapmaz.')),
+            h('div',{className:'rent-actions'},h('button',{onClick:()=>{setError('');setDraft({...x});}},'Düzenle / ödeme gir'),h('button',{onClick:()=>toggleArchive(x)},x.cancelled?'Geri al':'İptal et')));}),!shown.length&&!onlyUnpaid&&h('div',{className:'rent-empty'},'Bu görünümde kiralama yok. “Aracı kiraya ver” ile ekleyebilirsin.')),
+        h('footer',{className:'rent-month-summary'},h('small',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})+' · AYLIK ÖLMEZTUR'),h('strong',null,rentalMoney(rentalRound(monthly.profit))),h('span',null,'Kazanç · KDV hariç'),h('p',null,'Ayrı KDV kesintisi: '+rentalMoney(rentalRound(monthly.vat))),h('small',null,'Günlük bedeller 24 saatlik dönemin başladığı aya; ek ücret uzatma başlangıcının ayına yazılır. Transferler bu toplama dahil değildir.')),
+        draft&&h('div',{className:'rent-overlay'},h('section',{className:'rent-dialog',role:'dialog','aria-modal':true,'aria-label':'Aracı kiraya ver'},h('header',null,h('h2',null,'Aracı kiraya ver'),h('button',{'aria-label':'Formu kapat',onClick:()=>{scanToken.current++;setScan('');setDraft(null);}},'✕')),
+            h('div',{className:'rent-form-grid'},h('label',{className:'rent-field'},h('span',null,'Araç modeli'),h('select',{className:'inp',value:draft.model,onChange:e=>update('model',e.target.value)},['Toyota Proace City','Fiat Egea'].map(v=>h('option',{key:v},v)))),field('Plaka','plate'),field('Kiracı · ad soyad','renter'),field('Pasaport no','passport'),
+                h('div',{className:'rent-wide'},h('input',{type:'file',accept:'image/*',ref:fileRef,style:{display:'none'},onChange:e=>{const file=e.target.files[0];e.target.value='';readPassport(file);}}),h('button',{className:'rent-secondary',disabled:!!scan,onClick:()=>fileRef.current.click()},scan||'Pasaporttan bilgileri oku'),h('p',{className:'rent-subtle'},'Fotoğraf kaydedilmez. Okunan bilgileri belgeyle kontrol edin.'),draft.passportReview&&h('label',null,h('input',{type:'checkbox',checked:false,onChange:()=>update('passportReview',false)}),' Adı ve pasaport numarasını kontrol ettim')),
+                field('Araç sahibi','ownerName'),field('Komisyoncu / aracı','brokerName'),field('Teslim tarihi ve saati','start','datetime-local'),field('Kiralama günü · her 24 saat','days','number'),field('Ek süre · saat (tam gün sayılmaz)','extraHours','number'),h('div',{className:'rent-return'},h('small',null,'HESAPLANAN DÖNÜŞ'),h('b',null,Number.isFinite(c.end)?rentalDateText(c.end):'Tarih girin')),
+                h('label',{className:'rent-wide rent-subtle'},h('input',{type:'checkbox',checked:!!draft.renterIsFirm,onChange:e=>update('renterIsFirm',e.target.checked)}),' Kiralama alacağını firma hesaplarına dahil et'),
+                draft.renterIsFirm&&field('Borçlu kiracı firma · ör. Teşdemir Tur','renterFirm'),
+                h('p',{className:'rent-wide rent-subtle'},'Aracı komisyonu ve araç sahibinin bakiyesi firma hesaplarında otomatik görünür. Kiracı bireysel müşteri ise kutuyu kapalı bırakın. Firma adı mevcut hesapla aynı olmalı.'),
+                h('h3',{className:'rent-wide'},'Günlük anlaşma'),amountField('Müşteri günlük bedeli','customer'),amountField('Aracıya günlük araç bedeli','wholesale'),amountField('Araç sahibinin günlük bedeli','owner'),amountField('Günlük KDV matrahı · %20','vatBase'),
+                h('h3',{className:'rent-wide'},'Müşteri · teslim ve kapora'),amountField('Havalimanı teslim ücreti · toplam','delivery'),amountField('Alınan kapora · toplam','deposit'),
+                h('details',{className:'rent-wide rent-payment-editor',open:true},h('summary',null,'Ödemeler · müşteriden ve aracıdan'),h('div',{className:'rent-form-grid'},
+                    amountField('Size ödenen · kapora hariç toplam','paidUs'),amountField('Müşterinin aracıya ödediği toplam','paidBroker'),
+                    amountField('Aracıya ödediğim komisyon toplamı','brokerCommissionPaid'),amountField('Aracıdan aldığım toplam','brokerReceived'),
+                    field('Müşteri ödeme tarihi · boşsa dönüş günü','customerDueDate','date'),field('Aracı ödeme tarihi · boşsa dönüş günü','brokerDueDate','date'),amountField('Araç sahibine ödediğim toplam · KDV sonrası','ownerPaid')),
+                    h('p',{className:'rent-subtle'},'Müşteri aracıya ödediyse komisyon otomatik mahsup edilir; aracı kalanını size borçlanır. Müşteri size ödediyse aracıya komisyon borcunuz görünür. Aracıdan gelen parayı “size ödenen” alanına tekrar yazmayın. Kapora size alınmış kabul edilir; aracı aldıysa kapora yerine “müşterinin aracıya ödediği” alanına girin. Tutarlar bugüne kadarki toplam ödemelerdir.'),line('Müşteriden kalan',c.customerDue,true),line(c.brokerDue>=0?'Aracıdan alacağım':'Aracıya ödeyeceğim',Math.abs(c.brokerDue),true)),
+                h('p',{className:'rent-wide rent-subtle'},'Teslim ücreti bir kez eklenir; gün sayısıyla çarpılmaz. Kapora toplamdan düşer, kalan dönüşte tahsil edilir. Kapora yoksa boş bırakın veya 0 yazın. Döviz karşılıkları aşağıdaki kayıtlı kurla hesaplanır.'),
+                h('details',{className:'rent-wide'},h('summary',null,'Ek süre ücretleri · elle belirle'),h('p',{className:'rent-subtle'},'Ek saat yalnızca dönüşü uzatır. Aşağıdaki tutarlar tek seferlik ek ücrettir; saatle çarpılmaz.'),h('div',{className:'rent-form-grid'},amountField('Müşteriden ek ücret','customerExtra'),amountField('Aracıya ek araç bedeli','wholesaleExtra'),amountField('Araç sahibine ek bedel','ownerExtra'),amountField('Ek KDV matrahı','vatBaseExtra'))),
+                h('details',{className:'rent-wide'},h('summary',null,'Döviz kurları · kayıtta sabitlenir'),h('p',{className:'rent-subtle'},'Uygulamanın son kuru kullanılır. Kaynak zamanı: '+(draft.fxDate?new Date(draft.fxDate).toLocaleString('tr-TR'):'bilinmiyor; kuru kontrol edin')+'. Mevcut kiralama güncel kurla kendiliğinden değişmez.'),['USD','EUR'].map(cur=>h('label',{className:'rent-field',key:cur},h('span',null,'1 '+cur+' = TL'),h('input',{className:'inp',inputMode:'decimal',value:draft.fx[cur]||'',onChange:e=>setDraft(d=>({...d,fx:{...d.fx,[cur]:moneyValue(e.target.value)}}))})))),field('Not','notes')),
+            h('div',{className:'rent-calculation'},line('Kira + ek süre bedeli',c.customer),line('Havalimanı teslim ücreti',c.delivery),line('Müşteri toplamı',c.customerTotal),line('Alınan kapora',-c.deposit),line('Dönüşte müşteriden tahsil edilecek',c.customerDue,true),h('p',{className:'rent-subtle'},'Teslim ücreti aşağıdaki kazanç/pay dağılımına dahil değildir.'),line((draft.brokerName||'Aracı')+' · komisyon',c.broker),line('Ölmeztur · kazanç',c.profit),line('Araç sahibi · kesinti öncesi toplam',c.ownerGross),line('KDV kesintisi · %20',-c.vat),line((draft.ownerName||'Araç sahibi')+' · net ödenecek',c.ownerNet,true)),
+            error&&h('p',{className:'rent-error',role:'alert'},error),h('button',{className:'rent-primary rent-save',disabled:!!scan||!!draft.passportReview,onClick:save},'Kiralamayı kaydet'))));
+}
 function App() {
     const [T, setT] = useState([]);
     const [isCompactTransferViewport, setCompactTransferViewport] = useState(() => window.matchMedia('(max-width:700px)').matches);
@@ -9046,6 +9272,8 @@ function App() {
     const [openListFilters, setOpenListFilters] = useState(false);
     const [openArchiveList, setOpenArchiveList] = useState(false);
     const [aracK, setAracK] = useState([]);
+    const [rentals, setRentals] = useState([]);
+    const [rentalOpenRequest, setRentalOpenRequest] = useState(null);
     const [debts, setDebts] = useState([]);
     const [accountAdjustments, setAccountAdjustments] = useState([]);
     const [todos, setTodos] = useState([]);
@@ -9065,6 +9293,8 @@ function App() {
     const [githubCalendarToken, setGithubCalendarToken] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || ''; }catch(e){ return ''; } });
     const [githubCalendarAuto, setGithubCalendarAuto] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_AUTO_KEY) === '1'; }catch(e){ return false; } });
     const [githubCalendarBusy, setGithubCalendarBusy] = useState(false);
+    const [rentalCalendarEnabled, setRentalCalendarEnabled] = useState(()=>{try{const v=localStorage.getItem('ko_rental_calendar_public_v1');return v===null?null:v==='1';}catch(e){return null;}});
+    const setRentalCalendarConsent = value => {localStorage.setItem('ko_rental_calendar_public_v1',value?'1':'0');setRentalCalendarEnabled(value);};
     const [githubCalendarMsg, setGithubCalendarMsg] = useState('');
     const [storageReady, setStorageReady] = useState(false);
     const [authBusy, setAuthBusy] = useState(false);
@@ -9136,6 +9366,7 @@ function App() {
             r: rates,
             ru: lastRateUpdate || '',
             ak: Array.isArray(aracK) ? aracK : [],
+            rk: rentals,
             db: Array.isArray(debts) ? debts : [],
             adj: Array.isArray(accountAdjustments) ? accountAdjustments : [],
             tk: Array.isArray(todos) ? todos : [],
@@ -9143,7 +9374,7 @@ function App() {
             cr: crossRates
         };
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
-    }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, crossRates]);
+    }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, rentals, debts, accountAdjustments, todos, tkLedger, crossRates]);
     useEffect(() => {
         const flushToLocal = () => {
             try {
@@ -9153,6 +9384,7 @@ function App() {
                 const core = {
                     t: s.t || [], a: s.a || [OL], ap: s.ap || {}, dr: s.dr || [],
                     r: s.r || rates, ru: s.ru || '', ak: s.ak || [], db: s.db || [],
+                    rk: s.rk || [],
                     adj: s.adj || [], tk: s.tk || [], tl: s.tl || [], cr: s.cr,
                     del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26
                 };
@@ -9187,30 +9419,8 @@ function App() {
     useEffect(() => {
         if (!storageReady)
             return;
-        const plateRows = (T || []).filter(t => t && t.id && isPlate16Transfer(t));
-        const sig = plateRows.map(t => [
-            t.id,
-            t.date || '',
-            t.time || '',
-            t.status || '',
-            t.plate || '',
-            t.givenBy || '',
-            t.assignedTo || '',
-            t.driverName || '',
-            transferPassengerName(t),
-            t.pickup || '',
-            t.dropoff || '',
-            t.notes || '',
-            t.paymentAmount || '',
-            t.paymentCurrency || '',
-            t.driverPayment || '',
-            t.altAcentaUcreti || '',
-            t.updatedAt || '',
-            t.clientUpdatedAt || ''
-        ].join('|')).join('::');
-        if (plate16SyncSigRef.current === sig)
-            return;
-        plate16SyncSigRef.current = sig;
+        // Reconcile also after vehicle records arrive from cloud. Never mark a
+        // pending timer as completed: an identical T render can cancel it.
         if (plate16SyncTimerRef.current)
             clearTimeout(plate16SyncTimerRef.current);
         plate16SyncTimerRef.current = setTimeout(() => {
@@ -9223,14 +9433,14 @@ function App() {
                     return p;
                 }
             });
-        }, 280);
+        }, 100);
         return () => {
             if (plate16SyncTimerRef.current) {
                 clearTimeout(plate16SyncTimerRef.current);
                 plate16SyncTimerRef.current = null;
             }
         };
-    }, [storageReady, T]);
+    }, [storageReady, T, aracK]);
     const tip = m => {
         setToast(m);
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -9369,6 +9579,7 @@ function App() {
             ? (d.ak || []).filter(k => k && !delASet.has(String(k.id)))
             : dedupeAracK((d.ak || []).filter(k => k && !delASet.has(String(k.id))));
         if (recordListSignature(current.ak, true) !== recordListSignature(nextAk, true)) setAracK(nextAk);
+        if (Array.isArray(d.rk) && recordListSignature(current.rk, true) !== recordListSignature(d.rk, true)) setRentals(d.rk);
         if (recordListSignature(current.db, true) !== recordListSignature(d.db || [], true)) setDebts(d.db || []);
         const adjRows = Array.isArray(d.adj) ? d.adj : (Array.isArray(d.accountAdjustments) ? d.accountAdjustments : []);
         const nextAdj = adjRows.map(normalizeAccountAdjustment).filter(x => x.firm);
@@ -9743,7 +9954,7 @@ function App() {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(function(){
             try {
-                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26 };
+                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, rk: rentals, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 26 };
                 const saveSig = snapshotContentSignature(snapshotCore);
                 if (saveSig === lastSaveSigRef.current)
                     return;
@@ -9765,7 +9976,7 @@ function App() {
             } catch(inner) { console.error('[SAVE inner]', inner); }
         }, 180);
     }
-    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, crossRates, authUser]);
+    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, rentals, debts, accountAdjustments, todos, tkLedger, crossRates, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
     useEffect(() => { try { localStorage.setItem('ko_cross_rates', JSON.stringify(crossRates)); } catch (e) {} }, [crossRates]);
     useEffect(() => { try { if(rememberMe) localStorage.setItem(REMEMBER_EMAIL_KEY, loginEmail || ''); else localStorage.removeItem(REMEMBER_EMAIL_KEY); } catch (e) {} }, [rememberMe, loginEmail]);
@@ -11114,14 +11325,28 @@ function App() {
         };
     }, [T, aracK]);
     const stats = () => statsMemo;
-    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, rk: rentals, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 28, date: new Date().toISOString() });
+    const saveRentals = change => {
+        const current = persistRef.current;
+        if (!storageReady || !current || !current.__ready) throw new Error('Kayıtlar henüz yüklenmedi');
+        const next = typeof change === 'function' ? change(current.rk || []) : change;
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        const stamp = new Date().toISOString();
+        const snapshot = { ...stored, ...current, rk: next, date: stamp, clientUpdatedAt: stamp, _localWriteAt: stamp };
+        delete snapshot.__ready;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
+        persistRef.current = { ...current, rk: next };
+        setRentals(next);
+    };
     const doBackup = async () => {
+        if (!storageReady) { tip('Kayıtların yüklenmesini bekleyin'); return; }
         let payload = '';
         try { payload = JSON.stringify(snapshotPayload()); } catch (e) { tip('Yedek oluşturulamadı'); return; }
         const kb = Math.max(1, Math.round(payload.length / 1024));
         const ok = await copyText(payload);
         if (ok) {
-            setBkpPreview('✓ ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' — Yedek panoya kopyalandı (' + kb + ' KB, ' + T.length + ' transfer). Notlar/Dosyalar uygulamasına yapıştırabilirsin.');
+            setBkpPreview('✓ Yedek panoya kopyalandı: ' + T.length + ' transfer, ' + rentals.length + ' kiralama, ' + (debts.length + accountAdjustments.length) + ' hesap kaydı ve araç kayıtları (' + kb + ' KB). Dosyalar uygulamasında saklayın.');
             markBackupDone();
             tip('Yedek panoya kopyalandı');
         } else {
@@ -11170,10 +11395,11 @@ function App() {
         }
     };
     const downloadBackupFile = async () => {
+        if (!storageReady) { tip('Kayıtların yüklenmesini bekleyin'); return; }
         const now = new Date();
         const stamp = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + '_' + String(now.getHours()).padStart(2, '0') + '-' + String(now.getMinutes()).padStart(2, '0');
         const payload = JSON.stringify(snapshotPayload());
-        setBkpPreview('✓ Yedek dosyası hazırlandı (' + Math.max(1, Math.round(payload.length / 1024)) + ' KB, ' + T.length + ' transfer).');
+        setBkpPreview('Yedek kapsamı: ' + T.length + ' transfer · ' + rentals.length + ' kiralama · ' + (debts.length + accountAdjustments.length) + ' hesap kaydı · ' + aracK.length + ' araç kaydı. Dosyayı iCloud Drive / Dosyalar’da saklayın.');
         const ok = await downloadText(payload, 'Olmeztur_Yedek_' + stamp + '.json', 'application/json;charset=utf-8');
         if (ok) markBackupDone();
         tip(ok ? 'Yedek dosyası indirildi' : 'Yedek dosyası oluşturulamadı');
@@ -11204,6 +11430,7 @@ function App() {
         try {
             const deleted = new Set(readDeletedTransferIds().map(String));
             const files = buildAppleCalendarPublishFiles((live.t || []).filter(t => t && !deleted.has(String(t.id))));
+            if(rentalCalendarEnabled!==null) files.push(...buildRentalCalendarFiles(rentalCalendarEnabled?(live.rk||[]):[]));
             const branch = await getGithubCalendarBranch(token);
             for (const f of files)
                 await putGithubCalendarFile(token, f.filename, f.text, branch);
@@ -11275,7 +11502,8 @@ function App() {
             t && t.updatedAt,
             t && t.clientUpdatedAt
         ].join('|')).sort().join('::');
-        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + rows;
+        const rentalSignature = rentalCalendarEnabled===null?'':String(rentalCalendarEnabled)+'::'+recordListSignature(rentals,true);
+        const sig = (githubCalendarToken || '').trim().slice(-10) + '::' + rows + '::' + rentalSignature;
         calendarPublishDesiredSigRef.current = sig;
         if (calendarPublishSigRef.current === sig)
             return;
@@ -11292,7 +11520,7 @@ function App() {
                 calendarPublishTimerRef.current = null;
             }
         };
-    }, [storageReady, T, githubCalendarAuto, githubCalendarToken]);
+    }, [storageReady, T, rentals, rentalCalendarEnabled, githubCalendarAuto, githubCalendarToken]);
     useEffect(() => {
         if (!storageReady || !githubCalendarAuto || !(githubCalendarToken || '').trim()) return;
         const retryPending = () => {
@@ -11324,19 +11552,28 @@ function App() {
             tip('Geçersiz');
             return false;
         }
+        if (!storageReady) { tip('Kayıtların yüklenmesini bekleyin'); return false; }
+        for (const key of ['t','ak','rk','db','adj','tk','tl','a','dr']) {
+            if (d[key] !== undefined && !Array.isArray(d[key])) throw new Error('Geçersiz kayıt listesi');
+        }
         const akCount = Array.isArray(d.ak) ? d.ak.length : 0;
-        if (!window.confirm(d.t.length + ' transfer + ' + akCount + ' araç kaydı geri yüklensin mi? (Gider/gelir/kartlar dahil her şey)'))
+        if (!window.confirm(d.t.length + ' transfer, ' + (d.rk || []).length + ' kiralama, ' + ((d.db || []).length + (d.adj || []).length) + ' hesap kaydı ve ' + akCount + ' araç kaydı mevcut verilerle birleştirilsin mi? Daha yeni kayıtlar korunur. İşlem öncesi bu cihazda kurtarma kopyası tutulur.'))
             return false;
-        writeDeletedTransferIds([]);
-        writeDeletedAracIds([]);
+        const before = snapshotPayload();
+        const merged = mergeSnapshots({...d, adj: d.adj || d.accountAdjustments || []}, before, readDeletedTransferIds());
         const nowIso = new Date().toISOString();
-        const clean = { ...d, del: [], delA: [], v: 26, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
+        const clean = { ...merged, v: 28, date: nowIso, clientUpdatedAt: nowIso, _localWriteAt: nowIso };
+        try {
+            localStorage.setItem(STORAGE_KEY + '_before_restore', JSON.stringify(before));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+        } catch(e) { tip('Yeterli cihaz alanı yok veya kayıt engellendi. Geri yükleme uygulanmadı; önce dosya yedeği alın.'); return false; }
+        writeDeletedTransferIds(clean.del || []);
+        writeDeletedAracIds(clean.delA || []);
         writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, true);
         hydrateSnapshot(clean, true);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
         if(cloudEnabled() && authUser && cloudLoadedRef.current)
             queueCloudSnapshot(clean, 60);
-        tip('Her şey geri yüklendi!');
+        tip('Yedek mevcut kayıtlarla birleştirildi; bulut eşitlemesi bağlantıya bağlıdır.');
         return true;
     }
     catch (e) {
@@ -12703,7 +12940,7 @@ function App() {
                         })
                         : React.createElement("div", { className: "lg-empty", style: { padding: '8px 4px' } }, "Yaklaşan transfer yok")
                 );
-                const HOME_GROUP_ORDER = ['arrival', 'departure', 'tour', 'dugun', 'intercity', 'shortpass', 'takas'];
+                const HOME_GROUP_ORDER = ['departure', 'arrival', 'tour', 'shortpass', 'dugun', 'intercity', 'takas'];
                 const renderGroupedHomeTransfers = rows => {
                     const byType = {};
                     (rows || []).forEach(t => { const k = (t && t.transferType) || 'other'; (byType[k] = byType[k] || []).push(t); });
@@ -12832,7 +13069,14 @@ function App() {
                                 React.createElement("button", { type: "button", "aria-label": "Sonraki gün", onClick: () => setExpandedT(p => ({ ...p, __lgPeriod: 'today', __lgDay: (p.__lgDay || 0) + 1 })), style: navBtn }, chev('r')));
                         })()
                     ),
-                    renderPeriodPanel(selectedPeriod)
+                    renderPeriodPanel(selectedPeriod),
+                    selectedPeriod === 'today' && (()=>{
+                        const deliveries = rentals.filter(r=>!r.cancelled && rentalDateKey(new Date(r.start).getTime())===viewDayKey).slice().sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+                        return deliveries.length ? React.createElement('section',{className:'rent-firm-panel'},
+                            React.createElement('h3',{style:{fontSize:14,fontWeight:550,padding:'3px 17px',color:'#49695e'}},'Kiralık araç · teslimler'),
+                            React.createElement('div',{className:'rent-firm-content'},deliveries.map(r=>React.createElement('button',{key:r.id,className:'rent-home-delivery',onClick:()=>{setRentalOpenRequest({id:r.id});setTab('rentals');}},
+                                React.createElement(RentalBadge,{model:r.model}),React.createElement('span',null,React.createElement('b',null,r.model+' · '+r.plate),React.createElement('small',null,r.renter),React.createElement('small',null,'Dönüş: '+rentalDateText(rentalCalc(r).end))),React.createElement('strong',null,String(r.start).slice(11,16)))))) : null;
+                    })()
                 );
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement("div", { 
@@ -14078,7 +14322,8 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))),
                 React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { rentals: rentals, onOpenRental: request=>{setRentalOpenRequest(request);setTab('rentals');}, T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { rentals: rentals, agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
+            tab === 'rentals' && React.createElement(RentalTab, { openRequest: rentalOpenRequest, onRequestHandled:()=>setRentalOpenRequest(null), rows: rentals, setRows: saveRentals, rates: rates, rateDate: lastRateUpdate, tip: tip, calendarEnabled: rentalCalendarEnabled, setCalendarEnabled: setRentalCalendarConsent, publishCalendar:()=>publishAppleCalendarToGithub(false), calendarBusy:githubCalendarBusy, calendarMessage:githubCalendarMsg }),
             tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         React.createElement("nav", { className: "tabbar" },
             React.createElement("div", { className: "tabbar-inner" },
@@ -14091,7 +14336,8 @@ function App() {
                     React.createElement("div", { className: "tab-label" }, "Transferler")
                 ),
                 React.createElement("button", { className: "tab-fab", onClick: openNewTransferForm, "aria-label": "Yeni Transfer" },
-                    React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+")),
+                    React.createElement("span", { className: "tab-fab-plus", "aria-hidden": "true" }, "+"),
+                    React.createElement("span", { className: "rent-add-label", "aria-hidden": "true" }, "Ekle")),
                 React.createElement("button", { className: "tab" + (tab === 'hesap' ? ' is-active' : ''), onClick: () => setTab('hesap') },
                     React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.hesap)),
                     React.createElement("div", { className: "tab-label" }, "Hesap")
@@ -14099,7 +14345,10 @@ function App() {
                 React.createElement("button", { className: "tab" + (tab === 'arac' ? ' is-active' : ''), onClick: () => setTab('arac') },
                     React.createElement("div", { className: "tab-icon" }, React.createElement(KO_ICONS.arac)),
                     React.createElement("div", { className: "tab-label" }, "Araç")
-                )
+                ),
+                React.createElement("button", { className: "tab" + (tab === 'rentals' ? ' is-active' : ''), onClick: () => setTab('rentals') },
+                    React.createElement("div", { className: "tab-icon" }, React.createElement('svg', {viewBox:'0 0 24 24',width:24,height:24,fill:'none',stroke:'currentColor',strokeWidth:1.6,'aria-hidden':true}, React.createElement('circle',{cx:8,cy:8,r:4}),React.createElement('path',{d:'M11 11l9 9m-4-4l3-3m-6 0l3-3'}))),
+                    React.createElement("div", { className: "tab-label" }, "Kiralık"))
             )
         ),
         quickEditT && renderQuickEditModal(),
@@ -14370,7 +14619,8 @@ function App() {
                         bolumBaslik('Yedek Al'),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                             anaBtn('📋 Panoya Kopyala', 'Notlar’a yapıştır', doBackup, NAV),
-                            anaBtn('📁 Dosyaya İndir', 'iCloud / Dosyalar', downloadBackupFile, TEAL)),
+                            anaBtn('📁 Dosyaya İndir', 'Tüm kayıtlar · iCloud / Dosyalar', downloadBackupFile, TEAL),
+                            anaBtn('Kurtarma kopyası', 'Son geri yüklemeden önceki kayıtlar', async()=>{const raw=localStorage.getItem(STORAGE_KEY+'_before_restore');if(!raw){tip('Henüz geri yükleme yapılmadı; kurtarma kopyası yok.');return;}const ok=await downloadText(raw,'Olmeztur_Geri_Yukleme_Oncesi.json','application/json;charset=utf-8');tip(ok?'Kurtarma kopyası hazırlandı':'Dosya hazırlanamadı');},TEAL)),
                         React.createElement("div", { style: { fontSize: 10.5, color: SB, lineHeight: 1.45, marginBottom: 16, padding: '8px 11px', background: 'var(--p-pos-soft)', border: '1px dashed var(--p-pos-bd)', borderRadius: 10 } },
                             bkpPreview || 'Transferler, gelir–giderler, araç işleri, firma hesapları, borçlar ve ayarlar tek parça hâlinde yedeklenir.'),
                         bolumBaslik('Geri Yükle'),
@@ -16116,6 +16366,36 @@ img,svg{content-visibility:visible !important}
  .ko-account-root-card .ko-account-section-head{flex-wrap:wrap!important}
  .ko-new-form>.card{padding:15px!important}
 }
+</style>
+<style id="ko-rental-premium">
+body .tabbar{contain:none!important}
+body .tabbar{height:auto!important;overflow:visible!important;padding-bottom:env(safe-area-inset-bottom,0px)!important}body .tabbar .tabbar-inner{height:78px!important;min-height:78px!important;box-sizing:border-box!important;padding:14px 8px 4px!important;overflow:visible!important}body .tabbar .tabbar-inner>.tab{height:56px!important;padding:5px 0 3px!important;gap:6px!important;align-self:center!important;justify-content:center!important}body .tabbar .tabbar-inner>.tab-fab{top:-25px!important}
+.rent-days button{min-height:91px!important;gap:5px!important;padding:7px 2px!important;justify-content:flex-start!important}.rent-day-car{display:block;border-radius:5px;padding:3px 4px;font-size:9px;font-weight:550;line-height:1.2}.rent-day-car.toyota{background:#dceee6;color:#396859}.rent-day-car.fiat{background:#f3e5d9;color:#8a6346}.rent-legend{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}.rent-legend small{color:#89969d;font-size:10px}.rent-days .selected .rent-day-car{box-shadow:0 0 0 1px #ffffff33}@media(max-width:600px){.rent-days button{min-height:81px!important}.rent-days .rent-day-car{font-size:8px;padding:3px 2px;width:100%;box-sizing:border-box;letter-spacing:0}}
+.rent-root{max-width:1080px;margin:auto;color:#243447;padding:12px 0 38px;font-family:inherit}.rent-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:8px 0 22px}.rent-heading small,.rent-month-summary>small:first-child{letter-spacing:.13em;font-size:10px;color:#74828a}.rent-heading h2{font-size:26px;font-weight:600;margin:6px 0}.rent-heading p{color:#72808c;margin:0;font-size:13px}.rent-primary{border:0;border-radius:14px;background:#203e52;color:white;padding:14px 20px;font:inherit;font-size:13px;font-weight:550;cursor:pointer;min-height:44px}.rent-primary:disabled{opacity:.45;cursor:wait}.rent-calendar{background:#fafcfd;border:1px solid #e2e8ec;border-radius:24px;padding:18px;box-shadow:0 6px 22px #26374a06}.rent-month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.rent-month-nav h3{text-transform:capitalize;font-size:18px;font-weight:550;margin:0}.rent-month-nav button{border:1px solid #e3e9ed;background:white;border-radius:12px;width:42px;height:42px;font-size:26px;color:#364a5a}.rent-week,.rent-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.rent-week{font-size:11px;color:#84909b;text-align:center;margin-bottom:10px}.rent-days button{font-family:inherit;background:#fff;border:1px solid #e8edf0;border-radius:13px;min-height:66px;color:#3c4a57;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer}.rent-days b{font-size:15px;font-weight:550}.rent-days small{font-size:10px;color:#80928e}.rent-days .selected{background:#234c5b;color:white;border-color:#234c5b}.rent-days .selected small{color:#c5ddd7}.rent-days .today{box-shadow:inset 0 0 0 1px #8ba89e}.rent-list-heading{display:flex;align-items:center;gap:10px;margin:25px 0 15px;flex-wrap:wrap}.rent-list-heading h3{flex:1;font-size:15px;font-weight:550}.rent-list-heading button,.rent-actions button,.rent-secondary{font:inherit;font-size:12px;padding:9px 12px;min-height:40px;border:1px solid #e0e6eb;border-radius:11px;background:#fff;color:#526577;cursor:pointer}.rent-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.rent-card{padding:20px;border:1px solid #e3e8ec;background:white;border-radius:23px;box-shadow:0 5px 18px #203b4e05;min-width:0}.rent-card-top{display:flex;align-items:center;gap:12px}.rent-brand{width:60px;height:48px;display:flex;align-items:center;justify-content:center;background:#f1f5f6;border-radius:14px;color:#5e747c;flex-shrink:0}.rent-brand strong{font-size:16px;letter-spacing:1px}.rent-card h3{font-size:15px;font-weight:600;margin:0 0 5px}.rent-card small{font-size:11px;color:#7c8995}.rent-status{margin-left:auto;background:#eef4f1;color:#577767;border-radius:12px;padding:7px 9px;font-size:10px;white-space:nowrap}.rent-card h4{font-size:19px;font-weight:500;margin:23px 0 17px;overflow-wrap:anywhere}.rent-timeline{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid #edf0f2;border-bottom:1px solid #edf0f2;padding:14px 0}.rent-timeline div{display:flex;flex-direction:column;gap:7px}.rent-timeline b{font-size:12px;font-weight:500;line-height:1.6}.rent-subtle{font-size:11px;color:#7b8793;line-height:1.7}.rent-card summary,.rent-dialog summary{font-size:12px;font-weight:550;cursor:pointer;padding:10px 0;color:#536b79}.rent-finance-line{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;font-size:12px;color:#6b7784}.rent-finance-line b{font-weight:500;color:#344957;white-space:nowrap;font-variant-numeric:tabular-nums}.rent-finance-line.strong{border-top:1px solid #dfe8e7;margin-top:8px;padding-top:15px;color:#264b49}.rent-finance-line.strong b{font-size:19px}.rent-actions{display:flex;gap:9px;margin-top:13px}.rent-empty{grid-column:1/-1;padding:35px 20px;text-align:center;border:1px dashed #d9e2e5;border-radius:18px;color:#7d8a93;font-size:13px;line-height:1.8}.rent-month-summary{margin-top:22px;border:1px solid #dce7e5;border-radius:23px;padding:25px;background:#eef5f3;display:flex;flex-direction:column;gap:8px}.rent-month-summary strong{font-size:30px;font-weight:550;color:#2e5c53}.rent-month-summary span,.rent-month-summary p{font-size:12px;color:#667f79;margin:0}.rent-month-summary>small:last-child{font-size:10px;color:#82968e;line-height:1.6;margin-top:5px}.rent-overlay{position:fixed;inset:0;z-index:22000;background:#192c4166;backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 14px max(24px,env(safe-area-inset-bottom))}.rent-dialog{width:min(760px,100%);background:#f9fbfc;border:1px solid #fff;border-radius:24px;padding:24px;box-shadow:0 24px 90px #182b4322;margin:auto;box-sizing:border-box}.rent-dialog>header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.rent-dialog h2{font-size:21px;font-weight:550;margin:0}.rent-dialog>header button{border:0;background:#e9eef1;border-radius:50%;height:38px;width:38px}.rent-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.rent-field{display:flex;flex-direction:column;gap:7px;min-width:0}.rent-field>span{font-size:11px;color:#71818d;line-height:1.5}.rent-field small{font-size:11px;color:#5b8172}.rent-dialog .inp{font-size:15px!important;min-height:46px;box-sizing:border-box;width:100%;border:1px solid #dfe7eb;background:white;border-radius:12px;padding:10px;color:#263b49}.rent-money-input{display:grid;grid-template-columns:1fr 76px;gap:6px}.rent-wide{grid-column:1/-1}.rent-form-grid h3{margin:13px 0 0;font-size:16px;font-weight:550}.rent-return{background:#eaf2ee;border-radius:12px;padding:11px;display:flex;flex-direction:column;justify-content:center;gap:7px}.rent-return small{font-size:9px;letter-spacing:.1em;color:#799185}.rent-return b{font-size:13px;color:#39594a;font-weight:500}.rent-calculation{margin:23px 0;background:#fff;border:1px solid #e0e8e9;border-radius:16px;padding:17px}.rent-save{width:100%}.rent-error{background:#fff2e3;color:#795430;padding:12px;border-radius:12px;font-size:12px;line-height:1.7}.rent-root button:focus-visible,.rent-dialog button:focus-visible,.rent-dialog input:focus-visible,.rent-dialog select:focus-visible{outline:2px solid #5b928b;outline-offset:3px}
+/* Five equal destinations; the existing transfer action floats centrally above them. */
+.tabbar .tabbar-inner{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;position:relative!important;padding-top:24px!important;gap:0!important}.tabbar .tabbar-inner>.tab{width:auto!important;min-width:0!important;margin:0!important}.tabbar .tabbar-inner>.tab-fab{position:absolute!important;left:50%!important;top:-30px!important;transform:translateX(-50%)!important;width:54px!important;height:54px!important;margin:0!important;border:5px solid white!important;box-shadow:0 5px 15px #1e3c4d22!important}.tabbar .tab-label{font-size:10px!important;letter-spacing:0!important}.tabbar .tab-icon{height:23px!important}.tabbar .tab-fab-plus{font-size:28px!important}.rent-root{padding-bottom:85px}
+@media(max-width:600px){.rent-heading{align-items:flex-start;flex-direction:column;gap:15px}.rent-heading h2{font-size:24px}.rent-heading>.rent-primary{width:100%}.rent-calendar{padding:13px;border-radius:19px}.rent-week,.rent-days{gap:4px}.rent-days button{min-height:53px;border-radius:10px}.rent-days b{font-size:13px}.rent-days small{font-size:9px}.rent-cards{grid-template-columns:1fr}.rent-card{padding:18px}.rent-dialog{padding:18px;border-radius:20px}.rent-form-grid{gap:14px 10px}.rent-dialog .inp{font-size:16px!important}.rent-money-input{grid-template-columns:1fr 64px}.rent-finance-line{font-size:11px}.rent-overlay{padding:12px 8px 30px}.rent-month-summary strong{font-size:27px}}
+</style>
+<style id="ko-balanced-six-nav">
+.rent-customer-due{background:#f0f6f4;border:1px solid #e0eae5;border-radius:13px;padding:10px 13px;margin:12px 0}.rent-customer-due .rent-finance-line{padding:6px 0}.rent-customer-due .strong b{font-size:17px}.rent-customer-due>small{display:block;text-align:right;margin-top:5px;color:#7a8b84}
+body nav.tabbar .tabbar-inner>.tab.is-active{box-shadow:none!important;transform:none!important}body nav.tabbar .tabbar-inner>.tab.is-active .tab-label,body nav.tabbar .tabbar-inner>.tab.is-active .tab-icon{color:#24435c!important;-webkit-text-fill-color:#24435c!important}
+body nav.tabbar{contain:none!important;height:auto!important;background:rgba(252,253,255,.97)!important;border:1px solid #e0e6ed!important;border-bottom:0!important;border-radius:25px 25px 0 0!important;box-shadow:0 -5px 22px #1d34500a!important;backdrop-filter:blur(18px)!important;padding:0 5px env(safe-area-inset-bottom,0px)!important}
+body nav.tabbar .tabbar-inner{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;height:74px!important;min-height:74px!important;gap:2px!important;padding:8px 0 6px!important;align-items:center!important;max-width:680px!important;margin:auto!important}
+body nav.tabbar .tabbar-inner>.tab{position:static!important;min-width:0!important;width:100%!important;height:58px!important;padding:6px 0!important;gap:7px!important;border-radius:14px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important}
+body nav.tabbar .tabbar-inner>.tab-fab{position:static!important;inset:auto!important;transform:none!important;align-self:center!important;justify-self:center!important;width:48px!important;height:54px!important;min-width:0!important;margin:0!important;padding:3px 0 6px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;border:1px solid #ffffff66!important;border-radius:17px!important;background:linear-gradient(145deg,#294c67,#17344c)!important;color:white!important;box-shadow:0 4px 10px #17344c22,inset 0 1px 0 #ffffff22!important;overflow:visible!important}
+body nav.tabbar .tab-fab .tab-fab-plus{font-family:system-ui,sans-serif!important;font-size:29px!important;font-weight:300!important;line-height:30px!important;height:30px!important;display:block!important;color:#fff!important}
+body nav.tabbar .rent-add-label{display:block;font-family:inherit;font-size:9px;line-height:12px;font-weight:500;letter-spacing:.2px;color:#e7f0f5}
+body nav.tabbar .tab-label{font-size:9px!important;line-height:12px!important;font-weight:500!important;margin:0!important;white-space:nowrap!important}
+body nav.tabbar .tab-icon{height:22px!important;width:24px!important;margin:0!important}body nav.tabbar .tab-icon svg{height:22px!important;width:22px!important}
+body nav.tabbar .tab.is-active{background:#eaf0f5!important;color:#24435c!important}body nav.tabbar button:focus-visible{outline:2px solid #527b91!important;outline-offset:1px!important}
+</style>
+<style id="ko-rental-refined-v2">
+.rent-root{--rent-ink:#263f4d;--rent-muted:#788b94;--rent-green:#427967;color:var(--rent-ink);padding-top:16px}.rent-heading{margin-bottom:23px}.rent-heading h2{font-size:30px;font-weight:550;letter-spacing:-1px}.rent-heading small{font-size:9px;letter-spacing:.19em}.rent-heading .rent-primary{background:#274657;border-radius:15px;box-shadow:0 5px 13px #24405212}.rent-calendar-settings{background:#f8fafb;border:1px solid #e1e8eb;border-radius:16px;padding:13px 17px;margin:0 0 18px}.rent-calendar-settings summary{font-size:12px;color:#496675;cursor:pointer;font-weight:550}.rent-calendar-settings p,.rent-calendar-settings label,.rent-calendar-settings small{font-size:11px;line-height:1.8;color:#6e818b}.rent-calendar-settings input{accent-color:#386657}.rent-calendar-settings a{background:white;border:1px solid #dce6e6;border-radius:10px;color:#386459;text-decoration:none;padding:9px 11px;font-size:11px}.rent-calendar-settings .rent-actions{flex-wrap:wrap}.rent-collection-summary{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:23px}.rent-collection-summary>button{background:linear-gradient(135deg,#fff,#f7faf9);border:1px solid #dce7e4;border-radius:19px;padding:20px;text-align:left;display:flex;flex-direction:column;gap:11px;cursor:pointer;box-shadow:0 5px 14px #163c3103}.rent-collection-summary>button:nth-child(2){border-color:#e8e0d5;background:linear-gradient(135deg,#fff,#fcf9f4)}.rent-collection-summary small{font-size:9px;letter-spacing:.07em;color:#788c89;line-height:1.6}.rent-collection-summary strong{font-size:25px;font-weight:550;color:#37675b;font-variant-numeric:tabular-nums}.rent-collection-summary>button:nth-child(2) strong{color:#8a7255}.rent-collection-summary>button[aria-pressed=true]{box-shadow:inset 0 0 0 1px #769d90}.rent-payable-strip{grid-column:1/-1;font-size:11px;color:#8a8d8a;padding:0 6px}.rent-payable-strip b{font-weight:500;color:#756b5b}.rent-filter-note{font-size:12px;color:#58766b;display:flex;justify-content:space-between;gap:12px;align-items:center}.rent-filter-note button{background:white;border:1px solid #dbe6e2;border-radius:9px;padding:8px;color:#527869}.rent-calendar{border-radius:25px;background:#ffffffd9;border-color:#e3e9ec;padding:21px;box-shadow:0 9px 30px #193d5004}.rent-month-nav{margin:2px 0 21px}.rent-days button{box-shadow:none;border-color:#edf1f3;min-height:82px!important;background:#fafbfc}.rent-days .selected{background:#365f68;border-color:#365f68;box-shadow:0 4px 9px #214b5a10}.rent-days .today{box-shadow:inset 0 0 0 1px #adc4bb}.rent-week{color:#90a0a6}.rent-day-car{font-size:9px;padding:4px 7px;border-radius:6px}.rent-card{border-radius:25px;padding:23px;background:linear-gradient(150deg,#fff 70%,#fafcfc);box-shadow:0 7px 22px #213f5005}.rent-card h4{font-size:21px;letter-spacing:-.4px;font-weight:500}.rent-brand{background:#eff4f4;color:#6c858a;border:1px solid #e8eff0;border-radius:16px}.rent-status{background:#edf3f0;padding:7px 10px;letter-spacing:.02em}.rent-timeline{padding:16px 0;border-color:#edf1f3}.rent-timeline small{font-size:9px;letter-spacing:.11em}.rent-timeline b{font-weight:500;font-size:12px}.rent-customer-due{background:#f5f9f7;border:1px solid #e2ece7;border-radius:16px;padding:14px 16px;margin-top:20px}.rent-payment-label{text-align:left!important;font-size:9px!important;letter-spacing:.14em;margin-bottom:9px}.rent-customer-due .strong b{font-size:20px;color:#416b5c}.rent-customer-due .strong{border-color:#dce8e1}.rent-broker-due{margin-top:13px;border-top:1px dashed #d8ddd4;padding-top:1px}.rent-broker-due .strong{border:0}.rent-broker-due .strong b{color:#8c7858}.rent-broker-due>small{display:block;text-align:right;font-size:10px;color:#92978b}.rent-actions button{border-color:#e3e9eb;background:#fafcfc;color:#5f747f;font-size:11px;padding:11px 14px}.rent-month-summary{background:#edf4f1;border-color:#dce8e2;border-radius:23px}.rent-month-summary strong{font-size:31px}.rent-payment-editor{background:#eff5f3;border:1px solid #dce8e2;border-radius:16px;padding:12px 16px}.rent-payment-editor>summary{padding-bottom:14px}.rent-dialog{background:#fbfcfd;border-radius:27px}.rent-dialog .inp{border-color:#e1e8eb;box-shadow:none}.rent-dialog .rent-form-grid{gap:20px 15px}.rent-dialog .rent-form-grid h3{font-size:15px;padding-top:12px;border-top:1px solid #e5ecee}.rent-calendar-settings button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:600px){.rent-heading h2{font-size:27px}.rent-collection-summary{gap:9px}.rent-collection-summary>button{padding:15px 13px;border-radius:16px}.rent-collection-summary small{font-size:8px;letter-spacing:.03em}.rent-collection-summary strong{font-size:21px}.rent-calendar{padding:13px;border-radius:22px}.rent-days button{min-height:75px!important}.rent-card{padding:19px;border-radius:22px}.rent-card h4{font-size:20px}.rent-dialog{padding:17px}.rent-payment-editor{padding:10px}.rent-dialog .rent-form-grid{gap:17px 10px}.rent-field>span{font-size:10px}.rent-customer-due .strong b{font-size:18px}}
+</style>
+<style id="ko-rental-firm-ledger">
+.rent-home-delivery{display:flex;align-items:center;gap:12px;width:100%;background:white;border:1px solid #e1e9e5;border-radius:15px;padding:14px;margin:10px 0;text-align:left;color:#3a5f54;cursor:pointer}.rent-home-delivery>span:not(.rent-brand){display:grid;gap:5px;flex:1;min-width:0}.rent-home-delivery b{font-size:12px;font-weight:550;overflow-wrap:anywhere}.rent-home-delivery small{font-size:10px;line-height:1.5;color:#7c8f86}.rent-home-delivery>strong{font-size:18px;font-weight:550}
+.rent-firm-panel{border:1px solid #dce6e3;background:#fafcfb;border-radius:18px;overflow:hidden;margin:10px 0}.rent-firm-toggle{width:100%;border:0;background:transparent;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px;text-align:left;color:#355c54;cursor:pointer}.rent-firm-toggle span{display:grid;gap:5px}.rent-firm-toggle small{font-size:11px;color:#7a8e88}.rent-firm-toggle b{font-weight:550;font-size:14px}.rent-firm-content{padding:0 16px 17px}.rent-firm-totals{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rent-firm-totals>div{display:grid;gap:7px;background:#edf5f1;border-radius:12px;padding:13px}.rent-firm-totals>div+div{background:#f4f0e9}.rent-firm-totals small,.rent-firm-row small{font-size:10px;color:#73867f}.rent-firm-totals b{font-size:19px;font-weight:550}.rent-firm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:13px;background:white;border:1px solid #e5ebe8;border-radius:13px;padding:15px;margin:12px 0}.rent-firm-row>div{display:grid;gap:6px}.rent-firm-row b{font-size:13px;font-weight:550;overflow-wrap:anywhere}.rent-firm-row span,.rent-firm-row details{font-size:11px;line-height:1.7;color:#74867f}.rent-firm-row details,.rent-firm-row>button{grid-column:1/-1}.rent-firm-amount{text-align:right;align-content:start}.rent-firm-row summary{cursor:pointer}.rent-firm-row p{overflow-wrap:anywhere}.rent-firm-content>.rent-secondary{margin-top:8px}
 </style>
 </body>
 </html>
