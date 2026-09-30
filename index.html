@@ -9048,8 +9048,9 @@ function rentalPaymentUpdate(row,kind) {
 }
 function rentalCalc(row, month) {
     const {start,end,days,hours,baseEnd}=rentalDuration(row);
-    let countedDays = days;
-    if (month) { countedDays = 0; for(let i=0;i<days;i++) if(rentalDateKey(start+i*RENT_DAY).slice(0,7) === month) countedDays++; }
+    // Aylık özet kiralamanın bütün günlük payını teslimin başladığı aya yazar.
+    // Böylece ay sonunu aşan 10 günlük bir kaydın 10 × günlük payı parçalanmaz.
+    const countedDays = !month || rentalDateKey(start).slice(0,7) === month ? days : 0;
     const extraInMonth = !month || rentalDateKey(baseEnd).slice(0,7) === month;
     const total = key => rentalRound(rentalAmount(row,key)*countedDays + (extraInMonth ? rentalAmount(row,key+'Extra') : 0));
     const customer = total('customer'), ownerGross = total('owner');
@@ -9174,7 +9175,9 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
     const active=(rows||[]).filter(x=>!x.cancelled);
     const monthRows=active.filter(x=>{const c=rentalCalc(x);return rentalDateKey(c.start).slice(0,7)<=month && rentalDateKey(c.end-1).slice(0,7)>=month;});
     const shown=(archive?(rows||[]).filter(x=>x.cancelled):monthRows.filter(x=>!day || (rentalDateKey(rentalCalc(x).start)<=day&&rentalDateKey(rentalCalc(x).end-1)>=day))).slice().sort((a,b)=>new Date(a.start)-new Date(b.start));
-    const monthly=monthRows.reduce((s,x)=>{const c=rentalCalc(x,month);return {profit:s.profit+c.profit,vat:s.vat+c.vat};},{profit:0,vat:0});
+    // Aylık Ölmeztur neti yalnızca günlük Ölmeztur paylarının ve varsa tek seferlik
+    // Ölmeztur ek payının toplamıdır. KDV araç sahibi hesabında ayrı izlenir.
+    const monthlyProfit=monthRows.reduce((sum,x)=>sum+rentalCalc(x,month).profit,0);
     const waiting=active.reduce((s,x)=>{const c=rentalCalc(x);return {customer:s.customer+Math.max(0,c.customerDue),broker:s.broker+Math.max(0,c.brokerDue),payable:s.payable+Math.max(0,-c.brokerDue)};},{customer:0,broker:0,payable:0});
     const [onlyUnpaid,setOnlyUnpaid]=useState(false);
     const [addOwner,setAddOwner]=useState(false),[addVehicle,setAddVehicle]=useState(false);
@@ -9224,7 +9227,7 @@ function RentalTab({rows,setRows,rates,rateDate,tip,calendarEnabled,setCalendarE
             h('div',{className:'rent-compact-balance'},h('span',null,'Müşteriden kalan'),h('b',null,rentalMoney(v.customerDue)),h('label',{className:'rent-paid-check'},h('input',{type:'checkbox',checked:v.customerDue<=0.005,disabled:!!x.cancelled||(v.customerDue<=0.005&&!x.customerPaymentUndo),onChange:()=>markCustomerPaid(x)}),v.customerDue<=0.005?'Tahsil edildi':'Tahsil edildi işaretle')),
             h('details',null,h('summary',null,'Kiralama hesabı'),line('Kira + ek süre bedeli',v.customer),line('Havalimanı teslim ücreti',v.delivery),line('Müşteri toplamı',v.customerTotal),line('Alınan kapora',-v.deposit),line('Müşteriden kalan',v.customerDue,true),line(x.brokerName+' · komisyon',v.broker),line('Ölmeztur · kazanç (KDV hariç)',v.profit),line(x.ownerName+' · kesinti öncesi toplam',v.ownerGross),line('KDV matrahı',v.vatBase),line('KDV kesintisi · %20',-v.vat),line(x.ownerName+' · net ödenecek',v.ownerNet,true),h('p',{className:'rent-subtle'},'Teslim ücreti müşteri toplamına dahildir; araç sahibi, komisyoncu ve Ölmeztur kazanç paylaşımından ayrı izlenir. Kapora kazancı değiştirmez. Bu alan ödeme yapmaz.')),
             h('div',{className:'rent-actions'},h('button',{onClick:()=>{setError('');setAddOwner(false);setAddVehicle(false);setDraft(toDraft(x));}},'Düzenle / ödeme'),h('button',{onClick:()=>toggleArchive(x)},x.cancelled?'Geri al':'İptal et')));}),!shown.length&&!onlyUnpaid&&h('div',{className:'rent-empty'},'Bu görünümde kiralama yok. “Aracı kiraya ver” ile ekleyebilirsin.')),
-        h('footer',{className:'rent-net-strip'},h('details',null,h('summary',null,h('span',null,'Aylık Net Kar'),h('strong',null,rentalMoney(rentalRound(monthly.profit))),h('small',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})+' · Ölmeztur')),h('p',null,'KDV hariç net kazanç. Ayrı KDV kesintisi: '+rentalMoney(rentalRound(monthly.vat))),h('p',null,'Günlük bedeller 24 saatlik dönemin başladığı aya; ek ücret uzatma başlangıcının ayına yazılır. Transferler bu toplama dahil değildir.'))),
+        h('footer',{className:'rent-net-strip'},h('details',null,h('summary',null,h('span',null,'Aylık Net Kar'),h('strong',null,rentalMoney(rentalRound(monthlyProfit))),h('small',null,first.toLocaleDateString('tr-TR',{month:'long',year:'numeric'})+' · Ölmeztur')),h('p',null,'Günlük Ölmeztur payları toplanır; varsa Ölmeztur ek payı bir kez eklenir. KDV bu toplama dahil değildir.'),h('p',null,'Günlük pay 24 saatlik dönemin başladığı aya; ek pay uzatma başlangıcının ayına yazılır. Transferler bu toplama dahil değildir.'))),
         draft&&h('div',{className:'rent-overlay'},h('section',{className:'rent-dialog',role:'dialog','aria-modal':true,'aria-label':'Aracı kiraya ver'},h('header',null,h('h2',null,'Aracı kiraya ver'),h('button',{'aria-label':'Formu kapat',onClick:()=>{scanToken.current++;setScan('');setDraft(null);}},'✕')),
             h('div',{className:'rent-form-grid'},h('h3',{className:'rent-wide'},'Araç ve kiracı'),
                 h('div',{className:'rent-wide rent-select-add'},h('label',{className:'rent-field'},h('span',null,'Kayıtlı araç'),h('select',{className:'inp',value:vehicles.some(v=>v.plate===draft.plate)?draft.plate:'',onChange:e=>{const v=vehicles.find(v=>v.plate===e.target.value);if(v)setDraft(d=>({...d,plate:v.plate,model:v.model,ownerName:v.ownerName}));}},h('option',{value:''},'Araç seçin veya + ile ekleyin'),vehicles.map(v=>h('option',{key:v.plate,value:v.plate},v.model+' · '+v.plate)))),h('button',{type:'button',className:'rent-add-option','aria-label':'Yeni araç ekle',onClick:()=>{setAddVehicle(!addVehicle);if(!addVehicle)setDraft(d=>({...d,plate:''}));}},addVehicle?'−':'+')),
