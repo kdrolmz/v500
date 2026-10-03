@@ -10222,7 +10222,8 @@ function App() {
         }
         const sameDayReturn = form.tripMode === 'sameday' || !!form.isReturn;
         const datedReturn = form.tripMode === 'roundtrip' || !!form.hasReturn;
-        const recurringReturn = form.tripMode === 'recurring' || !!form.isRecurring;
+        const recurringSeries = form.tripMode === 'recurring' || !!form.isRecurring;
+        const recurringReturn = recurringSeries && form.transferType === 'shortpass';
         const wantsReturnTransfer = sameDayReturn || datedReturn || recurringReturn;
         const returnTimeValue = String(form.returnTime || '').trim();
         if (wantsReturnTransfer && !/^([01]\d|2[0-3]):[0-5]\d$/.test(returnTimeValue)) {
@@ -10235,10 +10236,10 @@ function App() {
             tip('Dönüş tarihi girin');
             return;
         }
-        if (recurringReturn) {
+        if (recurringSeries) {
             const recurringDates = transferDateKeysInclusive(form.date, form.endDate, 31);
             if (!String(form.endDate || '').trim()) {
-                releaseSubmitLock(); setWizStep(1); tip('Kısa Pas bitiş tarihini girin'); return;
+                releaseSubmitLock(); setWizStep(1); tip('Program bitiş tarihini girin'); return;
             }
             if (!recurringDates.length) {
                 releaseSubmitLock(); setWizStep(1); tip('Bitiş tarihi başlangıç tarihinden önce olamaz'); return;
@@ -10388,14 +10389,17 @@ function App() {
         } else {
             const transfersToAdd = [];
             const extraLinks = [];
-            const recurringDates = recurringReturn
+            const recurringDates = recurringSeries
                 ? transferDateKeysInclusive(form.date, form.endDate, 30)
                 : [form.date];
+            const recurringSeriesId = recurringSeries
+                ? ('SER_' + Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8))
+                : '';
             let loopCount = 0;
             for (const dateStr of recurringDates) {
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
                 const datedCustomerTRY = toTRYr(form.paymentAmount, form.paymentCurrency, dateStr);
-                const outDraft = { ...form, id: outId, editRootId: outId, date: dateStr, isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: datedCustomerTRY, profit: olmezKar({ ...form, date: dateStr, customerTRY: datedCustomerTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
+                const outDraft = { ...form, id: outId, editRootId: outId, date: dateStr, recurringSeriesId: recurringSeriesId, recurringDayIndex: recurringSeries ? loopCount : null, recurringStartDate: recurringSeries ? form.date : '', recurringEndDate: recurringSeries ? form.endDate : '', isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: datedCustomerTRY, profit: olmezKar({ ...form, date: dateStr, customerTRY: datedCustomerTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
                 const outBase = { ...outDraft, ...buildKdvFields(outDraft) };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 if (form.tripMode === 'karsilikli' && loopCount === 0 && form.__ksLinkExisting) {
@@ -13344,10 +13348,12 @@ function App() {
                 })(),
                 wizStep === 1 && React.createElement("div", { className: "card ko-schedule-card" },
                     React.createElement("div", { className: "ko-sefer-summary" },
-                        React.createElement("strong", null, form.tripMode === 'roundtrip' || form.tripMode === 'sameday' ? 'İlk sefer + dönüş' : 'Sefer bilgileri'),
-                        React.createElement("div", null, form.tripMode === 'roundtrip' || form.tripMode === 'sameday'
-                            ? 'İki ayrı kart kaydedilir. Her sefer kendi tarih ve saatinde görünür.'
-                            : 'Tür, tarih ve saati seçin; ardından güzergâhı girin.')),
+                        React.createElement("strong", null, form.tripMode === 'recurring' && form.transferType === 'tour' ? 'Çok günlük tur' : (form.tripMode === 'roundtrip' || form.tripMode === 'sameday' ? 'İlk sefer + dönüş' : 'Sefer bilgileri')),
+                        React.createElement("div", null, form.tripMode === 'recurring' && form.transferType === 'tour'
+                            ? 'Başlangıç ve bitiş dahil her gün bağımsız bir tur kartı oluşur.'
+                            : (form.tripMode === 'roundtrip' || form.tripMode === 'sameday'
+                                ? 'İki ayrı kart kaydedilir. Her sefer kendi tarih ve saatinde görünür.'
+                                : 'Tür, tarih ve saati seçin; ardından güzergâhı girin.'))),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
                             React.createElement("span", { className: "lbl" }, 'Transfer türü'),
@@ -13397,15 +13403,15 @@ function App() {
                                     { id: 'roundtrip', n: 'Gidi\u015F-Geli\u015F', ico: '\uD83D\uDD04' },
                                     { id: 'sameday', n: 'Ayn\u0131 G\u00FCn D\u00F6n\u00FC\u015F', ico: '\u21A9' },
                                     { id: 'karsilikli', n: 'Kar\u015F\u0131l\u0131kl\u0131 \u0130\u015F', ico: '\u21C4' },
-                                    { id: 'recurring', n: 'Herg\u00FCn Tekrarla', ico: '\uD83D\uDCC5' }
+                                    { id: 'recurring', n: form.transferType === 'tour' ? '\u00C7ok G\u00FCnl\u00FCk Tur' : 'Herg\u00FCn Tekrarla', ico: '\uD83D\uDCC5' }
                                 ];
                                 const curMode = form.tripMode || 'single';
                                 return React.createElement('select', { className: 'inp', value: curMode, 'aria-label': 'Sefer düzeni', style: { width: '100%', marginBottom: 4, fontWeight: 550 },
                                     onChange: e => { const id = e.target.value; sf({ tripMode: id, hasReturn: id === 'roundtrip', isReturn: id === 'sameday', isRecurring: id === 'recurring', isKarsilikli: id === 'karsilikli' }); }
                                 }, MODES.map(m => React.createElement('option', { key: m.id, value: m.id }, m.id === 'roundtrip' ? 'Gidiş–Dönüş' : m.n)));
                             })(),
-                            React.createElement("span", { className: "lbl", style: { marginTop: 12 } }, form.tripMode === 'recurring' ? 'Günlük gidiş saati' : 'İlk sefer saati'),
-                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp", 'aria-label': form.tripMode === 'recurring' ? 'Günlük gidiş saati' : 'İlk sefer saati' })
+                            React.createElement("span", { className: "lbl", style: { marginTop: 12 } }, form.tripMode === 'recurring' ? (form.transferType === 'tour' ? 'Günlük tur saati' : 'Günlük gidiş saati') : 'İlk sefer saati'),
+                            React.createElement("input", { type: "time", value: form.time, onChange: e => sf({ time: e.target.value }), className: "inp", 'aria-label': form.tripMode === 'recurring' && form.transferType === 'tour' ? 'Günlük tur saati' : (form.tripMode === 'recurring' ? 'Günlük gidiş saati' : 'İlk sefer saati') })
                         )
                     ),
                     form.tripMode === 'roundtrip' && React.createElement("div", { style: { background: 'linear-gradient(135deg, var(--brand-soft) 0%, var(--surface) 100%)', border: '1.5px solid var(--brand-bd)', borderRadius: 10, padding: 9, marginBottom: 8 } },
@@ -13472,21 +13478,23 @@ function App() {
                     form.tripMode === 'recurring' && React.createElement("div", { style: { background: 'linear-gradient(135deg, var(--brand-soft) 0%, var(--surface) 100%)', border: '1.5px solid var(--brand-bd)', borderRadius: 12, padding: 10, marginBottom: 8 } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 } },
                             React.createElement("span", { style: { fontSize: 14 } }, '\uD83D\uDCC5'),
-                            React.createElement("span", { style: { fontSize: 11.5, fontWeight: 600, color: 'var(--brand)' } }, 'G\u00FCnl\u00FCk Gidi\u015F \u2013 D\u00F6n\u00FC\u015F')
+                            React.createElement("span", { style: { fontSize: 11.5, fontWeight: 600, color: 'var(--brand)' } }, form.transferType === 'tour' ? '\u00C7ok G\u00FCnl\u00FCk Tur Program\u0131' : 'G\u00FCnl\u00FCk Gidi\u015F \u2013 D\u00F6n\u00FC\u015F')
                         ),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: form.transferType === 'shortpass' ? '1fr 1fr' : '1fr', gap: 8 } },
                             React.createElement("div", null,
                                 React.createElement("span", { className: "lbl" }, 'Biti\u015F tarihi'),
-                                React.createElement("input", { type: "date", value: form.endDate || '', onChange: e => sf({ endDate: e.target.value }), className: "inp", min: form.date, 'aria-label': 'K\u0131sa Pas biti\u015F tarihi' })
+                                React.createElement("input", { type: "date", value: form.endDate || '', onChange: e => sf({ endDate: e.target.value }), className: "inp", min: form.date, 'aria-label': form.transferType === 'tour' ? 'Tur biti\u015F tarihi' : 'K\u0131sa Pas biti\u015F tarihi' })
                             ),
-                            React.createElement("div", null,
+                            form.transferType === 'shortpass' && React.createElement("div", null,
                                 React.createElement("span", { className: "lbl" }, 'D\u00F6n\u00FC\u015F saati'),
                                 React.createElement("input", { type: "time", value: form.returnTime || '', onChange: e => sf({ returnTime: e.target.value }), className: "inp", 'aria-label': 'G\u00FCnl\u00FCk d\u00F6n\u00FC\u015F saati' })
                             )
                         ),
                         React.createElement("div", { style: { marginTop: 7, padding: '7px 9px', background: 'var(--p-white)', border: '1px dashed var(--brand-bd)', borderRadius: 8, fontSize: 10.5, color: 'var(--mut)', lineHeight: 1.45 } },
                             (form.date && form.endDate ? koPrettyDate(form.date) + ' \u2013 ' + koPrettyDate(form.endDate) : 'Ba\u015Flang\u0131\u00E7 ve biti\u015F tarihini se\u00E7in') +
-                            ' \u00B7 Her g\u00FCn ' + (form.time || '--:--') + ' gidi\u015F, ' + (form.returnTime || '--:--') + ' d\u00F6n\u00FC\u015F olarak ayr\u0131 kartlara kaydedilir.'
+                            (form.transferType === 'tour'
+                                ? ' \u00B7 Her g\u00FCn ' + (form.time || '--:--') + ' i\u00E7in ba\u011F\u0131ms\u0131z tur kart\u0131 olu\u015Fur. Her g\u00FCn\u00FCn kaptan\u0131 ve firmas\u0131 ayr\u0131 d\u00FCzenlenebilir; \u00E7\u0131k\u0131lmayan g\u00FCn\u00FCn kart\u0131 tek ba\u015F\u0131na silinebilir.'
+                                : ' \u00B7 Her g\u00FCn ' + (form.time || '--:--') + ' gidi\u015F, ' + (form.returnTime || '--:--') + ' d\u00F6n\u00FC\u015F olarak ayr\u0131 kartlara kaydedilir.')
                         )
                     ),
                     form.transferType === 'takas' && React.createElement("div", { className: "ko-navy-panel", style: { borderRadius: 14, padding: 11, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 8 } },
