@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-10-07-transfer-only-v16-minimal-account-actions">
+<meta name="v500-release" content="2026-10-07-transfer-only-v17-exact-foreign-balance">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2782,8 +2782,8 @@ function balenturOdeloCalc(t) {
     if (!balenturInvolved && !odeloToOlmez)
         return null;
     const c = moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t);
-    const d = moneyValue(t.driverPayment);
-    const alt = moneyValue(t.altAcentaUcreti);
+    const d = transferDriverTRYValue(t);
+    const alt = transferAltAcentaTRYValue(t);
     const odeloGross = c;
     if (altBal && alt > 0) {
         return { netOl: odeloGross - alt, yon: 'odeloBalentur', odeloGross, balenturCost: alt };
@@ -4136,6 +4136,23 @@ function transferCustomerTRYValue(t) {
     }
     return raw;
 }
+function matchingCustomerForeignTRY(t, rawAmount, currencyCode) {
+    if (!t) return null;
+    const currency = String(currencyCode || 'TRY').toUpperCase();
+    const customerCurrency = String(t.paymentCurrency || 'TRY').toUpperCase();
+    const raw = moneyValue(rawAmount);
+    const customerRaw = moneyValue(t.paymentAmount);
+    if (currency === 'TRY' || currency !== customerCurrency || !(raw > 0) || !(customerRaw > 0)) return null;
+    return Math.abs(raw - customerRaw) < 0.000001 ? transferCustomerTRYValue(t) : null;
+}
+function transferDriverTRYValue(t) {
+    const matched = matchingCustomerForeignTRY(t, t && t.driverPaymentRaw, t && t.driverPaymentCurrency);
+    return matched === null ? moneyValue(t && t.driverPayment) : matched;
+}
+function transferAltAcentaTRYValue(t) {
+    const matched = matchingCustomerForeignTRY(t, t && t.altAcentaRaw, t && t.altAcentaCurrency);
+    return matched === null ? moneyValue(t && t.altAcentaUcreti) : matched;
+}
 function noCollectTRYValue(t) {
     const raw = moneyValue(t && t.noCollectAmount);
     if (raw <= 0)
@@ -4293,8 +4310,8 @@ function accountUsdRateForRow(t) {
             pairs.push({ raw: r, tl: l });
     };
     addUsdPair(t && t.paymentAmount, t && t.paymentCurrency, transferCustomerTRYValue(t));
-    addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, t && t.driverPayment);
-    addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, t && t.altAcentaUcreti);
+    addUsdPair(t && t.driverPaymentRaw, t && t.driverPaymentCurrency, transferDriverTRYValue(t));
+    addUsdPair(t && t.altAcentaRaw, t && t.altAcentaCurrency, transferAltAcentaTRYValue(t));
     addUsdPair(t && t.remainingAmount, t && t.remainingCurrency, (t && t.remainingTRY) || remainingFromFirmTRY(t));
     const rawTotal = pairs.reduce((s, x) => s + x.raw, 0);
     const tlTotal = pairs.reduce((s, x) => s + x.tl, 0);
@@ -4408,7 +4425,7 @@ function olmezKarBeforeBroker(t) {
     if (split) return olmezKarBeforeBroker(withoutTourCommission(t)) + split.own;
     if (!hasOlmezturSide(t))
         return 0;
-    const c = transferCustomerTRYValue(t), d = moneyValue(t.driverPayment), alt = moneyValue(t.altAcentaUcreti);
+    const c = transferCustomerTRYValue(t), d = transferDriverTRYValue(t), alt = transferAltAcentaTRYValue(t);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
@@ -4442,8 +4459,8 @@ function olmezPotentialKarBeforeBroker(t) {
     if (!hasOlmezturSide(t))
         return 0;
     const c = transferCustomerTRYValue(t);
-    const d = moneyValue(t.driverPayment);
-    const alt = moneyValue(t.altAcentaUcreti);
+    const d = transferDriverTRYValue(t);
+    const alt = transferAltAcentaTRYValue(t);
     const comTotal = tourCommissionTotal(t);
     const com = tourCommissionShare(t);
     const givenOl = isOlmezturParty(t.givenBy);
@@ -4461,11 +4478,11 @@ function olmezPotentialKarBeforeBroker(t) {
     return c - d + comTotal;
 }
 function calcAltAcentaPaylasim(t) {
-    if (!t || !t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
+    if (!t || !t.altAcenta || !(transferAltAcentaTRYValue(t) > 0))
         return null;
     const c = transferCustomerTRYValue(t);
-    const d = moneyValue(t.driverPayment);
-    const alt = moneyValue(t.altAcentaUcreti);
+    const d = transferDriverTRYValue(t);
+    const alt = transferAltAcentaTRYValue(t);
     const yes = transferHasCustomerPayment(t);
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     if (!alan || !yes || t.paymentToMe)
@@ -4493,8 +4510,8 @@ function calcBal(t) {
         return base ? { ...base, netOl: base.netOl - split.giver } : base;
     }
     const c = transferCustomerTRYValue(t);
-    const d = moneyValue(t.driverPayment);
-    const alt = moneyValue(t.altAcentaUcreti);
+    const d = transferDriverTRYValue(t);
+    const alt = transferAltAcentaTRYValue(t);
     const com = tourCommissionShare(t);
     const yes = transferHasCustomerPayment(t);
     const givenOl = isOlmezturParty(t.givenBy);
@@ -4530,11 +4547,11 @@ function calcAltBal(t) {
         const base = calcAltBal(withoutTourCommission(t));
         return { firm: t.altAcenta, netOl: (base ? base.netOl : 0) + split.receivable };
     }
-    if (!t.altAcenta || !(moneyValue(t.altAcentaUcreti) > 0))
+    if (!t.altAcenta || !(transferAltAcentaTRYValue(t) > 0))
         return null;
     const c = transferCustomerTRYValue(t);
-    const d = moneyValue(t.driverPayment);
-    const alt = moneyValue(t.altAcentaUcreti);
+    const d = transferDriverTRYValue(t);
+    const alt = transferAltAcentaTRYValue(t);
     const yes = transferHasCustomerPayment(t);
     const alan = isOlmezturParty(t.assignedTo) && t.givenBy && !isOlmezturParty(t.givenBy);
     const altKomisyonKesinti = tourCommissionShare(t);
@@ -6449,7 +6466,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.dropoff || ''),
                 transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
                 esc(t.paymentCurrency || 'TRY'),
-                moneyValue(t.driverPayment),
+                transferDriverTRYValue(t),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
@@ -6484,7 +6501,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.dropoff || ''),
                 transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
                 esc(t.paymentCurrency || 'TRY'),
-                moneyValue(t.driverPayment),
+                transferDriverTRYValue(t),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
@@ -9674,7 +9691,7 @@ function App() {
         sf({
             driverPaymentRaw: rawAmount,
             driverPaymentCurrency: cur,
-            driverPayment: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl / 50) * 50)
+            driverPayment: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl * 100) / 100)
         });
     };
     const setAltFee = (rawAmount, currency) => {
@@ -9683,7 +9700,7 @@ function App() {
         sf({
             altAcentaRaw: rawAmount,
             altAcentaCurrency: cur,
-            altAcentaUcreti: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl))
+            altAcentaUcreti: cur === 'TRY' ? rawAmount : (rawAmount === '' ? '' : Math.round(tl * 100) / 100)
         });
     };
     const gS = v => { if (!v || v.length < 2)
@@ -11221,7 +11238,7 @@ function App() {
         const tk = netKar([t]);
         const collectionState = getCollectionState(t);
         const displayPlate = inferPlate(t);
-        const vehiclePayNum = moneyValue(t.driverPayment);
+        const vehiclePayNum = transferDriverTRYValue(t);
         const vehiclePayTxt = vehiclePayNum > 0 ? (vehiclePayNum.toLocaleString('tr-TR') + '₺') : '—';
         const custAmtNum = transferCustomerTRYValue(t);
         const payCurrency = t.paymentCurrency || 'TRY';
@@ -11268,7 +11285,7 @@ function App() {
         const _tripBg  = t.status === 'iptal' ? 'var(--p-neg-soft)' : (t.status === 'tam' ? 'var(--p-tint-2)' : 'var(--p-warn-soft)');
         const _tripCol = t.status === 'iptal' ? 'var(--p-neg)' : (t.status === 'tam' ? 'var(--p-brand)' : 'var(--p-warn)');
         const _tripBd  = t.status === 'iptal' ? 'var(--p-neg-bd)' : (t.status === 'tam' ? 'var(--p-line-3)' : 'var(--p-warn-bd)');
-        const _altPay = (t.altAcenta && moneyValue(t.altAcentaUcreti) > 0) ? moneyValue(t.altAcentaUcreti) : 0;
+        const _altPay = (t.altAcenta && transferAltAcentaTRYValue(t) > 0) ? transferAltAcentaTRYValue(t) : 0;
         const _payRows = [];
         _payRows.push(['Müşteri', headlineAmount + (headlineSubTL ? (' ' + headlineSubTL) : ''), 620, null, showNoPayment ? 'var(--p-ink-4)' : 'var(--p-ink)']);
         if (vehiclePayNum > 0) _payRows.push(['İşi Yapan', vehiclePayNum.toLocaleString('tr-TR') + '₺' + (t.vehiclePaid ? '  ✓' : ''), 500, (e => { e.stopPropagation(); toggleVehiclePaid(t.id); }), t.vehiclePaid ? '#0B7C55' : 'var(--p-ink-2)']);
@@ -12379,7 +12396,7 @@ function App() {
                     const altText = t.altAcenta || '';
                     const payDone = collectionState === 'collected';
                     const amt = homeAmountTRY(t);
-                    const drv = moneyValue(t.driverPayment);
+                    const drv = transferDriverTRYValue(t);
                     const noCollect = t.paymentCollect === 'no';
                     const toMe = !!t.paymentToMe;
                     const whoLabel = toMe ? 'bana ödeme' : (noCollect ? 'tahsilat yok' : 'müşteriden');
