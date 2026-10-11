@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-10-07-transfer-only-v17-exact-foreign-balance">
+<meta name="v500-release" content="2026-10-11-transfer-only-v19-accounting-export-fix">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -4345,12 +4345,19 @@ function accountRawUsdVehicleCost(t) {
 function accountRawUsdFirmVehicleCost(t) {
     const driverUsd = accountRawUsdDriverFee(t);
     const altUsd = accountRawUsdAltAcentaFee(t);
+    /* Alt acenta hesabında araç maliyeti ana kaptan ücreti değil,
+       Ölmeztur'un alt acentaya yazdığı tutardır. */
+    if (t && (t.kaynak === 'alt' || t.yon === 'alt'))
+        return altUsd;
     if (transferNoCustomerPayment(t))
         return driverUsd;
     return driverUsd > 0 ? driverUsd : altUsd;
 }
 function accountRawUsdNet(t) {
-    const collected = accountRawUsdCollection(t);
+    /* Para Ölmeztur'a geldiyse alt acenta hesabında müşteriden tahsil edilen
+       bedel tekrar alacak yazılmaz; yalnızca alt acentaya ödenecek tutar kalır. */
+    const collected = t && (t.kaynak === 'alt' || t.yon === 'alt') && t.paymentToMe
+        ? 0 : accountRawUsdCollection(t);
     const vehicleCost = accountRawUsdFirmVehicleCost(t);
     if (!(collected > 0) && !(vehicleCost > 0))
         return null;
@@ -4411,6 +4418,32 @@ function accountUsdTlSummary(liste) {
             ver += tl;
     });
     return { al, ver, net: al - ver };
+}
+function accountReportCustomerTRYValue(t) {
+    if (!t || t.kaynak === 'manual' || t.kaynak === 'broker') return 0;
+    if (t.kaynak === 'odelo')
+        return moneyValue(t.odelloGross || t.odeloGross) || transferCustomerTRYValue(t);
+    if (transferNoCustomerPayment(t)) return 0;
+    const collected = transferHasCustomerPayment(t) ? transferCustomerTRYValue(t) : 0;
+    const remaining = t.partialFromFirm
+        ? (moneyValue(t.remainingTRY) || remainingFromFirmTRY(t)) : 0;
+    /* Kısmi tahsilatta Numbers'a yalnız alınan kaporayı değil,
+       anlaşmanın müşteri + işveren toplamını yaz. */
+    return collected + remaining;
+}
+function accountReportVehicleTRYValue(t) {
+    if (!t || t.kaynak === 'manual') return 0;
+    if (t.kaynak === 'broker') return brokerFeeTRY(t);
+    if (t.kaynak === 'odelo')
+        return t.yon === 'odeloBalentur'
+            ? moneyValue(t.balenturCost || t.driverPayment || t.altAcentaUcreti) : 0;
+    if (t.kaynak === 'alt' || t.yon === 'alt')
+        return transferAltAcentaTRYValue(t);
+    return transferDriverTRYValue(t);
+}
+function accountReportChain(t) {
+    if (!t || t.kaynak !== 'alt') return '';
+    return [t.givenBy, OL, t.altAcenta].filter(Boolean).join(' → ');
 }
 const signedUsdText = n => (moneyValue(n) >= 0 ? '+' : '−') + fmtUsd(n);
 function olmezKar(t) {
@@ -6386,7 +6419,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             const hdLine = hd > 0 ? ('\n   🪙 Tur komisyonu: ' + fr(hd) + '₺ (pay ' + fr(hdPay) + '₺ / ' + fr(hdPay) + '₺)' + ((t.tourCommissionShop || '').trim() ? ' (' + t.tourCommissionShop + ')' : '')) : '';
             const kdv = accountKdvInfoForRow(t);
             const kdvLine = kdv.active ? ('\n   KDV: KDV\'siz ' + fr(kdv.base) + '₺ + %' + kdv.rate + ' KDV ' + fr(kdv.amount) + '₺ = ' + fr(kdv.total) + '₺') : '';
-            return (t.firmSettled ? '✓' : '○') + ' ' + (i + 1) + '. ' + dt + ' ' + t.time + '\n   ' + (t.pickup || '—') + ' → ' + (t.dropoff || '—') + '\n   Müşteri: ' + odeme + ' | Araç: ' + fr(t.driverPayment) + '₺' + hdLine + kdvLine;
+            const chainLine = accountReportChain(t) ? ('\n   İş zinciri: ' + accountReportChain(t)) : '';
+            return (t.firmSettled ? '✓' : '○') + ' ' + (i + 1) + '. ' + dt + ' ' + t.time + '\n   ' + (t.pickup || '—') + ' → ' + (t.dropoff || '—') + '\n   İş toplamı: ' + fr(accountReportCustomerTRYValue(t)) + '₺ | Araç / Alt acenta: ' + fr(accountReportVehicleTRYValue(t)) + '₺' + chainLine + hdLine + kdvLine;
         }).join('\n\n');
         const tourHd = ts.filter(t => tourCommissionTotal(t) > 0);
         const toplamHd = Math.round(tourHd.reduce((s, t) => s + tourCommissionTotal(t), 0));
@@ -6408,8 +6442,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const manualGrup = normalTs.filter(t => t.kaynak === 'manual').slice().sort(sortByDate);
         const transferTs = normalTs.filter(t => t.kaynak !== 'manual');
         const oVerdi = transferTs.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);   // Firma verdi, biz götürdük (ALACAK)
-        const benVerdim = transferTs.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate); // Biz verdik, firma götürdü (VERECEK)
-        const altGrup = transferTs.filter(t => t.yon === 'alt').slice().sort(sortByDate);   // Alt transferler
+        const benVerdim = transferTs.filter(t => t.yon === 'benVerdim' || t.yon === 'alt').slice().sort(sortByDate); // Ölmeztur'un firmaya/alt acentaya verdiği işler
+        const altGrup = []; // Alt acenta satırları yukarıdaki Ölmeztur → firma grubundadır; ikinci kez yazılmaz.
         const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
         const grupToplam = (arr) => {
             let gAl = 0, gVer = 0, gAcik = 0, gKapanan = 0;
@@ -6464,9 +6498,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
+                accountReportCustomerTRYValue(t),
                 esc(t.paymentCurrency || 'TRY'),
-                transferDriverTRYValue(t),
+                accountReportVehicleTRYValue(t),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
@@ -6499,9 +6533,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 esc(t.time || ''),
                 esc(t.pickup || ''),
                 esc(t.dropoff || ''),
-                transferHasCustomerPayment(t) ? moneyValue(t.paymentAmount) : 0,
+                accountReportCustomerTRYValue(t),
                 esc(t.paymentCurrency || 'TRY'),
-                transferDriverTRYValue(t),
+                accountReportVehicleTRYValue(t),
                 Math.round(hd),
                 Math.round(hdPay),
                 esc(hdNot),
@@ -6631,7 +6665,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const HESAP_COLS = [
         { t: 'TARİH', w: 12 }, { t: 'SAAT', w: 7 }, { t: 'MÜŞTERİ ADI', w: 22 },
         { t: 'ALIŞ NOKTASI', w: 22 }, { t: 'GÜZERGAH', w: 24 }, { t: 'VARIŞ NOKTASI', w: 22 },
-        { t: 'MÜŞTERİ ÜCRETİ ₺', w: 14 }, { t: 'ARABA ÜCRETİ ₺', w: 14 }, { t: 'KOMİSYON ₺', w: 13 },
+        { t: 'MÜŞTERİ / İŞ TOPLAMI ₺', w: 18 }, { t: 'ARAÇ / ALT ACENTA ₺', w: 18 }, { t: 'KOMİSYON ₺', w: 13 },
         { t: 'KALAN ₺', w: 13 }, { t: 'NOTLAR', w: 24 }, { t: 'İŞİ YAPAN', w: 17 }
     ];
     const HESAP_NCOL = HESAP_COLS.length;
@@ -6644,8 +6678,10 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const normalTs = ts.filter(t => t.kaynak !== 'odelo');
         const manualGrup = normalTs.filter(t => t.kaynak === 'manual').slice().sort(sortByDate);
         const transferTs = normalTs.filter(t => t.kaynak !== 'manual');
-        const benVerdim = transferTs.filter(t => t.yon === 'benVerdim').slice().sort(sortByDate);
-        const oVerdi = transferTs.filter(t => t.yon === 'oVerdi' || t.yon === 'alt').slice().sort(sortByDate);
+        /* Alt acenta her zaman işi Ölmeztur'dan alır. İşin asıl işvereni farklı
+           olsa bile bu satır firma → Ölmeztur bölümüne taşınamaz. */
+        const benVerdim = transferTs.filter(t => t.yon === 'benVerdim' || t.yon === 'alt').slice().sort(sortByDate);
+        const oVerdi = transferTs.filter(t => t.yon === 'oVerdi').slice().sort(sortByDate);
         const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
         const clean = v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
         const up = v => clean(v).toLocaleUpperCase('tr-TR');
@@ -6674,6 +6710,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         };
         const noteTxt = t => {
             const bits = [];
+            const chain = accountReportChain(t);
+            if (chain) bits.push('İş zinciri: ' + chain);
+            if (t.partialFromFirm) {
+                const collected = transferHasCustomerPayment(t) ? money(transferCustomerTRYValue(t)) : 0;
+                const remaining = money(t.remainingTRY || remainingFromFirmTRY(t));
+                bits.push('Kısmi ödeme: müşteriden ' + fr(collected) + '₺ · işverenden kalan ' + fr(remaining) + '₺');
+            }
             const kdv = accountKdvInfoForRow(t);
             if (kdv && kdv.active) bits.push('KDV %' + kdv.rate + ': ' + fr(kdv.amount) + '₺');
             const shop = clean(t.tourCommissionShop);
@@ -6715,11 +6758,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const z = i % 2 === 1;
                 const sT = z ? KOX.TXT_Z : KOX.TXT;
                 const sM = z ? KOX.MONEY_Z : KOX.MONEY;
-                const odeloGross = money(t.odelloGross || t.odeloGross) || money(transferCustomerTRYValue(t));
-                const odeloCar = t.yon === 'odeloBalentur' ? money(t.balenturCost || t.driverPayment || t.altAcentaUcreti) : 0;
-                const musteri = type === 'odelo' ? odeloGross
-                    : (transferHasCustomerPayment(t) ? money(transferCustomerTRYValue(t)) : 0);
-                const araba = type === 'odelo' ? odeloCar : money(t.driverPayment);
+                const musteri = money(accountReportCustomerTRYValue(t));
+                const araba = money(accountReportVehicleTRYValue(t));
                 const komisyon = money(tourCommissionShare(t));
                 const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
                 const kalan = hasNet ? money(t.netOl) : (musteri - araba);
@@ -7197,13 +7237,13 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         if (t.kaynak === 'broker') return 0;
         if (t.kaynak === 'odelo') return moneyValue(t.odeloGross) || transferCustomerTRYValue(t);
         if (transferNoCustomerPayment(t)) return 0;
-        return transferCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
+        return accountReportCustomerTRYValue(t) || moneyValue(t.totalTRY || 0);
     };
     const hesapDriverAmount = t => {
         if (t.kaynak === 'broker') return brokerFeeTRY(t);
         if (t.kaynak === 'odelo') return t.yon === 'odeloBalentur' ? moneyValue(t.balenturCost || t.driverPayment || 0) : 0;
-        if (t.kaynak === 'alt') return moneyValue(t.altAcentaUcreti || 0);
-        return moneyValue(t.driverPayment || 0);
+        if (t.kaynak === 'alt') return transferAltAcentaTRYValue(t);
+        return transferDriverTRYValue(t);
     };
     const renderHesapSheetRow = (t, idx, borderTone) => {
         const netVal = Math.round(moneyValue(t.netOl));
