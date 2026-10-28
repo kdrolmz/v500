@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-10-28-passport-whatsapp-v20">
+<meta name="v500-release" content="2026-10-28-passport-whatsapp-v22-local-permission-fix">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -9080,6 +9080,7 @@ function App() {
     const [passportScan, setPassportScan] = useState(null); // {kind, msg, cur, total} tarama sürerken
     const [paxBatch, setPaxBatch] = useState(null);          // okunanların onay listesi
     const [pasteBox, setPasteBox] = useState(null);           // { text, single }
+    const [passengerImportMenu, setPassengerImportMenu] = useState(false); // sade isim ekleme menüsü
     const [wizStep, setWizStep] = useState(1);                 // yeni transfer sihirbazı adımı (1-3)
     const passportFileRef = useRef(null);
     const nameShotRef = useRef(null);
@@ -10011,6 +10012,18 @@ function App() {
         } catch (e) {}
         tip('WhatsApp fotoğrafını kopyalayın veya açılan ekrandan seçin');
         openPassportPicker();
+    };
+    const openPassportSmart = () => {
+        /* file:// önizlemede pano izni tarayıcı tarafından şüpheli yerel erişim
+           olarak gösterilir. Yerelde doğrudan güvenli dosya seçiciyi aç. */
+        if (window.location && window.location.protocol === 'file:') {
+            openPassportPicker();
+            return;
+        }
+        const ua = String((navigator && navigator.userAgent) || '');
+        const appleTouch = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && Number(navigator.maxTouchPoints || 0) > 1);
+        if (appleTouch) { openPassportPicker(); return; }
+        importPassportFromClipboard();
     };
     const handlePassportPaste = async e => {
         const files = await passportFilesFromItems(e && e.clipboardData && e.clipboardData.items);
@@ -13651,27 +13664,18 @@ function App() {
                                 busy && React.createElement("span", { style: { marginLeft: 'auto', fontSize: 10.5, color: SB } }, "\u23F3 okunuyor\u2026")),
                             React.createElement("input", { ref: passportFileRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handlePassportFiles(arr); } }),
                             React.createElement("input", { ref: nameShotRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handleNameShotFiles(arr); } }),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
-                                photoBtn('\uD83E\uDEAA', 'Pasaport', '\u00E7oklu se\u00E7ilebilir', openPassportPicker),
-                                photoBtn('\uD83D\uDCDD', '\u0130sim Listesi', 'WhatsApp / ekran g\u00F6r\u00FCnt\u00FCs\u00FC', openNameShotPicker)),
-                            React.createElement("button", {
-                                type: "button", onClick: importPassportFromClipboard, disabled: busy,
-                                style: { width: '100%', marginTop: 7, background: busy ? 'var(--p-info-soft)' : 'var(--p-pos-ink)', color: busy ? 'var(--p-ink-5)' : 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', boxShadow: busy ? 'none' : '0 2px 8px rgba(46,62,102,.22)' }
-                            },
-                                React.createElement("span", null, "💬 WhatsApp Pasaport Fotoğrafı"),
-                                React.createElement("span", { style: { display: 'block', fontSize: 10.5, opacity: .85, fontWeight: 450, marginTop: 1 } }, "Mac: kopyala/yapıştır · iPhone: Fotoğraflar veya Dosyalar’dan seç")),
-                            React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '6px 0 7px', lineHeight: 1.35 } },
-                                "Pasaportun tamamı görünmek zorunda değil. Ad, soyad, ülke ve pasaport no net görünüyorsa alınır; dört bilgi bulunduğunda yolcu otomatik kaydedilir."),
-                            React.createElement("button", {
-                                type: "button", onClick: openPasteBox,
-                                style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,62,102,.22)' }
-                            },
-                                React.createElement("span", null, "\uD83D\uDCAC WhatsApp\u2019tan \u0130sim Yap\u0131\u015Ft\u0131r"),
-                                React.createElement("span", { style: { display: 'block', fontSize: 10.5, opacity: .85, fontWeight: 450, marginTop: 1 } }, "\u00E7oklu veya tek tek")),
-                            React.createElement("button", {
-                                type: "button", onClick: () => openPaxModal(null),
-                                style: { width: '100%', background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + NAV, borderRadius: 11, padding: '9px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer' }
-                            }, "\uFF0B Elle Yolcu Ekle"));
+                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1.35fr 1fr 1fr', gap: 7 } },
+                                photoBtn('\uD83E\uDEAA', 'Pasaport Tara', 'WhatsApp / fotoğraf', openPassportSmart),
+                                React.createElement("button", {
+                                    type: "button", onClick: () => setPassengerImportMenu(true), disabled: busy,
+                                    style: { minWidth: 0, background: busy ? 'var(--p-info-soft)' : 'var(--p-white)', color: busy ? 'var(--p-ink-5)' : NAV, border: '1.5px solid ' + (busy ? BOR : NAV), borderRadius: 12, padding: '9px 5px', fontSize: 11.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', lineHeight: 1.25 }
+                                }, React.createElement("span", { style: { display: 'block', fontSize: 14, marginBottom: 2 } }, "📝"), "İsim Ekle"),
+                                React.createElement("button", {
+                                    type: "button", onClick: () => openPaxModal(null), disabled: busy,
+                                    style: { minWidth: 0, background: busy ? 'var(--p-info-soft)' : 'var(--p-white)', color: busy ? 'var(--p-ink-5)' : NAV, border: '1.5px solid ' + (busy ? BOR : NAV), borderRadius: 12, padding: '9px 5px', fontSize: 11.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', lineHeight: 1.25 }
+                                }, React.createElement("span", { style: { display: 'block', fontSize: 14, marginBottom: 2 } }, "＋"), "Elle Ekle")),
+                            React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '7px 0 0', lineHeight: 1.4, background: INP, borderRadius: 9, padding: '7px 9px' } },
+                                "Mac WhatsApp: fotoğrafı kopyala veya buraya sürükle. iPhone: WhatsApp fotoğrafını kaydet, Pasaport Tara ile seç."));
                     })(),
                     (function () {
                         const list = paxReal();
@@ -14055,6 +14059,29 @@ function App() {
             )
         ),
         quickEditT && renderQuickEditModal(),
+        passengerImportMenu && React.createElement("div", { className: "mo", onClick: () => setPassengerImportMenu(false) },
+            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 20, maxWidth: 420 } },
+                React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
+                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 } },
+                    React.createElement("div", { style: { fontWeight: 550, fontSize: 16, color: TX } }, "İsim Ekle"),
+                    React.createElement("button", { type: "button", onClick: () => setPassengerImportMenu(false), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "✕")),
+                React.createElement("div", { style: { fontSize: 11.5, color: SB, lineHeight: 1.45, marginBottom: 13 } },
+                    "WhatsApp’tan gelen bilginin biçimini seçin."),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 } },
+                    React.createElement("button", {
+                        type: "button", onClick: () => { setPassengerImportMenu(false); setTimeout(openPasteBox, 40); },
+                        style: { minHeight: 96, background: 'var(--p-white)', color: TX, border: '1.5px solid ' + BOR, borderRadius: 15, padding: '13px 10px', cursor: 'pointer', textAlign: 'center' }
+                    },
+                        React.createElement("span", { style: { display: 'block', fontSize: 25, marginBottom: 6 } }, "💬"),
+                        React.createElement("b", { style: { display: 'block', fontSize: 13, fontWeight: 600 } }, "Metin Yapıştır"),
+                        React.createElement("small", { style: { display: 'block', fontSize: 10.5, color: SB, marginTop: 4, lineHeight: 1.3 } }, "Tek isim veya çoklu liste")),
+                    React.createElement("button", {
+                        type: "button", onClick: () => { setPassengerImportMenu(false); setTimeout(openNameShotPicker, 40); },
+                        style: { minHeight: 96, background: 'var(--p-white)', color: TX, border: '1.5px solid ' + BOR, borderRadius: 15, padding: '13px 10px', cursor: 'pointer', textAlign: 'center' }
+                    },
+                        React.createElement("span", { style: { display: 'block', fontSize: 25, marginBottom: 6 } }, "🖼️"),
+                        React.createElement("b", { style: { display: 'block', fontSize: 13, fontWeight: 600 } }, "Liste Fotoğrafı"),
+                        React.createElement("small", { style: { display: 'block', fontSize: 10.5, color: SB, marginTop: 4, lineHeight: 1.3 } }, "İsimleri tek tek ayırır"))))),
         passportScan && (function () {
             const isNames = passportScan.kind === 'names';
             const total = passportScan.total || 1, cur = passportScan.cur || 1;
