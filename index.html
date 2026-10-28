@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-10-11-transfer-only-v19-accounting-export-fix">
+<meta name="v500-release" content="2026-10-28-passport-whatsapp-v20">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1597,6 +1597,7 @@ function mrzReadLine2(line2, iss3) {
         natKey: MRZ_ISO3_TO_APP[n3] || 'OTHER',
         line2Fixed: fixedLine
     };
+    return merged;
 }
 function parseMRZFromText(rawText) {
     let allLines = String(rawText || '').split(/\r?\n/).map(mrzNormalizeLine).filter(Boolean);
@@ -1669,6 +1670,106 @@ function parseMRZFromText(rawText) {
         checks: v.count,
         checksAll: v,
         raw: line1 + '\n' + line2
+    };
+}
+/* Görsel bilgi sayfası desteği: MRZ'nin tamamı fotoğrafta olmasa bile
+   etiketli Ad, Soyad, Pasaport No ve Uyruk alanlarını okur. */
+const PASSPORT_COUNTRY_ALIASES = [
+    ['KW', /\b(KWT|KUWAIT|KUWAITI|KUVEYT)\b/], ['TR', /\b(TUR|TURKEY|TURKISH|TURKIYE|TURK)\b/],
+    ['SA', /\b(SAU|SAUDI|SAUDI ARABIA)\b/], ['AE', /\b(ARE|UAE|EMIRATI|UNITED ARAB EMIRATES)\b/],
+    ['QA', /\b(QAT|QATAR|QATARI)\b/], ['BH', /\b(BHR|BAHRAIN|BAHRAINI)\b/],
+    ['OM', /\b(OMN|OMAN|OMANI)\b/], ['IQ', /\b(IRQ|IRAQ|IRAQI)\b/],
+    ['IR', /\b(IRN|IRAN|IRANIAN)\b/], ['JO', /\b(JOR|JORDAN|JORDANIAN)\b/],
+    ['LB', /\b(LBN|LEBANON|LEBANESE)\b/], ['SY', /\b(SYR|SYRIA|SYRIAN)\b/],
+    ['YE', /\b(YEM|YEMEN|YEMENI)\b/], ['PS', /\b(PSE|PALESTINE|PALESTINIAN)\b/],
+    ['EG', /\b(EGY|EGYPT|EGYPTIAN)\b/], ['DE', /\b(DEU|GERMANY|GERMAN)\b/],
+    ['GB', /\b(GBR|UNITED KINGDOM|BRITISH)\b/], ['US', /\b(USA|UNITED STATES|AMERICAN)\b/],
+    ['FR', /\b(FRA|FRANCE|FRENCH)\b/], ['NL', /\b(NLD|NETHERLANDS|DUTCH)\b/],
+    ['BE', /\b(BEL|BELGIUM|BELGIAN)\b/], ['AT', /\b(AUT|AUSTRIA|AUSTRIAN)\b/],
+    ['CH', /\b(CHE|SWITZERLAND|SWISS)\b/], ['RU', /\b(RUS|RUSSIA|RUSSIAN)\b/],
+    ['IT', /\b(ITA|ITALY|ITALIAN)\b/], ['ES', /\b(ESP|SPAIN|SPANISH)\b/],
+    ['GR', /\b(GRC|GREECE|GREEK)\b/], ['AZ', /\b(AZE|AZERBAIJAN|AZERBAIJANI)\b/],
+    ['KZ', /\b(KAZ|KAZAKHSTAN|KAZAKH)\b/], ['UZ', /\b(UZB|UZBEKISTAN|UZBEK)\b/],
+    ['CN', /\b(CHN|CHINA|CHINESE)\b/], ['JP', /\b(JPN|JAPAN|JAPANESE)\b/],
+    ['IN', /\b(IND|INDIA|INDIAN)\b/], ['PK', /\b(PAK|PAKISTAN|PAKISTANI)\b/],
+    ['BD', /\b(BGD|BANGLADESH|BANGLADESHI)\b/], ['CA', /\b(CAN|CANADA|CANADIAN)\b/],
+    ['AU', /\b(AUS|AUSTRALIA|AUSTRALIAN)\b/]
+];
+function passportVisualLines(text) {
+    return String(text || '').replace(/\r/g, '\n').split(/\n+/)
+        .map(x => x.replace(/[|•·]+/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+}
+function passportAscii(v) {
+    return koAsciiUp(v).replace(/[ÀÁÂÃÄÅ]/g, 'A').replace(/[ÈÉÊË]/g, 'E')
+        .replace(/[ÌÍÎÏ]/g, 'I').replace(/[ÒÓÔÕÖ]/g, 'O').replace(/[ÙÚÛÜ]/g, 'U');
+}
+function passportCountryFromText(text) {
+    const s = passportAscii(text);
+    for (const x of PASSPORT_COUNTRY_ALIASES) if (x[1].test(s)) return x[0];
+    const iso = s.match(/\b[A-Z]{3}\b/g) || [];
+    for (const code of iso) if (MRZ_ISO3_TO_APP[code]) return MRZ_ISO3_TO_APP[code];
+    return 'OTHER';
+}
+function passportCleanNameValue(value) {
+    const noise = /\b(SURNAME|FAMILY|LAST|GIVEN|FIRST|FORENAME|NAMES?|SOYADI|SOYAD|ADI|PRENOM|NOM|NATIONALITY|UYRUK|PASSPORT|DOCUMENT|NUMBER|NUMARA|NO)\b/g;
+    let s = passportAscii(value).replace(noise, ' ').replace(/[^A-Z'\- ]/g, ' ').replace(/\s+/g, ' ').trim();
+    s = s.split(' ').filter((w, i) => w && (i === 0 || w.length > 1)).join(' ');
+    return s.length >= 2 && s.length <= 70 ? s : '';
+}
+function passportValueAfterLabel(lines, labelRe, cleaner) {
+    for (let i = 0; i < lines.length; i++) {
+        const a = passportAscii(lines[i]);
+        if (!labelRe.test(a)) continue;
+        labelRe.lastIndex = 0;
+        let same = a.replace(labelRe, ' ').replace(/^[\s:\-\/]+/, '').trim();
+        let val = cleaner(same);
+        if (val) return val;
+        for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) {
+            const next = passportAscii(lines[j]);
+            if (/SURNAME|GIVEN|PASSPORT|NATIONALITY|DATE OF|SEX|UYRUK|SOYAD|ADI/.test(next)) break;
+            val = cleaner(next);
+            if (val) return val;
+        }
+    }
+    return '';
+}
+function passportCleanNumber(value) {
+    const pieces = passportAscii(value).replace(/PASSPORT|DOCUMENT|NUMBER|NUMARA|PASAPORT|NO/g, ' ')
+        .match(/[A-Z0-9][A-Z0-9 <\-]{4,18}[A-Z0-9]/g) || [];
+    for (const p of pieces) {
+        const n = p.replace(/[^A-Z0-9]/g, '');
+        if (n.length >= 6 && n.length <= 12 && /\d/.test(n)) return n;
+    }
+    return '';
+}
+function parsePassportVisualText(text) {
+    const lines = passportVisualLines(text);
+    if (!lines.length) return null;
+    const surname = passportValueAfterLabel(lines, /\b(SURNAME|FAMILY NAME|LAST NAME|SOYADI|SOYAD|NOM)\b/g, passportCleanNameValue);
+    const given = passportValueAfterLabel(lines, /\b(GIVEN NAMES?|FIRST NAME|FORENAMES?|ADI|PRENOMS?)\b/g, passportCleanNameValue);
+    const passportNo = passportValueAfterLabel(lines, /\b(PASSPORT|PASAPORT|DOCUMENT)\s*(NO|NUMBER|NUMARA)?\b/g, passportCleanNumber);
+    let nationality = 'OTHER';
+    for (let i = 0; i < lines.length; i++) {
+        if (/\b(NATIONALITY|UYRUK|NATIONALITE)\b/.test(passportAscii(lines[i]))) {
+            nationality = passportCountryFromText(lines[i] + ' ' + (lines[i + 1] || ''));
+            if (nationality !== 'OTHER') break;
+        }
+    }
+    const name = mrzDisplayName(given, surname);
+    if (!name && !passportNo && nationality === 'OTHER') return null;
+    return { ok: true, name, surname, given, passportNo, nationality,
+        passportVerified: false, checks: 0, visualOnly: true, raw: text || '' };
+}
+function mergePassportReadings(mrz, visual) {
+    if (!mrz) return visual;
+    if (!visual) return mrz;
+    return { ...mrz,
+        name: mrz.name || visual.name || '',
+        surname: mrz.surname || visual.surname || '',
+        given: mrz.given || visual.given || '',
+        passportNo: mrz.passportNo || visual.passportNo || '',
+        nationality: (mrz.nationality && mrz.nationality !== 'OTHER') ? mrz.nationality : (visual.nationality || 'OTHER'),
+        visualOnly: !mrz.passportNo || !mrz.name
     };
 }
 function mrzLoadImage(file) {
@@ -2137,6 +2238,41 @@ async function mrzOcr(worker, canvas) {
         return (res && res.data) || null;
     } catch (e) { return null; }
 }
+async function passportVisualOcr(worker, img, note, isCancelled) {
+    const found = [];
+    try {
+        await worker.setParameters({
+            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '-/:.",
+            tessedit_pageseg_mode: '11'
+        });
+        for (const deg of [0, 90, 270]) {
+            if (isCancelled && isCancelled()) return null;
+            if (note) note('Görünen pasaport alanları okunuyor…');
+            let canvas = null;
+            try { canvas = mrzRotatedCanvas(img, deg, 1900); } catch (e) { continue; }
+            let data = null;
+            try {
+                const res = await worker.recognize(canvas, {}, { text: true });
+                data = res && res.data;
+            } catch (e) { data = null; }
+            const parsed = parsePassportVisualText(data && data.text);
+            if (parsed) found.push(parsed);
+            if (parsed && parsed.name && parsed.passportNo && parsed.nationality !== 'OTHER') break;
+        }
+    } finally {
+        try {
+            await worker.setParameters({
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
+                tessedit_pageseg_mode: '6'
+            });
+        } catch (e) {}
+    }
+    if (!found.length) return null;
+    return found.sort((a, b) => {
+        const score = x => (x.name ? 4 : 0) + (x.passportNo ? 4 : 0) + (x.nationality !== 'OTHER' ? 2 : 0);
+        return score(b) - score(a);
+    })[0];
+}
 function mrzChooseResult(results) {
     if (!results.length) return null;
     const checked = results.filter(r => r.passportVerified && r.checks === 4);
@@ -2238,7 +2374,12 @@ async function mrzReadFromFile(file, onProgress, isCancelled = () => false) {
                 }
             }
         }
-        return mrzChooseResult(results);
+        let chosen = mrzChooseResult(results);
+        if (!chosen || !chosen.name || !chosen.passportNo || !chosen.nationality || chosen.nationality === 'OTHER') {
+            const visual = await passportVisualOcr(worker, img, note, isCancelled);
+            chosen = mergePassportReadings(chosen, visual);
+        }
+        return chosen;
     } finally {
         try { URL.revokeObjectURL(img.__url); } catch (e) {}
     }
@@ -9797,12 +9938,15 @@ function App() {
                 results.push({
                     name: parsed.name ? mrzTitleCase(parsed.name) : '',
                     id: parsed.passportNo || '',
-                    uyruk: parsed.nationality || 'TR',
+                    uyruk: parsed.nationality || 'OTHER',
                     verified: !!parsed.passportVerified && (parsed.checks || 0) >= 3,
                     checks: parsed.checks || 0,
                     agreed: !!parsed.agreed,
                     nameAgreed: !!parsed.nameAgreed,
-                    note: parsed.nameAgreed ? 'Ara harfler çıkarıldı. Belgeyle karşılaştırın.' : 'Ad soyad farklı okunmuş olabilir; belgeyle karşılaştırın.'
+                    visualOnly: !!parsed.visualOnly,
+                    note: parsed.visualOnly
+                        ? 'Görünen bilgi alanlarından okundu.'
+                        : (parsed.nameAgreed ? 'Ara harfler çıkarıldı.' : 'MRZ alanından okundu.')
                 });
             } else unread++;
         }
@@ -9817,6 +9961,18 @@ function App() {
         }
         if (results.length === 1 && list.length === 1) {
             const r = results[0];
+            if (r.name && r.id && r.uyruk && r.uyruk !== 'OTHER') {
+                const passengers = paxReal();
+                const idKey = String(r.id).replace(/\s+/g, '').toUpperCase();
+                const nameKey = nlKey(r.name);
+                const at = passengers.findIndex(p => String(passengerIdDisplay(p)).replace(/\s+/g, '').toUpperCase() === idKey || (nameKey && nlKey(p.name || '') === nameKey));
+                const built = { ...emptyPassenger(), name: koTitleCaseTR(r.name), phone: '', uyruk: r.uyruk, ...splitPassengerId(r.id) };
+                if (at >= 0) passengers[at] = { ...passengers[at], ...built };
+                else passengers.push(built);
+                sf({ passengers: passengers, passengerCount: passengers.length });
+                tip('✓ Ad soyad, ülke ve pasaport no otomatik kaydedildi');
+                return;
+            }
             setPaxModal({
                 idx: -1, name: r.name, phone: '', id: r.id, uyruk: r.uyruk,
                 scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, nameAgreed: r.nameAgreed, hadName: !!r.name, hadNo: !!r.id }
@@ -9825,6 +9981,47 @@ function App() {
             return;
         }
         setPaxBatch({ kind: 'passport', items: results.map(batchRow), unread: unread, cancelled: cancelled });
+    };
+    const passportFilesFromItems = async items => {
+        const files = [];
+        for (const item of Array.from(items || [])) {
+            if (item && item.kind === 'file') {
+                const f = item.getAsFile && item.getAsFile();
+                if (f && String(f.type || '').startsWith('image/')) files.push(f);
+                continue;
+            }
+            const types = Array.from((item && item.types) || []).filter(t => String(t).startsWith('image/'));
+            for (const type of types) {
+                try {
+                    const blob = await item.getType(type);
+                    files.push(new File([blob], 'whatsapp-pasaport-' + Date.now() + '.png', { type }));
+                    break;
+                } catch (e) {}
+            }
+        }
+        return files;
+    };
+    const importPassportFromClipboard = async () => {
+        if (!ocrReady()) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.read) {
+                const files = await passportFilesFromItems(await navigator.clipboard.read());
+                if (files.length) { await handlePassportFiles(files); return; }
+            }
+        } catch (e) {}
+        tip('WhatsApp fotoğrafını kopyalayın veya açılan ekrandan seçin');
+        openPassportPicker();
+    };
+    const handlePassportPaste = async e => {
+        const files = await passportFilesFromItems(e && e.clipboardData && e.clipboardData.items);
+        if (!files.length) return;
+        e.preventDefault();
+        handlePassportFiles(files);
+    };
+    const handlePassportDrop = e => {
+        e.preventDefault();
+        const files = Array.from((e.dataTransfer && e.dataTransfer.files) || []).filter(f => String(f.type || '').startsWith('image/'));
+        if (files.length) handlePassportFiles(files);
     };
     const handleNameShotFiles = async (files) => {
         const list = Array.from(files || []).filter(Boolean).slice(0, 6);
@@ -13424,7 +13621,13 @@ function App() {
                                 transition: 'all .15s ease'
                             }
                         }, "🚐 ", PLAKA)))),
-                wizStep === 2 && React.createElement("div", { className: "card ko-passenger-card" },
+                wizStep === 2 && React.createElement("div", {
+                    className: "card ko-passenger-card", tabIndex: 0,
+                    onPaste: handlePassportPaste,
+                    onDragOver: e => e.preventDefault(),
+                    onDrop: handlePassportDrop,
+                    title: "Mac'te WhatsApp pasaport fotoğrafını buraya yapıştırabilir veya sürükleyebilirsiniz"
+                },
                     (function () {
                         const busy = !!passportScan;
                         const count = paxReal().length;
@@ -13451,8 +13654,14 @@ function App() {
                             React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
                                 photoBtn('\uD83E\uDEAA', 'Pasaport', '\u00E7oklu se\u00E7ilebilir', openPassportPicker),
                                 photoBtn('\uD83D\uDCDD', '\u0130sim Listesi', 'WhatsApp / ekran g\u00F6r\u00FCnt\u00FCs\u00FC', openNameShotPicker)),
+                            React.createElement("button", {
+                                type: "button", onClick: importPassportFromClipboard, disabled: busy,
+                                style: { width: '100%', marginTop: 7, background: busy ? 'var(--p-info-soft)' : 'var(--p-pos-ink)', color: busy ? 'var(--p-ink-5)' : 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', boxShadow: busy ? 'none' : '0 2px 8px rgba(46,62,102,.22)' }
+                            },
+                                React.createElement("span", null, "💬 WhatsApp Pasaport Fotoğrafı"),
+                                React.createElement("span", { style: { display: 'block', fontSize: 10.5, opacity: .85, fontWeight: 450, marginTop: 1 } }, "Mac: kopyala/yapıştır · iPhone: Fotoğraflar veya Dosyalar’dan seç")),
                             React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '6px 0 7px', lineHeight: 1.35 } },
-                                "Pasaportun altındaki iki satır tam görünsün; parlamasız ve düz çekin. Okuma cihazda yapılır. Kaydetmeden önce ad, soyad ve numarayı kontrol edin."),
+                                "Pasaportun tamamı görünmek zorunda değil. Ad, soyad, ülke ve pasaport no net görünüyorsa alınır; dört bilgi bulunduğunda yolcu otomatik kaydedilir."),
                             React.createElement("button", {
                                 type: "button", onClick: openPasteBox,
                                 style: { width: '100%', marginBottom: 7, background: 'var(--p-pos-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,62,102,.22)' }
