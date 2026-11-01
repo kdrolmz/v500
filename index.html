@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v41-fixed-tabbar">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v43-payment-clean">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V41</title>
+<title>Ölmez Transfer · Professional V43</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -11750,7 +11750,7 @@ function App() {
                     React.createElement("div", { className: 'tcard-status-stack', style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 5, flexShrink: 0 } },
                         _specialStatus && React.createElement("span", { style: { fontSize: 9.2, fontWeight: 600, padding: '3px 10px', borderRadius: 999, whiteSpace: 'nowrap', background: _specialStatus.bg, color: _specialStatus.color, WebkitTextFillColor: _specialStatus.color, border: '1px solid ' + _specialStatus.border } }, _specialStatus.text),
                         React.createElement("button", { onClick: e => { e.stopPropagation(); toggleTransferCompleted(t.id); }, style: { fontSize: 9.5, fontWeight: 560, padding: '4px 10px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', background: _completeBg, color: _completeCol, WebkitTextFillColor: _completeCol, border: '1px solid ' + _completeBd } }, _completeTxt),
-                        React.createElement("button", { onClick: e => { e.stopPropagation(); toggleSettled(t.id); }, style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '3px 11px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + _stBd, background: _stBg, color: _stCol, WebkitTextFillColor: _stCol } }, _stTxt))),
+                        React.createElement("button", { className: "ko-card-payment-status", onClick: e => { e.stopPropagation(); toggleSettled(t.id); }, style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '3px 11px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + _stBd, background: _stBg, color: _stCol, WebkitTextFillColor: _stCol } }, _stTxt))),
                 React.createElement("div", { className: 'tcard-account-grid', style: { marginTop: 11, paddingTop: 11, borderTop: '1px solid rgba(46,58,78,.09)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' } },
                     React.createElement("div", { className: 'tcard-agency-column', style: { display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, borderRight: '1px solid rgba(46,58,78,.07)', paddingRight: 14 } },
                         _agencyRows.length > 0
@@ -12862,7 +12862,7 @@ function App() {
                                     React.createElement("div", { className: "ko-htx-amt", style: { fontSize: 14, fontWeight: 540, color: 'var(--p-ink)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.01em', lineHeight: 1.05, whiteSpace: 'nowrap' } }, amtText),
                                     React.createElement("div", { className: "ko-htx-who", style: { fontSize: 9, fontWeight: 500, color: 'var(--p-ink-4)', textTransform: 'uppercase', letterSpacing: .3, marginTop: 2 } }, whoLabel)),
                                 React.createElement("button", {
-                                    className: "ko-htx-status",
+                                    className: "ko-htx-status ko-card-payment-status",
                                     onClick: (e) => { e.stopPropagation(); toggleSettled(t.id); },
                                     style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '4px 10px', borderRadius: 999, border: '1px solid ' + statusBd, cursor: 'pointer', flexShrink: 0, background: statusBg, color: statusColor, whiteSpace: 'nowrap' }
                                 }, statusText)),
@@ -13937,8 +13937,7 @@ function App() {
                                     " \u20BA (i\u015f verenden)"))),
                         React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 } }, PAYMS.map(m => (React.createElement("button", { key: m.id, className: "lg-choice" + (form.paymentMethod === m.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ paymentMethod: m.id }), style: { background: form.paymentMethod === m.id ? NAV : INP, color: form.paymentMethod === m.id ? 'var(--p-white)' : TX, border: '1px solid ' + (form.paymentMethod === m.id ? NAV : BOR), borderRadius: 9, padding: '9px 6px', cursor: 'pointer', fontSize: '12px', fontWeight: 470, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .15s' } },
                             React.createElement("span", { style: { fontSize: 15 } }, m.ico),
-                            React.createElement("span", null, m.n))))),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, marginBottom: 8 } }, [['pending', '⏳ Bekliyor'], ['paid', '✅ Ödendi'], ['cancelled', '❌ İptal']].map(([id, lbl]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.paymentStatus === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ paymentStatus: id }), style: { background: form.paymentStatus === id ? NAV : INP, color: form.paymentStatus === id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 2px', cursor: 'pointer', fontSize: '11px', fontWeight: 450 } }, lbl)))))),
+                            React.createElement("span", null, m.n))))))),
                     form.paymentCollect === 'no' && !form.paymentToMe && !formBalenturOdelo && React.createElement("div", {
                         style: {
                             background: 'var(--p-tint-3)',
@@ -17482,6 +17481,58 @@ button.lg-choice.is-active :where(span,div,small,b,strong){
   .lg-home-transfer-list>.ko-htx-group-hd + .ko-htx-card,
   .lg-today-list-standalone>.ko-htx-group-hd + .ko-htx-card{margin-top:2px!important}
   .ko-htx-card{margin-bottom:1px!important}
+}
+</style>
+<style id="ko-desktop-driver-plate-v42">
+/* V42 · MacBook: kaptan telefonu, plaka ve hızlı plaka seçimi tam görünür. */
+@media(min-width:701px){
+  .ko-driver-details-row{
+    display:grid!important;
+    grid-template-columns:minmax(220px,1fr) 132px 116px!important;
+    align-items:stretch!important;gap:8px!important;margin-top:8px!important;
+    padding:6px!important;border:1px solid rgba(27,91,83,.12)!important;
+    border-radius:14px!important;background:linear-gradient(145deg,#F8FBFA,#F0F6F4)!important;
+  }
+  .ko-driver-details-row .ko-driver-phone,
+  .ko-driver-details-row .ko-driver-plate{
+    width:100%!important;min-width:0!important;max-width:none!important;
+    height:44px!important;min-height:44px!important;margin:0!important;
+    border-radius:10px!important;background:#FFF!important;
+  }
+  .ko-driver-details-row .ko-driver-phone{
+    padding-left:12px!important;padding-right:12px!important;
+    font-size:15px!important;font-variant-numeric:tabular-nums!important;
+  }
+  .ko-driver-details-row .ko-driver-plate{
+    padding-left:9px!important;padding-right:9px!important;
+    font-size:14px!important;font-weight:620!important;letter-spacing:.025em!important;
+    text-align:center!important;text-transform:uppercase!important;font-variant-numeric:tabular-nums!important;
+  }
+  .ko-driver-details-row .ko-driver-own-plate{
+    width:116px!important;min-width:116px!important;max-width:116px!important;
+    height:44px!important;min-height:44px!important;margin:0!important;padding:0 9px!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+    border-radius:10px!important;overflow:visible!important;
+  }
+  .ko-driver-details-row .ko-driver-own-plate-label{
+    display:inline!important;font-size:12px!important;font-weight:600!important;
+    white-space:nowrap!important;overflow:visible!important;font-variant-numeric:tabular-nums!important;
+  }
+}
+</style>
+<style id="ko-payment-status-clean-v43">
+/* V43 · Kartlarda yalnız tahsilat rozeti kalır; daha küçük ve sakin görünür. */
+.ko-card-payment-status{
+  min-height:0!important;height:auto!important;
+  padding:3px 8px!important;border-radius:999px!important;
+  font-size:8.7px!important;font-weight:500!important;line-height:1.12!important;
+  letter-spacing:.005em!important;box-shadow:none!important;
+  background-image:none!important;white-space:nowrap!important;
+}
+@media(max-width:700px){
+  .ko-card-payment-status{
+    padding:3px 7px!important;font-size:8.2px!important;font-weight:490!important;
+  }
 }
 </style>
 </body>
