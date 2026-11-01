@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-10-28-passport-whatsapp-v22-local-permission-fix">
+<meta name="v500-release" content="2026-11-01-passport-whatsapp-v24-mac-full-width">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1712,7 +1712,9 @@ function passportCountryFromText(text) {
 }
 function passportCleanNameValue(value) {
     const noise = /\b(SURNAME|FAMILY|LAST|GIVEN|FIRST|FORENAME|NAMES?|SOYADI|SOYAD|ADI|PRENOM|NOM|NATIONALITY|UYRUK|PASSPORT|DOCUMENT|NUMBER|NUMARA|NO)\b/g;
-    let s = passportAscii(value).replace(noise, ' ').replace(/[^A-Z'\- ]/g, ' ').replace(/\s+/g, ' ').trim();
+    const letterFix = { '0':'O', '1':'I', '2':'Z', '3':'E', '4':'A', '5':'S', '6':'G', '7':'T', '8':'B', '9':'G' };
+    let s = passportAscii(value).replace(noise, ' ').replace(/[0-9]/g, c => letterFix[c] || c)
+        .replace(/[^A-Z'\- ]/g, ' ').replace(/\s+/g, ' ').trim();
     s = s.split(' ').filter((w, i) => w && (i === 0 || w.length > 1)).join(' ');
     return s.length >= 2 && s.length <= 70 ? s : '';
 }
@@ -1769,7 +1771,10 @@ function mergePassportReadings(mrz, visual) {
         given: mrz.given || visual.given || '',
         passportNo: mrz.passportNo || visual.passportNo || '',
         nationality: (mrz.nationality && mrz.nationality !== 'OTHER') ? mrz.nationality : (visual.nationality || 'OTHER'),
-        visualOnly: !mrz.passportNo || !mrz.name
+        visualOnly: !mrz.passportNo || !mrz.name,
+        visualAgreed: !!visual.visualAgreed,
+        agreed: !!mrz.agreed || !!visual.visualAgreed,
+        nameAgreed: !!mrz.nameAgreed || !!visual.nameAgreed
     };
 }
 function mrzLoadImage(file) {
@@ -2241,15 +2246,25 @@ async function mrzOcr(worker, canvas) {
 async function passportVisualOcr(worker, img, note, isCancelled) {
     const found = [];
     try {
-        await worker.setParameters({
-            tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '-/:.",
-            tessedit_pageseg_mode: '11'
-        });
-        for (const deg of [0, 90, 270]) {
+        const plans = [
+            { deg: 0, width: 1900, psm: '11', enhance: false },
+            { deg: 0, width: 2600, psm: '6', enhance: true },
+            { deg: 90, width: 2100, psm: '11', enhance: false },
+            { deg: 270, width: 2100, psm: '11', enhance: false }
+        ];
+        const fullKey = r => [nlKey(r && r.name), String(r && r.passportNo || '').replace(/[^A-Z0-9]/g, ''), r && r.nationality || 'OTHER'].join('|');
+        for (const plan of plans) {
             if (isCancelled && isCancelled()) return null;
             if (note) note('Görünen pasaport alanları okunuyor…');
             let canvas = null;
-            try { canvas = mrzRotatedCanvas(img, deg, 1900); } catch (e) { continue; }
+            try {
+                canvas = mrzRotatedCanvas(img, plan.deg, plan.width);
+                if (plan.enhance) canvas = mrzEnhance(canvas);
+                await worker.setParameters({
+                    tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 '-/:.",
+                    tessedit_pageseg_mode: plan.psm
+                });
+            } catch (e) { continue; }
             let data = null;
             try {
                 const res = await worker.recognize(canvas, {}, { text: true });
@@ -2257,7 +2272,8 @@ async function passportVisualOcr(worker, img, note, isCancelled) {
             } catch (e) { data = null; }
             const parsed = parsePassportVisualText(data && data.text);
             if (parsed) found.push(parsed);
-            if (parsed && parsed.name && parsed.passportNo && parsed.nationality !== 'OTHER') break;
+            const complete = found.filter(r => r.name && r.passportNo && r.nationality !== 'OTHER');
+            if (complete.some(r => complete.filter(x => fullKey(x) === fullKey(r)).length >= 2)) break;
         }
     } finally {
         try {
@@ -2268,10 +2284,21 @@ async function passportVisualOcr(worker, img, note, isCancelled) {
         } catch (e) {}
     }
     if (!found.length) return null;
-    return found.sort((a, b) => {
-        const score = x => (x.name ? 4 : 0) + (x.passportNo ? 4 : 0) + (x.nationality !== 'OTHER' ? 2 : 0);
-        return score(b) - score(a);
-    })[0];
+    const key = r => [nlKey(r.name), String(r.passportNo || '').replace(/[^A-Z0-9]/g, ''), r.nationality || 'OTHER'].join('|');
+    const groups = new Map();
+    found.forEach(r => { const k = key(r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+    const score = x => (x.name ? 4 : 0) + (x.passportNo ? 4 : 0) + (x.nationality !== 'OTHER' ? 2 : 0);
+    const ranked = [...groups.values()].sort((a, b) => b.length - a.length || Math.max(...b.map(score)) - Math.max(...a.map(score)));
+    const bestGroup = ranked[0];
+    const best = bestGroup.slice().sort((a, b) => score(b) - score(a))[0];
+    const sameName = found.filter(r => r.name && nlKey(r.name) === nlKey(best.name)).length;
+    return { ...best,
+        visualAgreed: bestGroup.length >= 2,
+        agreed: bestGroup.length >= 2,
+        nameAgreed: sameName >= 2,
+        readings: found.length,
+        needsReview: bestGroup.length < 2 || sameName < 2
+    };
 }
 function mrzChooseResult(results) {
     if (!results.length) return null;
@@ -9944,6 +9971,7 @@ function App() {
                     checks: parsed.checks || 0,
                     agreed: !!parsed.agreed,
                     nameAgreed: !!parsed.nameAgreed,
+                    visualAgreed: !!parsed.visualAgreed,
                     visualOnly: !!parsed.visualOnly,
                     note: parsed.visualOnly
                         ? 'Görünen bilgi alanlarından okundu.'
@@ -9962,7 +9990,7 @@ function App() {
         }
         if (results.length === 1 && list.length === 1) {
             const r = results[0];
-            if (r.name && r.id && r.uyruk && r.uyruk !== 'OTHER') {
+            if (r.name && r.id && r.uyruk && r.uyruk !== 'OTHER' && (r.nameAgreed || r.visualAgreed)) {
                 const passengers = paxReal();
                 const idKey = String(r.id).replace(/\s+/g, '').toUpperCase();
                 const nameKey = nlKey(r.name);
@@ -9976,7 +10004,7 @@ function App() {
             }
             setPaxModal({
                 idx: -1, name: r.name, phone: '', id: r.id, uyruk: r.uyruk,
-                scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, nameAgreed: r.nameAgreed, hadName: !!r.name, hadNo: !!r.id }
+                scan: { verified: r.verified, checks: r.checks, agreed: r.agreed, nameAgreed: r.nameAgreed, visualAgreed: r.visualAgreed, hadName: !!r.name, hadNo: !!r.id }
             });
             tip(r.verified ? 'Pasaport okundu ✓' : 'Pasaport okundu — lütfen kontrol edin');
             return;
@@ -16157,6 +16185,91 @@ img,svg{content-visibility:visible !important}
  .view-hesap .ko-account-action-title{font-size:12px!important}
  .view-hesap .ko-account-action-sub{font-size:9px!important;line-height:1.25!important}
  .view-hesap .ko-account-action-body{padding:10px!important}
+}
+</style>
+<style id="ko-desktop-wide-premium-v23">
+/* MacBook / masaüstü: telefon görünümünü değiştirmeden ekranın tamamını kullanır. */
+@media (min-width:901px){
+ html,body,#root,.app-shell{width:100%!important;max-width:none!important}
+ body{background:linear-gradient(180deg,#edf2f5 0,#f6f8f9 230px,#eef3f5 100%)!important}
+ .hdr-inner,.main-cont,.tabbar-inner,.lg-home,.ko-new-form,.ko-account-root-card{width:100%!important;max-width:none!important}
+ .hdr-inner,.main-cont,.tabbar-inner{padding-left:clamp(26px,3.2vw,62px)!important;padding-right:clamp(26px,3.2vw,62px)!important}
+ .main-cont,.lg-home,.ko-new-form,.ko-account-root-card{margin-left:0!important;margin-right:0!important}
+ .main-cont>.card,.ko-new-form>.card,.ko-account-root-card,.lg-period-panel,.lg-month-cal-card{
+   border-radius:24px!important;border-color:rgba(180,196,204,.72)!important;box-shadow:0 14px 40px rgba(30,55,70,.075)!important
+ }
+ .desk-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;gap:24px!important}
+ .ko-account-split-grid{gap:18px!important}
+ .ko-account-summary-card,.ko-account-firm-card{box-shadow:0 8px 25px rgba(31,58,70,.045)!important}
+ .modal-card,.ms{border-radius:26px!important;box-shadow:0 28px 85px rgba(19,40,53,.22)!important}
+}
+</style>
+<style id="ko-mac-true-full-width-v24">
+/* Bu bölüm yalnız MacBook / geniş masaüstü içindir. iPhone kuralları aynen kalır. */
+@media (min-width:901px){
+  html,body,#root,.app-shell{width:100%!important;min-width:100%!important;max-width:none!important}
+  main.main-cont{
+    width:100%!important;max-width:none!important;margin:0!important;
+    padding-left:18px!important;padding-right:18px!important;
+    padding-bottom:calc(var(--tabbar-h) + var(--sa-b) + 28px)!important;
+    box-sizing:border-box!important
+  }
+  main.main-cont.view-home{padding-top:0!important}
+  main.main-cont:not(.view-home){padding-top:18px!important}
+  main.main-cont .lg-home,.hdr .hdr-inner,.tabbar .tabbar-inner,
+  main.main-cont .ko-new-form,main.main-cont .ko-account-root-card{
+    width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important
+  }
+  main.main-cont .lg-greeting-card{
+    margin-left:0!important;margin-right:0!important;border-radius:0 0 30px 30px!important;
+    padding:24px 28px 43px!important;min-height:0!important
+  }
+  main.main-cont .lg-period-row{margin-left:34px!important;margin-right:34px!important;margin-top:-18px!important}
+  .lg-greeting-title,.lg-greeting-card .ko-brand-serif{font-size:27px!important;line-height:1.15!important;letter-spacing:-.025em!important}
+  .lg-date{font-size:14px!important;line-height:1.5!important}
+  .lg-greeting-card .ko-hero-rate{min-height:46px!important;padding:10px 16px!important;font-size:14px!important}
+  .lg-greeting-card .ko-hero-rate span:first-child{font-size:12px!important}
+  .lg-greeting-card .ko-hero-rate span:last-child{font-size:14px!important}
+  .lg-period-card{min-height:82px!important;padding:14px 18px!important}
+  .lg-period-label{font-size:12px!important;letter-spacing:.14em!important}
+  .lg-period-value{font-size:25px!important;line-height:1.15!important}
+  .lg-period-sub{font-size:13px!important}
+  .lg-section-title{font-size:18px!important;margin-top:20px!important;margin-bottom:13px!important}
+  .lg-transfer-date,.lg-row{font-size:13px!important}
+  .lg-home-transfer-list,.lg-today-list-standalone{gap:13px!important}
+  .lg-home-transfer-list .tcard,.lg-today-list-standalone .tcard{
+    width:100%!important;min-height:104px!important;border-radius:22px!important
+  }
+  .lg-home-transfer-list .tcard-header,.lg-today-list-standalone .tcard-header,
+  .view-transferler .tcard-header{padding:16px 20px!important}
+  .lg-home-transfer-list .tcard-body,.lg-today-list-standalone .tcard-body,
+  .view-transferler .tcard-body{
+    grid-template-columns:112px minmax(0,1fr) minmax(150px,210px)!important;
+    grid-template-areas:"time main amount" "flow flow flow"!important;
+    gap:9px 18px!important;align-items:start!important
+  }
+  .tcard-time-big{font-size:19px!important;line-height:1.15!important}
+  .tcard-time-type{font-size:12px!important}
+  .tcard-agency{font-size:16px!important;line-height:1.35!important}
+  .tcard-route{font-size:14px!important;line-height:1.45!important}
+  .tcard-passenger{font-size:13px!important;line-height:1.45!important}
+  .tcard-amount{font-size:16px!important;line-height:1.25!important}
+  .tcard-amount-sub{font-size:11.5px!important}
+  .tcard-flow{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px 22px!important;padding-top:10px!important}
+  .tcard-pill,.tcard-paystatus,.lg-chip,.lg-chip-soft,.lg-mini-pill,.lg-flight,.tcard-pill-flight{
+    font-size:11.5px!important;padding:4px 10px!important
+  }
+  .lg-month-cal-card,.ko-real-cal-card,.lg-period-panel,.ko-account-root-card,.ko-new-form>.card{
+    border-radius:24px!important
+  }
+  .lg-month-day{min-height:76px!important}
+  .lg-month-day-num{font-size:14px!important}
+  .lg-month-day-count,.lg-month-day-net{font-size:10.5px!important}
+  .ko-account-root-card,.ko-new-form{font-size:14.5px!important}
+  input,select,textarea,button{font-size:max(14px,1em)}
+  .tabbar .tabbar-inner{padding-left:18px!important;padding-right:18px!important}
+  .tabbar .tab{max-width:190px!important;justify-self:center!important}
+  .tabbar .tab-label{font-size:11.5px!important}
 }
 </style>
 </body>
