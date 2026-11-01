@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v39-compact-form">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v40-driver-mobile">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V39</title>
+<title>Ölmez Transfer · Professional V40</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -13749,7 +13749,7 @@ function App() {
                         React.createElement("div", { className: "ko-route-choices", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.filter(r => r.id !== 'free').map(r => (React.createElement("button", { key: r.id, type: "button", className: "lg-choice ko-route-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 450, textAlign: 'left' } },
                             React.createElement("span", { className: "ko-route-choice-icon", "aria-hidden": "true" }, r.ico),
                             React.createElement("span", { className: "ko-route-choice-label" }, r.n))))))),
-                wizStep === 1 && React.createElement("div", { className: "card" },
+                wizStep === 1 && React.createElement("div", { className: "card ko-driver-card" },
                     React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "\uD83D\uDE90 Ara\u00E7 Tipi"),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 5, marginBottom: 12 } }, VEHS.filter(v => !v.legacy).map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
                         React.createElement("div", { style: { fontSize: 16, marginBottom: 1 } }, v.ico),
@@ -13781,12 +13781,12 @@ function App() {
                                     setNewDr({ name: '', phone: '' });
                                 } setDrIn(false); }, style: { flex: 1, background: G, border: 'none', color: 'var(--p-white)', borderRadius: 10, padding: 9, fontWeight: 470, cursor: 'pointer' } }, "\u2713 Kaydet & Se\u00E7"),
                             React.createElement("button", { onClick: () => { setDrIn(false); setNewDr({ name: '', phone: '' }); }, style: { background: INP, border: 'none', borderRadius: 10, padding: '0 12px', cursor: 'pointer', fontSize: 16 } }, "\u2715")))),
-                    form.driverName && !drIn && (React.createElement("div", { style: { display: 'flex', gap: 6, marginTop: 7 } },
-                        React.createElement("input", { type: "tel", value: form.driverPhone, onChange: e => sf({ driverPhone: e.target.value }), placeholder: "Telefon", className: "inp", style: { flex: 1, width: 'auto' } }),
-                        React.createElement("input", { type: "text", value: form.plate || '', onChange: e => sf({ plate: e.target.value.toUpperCase() }), placeholder: "Plaka", className: "inp", style: { width: 90, flex: 'none', fontWeight: 470 } }),
+                    form.driverName && !drIn && (React.createElement("div", { className: "ko-driver-details-row", style: { display: 'flex', gap: 6, marginTop: 7 } },
+                        React.createElement("input", { type: "tel", value: form.driverPhone, onChange: e => sf({ driverPhone: e.target.value }), placeholder: "Telefon", className: "inp ko-driver-phone", style: { flex: 1, width: 'auto' } }),
+                        React.createElement("input", { type: "text", value: form.plate || '', onChange: e => sf({ plate: e.target.value.toUpperCase() }), placeholder: "Plaka", className: "inp ko-driver-plate", style: { width: 90, flex: 'none', fontWeight: 470 } }),
                         React.createElement("button", { 
                             type: "button",
-                            className: "lg-choice" + (form.plate === PLAKA ? " is-active ko-selected-gold" : ""),
+                            className: "lg-choice ko-driver-own-plate" + (form.plate === PLAKA ? " is-active ko-selected-gold" : ""),
                             onClick: () => sf({ plate: form.plate === PLAKA ? '' : PLAKA }),
                             title: "16 LMZ 55 plakasını seç/kaldır",
                             style: { 
@@ -13801,7 +13801,7 @@ function App() {
                                 boxShadow: form.plate === PLAKA ? '0 2px 8px rgba(60,60,67,.25)' : 'none',
                                 transition: 'all .15s ease'
                             }
-                        }, "🚐 ", PLAKA)))),
+                        }, React.createElement("span", { className: "ko-driver-own-plate-icon", "aria-hidden": "true" }, "🚐"), React.createElement("span", { className: "ko-driver-own-plate-label" }, PLAKA))))),
                 wizStep === 2 && React.createElement("div", {
                     className: "card ko-passenger-card", tabIndex: 0,
                     onPaste: handlePassportPaste,
@@ -17378,6 +17378,48 @@ button.lg-choice.is-active :where(span,div,small,b,strong){
   .ko-party-card .ko-party-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px!important}
   .ko-party-card .ko-party-row>.ko-party-add-btn{width:34px!important;min-width:34px!important}
   .ko-route-choice-label{font-size:8.8px!important}
+}
+</style>
+<style id="ko-driver-mobile-v40">
+/* V40 · Plaka mantığı değişmez; yalnızca iPhone kaptan bilgisi dengelenir. */
+.ko-driver-own-plate{justify-content:center!important}
+.ko-driver-own-plate-icon{font-size:13px;line-height:1}
+.ko-driver-own-plate-label{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+@media(max-width:700px){
+  .ko-driver-card .ko-driver-row{
+    grid-template-columns:minmax(0,1fr) 40px!important;gap:6px!important;
+  }
+  .ko-driver-card .ko-driver-row>.ko-smart-pick{min-width:0!important}
+  .ko-driver-card .ko-driver-row>button{
+    width:40px!important;min-width:40px!important;padding:0!important;border-radius:11px!important;
+  }
+  .ko-driver-details-row{
+    display:grid!important;grid-template-columns:minmax(0,1fr) 104px 42px!important;
+    align-items:stretch!important;gap:5px!important;margin-top:6px!important;padding:5px!important;
+    border:1px solid rgba(27,91,83,.13)!important;border-radius:13px!important;
+    background:linear-gradient(145deg,#F7FBF9,#EEF6F3)!important;
+  }
+  .ko-driver-details-row .ko-driver-phone,
+  .ko-driver-details-row .ko-driver-plate{
+    min-width:0!important;width:100%!important;max-width:none!important;height:42px!important;min-height:42px!important;
+    padding:8px 8px!important;margin:0!important;border-radius:10px!important;background:#FFF!important;
+  }
+  .ko-driver-details-row .ko-driver-phone{font-size:15px!important;font-variant-numeric:tabular-nums!important}
+  .ko-driver-details-row .ko-driver-plate{
+    font-size:12.2px!important;font-weight:600!important;text-align:center!important;
+    letter-spacing:.025em!important;text-transform:uppercase!important;
+  }
+  .ko-driver-details-row .ko-driver-own-plate{
+    width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;
+    padding:0!important;margin:0!important;border-radius:10px!important;display:flex!important;align-items:center!important;justify-content:center!important;
+  }
+  .ko-driver-own-plate-icon{font-size:14px!important}
+  .ko-driver-own-plate-label{display:none!important}
+}
+@media(max-width:374px){
+  .ko-driver-details-row{grid-template-columns:minmax(0,1fr) 96px 38px!important;gap:4px!important;padding:4px!important}
+  .ko-driver-details-row .ko-driver-own-plate{width:38px!important;min-width:38px!important;max-width:38px!important}
+  .ko-driver-details-row .ko-driver-plate{font-size:11.5px!important;padding-left:5px!important;padding-right:5px!important}
 }
 </style>
 </body>
