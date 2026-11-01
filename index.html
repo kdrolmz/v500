@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v40-driver-mobile">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v41-fixed-tabbar">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V40</title>
+<title>Ölmez Transfer · Professional V41</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -17420,6 +17420,68 @@ button.lg-choice.is-active :where(span,div,small,b,strong){
   .ko-driver-details-row{grid-template-columns:minmax(0,1fr) 96px 38px!important;gap:4px!important;padding:4px!important}
   .ko-driver-details-row .ko-driver-own-plate{width:38px!important;min-width:38px!important;max-width:38px!important}
   .ko-driver-details-row .ko-driver-plate{font-size:11.5px!important;padding-left:5px!important;padding-right:5px!important}
+}
+</style>
+<style id="ko-iphone-fixed-tabbar-v41">
+/* V41 · iPhone: içerik kayar, premium alt menü ekranın altında sabit kalır. */
+@media(max-width:700px){
+  html,body{
+    width:100%!important;height:100%!important;min-height:100%!important;
+    overflow:hidden!important;overscroll-behavior:none!important;
+  }
+  #root{
+    width:100%!important;height:100%!important;min-height:0!important;
+    overflow:hidden!important;overscroll-behavior:none!important;
+  }
+  .app-shell{
+    position:relative!important;width:100%!important;height:100vh!important;height:100dvh!important;
+    min-height:0!important;overflow:hidden!important;background:var(--bg)!important;
+  }
+  main.main-cont{
+    position:absolute!important;inset:0!important;width:100%!important;height:auto!important;min-height:0!important;
+    overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-x:none!important;overscroll-behavior-y:contain!important;
+    padding-bottom:calc(78px + var(--sa-b))!important;
+    scroll-padding-bottom:calc(78px + var(--sa-b))!important;
+  }
+  .tabbar{
+    position:absolute!important;left:0!important;right:0!important;bottom:0!important;
+    width:100%!important;margin:0!important;transform:none!important;translate:none!important;
+    z-index:1000!important;isolation:isolate!important;contain:layout paint style!important;
+    background:rgba(251,253,252,.985)!important;
+    border-top:1px solid rgba(18,73,72,.12)!important;
+    box-shadow:0 -1px 0 rgba(255,255,255,.96),0 -14px 34px -24px rgba(9,48,52,.48)!important;
+    padding-bottom:var(--sa-b)!important;
+  }
+  .tabbar-inner{
+    height:64px!important;min-height:64px!important;background:transparent!important;
+    border-radius:0!important;box-shadow:none!important;
+  }
+  .tab{min-height:52px!important;border-radius:14px!important}
+  .tab.is-active{
+    background:linear-gradient(145deg,rgba(19,112,103,.10),rgba(19,112,103,.045))!important;
+    border:1px solid rgba(19,112,103,.11)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.88)!important;
+  }
+  .tab-fab{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 9px 20px -9px rgba(8,55,58,.58)!important;
+  }
+
+  /* Gidiş, geliş, tur ve kısa pas grupları birbirine karışmadan nefes alır. */
+  .lg-home-transfer-list>.ko-htx-group-hd,
+  .lg-today-list-standalone>.ko-htx-group-hd{
+    min-height:24px!important;display:flex!important;align-items:center!important;
+    padding:5px 7px!important;margin:1px 0 2px!important;
+    border-radius:9px!important;background:rgba(255,255,255,.52)!important;
+  }
+  .lg-home-transfer-list>.ko-htx-group-hd:not(:first-child),
+  .lg-today-list-standalone>.ko-htx-group-hd:not(:first-child){
+    margin-top:14px!important;padding-top:8px!important;
+    border-top:1px solid rgba(25,74,72,.10)!important;border-radius:0 0 9px 9px!important;
+  }
+  .lg-home-transfer-list>.ko-htx-group-hd + .ko-htx-card,
+  .lg-today-list-standalone>.ko-htx-group-hd + .ko-htx-card{margin-top:2px!important}
+  .ko-htx-card{margin-bottom:1px!important}
 }
 </style>
 </body>
