@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v38-vehicle-options">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v39-compact-form">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V38</title>
+<title>Ölmez Transfer · Professional V39</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -13447,11 +13447,6 @@ function App() {
                 );
             })(),
 	            tab === 'new' && (React.createElement("div", { className: "ko-new-form", style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                editId && React.createElement("div", { className: "card", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 12px', borderColor: 'rgba(60,60,67,.28)', background: 'linear-gradient(145deg,rgba(231,242,238,.74),rgba(255,255,255,.92))' } },
-                    React.createElement("div", { style: { minWidth: 0 } },
-                        React.createElement("div", { style: { fontSize: 12.5, fontWeight: 450, color: G } }, "Transfer düzenleniyor"),
-                        React.createElement("div", { style: { fontSize: 10.5, fontWeight: 430, color: SB, marginTop: 2, whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: 1.25 } }, (form.date || '') + ' ' + (form.time || '') + ' · ' + (form.pickup ? fullAirportLoc(form.pickup) : 'Alış') + ' → ' + (form.dropoff ? fullAirportLoc(form.dropoff) : 'Bırakış'))),
-                    React.createElement("button", { type: "button", onClick: openNewTransferForm, style: { flexShrink: 0, border: '1px solid rgba(60,60,67,.22)', background: 'var(--p-white)', color: G, borderRadius: 11, padding: '8px 10px', fontSize: 11, fontWeight: 470, cursor: 'pointer' } }, "Yeni kayıt")),
                 /* ===== ADIM GÖSTERGESİ (3 adımlı sihirbaz) ===== */
                 (function(){
                     const steps = [
@@ -13484,13 +13479,13 @@ function App() {
                     );
                 })(),
                 wizStep === 1 && React.createElement("div", { className: "card ko-schedule-card" },
-                    React.createElement("div", { className: "ko-sefer-summary" },
-                        React.createElement("strong", null, form.tripMode === 'recurring' && form.transferType === 'tour' ? 'Çok günlük tur' : (form.tripMode === 'roundtrip' || form.tripMode === 'sameday' ? 'İlk sefer + dönüş' : 'Sefer bilgileri')),
+                    (form.tripMode === 'recurring' || form.tripMode === 'roundtrip' || form.tripMode === 'sameday') && React.createElement("div", { className: "ko-sefer-summary" },
+                        React.createElement("strong", null, form.tripMode === 'recurring' && form.transferType === 'tour' ? 'Çok günlük tur' : (form.tripMode === 'recurring' ? 'Tekrarlanan sefer' : 'İlk sefer + dönüş')),
                         React.createElement("div", null, form.tripMode === 'recurring' && form.transferType === 'tour'
                             ? 'Başlangıç ve bitiş dahil her gün bağımsız bir tur kartı oluşur.'
-                            : (form.tripMode === 'roundtrip' || form.tripMode === 'sameday'
-                                ? 'İki ayrı kart kaydedilir. Her sefer kendi tarih ve saatinde görünür.'
-                                : 'Tür, tarih ve saati seçin; ardından güzergâhı girin.'))),
+                            : (form.tripMode === 'recurring'
+                                ? 'Başlangıç ve bitiş dahil her gün bağımsız bir transfer kartı oluşur.'
+                                : 'İki ayrı kart kaydedilir. Her sefer kendi tarih ve saatinde görünür.'))),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
                         React.createElement("div", null,
                             React.createElement("span", { className: "lbl" }, 'Transfer türü'),
@@ -13700,19 +13695,19 @@ function App() {
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "\u2708\uFE0F U\u00E7u\u015F Kodu"),
                         React.createElement("input", { type: "text", value: form.flightCode, onChange: e => sf({ flightCode: e.target.value.toUpperCase() }), placeholder: "TK 123", className: "inp" }))),
-                wizStep === 1 && React.createElement("div", { className: "card" },
+                wizStep === 1 && React.createElement("div", { className: "card ko-party-card" },
                     React.createElement("div", { className: "ko-party-row", style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) 44px', gap: 7, alignItems: 'flex-end', marginBottom: 8 } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Veren"),
                             React.createElement(SmartPick, { value: form.givenBy || '', rows: formAgencyRows, onChange: v => sf({ givenBy: v }), onSelect: a => sf({ givenBy: a.name }), placeholder: "" })),
                         React.createElement("div", { style: { flex: 1 } },
-                            React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Yapan"),
+                            React.createElement("span", { className: "lbl" }, "\u0130\u015Fi Alan"),
                             React.createElement(SmartPick, { value: form.assignedTo || '', rows: formAgencyRows, onChange: v => sf({ assignedTo: v }), onSelect: a => sf({ assignedTo: a.name }), placeholder: "" })),
                         React.createElement("button", { onClick: () => setAgIn(p => !p), className: "ko-party-add-btn", style: { background: agIn ? R : NAV, border: 'none', color: 'var(--p-white)', borderRadius: 10, minHeight: 43, padding: '0 12px', fontWeight: 450, fontSize: 16, flexShrink: 0, alignSelf: 'flex-end', cursor: 'pointer' } }, agIn ? '✕' : '+')),
                     agIn && (React.createElement("div", { style: { display: 'flex', gap: 7, marginBottom: 8 } },
                         React.createElement("input", { type: "text", value: newAg, onChange: e => setNewAg(e.target.value), placeholder: "Yeni acenta", className: "inp", style: { flex: 1, width: 'auto' } }),
                         React.createElement("button", { onClick: () => { addAg(newAg); setNewAg(''); setAgIn(false); }, style: { background: G, border: 'none', color: 'var(--p-white)', borderRadius: 10, padding: '0 14px', fontWeight: 450, fontSize: 16, cursor: 'pointer' } }, "\u2713"))),
-                    (form.altAcenta || form.__showAltAcenta) ? React.createElement("div", { className: "ko-party-alt-row", style: { display: 'grid', gridTemplateColumns: form.altAcenta ? 'minmax(0,1fr) minmax(0,1fr) 36px' : 'minmax(0,1fr) 36px', gap: 7, alignItems: 'flex-end' } },
+                    (form.altAcenta || form.__showAltAcenta) ? React.createElement("div", { className: "ko-party-alt-row " + (form.altAcenta ? "has-fee" : "no-fee"), style: { display: 'grid', gridTemplateColumns: form.altAcenta ? 'minmax(0,1fr) minmax(0,1fr) 36px' : 'minmax(0,1fr) 36px', gap: 7, alignItems: 'flex-end' } },
                         React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "Alt Acenta"),
                             React.createElement(SmartPick, { value: form.altAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ altAcenta: v }), onSelect: a => sf({ altAcenta: a.name }), placeholder: "" })),
@@ -13751,10 +13746,9 @@ function App() {
                     React.createElement("input", { className: "inp", value: form.dropoffMaps || '', onChange: e => sf({ dropoffMaps: e.target.value }), placeholder: '🎯 Varış maps adresi / linki (ops.)', inputMode: 'url', style: { fontSize: 12, marginTop: -2 } }),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "\uD83D\uDEE4\uFE0F Rota"),
-                        React.createElement("div", { className: "ko-route-choices", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.filter(r => r.id !== 'free').map(r => (React.createElement("button", { key: r.id, className: "lg-choice ko-route-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 450, textAlign: 'center' } },
-                            r.ico,
-                            React.createElement("br", null),
-                            r.n)))))),
+                        React.createElement("div", { className: "ko-route-choices", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.filter(r => r.id !== 'free').map(r => (React.createElement("button", { key: r.id, type: "button", className: "lg-choice ko-route-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 450, textAlign: 'left' } },
+                            React.createElement("span", { className: "ko-route-choice-icon", "aria-hidden": "true" }, r.ico),
+                            React.createElement("span", { className: "ko-route-choice-label" }, r.n))))))),
                 wizStep === 1 && React.createElement("div", { className: "card" },
                     React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "\uD83D\uDE90 Ara\u00E7 Tipi"),
                     React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 5, marginBottom: 12 } }, VEHS.filter(v => !v.legacy).map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
@@ -17301,6 +17295,89 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
 @media(max-width:374px){
   .ko-transfer-state-options{gap:5px;padding:3px}
   .ko-transfer-state-option{font-size:10.5px;padding:8px 3px}
+}
+</style>
+<style id="ko-compact-premium-form-v39">
+/* V39 · Seçili düğmeler her ekranda yüksek kontrastlı ve okunur kalır. */
+button.lg-choice.is-active{
+  background:linear-gradient(145deg,#176C60,#104E50)!important;
+  border-color:#0D5550!important;color:#FFF!important;-webkit-text-fill-color:#FFF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 18px -14px rgba(7,70,65,.78)!important;
+}
+button.lg-choice.is-active :where(span,div,small,b,strong){
+  color:#FFF!important;-webkit-text-fill-color:#FFF!important;
+}
+:where(.lg-month-day.is-selected,.lg-month-day.ko-selected-gold,.ko-arac-day.is-selected,.tk-cell.tk-selected,.lg-datebox.is-selected,.ko-account-firm-card.is-selected,.ko-debt-firm-card.is-selected,.ko-takas-partner.is-selected,.lg-arac-date-toggle.is-active,.lg-arac-month-toggle.is-active,.lg-arac-year-toggle.is-active,.lg-arac-day-toggle.is-active)
+:where(span,div,small,b,strong){color:#FFF!important;-webkit-text-fill-color:#FFF!important}
+
+/* Firma akışı: tek katmanlı, sıkı ve hızlı okunur. */
+.ko-party-card{padding:12px!important}
+.ko-party-card .ko-party-row{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px!important;
+  gap:6px!important;align-items:end!important;margin-bottom:7px!important;
+}
+.ko-party-card .ko-party-row>div:first-child{grid-column:1!important;grid-row:1!important}
+.ko-party-card .ko-party-row>div:nth-child(2){grid-column:2!important;grid-row:1!important}
+.ko-party-card .ko-party-row>.ko-party-add-btn{
+  grid-column:3!important;grid-row:1!important;width:38px!important;min-width:38px!important;
+  min-height:42px!important;padding:0!important;border-radius:11px!important;
+}
+.ko-party-card .ko-party-alt-row{gap:6px!important;align-items:end!important;margin-top:3px!important}
+.ko-party-card .ko-party-alt-row.has-fee{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px!important}
+.ko-party-card .ko-party-alt-row.no-fee{grid-template-columns:minmax(0,1fr) 34px!important}
+.ko-party-card .ko-party-alt-row>div:first-child{grid-column:1!important;grid-row:1!important}
+.ko-party-card .ko-party-alt-row.has-fee>div:nth-child(2){grid-column:2!important;grid-row:1!important;min-width:0!important}
+.ko-party-card .ko-party-alt-row.has-fee>button{grid-column:3!important;grid-row:1!important;width:34px!important;min-width:34px!important}
+.ko-party-card .ko-party-alt-row.no-fee>button{grid-column:2!important;grid-row:1!important;width:34px!important;min-width:34px!important}
+.ko-party-card .ko-party-alt-row>button{min-height:42px!important;padding:0!important;border-radius:11px!important}
+.ko-party-card .lbl{font-size:9.7px!important;margin-bottom:4px!important;letter-spacing:.035em!important}
+.ko-party-card .ko-smart-control{gap:4px!important}
+.ko-party-card .ko-smart-input{min-height:42px!important;padding:9px 9px!important}
+.ko-party-card .ko-smart-icon-select{
+  width:36px!important;min-width:36px!important;max-width:36px!important;flex:0 0 36px!important;
+  min-height:42px!important;border-radius:10px!important;
+}
+.ko-party-card>.ko-calm-action.is-secondary{
+  min-height:36px!important;margin-top:7px!important;padding:7px 11px!important;
+  border-style:dashed!important;border-radius:10px!important;font-size:11px!important;
+}
+
+/* Rota: ikon rozeti + dengeli iki satır; taşma ve acemi görünüm yok. */
+.ko-route-choices{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+.ko-route-choice{
+  display:grid!important;grid-template-columns:27px minmax(0,1fr)!important;
+  align-items:center!important;gap:7px!important;min-width:0!important;min-height:48px!important;
+  padding:7px 8px!important;border-radius:13px!important;text-align:left!important;
+  background:linear-gradient(145deg,#FFF,#F3F8F6)!important;
+  border:1px solid #CEDCD8!important;color:#284A4B!important;-webkit-text-fill-color:#284A4B!important;
+  box-shadow:inset 0 1px 0 #FFF,0 6px 14px -13px rgba(11,67,63,.55)!important;
+}
+.ko-route-choice-icon{
+  width:27px;height:27px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;
+  background:#E5F1ED;border:1px solid #C8DDD6;font-size:13px;line-height:1;flex:none;
+}
+.ko-route-choice-label{
+  min-width:0;font-size:9.5px;font-weight:560;line-height:1.22;letter-spacing:-.01em;
+  white-space:normal;word-break:normal;overflow-wrap:normal;text-wrap:balance;
+}
+.ko-route-choice.is-active .ko-route-choice-icon{
+  background:rgba(255,255,255,.16)!important;border-color:rgba(255,255,255,.34)!important;
+}
+@media(max-width:700px){
+  .ko-new-form{gap:8px!important}
+  .ko-new-form>.card{padding:11px!important}
+  .ko-route-choices{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  .ko-route-choice{min-height:50px!important;padding:7px 7px!important;gap:6px!important}
+  .ko-route-choice-label{font-size:9.25px!important;line-height:1.2!important}
+  .ko-party-card .ko-money-input-row{grid-template-columns:minmax(0,1fr) 58px!important}
+  .ko-party-card .ko-money-input-row .ko-money-currency{
+    width:58px!important;min-width:58px!important;max-width:58px!important;font-size:12px!important;
+  }
+}
+@media(max-width:374px){
+  .ko-party-card .ko-party-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px!important}
+  .ko-party-card .ko-party-row>.ko-party-add-btn{width:34px!important;min-width:34px!important}
+  .ko-route-choice-label{font-size:8.8px!important}
 }
 </style>
 </body>
