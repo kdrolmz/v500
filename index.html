@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v33-clear-status">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v34-clean">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V33</title>
+<title>Ölmez Transfer · Professional V34</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -1208,15 +1208,6 @@ const KO_MEMORY_DB_NAME = 'olmeztur_profesyonel_memory_v1';
 const KO_MEMORY_STORE = 'snapshots';
 const KO_AUDIT_LIMIT = 400;
 const KO_TRASH_LIMIT = 250;
-const KO_WORKFLOW_STAGES = [
-    { id: 'planned', label: 'Hazırlanıyor', short: 'Hazırlık', help: 'Transfer kaydedildi; planlama devam ediyor.', color: '#52677f', bg: '#edf2f7' },
-    { id: 'confirmed', label: 'Müşteri onayladı', short: 'Onaylandı', help: 'Tarih, saat ve transfer müşteriyle kesinleşti.', color: '#315f8f', bg: '#eaf3fb' },
-    { id: 'assigned', label: 'Kaptan belirlendi', short: 'Kaptan hazır', help: 'Transfer kaptana veya aracı yapacak kişiye verildi.', color: '#725e22', bg: '#faf4dd' },
-    { id: 'pickedup', label: 'Yolcu araçta', short: 'Yolcu alındı', help: 'Kaptan yolcuyu aldı; transfer devam ediyor.', color: '#21735a', bg: '#e8f6f0' },
-    { id: 'completed', label: 'Transfer tamamlandı', short: 'Tamamlandı', help: 'Yolcu varış noktasına bırakıldı.', color: '#176a50', bg: '#def3e9' },
-    { id: 'cancelled', label: 'İptal edildi', short: 'İptal', help: 'Transfer iptal edildi ve aktif işlerden çıkarıldı.', color: '#9b3f46', bg: '#fae9ea' }
-];
-const koWorkflowMeta = value => KO_WORKFLOW_STAGES.find(x => x.id === String(value || '')) || KO_WORKFLOW_STAGES[0];
 const koDeviceName = () => {
     const ua = String(navigator.userAgent || '');
     if (/iPhone|iPod/i.test(ua)) return 'iPhone';
@@ -9201,7 +9192,6 @@ function App() {
     const nameShotRef = useRef(null);
     const scanCancelRef = useRef(false);
     const [quickEditT, setQuickEditT] = useState(null);
-    const [selectedTransferId, setSelectedTransferId] = useState('');
     const [bkpM, setBkpM] = useState(false);
     const rstRef = useRef(null);
     const rstCheckRef = useRef(null);
@@ -10805,8 +10795,8 @@ function App() {
         if (!cur) return;
         const newState = !isCompanyCollected(cur);
         setT(p => p.map(x => x.id === id ? normalizeTransfer({ ...x, settled: newState, companyCollected: newState, updatedAt: new Date().toISOString(), clientUpdatedAt: new Date().toISOString() }) : x));
-        pushAudit('payment', cur, newState ? 'Şirket tahsilatı kapandı' : 'Şirket tahsilatı yeniden açıldı');
-        tip(newState ? 'Şirket araç ödemesini aldı olarak işaretlendi' : 'Şirket araç ödemesini aldı işareti kaldırıldı');
+        pushAudit('payment', cur, newState ? 'Ödeme alındı' : 'Ödeme alınmadı');
+        tip(newState ? 'Ödeme alındı' : 'Ödeme alınmadı');
     };
     const toggleVehiclePaid = id => {
         const cur = T.find(x => x.id === id);
@@ -10816,22 +10806,21 @@ function App() {
         pushAudit('vehicle-payment', cur, newState ? 'Araç ödemesi kapandı' : 'Araç ödemesi yeniden açıldı');
         tip(newState ? 'Araç ödemesi yapıldı olarak işaretlendi' : 'Araç ödemesi yapılmadı olarak işaretlendi');
     };
-    const setWorkflowStage = (id, stageId) => {
+    const toggleTransferCompleted = id => {
         const cur = T.find(x => x.id === id);
         if (!cur) return;
-        const next = koWorkflowMeta(stageId);
+        const isCompleted = String(cur.workflowStage || '') === 'completed';
         const nowIso = new Date().toISOString();
         setT(rows => rows.map(x => x.id === id
             ? normalizeTransfer({
                 ...x,
-                workflowStage: next.id,
-                status: next.id === 'cancelled' ? 'iptal' : (x.status === 'iptal' ? 'tam' : x.status),
+                workflowStage: isCompleted ? 'planned' : 'completed',
                 updatedAt: nowIso,
                 clientUpdatedAt: nowIso
             })
             : x));
-        pushAudit('workflow', cur, 'Transfer aşaması: ' + next.label);
-        tip('Transfer aşaması: ' + next.label);
+        pushAudit('workflow', cur, isCompleted ? 'Tamamlandı işareti kaldırıldı' : 'Transfer tamamlandı');
+        tip(isCompleted ? 'Tamamlandı işareti kaldırıldı' : 'Transfer tamamlandı');
     };
     const delT = id => { if (window.confirm('Silinsin mi?')) {
         setExpandedT(p => ({ ...p, __homeCard: null }));
@@ -11285,20 +11274,15 @@ function App() {
         return ext.net + ar.net;
     };
     const filteredTMemo = React.useMemo(() => T.filter(t => {
-        if (flt.status !== 'all' && t.status !== flt.status)
-            return false;
-        if (flt.workflow !== 'all' && koWorkflowMeta(t.workflowStage).id !== flt.workflow)
-            return false;
-        if (flt.plateView === 'plate16' && !isPlate16Transfer(t))
-            return false;
         if (flt.search) {
             const s = nm(flt.search);
-            const paxSearch = (t.passengers || []).map(p => [p && p.name, p && p.phone, passengerIdDisplay(p)].join(' ')).join(' ');
-            if (!nm((t.pickup || '') + (t.dropoff || '') + (t.driverName || '') + (t.assignedTo || '') + (t.givenBy || '') + (t.altAcenta || '') + (t.notes || '') + (inferPlate(t) || '') + paxSearch).includes(s))
+            const customerNames = (t.passengers || []).map(p => p && (p.name || p.fullName) || '').join(' ');
+            const companies = [t.givenBy, t.assignedTo, t.altAcenta, t.brokerFirm, t.agency, t.company, t.assignedAgency, t.receiverAgency, t.companyTo].filter(Boolean).join(' ');
+            if (!nm(customerNames + ' ' + companies).includes(s))
                 return false;
         }
         return true;
-    }).sort((a, b) => new Date(a.date) - new Date(b.date)), [T, flt.status, flt.workflow, flt.plateView, flt.search]);
+    }).sort((a, b) => new Date(a.date) - new Date(b.date)), [T, flt.search]);
     const filteredT = () => filteredTMemo;
     const statsMemo = React.useMemo(() => {
         const now = new Date(), mo = now.getMonth(), yr = now.getFullYear();
@@ -11636,19 +11620,10 @@ function App() {
         catch (e) { tip('Panodan okunamadı'); }
     };
     const listRows = tab === 'list' ? filteredT() : [];
-    const listIsPlate16 = flt.plateView === 'plate16';
-    const activeCollectFilter = listIsPlate16 ? flt.plateCollect : flt.collect;
-    const byCollectionFilter = (rows, mode) => {
-        if (mode === 'collected')
-            return rows.filter(x => getCollectionState(x) === 'collected');
-        if (mode === 'uncollected')
-            return rows.filter(x => getCollectionState(x) === 'uncollected');
-        return rows;
-    };
     const visibleListRows = React.useMemo(() => {
         if (tab !== 'list') return [];
-        return byCollectionFilter(listRows, activeCollectFilter);
-    }, [tab, listRows, activeCollectFilter]);
+        return listRows;
+    }, [tab, listRows]);
     const calcMiniStats = rows => {
         const now = new Date();
         const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
@@ -11730,17 +11705,17 @@ function App() {
         const _tchip = (tp && (tp.chip || tp.bg)) || 'var(--p-bg-lo)';
         const _bags = bagCount(t);
         const _payDone = collectionState === 'collected';
-        const _workflow = koWorkflowMeta(t.workflowStage);
-        const _stTxt = _payDone ? '✓ Tahsil edildi' : (showNoPayment ? 'Ödeme yok' : 'Bekliyor');
-        const _stBg = _payDone ? '#E8F5EE' : (showNoPayment ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
-        const _stCol = _payDone ? '#0B7C55' : (showNoPayment ? 'var(--p-ink-3)' : 'var(--p-warn)');
-        const _stBd = _payDone ? '#BEE3CB' : (showNoPayment ? 'var(--p-line)' : 'var(--p-warn-bd)');
+        const _isCompleted = String(t.workflowStage || '') === 'completed';
+        const _completeTxt = _isCompleted ? '✓ Tamamlandı' : 'Tamamlanmadı';
+        const _completeBg = _isCompleted ? '#E7F5EF' : '#F4F7F6';
+        const _completeCol = _isCompleted ? '#126B54' : '#667A80';
+        const _completeBd = _isCompleted ? '#B7DDCE' : '#D8E2DE';
+        const _stTxt = _payDone ? '✓ Ödeme alındı' : 'Ödeme alınmadı';
+        const _stBg = _payDone ? '#E8F5EE' : '#FFF5F2';
+        const _stCol = _payDone ? '#0B7C55' : '#9B5149';
+        const _stBd = _payDone ? '#BEE3CB' : '#E8CBC5';
         const _agencyParts = [['İşi Veren', gvn], ['İşi Alan', (t.assignedTo ? asg : '')], ['Alt Acenta', t.altAcenta || '']].filter(x => x[1] && x[1] !== '—');
         const _agencyRows = _agencyParts.map(p => [p[0].toLocaleUpperCase('tr-TR'), p[1]]);
-        const _tripTxt = t.status === 'iptal' ? 'İptal' : (t.status === 'tam' ? 'Tam' : 'Boş');
-        const _tripBg  = t.status === 'iptal' ? 'var(--p-neg-soft)' : (t.status === 'tam' ? 'var(--p-tint-2)' : 'var(--p-warn-soft)');
-        const _tripCol = t.status === 'iptal' ? 'var(--p-neg)' : (t.status === 'tam' ? 'var(--p-brand)' : 'var(--p-warn)');
-        const _tripBd  = t.status === 'iptal' ? 'var(--p-neg-bd)' : (t.status === 'tam' ? 'var(--p-line-3)' : 'var(--p-warn-bd)');
         const _altPay = (t.altAcenta && transferAltAcentaTRYValue(t) > 0) ? transferAltAcentaTRYValue(t) : 0;
         const _payRows = [];
         _payRows.push(['Müşteri', headlineAmount + (headlineSubTL ? (' ' + headlineSubTL) : ''), 620, null, showNoPayment ? 'var(--p-ink-4)' : 'var(--p-ink)']);
@@ -11748,7 +11723,7 @@ function App() {
         if (_altPay > 0) _payRows.push(['Alt Acenta', _altPay.toLocaleString('tr-TR') + '₺', 500, null, 'var(--p-ink-2)']);
         if (remDisp) _payRows.push(['Kalan', remDisp.main, 620, null, 'var(--p-brand)']);
         return React.createElement("div", { key: t.id, className: 'tcard ' + typeClass + (isOpen ? ' is-open' : ''), "data-transfer-id": t.id, style: { borderLeft: '4px solid ' + _tc } },
-            React.createElement("div", { className: 'tcard-header', onClick: () => { toggleExpanded(t.id); setSelectedTransferId(t.id); }, style: { padding: '13px 14px', display: 'block' } },
+            React.createElement("div", { className: 'tcard-header', onClick: () => toggleExpanded(t.id), style: { padding: '13px 14px', display: 'block' } },
                 React.createElement("div", { className: 'tcard-primary-grid', style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', alignItems: 'center', gap: 11 } },
                     React.createElement("div", { className: 'tcard-time-box', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, minWidth: 52, padding: '8px 7px', borderRadius: 13, background: _tchip } },
                         React.createElement("div", { style: { fontSize: 14, fontWeight: 640, color: _tc, WebkitTextFillColor: _tc, lineHeight: 1, fontVariantNumeric: 'tabular-nums' } }, t.time || '--:--'),
@@ -11765,8 +11740,7 @@ function App() {
                             t.paymentToMe && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '↩ bana ödeme'),
                             t.isKarsilikli && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '⇄ karşılıklı'))),
                     React.createElement("div", { className: 'tcard-status-stack', style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 5, flexShrink: 0 } },
-                        React.createElement("span", { title: 'Transfer aşaması: ' + _workflow.label, style: { fontSize: 9.5, fontWeight: 650, padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', background: _workflow.bg, color: _workflow.color, WebkitTextFillColor: _workflow.color, border: '1px solid ' + _workflow.color + '33' } }, _workflow.short),
-                        React.createElement("span", { style: { fontSize: 9.5, fontWeight: 620, letterSpacing: '.02em', padding: '3px 11px', borderRadius: 999, whiteSpace: 'nowrap', background: _tripBg, color: _tripCol, WebkitTextFillColor: _tripCol, border: '1px solid ' + _tripBd } }, _tripTxt),
+                        React.createElement("button", { onClick: e => { e.stopPropagation(); toggleTransferCompleted(t.id); }, style: { fontSize: 9.5, fontWeight: 560, padding: '4px 10px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', background: _completeBg, color: _completeCol, WebkitTextFillColor: _completeCol, border: '1px solid ' + _completeBd } }, _completeTxt),
                         React.createElement("button", { onClick: e => { e.stopPropagation(); toggleSettled(t.id); }, style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '3px 11px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + _stBd, background: _stBg, color: _stCol, WebkitTextFillColor: _stCol } }, _stTxt))),
                 React.createElement("div", { className: 'tcard-account-grid', style: { marginTop: 11, paddingTop: 11, borderTop: '1px solid rgba(46,58,78,.09)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' } },
                     React.createElement("div", { className: 'tcard-agency-column', style: { display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, borderRight: '1px solid rgba(46,58,78,.07)', paddingRight: 14 } },
@@ -11782,24 +11756,6 @@ function App() {
                 )
             ),
             isOpen && React.createElement("div", { className: 'tcard-expanded' },
-                React.createElement("div", { className: "ko-card-stage-editor" },
-                    React.createElement("div", { className: "ko-card-stage-head" },
-                        React.createElement("div", null,
-                            React.createElement("b", null, "Transfer aşaması"),
-                            React.createElement("small", null, _workflow.help)),
-                        React.createElement("span", { style: { background: _workflow.bg, color: _workflow.color, borderColor: _workflow.color + '33' } }, _workflow.label)),
-                    React.createElement("div", { className: "ko-card-stage-list" },
-                        KO_WORKFLOW_STAGES.map(stage => React.createElement("button", {
-                            key: stage.id,
-                            type: "button",
-                            className: stage.id === _workflow.id ? "is-active" : "",
-                            onClick: e => { e.stopPropagation(); setWorkflowStage(t.id, stage.id); },
-                            style: { '--wf-color': stage.color, '--wf-bg': stage.bg }
-                        },
-                            React.createElement("span", { className: "ko-workflow-dot" }),
-                            React.createElement("span", null, stage.short),
-                            stage.id === _workflow.id && React.createElement("span", { className: "ko-card-stage-check" }, "✓")
-                        )))),
                 (() => {
                     const isPlate16 = isPlate16Transfer(t);
                     const showOlmezNet = hasOlmezturSide(t);
@@ -12096,7 +12052,7 @@ function App() {
         const fallbackDayKey = monthKey === todayMonthKey ? todayKey : fmtDateKey(monthCursor);
         const activeDayKey = (selectedRangeDay && selectedRangeDay.startsWith(monthKey)) ? selectedRangeDay : fallbackDayKey;
         const activeDayDate = parseDateKey(activeDayKey) || monthCursor;
-        const monthRows = byCollectionFilter(listRows.filter(t => t.date && String(t.date).startsWith(monthKey)), activeCollectFilter);
+        const monthRows = listRows.filter(t => t.date && String(t.date).startsWith(monthKey));
         const monthDayMap = monthRows.reduce((acc, t) => {
             const dk = t.date || 'Tarihsiz';
             (acc[dk] || (acc[dk] = [])).push(t);
@@ -12197,23 +12153,9 @@ function App() {
                     React.createElement("div", { style: { fontSize: 28, marginBottom: 4 } }, '📭'),
                     React.createElement("div", { style: { fontSize: 12, fontWeight: 470, color: SB } }, 'Seçili günde transfer yok')));
         const archiveNet = summaryNetKar(visibleListRows);
-        const archiveThisMonthRows = byCollectionFilter(listRows.filter(t => t.date && String(t.date).startsWith(todayMonthKey)), activeCollectFilter);
+        const archiveThisMonthRows = listRows.filter(t => t.date && String(t.date).startsWith(todayMonthKey));
         const archiveThisMonthProfit = olmezDisplayNet(archiveThisMonthRows);
         const archiveThisMonthOpen = !!expandedT.__archiveThisMonth;
-        const statusFilterTone = v => v === 'bos' ? 'var(--p-warn)' : v === 'tam' ? 'var(--p-ink-3)' : v === 'iptal' ? 'var(--p-neg)' : 'var(--p-ink-3)';
-        const statusFilterSoft = v => v === 'bos' ? 'var(--p-pos-soft)' : v === 'tam' ? 'var(--p-pos-soft)' : v === 'iptal' ? 'var(--p-neg-soft)' : 'var(--p-tint-3)';
-        const filterControls = React.createElement("div", { style: { background: 'var(--p-white)', borderRadius: 12, padding: '10px 12px', border: '1px solid var(--p-line-3)', display: 'flex', flexDirection: 'column', gap: 8 } },
-            React.createElement("button", { onClick: () => setOpenListFilters(v => !v), style: { width: '100%', background: 'var(--p-tint-3)', border: '1px solid var(--p-line-3)', borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' } },
-                React.createElement("span", { style: { fontSize: 10, fontWeight: 470, color: 'var(--p-ink-3)', letterSpacing: .35, textTransform: 'uppercase' } }, '🎚️ Filtreler'),
-                React.createElement("span", { style: { fontSize: 11, fontWeight: 470, color: 'var(--p-ink-3)' } }, openListFilters ? '▲' : '▼')),
-            openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
-                [['all', 'Tümü', T.length], ['tam', '✅ Tam', st.tam], ['bos', '🔄 Boş', st.bos], ['iptal', '❌ İptal', st.ipt]].map(([v, l, cnt]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, status: v })), style: { background: flt.status === v ? statusFilterTone(v) : statusFilterSoft(v), color: flt.status === v ? 'var(--p-white)' : statusFilterTone(v), border: '1px solid ' + (flt.status === v ? statusFilterTone(v) : 'var(--p-line-3)'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 470, cursor: 'pointer', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 } },
-                    React.createElement("span", null, l),
-                    React.createElement("span", { style: { background: flt.status === v ? 'rgba(255,255,255,.22)' : 'var(--p-line-3)', color: flt.status === v ? 'var(--p-white)' : 'var(--p-ink-3)', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 450, minWidth: 20, textAlign: 'center' } }, cnt))))),
-            openListFilters && React.createElement("div", { style: { display: 'flex', gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 2 } },
-                React.createElement("button", { onClick: () => setFlt(p => ({ ...p, plateView: p.plateView === 'plate16' ? 'all' : 'plate16' })), style: { background: flt.plateView === 'plate16' ? 'var(--p-ink)' : 'var(--p-tint-3)', color: flt.plateView === 'plate16' ? 'var(--p-white)' : 'var(--p-ink)', border: '1px solid ' + (flt.plateView === 'plate16' ? 'var(--p-ink)' : 'var(--p-line-3)'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 470, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, '🚐 ' + PLAKA + ' NET'),
-                flt.plateView !== 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, collect: v })), style: { background: flt.collect === v ? 'var(--p-ink-3)' : 'var(--p-tint-3)', color: flt.collect === v ? 'var(--p-white)' : 'var(--p-ink)', border: '1px solid ' + (flt.collect === v ? 'var(--p-ink-3)' : 'var(--p-line-3)'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 470, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l))),
-                flt.plateView === 'plate16' && [['all', 'Tümü'], ['collected', '✓ Alınmış'], ['uncollected', '⏳ Alınmamış']].map(([v, l]) => (React.createElement("button", { key: v, onClick: () => setFlt(p => ({ ...p, plateCollect: v })), style: { background: flt.plateCollect === v ? 'var(--p-ink-3)' : 'var(--p-tint-3)', color: flt.plateCollect === v ? 'var(--p-white)' : 'var(--p-ink)', border: '1px solid ' + (flt.plateCollect === v ? 'var(--p-ink-3)' : 'var(--p-line-3)'), borderRadius: 8, padding: '7px 11px', fontSize: '11px', fontWeight: 470, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 } }, l)))));
         const thisMonthArchivePanel = React.createElement("div", { style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 12, overflow: 'hidden' } },
             React.createElement("button", { onClick: () => setExpandedT(p => ({ ...p, __archiveThisMonth: !archiveThisMonthOpen })), style: { width: '100%', background: 'var(--p-tint-3)', border: 'none', padding: '9px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: 8 } },
                 React.createElement("div", { style: { textAlign: 'left' } },
@@ -12233,7 +12175,6 @@ function App() {
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 } },
                     React.createElement("span", { style: { fontSize: 11, fontWeight: 470, color: archiveNet >= 0 ? G : R, fontVariantNumeric: 'tabular-nums' } }, (archiveNet >= 0 ? '+' : '') + archiveNet.toLocaleString('tr-TR') + '₺'),
                     React.createElement("span", { style: { fontSize: 12, color: SB, fontWeight: 470 } }, openArchiveList ? '▲' : '▼'))),
-            openArchiveList && filterControls,
             openArchiveList && thisMonthArchivePanel,
             openArchiveList && yearGroupKeys.map(yearKey => {
                 const yearMonths = yearGroups[yearKey] || {};
@@ -12258,7 +12199,7 @@ function App() {
                             const monthDays = yearMonths[monthKey] || {};
                             const dayKeys = Object.keys(monthDays).sort((a, b) => a < b ? -1 : 1);
                             const monthRows = dayKeys.flatMap(k => monthDays[k] || []);
-                            const visibleMonthRows = byCollectionFilter(monthRows, activeCollectFilter);
+                            const visibleMonthRows = monthRows;
                             if (!visibleMonthRows.length) return null;
                             const mTotal = monthRows.length;
                             const mDone = monthRows.filter(x => x.status === 'tam').length;
@@ -12882,10 +12823,10 @@ function App() {
                         return c === 'USD' ? ('$' + num) : c === 'EUR' ? ('€' + num) : c === 'KWD' ? (num + ' KD') : (num + '₺');
                     };
                     const amtText = noCollect ? 'Ücretsiz' : (payRaw > 0 ? koMoneyLabel(payRaw, payCur) : '—');
-                    const statusText = payDone ? '✓ Tahsil edildi' : (noCollect ? 'Ödeme yok' : 'Bekliyor');
-                    const statusBg = payDone ? '#E8F5EE' : (noCollect ? 'var(--p-tint-3)' : 'var(--p-warn-soft)');
-                    const statusColor = payDone ? '#0B7C55' : (noCollect ? 'var(--p-ink-3)' : 'var(--p-warn)');
-                    const statusBd = payDone ? '#BEE3CB' : (noCollect ? 'var(--p-line)' : 'var(--p-warn-bd)');
+                    const statusText = payDone ? '✓ Ödeme alındı' : 'Ödeme alınmadı';
+                    const statusBg = payDone ? '#E8F5EE' : '#FFF5F2';
+                    const statusColor = payDone ? '#0B7C55' : '#9B5149';
+                    const statusBd = payDone ? '#BEE3CB' : '#E8CBC5';
                     const bags = bagCount(t);
                     const __chipBg = tip.chip || tip.bg || 'var(--p-bg-lo)';
                     const __chipInk = tip.c || 'var(--p-ink)';
@@ -14156,13 +14097,6 @@ function App() {
                                 previewTL(fNet),
 	                                " \u20BA"))))),
 	                wizStep === 3 && React.createElement("div", { className: "card ko-status-card" },
-	                    React.createElement("span", { className: "lbl", style: { marginBottom: 4 } }, "Transfer Aşaması"),
-	                    React.createElement("div", { className: "ko-workflow-explain" }, "Transferin şu anda hangi aşamada olduğunu seçin. Sonradan transfer kartından değiştirebilirsiniz."),
-	                    React.createElement("div", { className: "ko-workflow-picker" }, KO_WORKFLOW_STAGES.map(stage => React.createElement("button", {
-	                        key: stage.id, type: "button", onClick: () => sf({ workflowStage: stage.id, ...(stage.id === 'cancelled' ? { status: 'iptal' } : {}) }),
-	                        className: "ko-workflow-step" + (form.workflowStage === stage.id ? " is-active" : ""),
-	                        style: { '--wf-color': stage.color, '--wf-bg': stage.bg }
-	                    }, React.createElement("span", { className: "ko-workflow-dot" }), React.createElement("span", null, stage.label)))),
 	                    React.createElement("span", { className: "lbl", style: { marginBottom: 4 } }, "Araç / Sefer Durumu"),
 	                    React.createElement("div", { className: "ko-workflow-explain" }, "Dolu: yolculu transfer · Boş gidiş: yolcusuz araç hareketi."),
 	                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } }, [['tam', '✅ Dolu', 'var(--p-ink-3)', 'var(--p-pos-soft)'], ['bos', '↔ Boş gidiş', 'var(--p-info)', 'var(--p-pos-soft)'], ['iptal', '✕ İptal', R, 'var(--p-neg-soft)']].map(([id, lbl, ac, bg]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.status === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ status: id }), style: { background: form.status === id ? ac : bg, color: form.status === id ? 'var(--p-white)' : ac, border: '1.5px solid ' + (form.status === id ? ac : BOR), borderRadius: 9, padding: '10px 3px', cursor: 'pointer', fontSize: '12px', fontWeight: 470 } }, lbl)))),
@@ -14226,57 +14160,11 @@ function App() {
                 })())),
             tab === 'list' && (React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 React.createElement("div", { className: "card ko-pro-search-card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12 } },
-                    React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Yolcu, pasaport, firma, plaka veya güzergâh ara", className: "inp", style: { fontSize: '14px' } }),
-                    React.createElement("div", { className: "ko-workflow-filter" },
-                        React.createElement("button", { type: "button", className: flt.workflow === 'all' ? 'is-active' : '', onClick: () => setFlt(p => ({ ...p, workflow: 'all' })) }, "Tümü"),
-                        KO_WORKFLOW_STAGES.map(stage => React.createElement("button", { key: stage.id, type: "button", className: flt.workflow === stage.id ? 'is-active' : '', onClick: () => setFlt(p => ({ ...p, workflow: stage.id })), style: { '--wf-color': stage.color, '--wf-bg': stage.bg } }, stage.short)))),
+                    React.createElement("input", { value: flt.search, onChange: e => setFlt(p => ({ ...p, search: e.target.value })), placeholder: "\uD83D\uDD0D  Müşteri veya firma ara", className: "inp", style: { fontSize: '14px' } })),
                 visibleListRows.length === 0 ? (React.createElement("div", { style: { textAlign: 'center', paddingTop: 40 } },
                     React.createElement("div", { style: { fontSize: 46, marginBottom: 8 } }, "✈️"),
                     React.createElement("div", { style: { fontWeight: 470, fontSize: 14, color: SB } }, T.length === 0 ? 'Henüz transfer yok' : 'Sonuç bulunamadı'))) : renderTransferList(),
                 React.createElement("div", { style: { marginTop: 18, marginBottom: 22 } }, renderNetKarSection()),
-                selectedTransferId && (function () {
-                    const t = T.find(x => x.id === selectedTransferId);
-                    if (!t) return null;
-                    const wf = koWorkflowMeta(t.workflowStage);
-                    const pax = Array.isArray(t.passengers) ? t.passengers.filter(Boolean) : [];
-                    const route = (t.pickup || 'Alış noktası') + ' → ' + (t.dropoff || 'Bırakış noktası');
-                    const total = moneyValue(t.totalAmount || t.customerTotal || t.amount || 0);
-                    const currency = t.currency || 'TRY';
-                    return React.createElement("aside", { className: "ko-pro-inspector", "aria-label": "Seçili transfer özeti" },
-                        React.createElement("div", { className: "ko-pro-inspector-head" },
-                            React.createElement("div", null,
-                                React.createElement("small", null, "TRANSFER ÖZETİ"),
-                                React.createElement("b", null, (t.date || 'Tarih yok') + ' · ' + (t.time || 'Saat yok'))),
-                            React.createElement("button", { type: "button", onClick: () => setSelectedTransferId(''), "aria-label": "Detayı kapat" }, "×")),
-                        React.createElement("div", { className: "ko-pro-inspector-route" }, route),
-                        React.createElement("div", { className: "ko-pro-inspector-workflow", style: { background: wf.bg, color: wf.color, borderColor: wf.color + '33' } }, "Şu an · " + wf.label),
-                        React.createElement("div", { className: "ko-pro-inspector-grid" },
-                            React.createElement("div", null, React.createElement("small", null, "İŞİ VEREN"), React.createElement("b", null, t.agency || t.company || '—')),
-                            React.createElement("div", null, React.createElement("small", null, "İŞİ ALAN"), React.createElement("b", null, t.assignedAgency || t.receiverAgency || t.companyTo || 'Ölmeztur')),
-                            React.createElement("div", null, React.createElement("small", null, "KAPTAN / ARAÇ"), React.createElement("b", null, [t.driverName, t.plate].filter(Boolean).join(' · ') || '—')),
-                            React.createElement("div", null, React.createElement("small", null, "TOPLAM"), React.createElement("b", null, total ? (fr(total) + ' ' + currency) : '—'))),
-                        React.createElement("div", { className: "ko-pro-inspector-pax" },
-                            React.createElement("small", null, "YOLCULAR"),
-                            React.createElement("b", null, pax.length ? pax.map(p => p.name || p.fullName || '').filter(Boolean).join(', ') : (t.passengerName || 'Yolcu bilgisi yok'))),
-                        React.createElement("div", { className: "ko-pro-inspector-stage" },
-                            React.createElement("div", { className: "ko-pro-inspector-stage-title" }, "Transfer aşamasını değiştir"),
-                            React.createElement("div", { className: "ko-pro-inspector-stage-help" }, wf.help),
-                            React.createElement("div", { className: "ko-pro-inspector-stage-list" },
-                                KO_WORKFLOW_STAGES.map(stage => React.createElement("button", {
-                                    key: stage.id,
-                                    type: "button",
-                                    className: stage.id === wf.id ? "is-active" : "",
-                                    onClick: () => setWorkflowStage(t.id, stage.id),
-                                    style: { '--wf-color': stage.color, '--wf-bg': stage.bg }
-                                },
-                                    React.createElement("span", { className: "ko-workflow-dot" }),
-                                    React.createElement("span", null, stage.label),
-                                    stage.id === wf.id && React.createElement("span", { className: "ko-pro-inspector-stage-check" }, "✓")
-                                ))),
-                            React.createElement("div", { className: "ko-pro-inspector-stage-note" }, "Seçtiğiniz aşama iPhone ve MacBook’ta otomatik eşitlenir.")),
-                        React.createElement("div", { className: "ko-pro-inspector-actions" },
-                            React.createElement("button", { type: "button", onClick: () => editT(t), className: "is-primary" }, "Transferi Düzenle")));
-                })(),
                 false && React.createElement("div", { className: "card", style: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, marginTop: 4 } },
                     React.createElement("div", { onClick: () => setShowSt(v => !v), style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--p-tint-3)', borderRadius: 10, padding: '8px 12px', border: '1px solid var(--p-line-3)', cursor: 'pointer' } },
                         React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10 } },
@@ -14561,7 +14449,7 @@ function App() {
                     React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                         [['tr','Türkçe'],['en','English'],['ar','العربية']].map(([lc,lb]) => React.createElement("button", { key: lc, onClick: () => setMsgM(m => ({ ...m, lang: lc })), style: { background: (msgM.lang || 'tr') === lc ? NAV : 'var(--p-white)', color: (msgM.lang || 'tr') === lc ? 'var(--p-white)' : NAV, border: '1px solid ' + ((msgM.lang || 'tr') === lc ? NAV : BOR), borderRadius: 999, padding: '8px 10px', fontWeight: 450, fontSize: '11px', cursor: 'pointer' } }, lb))))),
                 React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 18 } },
-                    React.createElement("button", { onClick: () => cpTxt(activeMsg), style: { flex: 1, background: 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontWeight: 450, fontSize: '14px', cursor: 'pointer' } }, "\uD83D\uDCCB Kopyala"),
+                    React.createElement("button", { className: "ko-message-copy-btn", onClick: () => cpTxt(activeMsg), style: { flex: 1, background: 'var(--p-white)', color: 'var(--p-brand)', border: '1.5px solid var(--p-line-3)', borderRadius: 13, padding: 13, fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }, "Kopyala"),
                     ((msgM.tp === 'drv' && msgM.t?.driverPhone) || (msgM.tp === 'cus' && msgM.t?.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone)) && (React.createElement("button", { onClick: () => { const raw = msgM.tp === 'drv' ? msgM.t.driverPhone : ((msgM.t.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone) || ''); const cl = String(raw || '').replace(/\D/g, ''); const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl; if (n) openExternalSecure('https://wa.me/' + n + '?text=' + encodeURIComponent(activeMsg)); }, style: { background: 'var(--p-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: '13px 16px', fontWeight: 450, fontSize: '13px', cursor: 'pointer' } }, "WA")))))),
         bkpM && (function () {
             const TEAL = 'var(--p-pos-ink)';
@@ -16560,16 +16448,6 @@ img,svg{content-visibility:visible !important}
 </style>
 <style id="ko-profesyonel-system-v25">
 /* V25 profesyonel iş akışı, sistem hafızası ve masaüstü denetim paneli. */
-.ko-workflow-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:15px}
-.ko-workflow-step{min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 7px;border-radius:11px;border:1px solid var(--p-line);background:var(--p-white);color:var(--p-ink-3);font-size:11px;font-weight:560;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
-.ko-workflow-step:active{transform:scale(.98)}
-.ko-workflow-step.is-active{background:var(--wf-bg);color:var(--wf-color);border-color:var(--wf-color);box-shadow:0 5px 14px color-mix(in srgb,var(--wf-color) 17%,transparent)}
-.ko-workflow-dot{width:8px;height:8px;border-radius:50%;background:var(--wf-color);box-shadow:0 0 0 4px color-mix(in srgb,var(--wf-color) 12%,transparent);flex:0 0 auto}
-.ko-workflow-filter{display:flex;gap:6px;overflow-x:auto;padding:1px 1px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.ko-workflow-filter::-webkit-scrollbar{display:none}
-.ko-workflow-filter button{flex:0 0 auto;border:1px solid var(--p-line);background:var(--p-white);color:var(--p-ink-3);border-radius:999px;padding:6px 11px;font-size:10.5px;font-weight:570;cursor:pointer}
-.ko-workflow-filter button:not(:first-child){color:var(--wf-color);background:var(--wf-bg)}
-.ko-workflow-filter button.is-active{color:var(--p-white);background:var(--wf-color,var(--p-brand));border-color:var(--wf-color,var(--p-brand));box-shadow:0 4px 12px rgba(21,61,93,.17)}
 .ko-system-health-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .ko-system-health-card{min-width:0;border:1px solid var(--p-line);border-radius:14px;padding:12px;background:linear-gradient(145deg,var(--p-white),var(--p-tint-4));box-shadow:0 6px 18px rgba(31,48,64,.05)}
 .ko-system-health-card>span,.ko-system-health-card>small{display:block;color:var(--p-ink-4);font-size:9.5px;line-height:1.35}
@@ -16584,23 +16462,11 @@ img,svg{content-visibility:visible !important}
 .ko-system-row>button{flex:0 0 auto;border:1px solid var(--p-pos-bd);border-radius:9px;background:var(--p-pos-soft);color:var(--p-pos-deep);font-size:10.5px;font-weight:600;padding:7px 9px;cursor:pointer}
 .ko-system-row.is-audit{display:block;padding:9px 11px}
 .ko-system-empty{border:1px dashed var(--p-line);border-radius:12px;padding:14px;color:var(--p-ink-4);font-size:11px;text-align:center;margin-bottom:15px;background:var(--p-tint-4)}
-.ko-pro-inspector{display:none}
 @media (min-width:901px){
-  .view-transferler{padding-right:390px!important}
   .ko-pro-search-card{position:sticky;top:12px;z-index:20;border-radius:18px!important;box-shadow:0 11px 32px rgba(24,48,66,.09)!important;background:rgba(255,255,255,.92)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-  .ko-workflow-picker{grid-template-columns:repeat(6,minmax(0,1fr))}
   .ko-system-health-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .ko-pro-inspector{display:flex;position:fixed;z-index:25;right:18px;top:18px;bottom:calc(var(--tabbar-h) + var(--sa-b) + 22px);width:350px;overflow:auto;flex-direction:column;gap:14px;padding:19px;border:1px solid rgba(164,185,198,.62);border-radius:25px;background:linear-gradient(158deg,rgba(255,255,255,.98),rgba(242,247,249,.97));box-shadow:0 24px 65px rgba(20,45,62,.16);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-  .ko-pro-inspector-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--p-line)}
-  .ko-pro-inspector-head>div{min-width:0;display:flex;flex-direction:column;gap:4px}.ko-pro-inspector-head small,.ko-pro-inspector-grid small,.ko-pro-inspector-pax small{color:var(--p-ink-4);font-size:9px;letter-spacing:.11em;font-weight:650}.ko-pro-inspector-head b{font-size:15px;color:var(--p-ink)}
-  .ko-pro-inspector-head button{border:1px solid var(--p-line);border-radius:50%;width:28px;height:28px;background:var(--p-white);color:var(--p-ink-3);font-size:18px;line-height:1;cursor:pointer}
-  .ko-pro-inspector-route{font-family:ui-serif,Georgia,serif;font-size:20px;font-weight:650;line-height:1.28;color:var(--p-ink);overflow-wrap:anywhere}
-  .ko-pro-inspector-workflow{align-self:flex-start;border:1px solid;border-radius:999px;padding:6px 11px;font-size:10.5px;font-weight:650}
-  .ko-pro-inspector-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.ko-pro-inspector-grid>div,.ko-pro-inspector-pax{min-width:0;border:1px solid var(--p-line);border-radius:13px;background:var(--p-white);padding:11px}.ko-pro-inspector-grid b,.ko-pro-inspector-pax b{display:block;margin-top:4px;font-size:12px;color:var(--p-ink);line-height:1.4;overflow-wrap:anywhere}
-  .ko-pro-inspector-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}.ko-pro-inspector-actions button{border:1px solid var(--p-line);border-radius:12px;background:var(--p-white);color:var(--p-brand);padding:11px 8px;font-size:11.5px;font-weight:650;cursor:pointer}.ko-pro-inspector-actions button.is-primary{background:var(--p-brand);color:var(--p-white);border-color:var(--p-brand)}
 }
 @media (max-width:900px){
-  .ko-workflow-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ko-system-health-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
@@ -16757,10 +16623,6 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   border-color:rgba(242,210,139,.28)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 12px 24px -14px rgba(8,48,57,.72)!important;
 }
 .ko-submit-btn::after{background:linear-gradient(115deg,rgba(255,255,255,.20),transparent 42%,rgba(240,207,132,.10))!important}
-.ko-workflow-step{background:linear-gradient(180deg,#FFF,#F7FAF9)!important;border-color:rgba(34,73,78,.14)!important;box-shadow:0 5px 14px -12px rgba(12,50,57,.30)!important}
-.ko-workflow-step.is-active{box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 8px 18px -12px var(--wf-color)!important}
-.ko-workflow-filter{padding:2px 1px 4px}
-.ko-workflow-filter button{border-radius:999px!important}
 
 /* Hesap: alacak ve borç net fakat yormayan iki ton. */
 .ko-account-firm-bucket{border-radius:22px!important;box-shadow:0 18px 42px -31px rgba(9,47,55,.48),0 3px 9px -8px rgba(9,47,55,.22)!important}
@@ -16781,13 +16643,9 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
 .tab-fab{background:var(--ko-v26-hero-soft)!important;border-color:rgba(241,210,142,.40)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -14px 24px rgba(4,25,35,.25),0 16px 30px -13px rgba(6,46,55,.74),0 0 0 5px rgba(238,244,243,.98),0 0 0 6px rgba(205,161,70,.38)!important}
 .tab-fab-plus{color:#FFF9EA!important;-webkit-text-fill-color:#FFF9EA!important}
 
-/* Sistem ve Mac detay paneli */
+/* Sistem görünümü */
 .ko-system-health-card.is-good{background:linear-gradient(145deg,#F7FFFC,#E6F7F0)!important;border-color:rgba(22,134,106,.22)!important}
 .ko-system-row{background:linear-gradient(145deg,#FFF,#F7FAF9)!important;border-color:rgba(34,73,78,.13)!important}
-.ko-pro-inspector{background:linear-gradient(155deg,rgba(255,255,255,.97),rgba(240,247,245,.95))!important;border:1px solid rgba(31,74,79,.16)!important;box-shadow:0 30px 70px -35px rgba(5,39,47,.72),inset 0 1px 0 rgba(255,255,255,.98)!important}
-.ko-pro-inspector-route{color:#17323A!important}
-.ko-pro-inspector-grid>div,.ko-pro-inspector-pax{background:rgba(255,255,255,.86)!important;border-color:rgba(31,74,79,.12)!important}
-.ko-pro-inspector-actions button.is-primary{background:var(--ko-v26-hero-soft)!important;border-color:rgba(242,210,139,.26)!important}
 .ko-pro-search-card{border-color:rgba(31,74,79,.13)!important}
 
 /* İnce hareket; hareket azaltma ayarına saygı duyar. */
@@ -17070,8 +16928,6 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   }
   .ko-new-form textarea{min-height:76px!important}
   .ko-new-form .lg-choice{min-height:42px!important;padding:8px 7px!important;font-size:10.5px!important;border-radius:11px!important}
-  .ko-workflow-picker{gap:6px!important;margin-bottom:10px!important}
-  .ko-workflow-step{min-height:42px!important;padding:7px 5px!important;font-size:9.5px!important;border-radius:10px!important}
 
   /* Hesap: iki yön korunur, kartlar daha küçük ve rakamlar net kalır. */
   .ko-account-root-card{padding:0!important}
@@ -17178,7 +17034,6 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   }
   .ko-new-form :where(input,textarea)::placeholder{color:#87979A!important;-webkit-text-fill-color:#87979A!important;opacity:1!important}
   .ko-new-form .lg-choice{font-size:10.8px!important;font-weight:480!important;color:#354F57!important;-webkit-text-fill-color:#354F57!important}
-  .ko-workflow-step{font-size:9.8px!important;font-weight:500!important}
 
   /* Hesap rakamları ve firma adları küçük ekranda daha net. */
   .ko-account-root-card .ko-account-firm-bucket-title{font-size:9.4px!important;color:#526A70!important;-webkit-text-fill-color:#526A70!important}
@@ -17249,8 +17104,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
     line-height:1.18!important;overflow-wrap:break-word!important;
   }
 
-  /* Arama, iş akışı, sistem ve hesap panelleri taşmaz. */
-  .ko-workflow-picker{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  /* Arama, sistem ve hesap panelleri taşmaz. */
   .ko-system-health-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .ko-system-health-card{padding:10px!important;border-radius:12px!important}
   .ko-system-health-card>b{font-size:11.5px!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
@@ -17296,58 +17150,25 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   .ms,.modal-card,.ko-transfer-edit-sheet{max-height:calc(100dvh - 12px)!important}
 }
 </style>
-<style id="ko-clear-transfer-status-v33">
-/* V33 · Teknik "durumu ilerlet" yerine açık ve doğrudan aşama seçimi. */
-.ko-workflow-explain{
-  margin:-1px 0 9px;padding:8px 10px;border:1px solid rgba(31,74,79,.11);border-radius:10px;
-  background:#F5F8F7;color:#60747A;font-size:10.5px;line-height:1.45;
+<style id="ko-clean-transfer-v34">
+/* V34 · iPhone takvimi ve mesaj eylemleri için sade, premium son katman. */
+.ko-message-copy-btn{
+  background:#FFF!important;color:#126B54!important;-webkit-text-fill-color:#126B54!important;
+  border-color:#9CCFBE!important;box-shadow:0 7px 18px rgba(18,107,84,.10)!important;
 }
-.ko-card-stage-editor{
-  margin-bottom:10px;padding:11px;border:1px solid rgba(31,74,79,.14);border-radius:14px;
-  background:linear-gradient(145deg,#FBFDFC,#F2F7F5);
-}
-.ko-card-stage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
-.ko-card-stage-head>div{min-width:0;display:flex;flex-direction:column;gap:3px}
-.ko-card-stage-head b{font-size:11.5px;color:#183039;line-height:1.25}
-.ko-card-stage-head small{font-size:9.5px;color:#667A80;line-height:1.35;overflow-wrap:break-word}
-.ko-card-stage-head>span{flex:0 0 auto;max-width:45%;padding:5px 8px;border:1px solid;border-radius:999px;font-size:9.5px;font-weight:560;line-height:1.15;text-align:center;white-space:normal}
-.ko-card-stage-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.ko-card-stage-list button{
-  position:relative;min-width:0;min-height:38px;padding:7px 5px;border:1px solid var(--p-line);border-radius:10px;
-  background:#FFF;color:var(--wf-color);font-size:9px;font-weight:540;line-height:1.15;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;white-space:normal;
-}
-.ko-card-stage-list button.is-active{background:var(--wf-bg);border-color:var(--wf-color);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--wf-color) 20%,transparent)}
-.ko-card-stage-list .ko-workflow-dot{width:6px;height:6px;box-shadow:none;flex:0 0 auto}
-.ko-card-stage-check{font-size:10px;font-weight:700}
-
-.ko-pro-inspector-stage{padding:13px;border:1px solid rgba(31,74,79,.14);border-radius:15px;background:linear-gradient(145deg,#FBFDFC,#EFF6F3)}
-.ko-pro-inspector-stage-title{font-size:12px;font-weight:650;color:#183039;margin-bottom:4px}
-.ko-pro-inspector-stage-help{min-height:31px;font-size:10px;line-height:1.45;color:#657980;margin-bottom:10px}
-.ko-pro-inspector-stage-list{display:flex;flex-direction:column;gap:6px}
-.ko-pro-inspector-stage-list button{
-  min-height:39px;width:100%;padding:8px 10px;border:1px solid var(--p-line);border-radius:11px;
-  background:#FFF;color:#344B53;display:grid;grid-template-columns:9px minmax(0,1fr) 16px;align-items:center;
-  gap:8px;text-align:left;font-size:10.5px;font-weight:570;cursor:pointer;
-}
-.ko-pro-inspector-stage-list button.is-active{background:var(--wf-bg);color:var(--wf-color);border-color:var(--wf-color)}
-.ko-pro-inspector-stage-list .ko-workflow-dot{width:7px;height:7px;box-shadow:none}
-.ko-pro-inspector-stage-check{text-align:right;font-weight:750}
-.ko-pro-inspector-stage-note{margin-top:9px;font-size:9px;line-height:1.4;color:#7A8B90}
-.ko-pro-inspector-actions{grid-template-columns:minmax(0,1fr)!important}
-.ko-pro-inspector-actions button.is-primary{min-height:44px!important}
-
+.ko-message-copy-btn:active{background:#EEF7F3!important;transform:translateY(1px)}
+@media(min-width:901px){.view-transferler{padding-right:18px!important}}
 @media(max-width:700px){
-  .ko-card-stage-editor{padding:10px;border-radius:13px}
-  .ko-card-stage-head{align-items:center}
-  .ko-card-stage-head small{font-size:9.3px}
-  .ko-card-stage-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .ko-card-stage-list button{min-height:40px;font-size:9.2px;padding:7px 5px}
-  .ko-workflow-explain{font-size:10px;padding:7px 9px}
+  .lg-month-day{border-radius:13px!important}
+  .lg-month-day-num{font-size:12.1px!important;font-weight:540!important;letter-spacing:-.01em!important}
+  .lg-month-day-count{font-size:7.25px!important;font-weight:460!important;letter-spacing:.005em!important;color:#667A80!important;-webkit-text-fill-color:#667A80!important}
+  .lg-month-day-net{font-size:7.15px!important;font-weight:520!important;letter-spacing:-.005em!important}
+  .tcard-status-stack button{min-height:24px!important}
 }
-@media(max-width:374px){
-  .ko-card-stage-head{flex-direction:column}
-  .ko-card-stage-head>span{max-width:100%;align-self:flex-start}
+@media(min-width:390px) and (max-width:430px){
+  .lg-month-day-num{font-size:12.35px!important}
+  .lg-month-day-count{font-size:7.5px!important}
+  .lg-month-day-net{font-size:7.4px!important}
 }
 </style>
 </body>
