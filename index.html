@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v34-clean">
+<meta name="v500-release" content="2026-11-01-v500-profesyonel-v38-vehicle-options">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V34</title>
+<title>Ölmez Transfer · Professional V38</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -1056,18 +1056,19 @@ const TIPLER = [
 ];
 const VEHS = [
     { id: 'vito', n: 'Vito', cap: '1-6', ico: '🚐' },
-    { id: 'caravelle', n: 'Caravelle', cap: '1-8', ico: '🚐' },
     { id: 'sprinter', n: 'Sprinter', cap: '1-16', ico: '🚌' },
-    { id: 'minibus', n: 'Minibüs', cap: '17-25', ico: '🚌' },
+    { id: 'minibus', n: 'Midibüs', cap: '17-25', ico: '🚌' },
     { id: 'sedan', n: 'Sedan', cap: '1-3', ico: '🚗' },
+    { id: 'caravelle', n: 'Caravelle', cap: '1-8', ico: '🚐', legacy: true },
 ];
 const ROTALAR = [
     { id: 'free', n: 'Ücretsiz Yol', ico: '🛣️' },
     { id: 'fy', n: 'Feribot', ico: '⛴️' },
     { id: 'hw', n: 'Otoban', ico: '💳' },
-    { id: 'br', n: 'Osm.Köp.', ico: '🌉' },
-    { id: 'brhw', n: 'Osm.Köp.+Otoban', ico: '🌉' },
-    { id: 'yoa', n: 'Yss.+Osm.Köp.+Otoban', ico: '🌉' },
+    { id: 'br', n: 'Osmangazi Köprüsü', ico: '🌉' },
+    { id: 'brhw', n: 'Osmangazi Köp. + Otoban', ico: '🌉' },
+    { id: 'yoa', n: 'Yavuz Sultan Selim Köp. + Otoban', ico: '🌉' },
+    { id: 'yoabrhw', n: 'Yav.Sul.Sel.Köp. + Osm.Köp. + Otoban', ico: '🌉' },
 ];
 const PAYMS = [
     { id: 'cash', n: 'Nakit', ico: '💵' }, { id: 'card', n: 'Kart', ico: '💳' },
@@ -6755,7 +6756,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 kdv.active ? '%' + kdv.rate : '',
                 kdv.active ? Math.round(kdv.amount) : 0,
                 Math.round(moneyValue(t.netOl)),
-                esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
+                esc(t.status === 'bos' ? 'Boş transfer' : (t.status === 'noshow' ? 'No Show' : (t.status === 'iptal' ? 'İptal' : 'Normal'))),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
             csv += row.join(',') + '\n';
@@ -6790,7 +6791,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 kdv.active ? '%' + kdv.rate : '',
                 kdv.active ? Math.round(kdv.amount) : 0,
                 Math.round(moneyValue(t.netOl)),
-                esc(t.status === 'tam' ? 'Tam' : (t.status === 'iptal' ? 'İptal' : 'Boş')),
+                esc(t.status === 'bos' ? 'Boş transfer' : (t.status === 'noshow' ? 'No Show' : (t.status === 'iptal' ? 'İptal' : 'Normal'))),
                 esc(t.firmSettled ? 'Kapandı' : 'Açık')
             ];
             csv += row.join(',') + '\n';
@@ -11183,7 +11184,7 @@ function App() {
                             ? { paymentCollect: 'no', paymentToMe: false, customerCollected: false }
                             : { paymentCollect: 'yes' })
                     }, [['yes', 'Öder'], ['no', 'Ödeme yok']])),
-                    field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Tam'], ['bos', 'Boş'], ['iptal', 'İptal']])),
+                    field('Durum', select({ value: q.status || 'tam', onChange: e => quickSet({ status: e.target.value }) }, [['tam', 'Normal'], ['bos', 'Boş transfer'], ['noshow', 'No Show'], ['iptal', 'İptal']])),
 	                    field('Transfer Tipi', select({ value: q.transferType || 'arrival', onChange: e => quickSet(e.target.value === 'tour' ? { transferType: e.target.value } : { transferType: e.target.value, tourCommission: '', tourCommissionShop: '' }) }, TIPLER.map(tp => [tp.id, tp.n]))),
                     field('Alt Acenta', input({ list: quickAgencyListId, defaultValue: q.altAcenta || '', onBlur: e => quickInputSet({ altAcenta: e.target.value }), placeholder: 'Varsa alt acenta' })),
                     field('Müşteri Tutarı', React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 76px', gap: 6 } },
@@ -11322,6 +11323,7 @@ function App() {
             tot: T.length,
             tam: T.filter(t => t.status === 'tam').length,
             bos: T.filter(t => t.status === 'bos').length,
+            noshow: T.filter(t => t.status === 'noshow').length,
             ipt: T.filter(t => t.status === 'iptal').length,
             mP: extAy.net + arAy.net,
             mPpotential: monthOlmezKartSum + arAy.net,
@@ -11632,11 +11634,12 @@ function App() {
             mC: monthRows.length,
             tam: monthRows.filter(t => t.status === 'tam').length,
             bos: monthRows.filter(t => t.status === 'bos').length,
+            noshow: monthRows.filter(t => t.status === 'noshow').length,
             mP: olmezDisplayNet(monthRows)
         };
     };
     const listMiniStats = React.useMemo(() => {
-        if (tab !== 'list') return { mC: 0, tam: 0, bos: 0, mP: 0 };
+        if (tab !== 'list') return { mC: 0, tam: 0, bos: 0, noshow: 0, mP: 0 };
         return calcMiniStats(visibleListRows);
     }, [tab, visibleListRows]);
     const monthGroups = React.useMemo(() => {
@@ -11663,8 +11666,6 @@ function App() {
         const tp = TIPLER.find(x => x.id === t.transferType);
         const rt = ROTALAR.find(r => r.id === t.route);
         const vh = VEHS.find(v => v.id === t.vehicle);
-        const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
-        const statusClass = t.status === 'tam' ? 'tcard-pill-status-tam' : t.status === 'iptal' ? 'tcard-pill-status-iptal' : 'tcard-pill-status-bos';
         const tk = netKar([t]);
         const collectionState = getCollectionState(t);
         const displayPlate = inferPlate(t);
@@ -11714,6 +11715,13 @@ function App() {
         const _stBg = _payDone ? '#E8F5EE' : '#FFF5F2';
         const _stCol = _payDone ? '#0B7C55' : '#9B5149';
         const _stBd = _payDone ? '#BEE3CB' : '#E8CBC5';
+        const _specialStatus = t.status === 'bos'
+            ? { text: 'Boş transfer', bg: '#F1F5F4', color: '#536B70', border: '#D4DFDC' }
+            : t.status === 'noshow'
+                ? { text: 'No Show', bg: '#FFF7E8', color: '#8A6320', border: '#E8D3A5' }
+                : t.status === 'iptal'
+                    ? { text: 'İptal', bg: '#FFF1F0', color: '#A24D4A', border: '#E8C4C1' }
+                    : null;
         const _agencyParts = [['İşi Veren', gvn], ['İşi Alan', (t.assignedTo ? asg : '')], ['Alt Acenta', t.altAcenta || '']].filter(x => x[1] && x[1] !== '—');
         const _agencyRows = _agencyParts.map(p => [p[0].toLocaleUpperCase('tr-TR'), p[1]]);
         const _altPay = (t.altAcenta && transferAltAcentaTRYValue(t) > 0) ? transferAltAcentaTRYValue(t) : 0;
@@ -11740,6 +11748,7 @@ function App() {
                             t.paymentToMe && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '↩ bana ödeme'),
                             t.isKarsilikli && React.createElement("span", { style: { flexShrink: 0, color: 'var(--p-info)', WebkitTextFillColor: 'var(--p-info)', fontWeight: 500 } }, '⇄ karşılıklı'))),
                     React.createElement("div", { className: 'tcard-status-stack', style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: 5, flexShrink: 0 } },
+                        _specialStatus && React.createElement("span", { style: { fontSize: 9.2, fontWeight: 600, padding: '3px 10px', borderRadius: 999, whiteSpace: 'nowrap', background: _specialStatus.bg, color: _specialStatus.color, WebkitTextFillColor: _specialStatus.color, border: '1px solid ' + _specialStatus.border } }, _specialStatus.text),
                         React.createElement("button", { onClick: e => { e.stopPropagation(); toggleTransferCompleted(t.id); }, style: { fontSize: 9.5, fontWeight: 560, padding: '4px 10px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', background: _completeBg, color: _completeCol, WebkitTextFillColor: _completeCol, border: '1px solid ' + _completeBd } }, _completeTxt),
                         React.createElement("button", { onClick: e => { e.stopPropagation(); toggleSettled(t.id); }, style: { fontSize: 9.5, fontWeight: 520, letterSpacing: '.02em', padding: '3px 11px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + _stBd, background: _stBg, color: _stCol, WebkitTextFillColor: _stCol } }, _stTxt))),
                 React.createElement("div", { className: 'tcard-account-grid', style: { marginTop: 11, paddingTop: 11, borderTop: '1px solid rgba(46,58,78,.09)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' } },
@@ -12783,7 +12792,6 @@ function App() {
                         return React.createElement("div", { className: "lg-empty" }, "Bu dönem transfer yok");
                     const ksPair = (t.isKarsilikli && t.linkedTransferId) ? (T || []).find(x => x && x.id === t.linkedTransferId) : null;
                     const firstPas = ((t.passengers || []).map(p => p && p.name).filter(Boolean)[0]) || 'Misafir';
-                    const sl = t.status === 'tam' ? 'TAM' : t.status === 'iptal' ? 'İPTAL' : 'BOŞ';
                     const collectionState = getCollectionState(t);
                     const flight = flightCodeClean(t.flightCode);
                     const routeName = loc => {
@@ -13183,8 +13191,8 @@ function App() {
                         }).filter(x => x.count > 0 || x.plateCnt > 0); // Transfer veya araç kaydı olan aylar
                         const buAyKey = yyyy + '-' + String(now.getMonth() + 1).padStart(2, '0');
                         const buAyTr = yearTransfers.filter(t => t.date && t.date.startsWith(buAyKey));
-                        const buAyTam = buAyTr.filter(t => t.status === 'tam').length;
-                        const buAyBos = buAyTr.filter(t => t.status !== 'tam' && t.status !== 'iptal').length;
+                        const buAyBos = buAyTr.filter(t => t.status === 'bos').length;
+                        const buAyNoShow = buAyTr.filter(t => t.status === 'noshow').length;
                         const buAyIpt = buAyTr.filter(t => t.status === 'iptal').length;
                         const buAyOlmez = olmezDisplayNet(buAyTr);
                         const buAyK = aracK.filter(k => k.date && k.date.startsWith(buAyKey));
@@ -13282,12 +13290,12 @@ function App() {
                                                 React.createElement("div", { style: { fontSize: 10, fontWeight: 470, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'TOPLAM')
                                             ),
                                             React.createElement("div", { style: { textAlign: 'center' } },
-                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 450, color: 'var(--p-ink)' } }, buAyTam),
-                                                React.createElement("div", { style: { fontSize: 10, fontWeight: 470, color: 'var(--p-ink-3)', textTransform: 'uppercase', letterSpacing: .4 } }, 'TAM')
-                                            ),
-                                            React.createElement("div", { style: { textAlign: 'center' } },
                                                 React.createElement("div", { style: { fontSize: 14, fontWeight: 450, color: 'var(--p-ink)' } }, buAyBos),
                                                 React.createElement("div", { style: { fontSize: 10, fontWeight: 470, color: 'var(--p-warn)', textTransform: 'uppercase', letterSpacing: .4 } }, 'BOŞ')
+                                            ),
+                                            React.createElement("div", { style: { textAlign: 'center' } },
+                                                React.createElement("div", { style: { fontSize: 14, fontWeight: 450, color: '#8A6320' } }, buAyNoShow),
+                                                React.createElement("div", { style: { fontSize: 10, fontWeight: 470, color: '#8A6320', textTransform: 'uppercase', letterSpacing: .4 } }, 'NO SHOW')
                                             ),
                                             React.createElement("div", { style: { textAlign: 'center' } },
                                                 React.createElement("div", { style: { fontSize: 14, fontWeight: 450, color: 'var(--ink-4)' } }, buAyIpt),
@@ -13710,9 +13718,9 @@ function App() {
                             React.createElement(SmartPick, { value: form.altAcenta || '', rows: formAgencyRows.filter(a => !isOlmezturParty(a.name)), onChange: v => sf({ altAcenta: v }), onSelect: a => sf({ altAcenta: a.name }), placeholder: "" })),
                         form.altAcenta && (React.createElement("div", { style: { flex: 1 } },
                             React.createElement("span", { className: "lbl" }, "Alt Acenta \u00DCcreti"),
-                            React.createElement("div", { style: { display: 'flex', gap: 5 } },
-                                React.createElement("input", { type: "text", inputMode: "decimal", value: (form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), onChange: e => setAltFee(e.target.value, form.altAcentaCurrency || 'TRY'), placeholder: "0", className: "inp", style: { flex: 1 } }),
-                                React.createElement("select", { value: form.altAcentaCurrency || 'TRY', onChange: e => setAltFee((form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), e.target.value), style: { width: 62, background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 470, cursor: 'pointer', fontSize: 13 } },
+                            React.createElement("div", { className: "ko-money-input-row", style: { display: 'flex', gap: 5 } },
+                                React.createElement("input", { type: "text", inputMode: "decimal", value: (form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), onChange: e => setAltFee(e.target.value, form.altAcentaCurrency || 'TRY'), placeholder: "0", className: "inp ko-money-amount", style: { flex: 1 } }),
+                                React.createElement("select", { className: "ko-money-currency", value: form.altAcentaCurrency || 'TRY', onChange: e => setAltFee((form.altAcentaCurrency && form.altAcentaCurrency !== 'TRY') ? (form.altAcentaRaw || '') : (form.altAcentaUcreti || ''), e.target.value), style: { width: 62, background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 470, cursor: 'pointer', fontSize: 13 } },
                                     React.createElement("option", { value: "TRY" }, "\u20BA"),
                                     React.createElement("option", { value: "USD" }, "$"),
                                     React.createElement("option", { value: "EUR" }, "\u20AC"),
@@ -13743,13 +13751,13 @@ function App() {
                     React.createElement("input", { className: "inp", value: form.dropoffMaps || '', onChange: e => sf({ dropoffMaps: e.target.value }), placeholder: '🎯 Varış maps adresi / linki (ops.)', inputMode: 'url', style: { fontSize: 12, marginTop: -2 } }),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, "\uD83D\uDEE4\uFE0F Rota"),
-                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.map(r => (React.createElement("button", { key: r.id, className: "lg-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 450, textAlign: 'center' } },
+                        React.createElement("div", { className: "ko-route-choices", style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 } }, ROTALAR.filter(r => r.id !== 'free').map(r => (React.createElement("button", { key: r.id, className: "lg-choice ko-route-choice" + (form.route === r.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ route: r.id }), style: { background: form.route === r.id ? NAV : INP, color: form.route === r.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 8, padding: '7px 3px', cursor: 'pointer', fontSize: '10px', fontWeight: 450, textAlign: 'center' } },
                             r.ico,
                             React.createElement("br", null),
                             r.n)))))),
                 wizStep === 1 && React.createElement("div", { className: "card" },
                     React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "\uD83D\uDE90 Ara\u00E7 Tipi"),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 5, marginBottom: 12 } }, VEHS.map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 5, marginBottom: 12 } }, VEHS.filter(v => !v.legacy).map(v => (React.createElement("button", { key: v.id, className: "lg-choice" + (form.vehicle === v.id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ vehicle: v.id }), style: { background: form.vehicle === v.id ? NAV : INP, color: form.vehicle === v.id ? 'var(--p-white)' : TX, border: 'none', borderRadius: 9, padding: '7px 2px', cursor: 'pointer', textAlign: 'center' } },
                         React.createElement("div", { style: { fontSize: 16, marginBottom: 1 } }, v.ico),
                         React.createElement("div", { style: { fontSize: '9px', fontWeight: 470 } }, v.n),
                         React.createElement("div", { style: { fontSize: '8px', opacity: .6 } }, v.cap))))),
@@ -13830,18 +13838,18 @@ function App() {
                                 busy && React.createElement("span", { style: { marginLeft: 'auto', fontSize: 10.5, color: SB } }, "\u23F3 okunuyor\u2026")),
                             React.createElement("input", { ref: passportFileRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handlePassportFiles(arr); } }),
                             React.createElement("input", { ref: nameShotRef, type: "file", accept: "image/*", multiple: true, style: { display: 'none' }, onChange: e => { const fs = e.target.files; const arr = fs ? Array.from(fs) : []; e.target.value = ''; handleNameShotFiles(arr); } }),
-                            React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1.35fr 1fr 1fr', gap: 7 } },
+                            React.createElement("div", { className: "ko-passenger-actions", style: { display: 'grid', gridTemplateColumns: '1.35fr 1fr 1fr', gap: 7 } },
                                 photoBtn('\uD83E\uDEAA', 'Pasaport Tara', 'WhatsApp / fotoğraf', openPassportSmart),
                                 React.createElement("button", {
                                     type: "button", onClick: () => setPassengerImportMenu(true), disabled: busy,
+                                    className: "ko-passenger-action-secondary",
                                     style: { minWidth: 0, background: busy ? 'var(--p-info-soft)' : 'var(--p-white)', color: busy ? 'var(--p-ink-5)' : NAV, border: '1.5px solid ' + (busy ? BOR : NAV), borderRadius: 12, padding: '9px 5px', fontSize: 11.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', lineHeight: 1.25 }
                                 }, React.createElement("span", { style: { display: 'block', fontSize: 14, marginBottom: 2 } }, "📝"), "İsim Ekle"),
                                 React.createElement("button", {
                                     type: "button", onClick: () => openPaxModal(null), disabled: busy,
+                                    className: "ko-passenger-action-secondary",
                                     style: { minWidth: 0, background: busy ? 'var(--p-info-soft)' : 'var(--p-white)', color: busy ? 'var(--p-ink-5)' : NAV, border: '1.5px solid ' + (busy ? BOR : NAV), borderRadius: 12, padding: '9px 5px', fontSize: 11.5, fontWeight: 500, cursor: busy ? 'default' : 'pointer', lineHeight: 1.25 }
-                                }, React.createElement("span", { style: { display: 'block', fontSize: 14, marginBottom: 2 } }, "＋"), "Elle Ekle")),
-                            React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', margin: '7px 0 0', lineHeight: 1.4, background: INP, borderRadius: 9, padding: '7px 9px' } },
-                                "Mac WhatsApp: fotoğrafı kopyala veya buraya sürükle. iPhone: WhatsApp fotoğrafını kaydet, Pasaport Tara ile seç."));
+                                }, React.createElement("span", { style: { display: 'block', fontSize: 14, marginBottom: 2 } }, "＋"), "Elle Ekle")));
                     })(),
                     (function () {
                         const list = paxReal();
@@ -13985,9 +13993,9 @@ function App() {
                                     React.createElement("option", { value: "KWD" }, "KD KWD"))))),
                     React.createElement("div", null,
                         React.createElement("span", { className: "lbl" }, olAlan2 ? 'Bana Ödenecek Araç Ücreti' : 'Firmaya Araç Ücreti'),
-                        React.createElement("div", { style: { display: 'flex', gap: 5 } },
-                            React.createElement("input", { type: "text", inputMode: "decimal", value: (form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, onChange: e => setDriverFee(e.target.value, form.driverPaymentCurrency || 'TRY'), placeholder: "0", className: "inp", style: { flex: 1 } }),
-                            React.createElement("select", { value: form.driverPaymentCurrency || 'TRY', onChange: e => setDriverFee((form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, e.target.value), style: { width: 62, background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 470, cursor: 'pointer', fontSize: 13 } },
+                        React.createElement("div", { className: "ko-money-input-row", style: { display: 'flex', gap: 5 } },
+                            React.createElement("input", { type: "text", inputMode: "decimal", value: (form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, onChange: e => setDriverFee(e.target.value, form.driverPaymentCurrency || 'TRY'), placeholder: "0", className: "inp ko-money-amount", style: { flex: 1 } }),
+                            React.createElement("select", { className: "ko-money-currency", value: form.driverPaymentCurrency || 'TRY', onChange: e => setDriverFee((form.driverPaymentCurrency && form.driverPaymentCurrency !== 'TRY') ? (form.driverPaymentRaw || '') : form.driverPayment, e.target.value), style: { width: 62, background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '9px 4px', fontWeight: 470, cursor: 'pointer', fontSize: 13 } },
                                 React.createElement("option", { value: "TRY" }, "\u20BA"),
                                 React.createElement("option", { value: "USD" }, "$"),
                                 React.createElement("option", { value: "EUR" }, "\u20AC"),
@@ -14097,9 +14105,8 @@ function App() {
                                 previewTL(fNet),
 	                                " \u20BA"))))),
 	                wizStep === 3 && React.createElement("div", { className: "card ko-status-card" },
-	                    React.createElement("span", { className: "lbl", style: { marginBottom: 4 } }, "Araç / Sefer Durumu"),
-	                    React.createElement("div", { className: "ko-workflow-explain" }, "Dolu: yolculu transfer · Boş gidiş: yolcusuz araç hareketi."),
-	                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7, marginBottom: 10 } }, [['tam', '✅ Dolu', 'var(--p-ink-3)', 'var(--p-pos-soft)'], ['bos', '↔ Boş gidiş', 'var(--p-info)', 'var(--p-pos-soft)'], ['iptal', '✕ İptal', R, 'var(--p-neg-soft)']].map(([id, lbl, ac, bg]) => (React.createElement("button", { key: id, className: "lg-choice" + (form.status === id ? " is-active ko-selected-gold" : ""), onClick: () => sf({ status: id }), style: { background: form.status === id ? ac : bg, color: form.status === id ? 'var(--p-white)' : ac, border: '1.5px solid ' + (form.status === id ? ac : BOR), borderRadius: 9, padding: '10px 3px', cursor: 'pointer', fontSize: '12px', fontWeight: 470 } }, lbl)))),
+	                    React.createElement("span", { className: "lbl", style: { marginBottom: 7 } }, "Transfer Durumu"),
+	                    React.createElement("div", { className: "ko-transfer-state-options" }, [['bos', '↔ Boş transfer'], ['noshow', 'No Show'], ['iptal', '✕ İptal']].map(([id, lbl]) => (React.createElement("button", { key: id, type: "button", className: "ko-transfer-state-option" + (form.status === id ? " is-active is-" + id : ""), onClick: () => sf({ status: form.status === id ? 'tam' : id }), "aria-pressed": form.status === id }, lbl)))),
 	                    form.transferType === 'tour' && React.createElement("div", {
 	                        className: "ko-tour-commission-box",
 	                        style: {
@@ -14509,7 +14516,7 @@ function App() {
                             React.createElement("div", { style: { display: 'flex', alignItems: 'center' } },
                                 sayac(T.length, 'TRANSFER'),
                                 React.createElement("div", { style: { width: 1, alignSelf: 'stretch', background: BOR } }),
-                                sayac(T.filter(t => t.status === 'tam').length, 'TAMAMLANAN', G),
+                                sayac(T.filter(t => String(t.workflowStage || '') === 'completed').length, 'TAMAMLANAN', G),
                                 React.createElement("div", { style: { width: 1, alignSelf: 'stretch', background: BOR } }),
                                 sayac(T.filter(t => t.status === 'iptal').length, 'İPTAL', SB)),
                             React.createElement("div", { style: { fontSize: 10.5, color: SB, textAlign: 'center', marginTop: 10, paddingTop: 9, borderTop: '1px solid ' + BOR } },
@@ -17169,6 +17176,131 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   .lg-month-day-num{font-size:12.35px!important}
   .lg-month-day-count{font-size:7.5px!important}
   .lg-month-day-net{font-size:7.4px!important}
+}
+</style>
+<style id="ko-iphone-form-fixes-v35">
+/* V35 · Para alanlarında tutar her zaman geniş, döviz seçimi sabit ve okunur. */
+.ko-money-input-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 78px!important;
+  align-items:stretch!important;gap:7px!important;width:100%!important;min-width:0!important;
+}
+.ko-money-input-row .ko-money-amount{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.ko-money-input-row .ko-money-currency{
+  width:78px!important;min-width:78px!important;max-width:78px!important;
+  padding:9px 5px!important;border:1px solid rgba(22,101,94,.24)!important;
+  background:linear-gradient(145deg,#F7FCFA,#EAF5F1)!important;
+  color:#135F54!important;-webkit-text-fill-color:#135F54!important;
+  border-radius:11px!important;font-weight:620!important;text-align:center!important;
+  box-shadow:inset 0 1px 0 #FFF!important;
+}
+.ko-route-choices{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.ko-route-choice{
+  min-width:0!important;min-height:52px!important;padding:7px 5px!important;
+  white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;
+  text-wrap:balance!important;line-height:1.18!important;
+  color:#294A4B!important;-webkit-text-fill-color:#294A4B!important;
+}
+.ko-route-choice.is-active{
+  background:linear-gradient(145deg,#176C60,#104E50)!important;
+  border:1px solid #0D5550!important;color:#FFF!important;-webkit-text-fill-color:#FFF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 7px 16px -12px rgba(7,70,65,.75)!important;
+}
+.ko-route-choice.is-active *{color:#FFF!important;-webkit-text-fill-color:#FFF!important}
+@media(max-width:700px){
+  /* Ana sayfa üst paneli: keskin kenar ve yan taşma yok. */
+  main.main-cont.view-home{padding-left:10px!important;padding-right:10px!important}
+  .lg-home{padding-top:8px!important}
+  .lg-home .lg-greeting-card{
+    margin:0!important;border-radius:24px!important;overflow:hidden!important;
+    border:1px solid rgba(238,211,149,.30)!important;
+    padding:calc(var(--sa-t) + 13px) 14px 27px!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -20px 38px rgba(4,22,30,.26),0 18px 38px -24px rgba(7,42,49,.62)!important;
+  }
+  .lg-home .lg-period-row{
+    margin:-13px 8px 10px!important;border-radius:17px!important;
+    border:1px solid rgba(239,210,139,.25)!important;
+  }
+
+  /* İş veren / işi yapan: ekleme düğmesi artık tam satırı kaplamaz. */
+  .ko-new-form .ko-party-row{
+    grid-template-columns:minmax(0,1fr) 42px!important;gap:8px!important;
+  }
+  .ko-new-form .ko-party-row>div:first-child{grid-column:1 / -1!important}
+  .ko-new-form .ko-party-row>div:nth-child(2){grid-column:1!important}
+  .ko-new-form .ko-party-row>.ko-party-add-btn{
+    grid-column:2!important;grid-row:2!important;width:42px!important;min-width:42px!important;
+    padding:0!important;border-radius:12px!important;
+  }
+
+  /* Alt acenta adı üstte; ücret ve döviz altta tek, dengeli satırda. */
+  .ko-new-form .ko-party-alt-row{
+    grid-template-columns:minmax(0,1fr) 42px!important;gap:8px!important;
+    align-items:end!important;
+  }
+  .ko-new-form .ko-party-alt-row>div:first-child{grid-column:1!important;grid-row:1!important}
+  .ko-new-form .ko-party-alt-row>button{
+    grid-column:2!important;grid-row:1!important;width:42px!important;min-width:42px!important;
+    padding:0!important;border-radius:12px!important;
+  }
+  .ko-new-form .ko-party-alt-row>div:nth-child(2){grid-column:1 / -1!important;grid-row:2!important;min-width:0!important}
+  .ko-new-form .ko-money-input-row{grid-template-columns:minmax(0,1fr) 82px!important}
+  .ko-new-form .ko-money-input-row .ko-money-currency{
+    width:82px!important;min-width:82px!important;max-width:82px!important;font-size:13px!important;
+  }
+  .ko-route-choices{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  .ko-route-choice{min-height:60px!important;font-size:9.7px!important;padding:8px 5px!important;letter-spacing:-.01em!important}
+
+  /* Yolcu araçları: açıklama kaldırıldı, üç işlem tek ve temiz blokta. */
+  .ko-passenger-actions{
+    grid-template-columns:1.25fr 1fr 1fr!important;gap:6px!important;
+    padding:4px!important;border:1px solid rgba(24,95,86,.12)!important;
+    border-radius:16px!important;background:#F4F9F7!important;
+  }
+  .ko-passenger-actions>button{
+    min-height:70px!important;border-radius:12px!important;box-shadow:none!important;
+  }
+  .ko-passenger-actions>button:first-child{
+    background:linear-gradient(145deg,#14745F,#0E5B52)!important;
+    border-color:#0E5B52!important;color:#FFF!important;-webkit-text-fill-color:#FFF!important;
+    box-shadow:0 9px 18px -13px rgba(10,80,70,.72)!important;
+  }
+  .ko-passenger-action-secondary{
+    background:#FFF!important;border-color:#B9D3CC!important;
+    color:#194E49!important;-webkit-text-fill-color:#194E49!important;
+  }
+}
+@media(max-width:374px){
+  .ko-passenger-actions{grid-template-columns:1fr 1fr!important}
+  .ko-passenger-actions>button:first-child{grid-column:1 / -1!important}
+}
+</style>
+<style id="ko-transfer-status-v36">
+/* V36 · Normal transfer varsayılandır; yalnızca istisna durumları seçilir. */
+.ko-transfer-state-options{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+  margin-bottom:10px;padding:4px;border-radius:14px;
+  background:#F4F8F6;border:1px solid rgba(24,95,86,.12);
+}
+.ko-transfer-state-option{
+  min-width:0;min-height:42px;padding:9px 5px;border-radius:10px;
+  border:1px solid #CFDCD8;background:#FFF;color:#395A5B;
+  -webkit-text-fill-color:#395A5B;font:600 11.5px/1.18 inherit;
+  cursor:pointer;white-space:normal;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s ease;
+}
+.ko-transfer-state-option:active{transform:scale(.985)}
+.ko-transfer-state-option.is-active{
+  color:#FFF!important;-webkit-text-fill-color:#FFF!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 7px 16px -12px rgba(14,72,67,.72);
+}
+.ko-transfer-state-option.is-bos{background:#536B70!important;border-color:#455E63!important}
+.ko-transfer-state-option.is-noshow{background:#9B6A24!important;border-color:#86591D!important}
+.ko-transfer-state-option.is-iptal{background:#A24D4A!important;border-color:#8E413E!important}
+@media(max-width:374px){
+  .ko-transfer-state-options{gap:5px;padding:3px}
+  .ko-transfer-state-option{font-size:10.5px;padding:8px 3px}
 }
 </style>
 </body>
