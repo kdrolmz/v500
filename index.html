@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-02-v500-profesyonel-v45-ios-passenger-scroll">
+<meta name="v500-release" content="2026-11-02-v500-profesyonel-v46-ios-keyboard-clean">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V45</title>
+<title>Ölmez Transfer · Professional V46</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -9240,6 +9240,98 @@ function App() {
             root.style.removeProperty('--ko-pax-vvtop');
         };
     }, [!!paxModal]);
+    /* iOS ekran klavyesi açıkken sabit menü ve sihirbaz çubuğunun forma binmesini önle. */
+    useEffect(() => {
+        const root = document.documentElement;
+        const body = document.body;
+        const viewport = window.visualViewport;
+        const compact = window.matchMedia('(max-width:700px)');
+        let baseHeight = Math.max(window.innerHeight || 0, viewport ? viewport.height : 0);
+        let raf = 0;
+        let revealTimers = [];
+
+        const isTransferField = target => !!(target && target.matches &&
+            target.matches('input,select,textarea,[contenteditable="true"]') &&
+            target.closest && target.closest('.ko-new-form'));
+
+        const revealField = target => {
+            if (!isTransferField(target) || !body.classList.contains('ko-ios-keyboard-open')) return;
+            const scroller = target.closest('main.main-cont') || document.querySelector('main.main-cont');
+            if (!scroller) return;
+            const rect = target.getBoundingClientRect();
+            const viewTop = Math.max(0, viewport ? viewport.offsetTop : 0) + 14;
+            const viewBottom = (viewport ? viewport.height + viewport.offsetTop : window.innerHeight) - 24;
+            if (rect.bottom > viewBottom) {
+                scroller.scrollBy({ top: rect.bottom - viewBottom + 18, behavior: 'smooth' });
+            } else if (rect.top < viewTop) {
+                scroller.scrollBy({ top: rect.top - viewTop - 12, behavior: 'smooth' });
+            }
+        };
+
+        const clearRevealTimers = () => {
+            revealTimers.forEach(id => clearTimeout(id));
+            revealTimers = [];
+        };
+
+        const syncKeyboard = () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                const currentHeight = Math.max(0, viewport ? viewport.height : window.innerHeight);
+                if (currentHeight > baseHeight - 60) baseHeight = Math.max(baseHeight, currentHeight);
+                const overlap = Math.max(0, Math.round(baseHeight - currentHeight));
+                const active = document.activeElement;
+                const open = compact.matches && isTransferField(active) && overlap > 110;
+                body.classList.toggle('ko-ios-keyboard-open', open);
+                if (open) {
+                    root.style.setProperty('--ko-keyboard-overlap', overlap + 'px');
+                    clearRevealTimers();
+                    revealTimers = [
+                        setTimeout(() => revealField(active), 80),
+                        setTimeout(() => revealField(active), 280)
+                    ];
+                } else {
+                    root.style.removeProperty('--ko-keyboard-overlap');
+                    clearRevealTimers();
+                }
+            });
+        };
+
+        const onFocusIn = event => {
+            if (!isTransferField(event.target)) return;
+            syncKeyboard();
+            revealTimers.push(setTimeout(syncKeyboard, 120), setTimeout(syncKeyboard, 360));
+        };
+        const onFocusOut = () => revealTimers.push(setTimeout(syncKeyboard, 180));
+        const onOrientation = () => {
+            body.classList.remove('ko-ios-keyboard-open');
+            root.style.removeProperty('--ko-keyboard-overlap');
+            setTimeout(() => {
+                baseHeight = Math.max(window.innerHeight || 0, viewport ? viewport.height : 0);
+                syncKeyboard();
+            }, 360);
+        };
+
+        document.addEventListener('focusin', onFocusIn, true);
+        document.addEventListener('focusout', onFocusOut, true);
+        if (viewport) {
+            viewport.addEventListener('resize', syncKeyboard);
+            viewport.addEventListener('scroll', syncKeyboard);
+        }
+        window.addEventListener('orientationchange', onOrientation);
+        return () => {
+            if (raf) cancelAnimationFrame(raf);
+            clearRevealTimers();
+            document.removeEventListener('focusin', onFocusIn, true);
+            document.removeEventListener('focusout', onFocusOut, true);
+            if (viewport) {
+                viewport.removeEventListener('resize', syncKeyboard);
+                viewport.removeEventListener('scroll', syncKeyboard);
+            }
+            window.removeEventListener('orientationchange', onOrientation);
+            body.classList.remove('ko-ios-keyboard-open');
+            root.style.removeProperty('--ko-keyboard-overlap');
+        };
+    }, []);
     const [passportScan, setPassportScan] = useState(null); // {kind, msg, cur, total} tarama sürerken
     const [paxBatch, setPaxBatch] = useState(null);          // okunanların onay listesi
     const [pasteBox, setPasteBox] = useState(null);           // { text, single }
@@ -14206,7 +14298,7 @@ function App() {
                         : wizStep === 2
                         ? (paxN + ' yolcu' + (bags ? ' · ' + bags + ' bagaj' : '') + (form.driverName ? ' · ' + form.driverName : ''))
                         : (payTxt + ' · ' + (form.driverPayment ? ('Kaptan ' + fr(moneyValue(form.driverPayment)) + '₺') : 'Kaptan ücreti yok'));
-                    return React.createElement("div", { style: { position: 'sticky', bottom: 0, zIndex: 30, marginTop: 4, paddingTop: 10, paddingBottom: 2, background: 'var(--p-bg)', boxShadow: '0 -8px 16px -6px var(--p-bg)' } },
+                    return React.createElement("div", { className: "ko-wiz-footer", style: { position: 'sticky', bottom: 0, zIndex: 30, marginTop: 4, paddingTop: 10, paddingBottom: 2, background: 'var(--p-bg)', boxShadow: '0 -8px 16px -6px var(--p-bg)' } },
                         React.createElement("div", { style: { fontSize: 11, color: SB, textAlign: 'center', marginBottom: 8, padding: '0 8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 450 } }, summary),
                         React.createElement("div", { style: { display: 'flex', gap: 8 } },
                             wizStep > 1 && React.createElement("button", { type: "button", onClick: () => setWizStep(s => Math.max(1, s - 1)), style: { flex: '0 0 auto', minWidth: 92, background: 'var(--p-white)', color: NAV, border: '1.5px solid ' + BOR, borderRadius: 15, padding: '15px 14px', fontWeight: 500, fontSize: 14, cursor: 'pointer' } }, '‹ Geri'),
@@ -17713,6 +17805,27 @@ button.lg-choice.is-active :where(span,div,small,b,strong){
     border-radius:20px 20px 13px 13px!important;padding:12px 13px calc(20px + var(--sa-b))!important;
   }
   .ko-pax-sheet :where(input,select,textarea){font-size:16px!important;min-height:44px!important}
+}
+</style>
+<style id="ko-ios-keyboard-clean-v46">
+/* V46 · iPhone klavyesi açıkken sabit katmanlar form alanlarının üstüne binmez. */
+@media(max-width:700px){
+  body.ko-ios-keyboard-open .tabbar{
+    opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+    box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+  body.ko-ios-keyboard-open main.main-cont{
+    padding-bottom:calc(var(--ko-keyboard-overlap,0px) + 28px)!important;
+    scroll-padding-bottom:calc(var(--ko-keyboard-overlap,0px) + 28px)!important;
+  }
+  body.ko-ios-keyboard-open .ko-wiz-footer{
+    position:relative!important;bottom:auto!important;z-index:1!important;
+    margin-top:8px!important;padding-top:8px!important;padding-bottom:2px!important;
+    background:transparent!important;box-shadow:none!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  }
+  body.ko-ios-keyboard-open .ko-wiz-footer .ko-submit-btn{box-shadow:none!important}
+  body.ko-ios-keyboard-open .ko-new-form :where(input,select,textarea){scroll-margin-top:18px!important;scroll-margin-bottom:28px!important}
 }
 </style>
 </body>
