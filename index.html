@@ -2863,7 +2863,53 @@ function moneyValue(v) {
     return Number.isFinite(n) ? n : 0;
 }
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
-const contactDirectoryKey = value => nm(String(value || '')).replace(/\s+/g, ' ').trim();
+const contactDirectoryKey = value => nm(String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '')).replace(/\s+/g, ' ').trim();
+const contactDisplayName = value => {
+    const clean = koTitleCaseTR(String(value || '').replace(/\s+/g, ' ').trim());
+    return contactDirectoryKey(clean) === contactDirectoryKey(OL) ? OL : clean;
+};
+const normalizeAgencyDirectory = (rows, deletedKeys) => {
+    const deleted = new Set([...(deletedKeys || [])].map(contactDirectoryKey).filter(Boolean));
+    const olKey = contactDirectoryKey(OL);
+    deleted.delete(olKey);
+    const map = new Map();
+    [...(rows || []), OL].forEach(value => {
+        const name = contactDisplayName(value);
+        const key = contactDirectoryKey(name);
+        if (!key || (key !== olKey && deleted.has(key))) return;
+        map.set(key, key === olKey ? OL : name);
+    });
+    return [OL, ...Array.from(map.entries()).filter(([key]) => key !== olKey).map(([, name]) => name)];
+};
+const normalizeDriverDirectory = (rows, deletedKeys) => {
+    const deleted = new Set([...(deletedKeys || [])].map(contactDirectoryKey).filter(Boolean));
+    const map = new Map();
+    (rows || []).forEach(row => {
+        const rawName = typeof row === 'string' ? row : row && row.name;
+        const name = contactDisplayName(rawName);
+        const key = contactDirectoryKey(name);
+        if (!key || deleted.has(key)) return;
+        const phone = String((typeof row === 'string' ? '' : row && row.phone) || '').trim();
+        const previous = map.get(key);
+        map.set(key, { name, phone: phone || (previous && previous.phone) || '' });
+    });
+    return Array.from(map.values());
+};
+const normalizeAgencyPhoneDirectory = (source, agencies) => {
+    const byKey = new Map();
+    Object.entries(source || {}).forEach(([name, phone]) => {
+        const key = contactDirectoryKey(name);
+        const value = String(phone || '').trim();
+        if (key && (value || !byKey.has(key))) byKey.set(key, value);
+    });
+    const out = {};
+    (agencies || []).forEach(name => {
+        const display = contactDisplayName(name);
+        const phone = byKey.get(contactDirectoryKey(display)) || '';
+        if (phone) out[display] = phone;
+    });
+    return out;
+};
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const firmSlug = v => nm(v).replace(/\s+/g, '');
 const isOlmezturParty = v => {
@@ -3314,10 +3360,18 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
     const deletedDrivers = new Set(((newer && newer.delDr) || (older && older.delDr) || []).map(contactDirectoryKey).filter(Boolean));
     const protectedOlmezturKey = contactDirectoryKey(OL);
     deletedAgencies.delete(protectedOlmezturKey);
-    const mergedAgencyPhones = { ...((older && older.ap) || {}), ...((newer && newer.ap) || {}) };
-    Object.keys(mergedAgencyPhones).forEach(name => {
-        if (deletedAgencies.has(contactDirectoryKey(name))) delete mergedAgencyPhones[name];
-    });
+    const mergedAgencyRows = normalizeAgencyDirectory([
+        ...((older && older.a) || []),
+        ...((newer && newer.a) || [])
+    ], deletedAgencies);
+    const mergedDriverRows = normalizeDriverDirectory([
+        ...((older && older.dr) || []),
+        ...((newer && newer.dr) || [])
+    ], deletedDrivers);
+    const mergedAgencyPhones = normalizeAgencyPhoneDirectory({
+        ...((older && older.ap) || {}),
+        ...((newer && newer.ap) || {})
+    }, mergedAgencyRows);
     const delA = new Set([
         ...((preferred && Array.isArray(preferred.delA)) ? preferred.delA : []),
         ...((fallback && Array.isArray(fallback.delA)) ? fallback.delA : [])
@@ -3338,16 +3392,8 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
         delAg: Array.from(deletedAgencies),
         delDr: Array.from(deletedDrivers),
         t: mergeTransferLists((preferred || {}).t || [], (fallback || {}).t || [], allDeleted),
-        a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])])
-            .filter(name => contactDirectoryKey(name) === protectedOlmezturKey || !deletedAgencies.has(contactDirectoryKey(name))),
-        dr: uniq([...(fallback && fallback.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d)), ...(preferred && preferred.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d))]).map(x => {
-            try {
-                return JSON.parse(x);
-            }
-            catch (e) {
-                return x;
-            }
-        }).filter(d => !deletedDrivers.has(contactDirectoryKey(typeof d === 'string' ? d : d && d.name))),
+        a: mergedAgencyRows,
+        dr: mergedDriverRows,
         ap: mergedAgencyPhones,
         ak: mergeById('ak'),
         db: mergeById('db'),
@@ -9763,14 +9809,11 @@ function App() {
         const deletedAgSet = new Set(deletedAg);
         const deletedDrSet = new Set(deletedDr);
         deletedAgSet.delete(contactDirectoryKey(OL));
-        const ag = [...(d.a || [OL])].filter(name => contactDirectoryKey(name) === contactDirectoryKey(OL) || !deletedAgSet.has(contactDirectoryKey(name)));
-        if (!ag.includes(OL))
-            ag.unshift(OL);
+        const ag = normalizeAgencyDirectory(d.a || [OL], deletedAgSet);
         if (objectContentSignature(current.a || []) !== objectContentSignature(ag)) setAgencies(ag);
-        const nextDrivers = (d.dr || []).filter(row => !deletedDrSet.has(contactDirectoryKey(typeof row === 'string' ? row : row && row.name)));
+        const nextDrivers = normalizeDriverDirectory(d.dr || [], deletedDrSet);
         if (objectContentSignature(current.dr || []) !== objectContentSignature(nextDrivers)) setDrivers(nextDrivers);
-        const nextPhones = { ...(d.ap || {}) };
-        Object.keys(nextPhones).forEach(name => { if (deletedAgSet.has(contactDirectoryKey(name))) delete nextPhones[name]; });
+        const nextPhones = normalizeAgencyPhoneDirectory(d.ap || {}, ag);
         if (objectContentSignature(current.ap || {}) !== objectContentSignature(nextPhones)) setAgencyPhones(nextPhones);
         if (objectContentSignature(current.delAg || []) !== objectContentSignature(deletedAg)) setDeletedAgencyContacts(deletedAg);
         if (objectContentSignature(current.delDr || []) !== objectContentSignature(deletedDr)) setDeletedDriverContacts(deletedDr);
@@ -10565,19 +10608,25 @@ function App() {
     const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
     const addAg = n => { if (n.trim()) addAgencyContact(n, ''); };
     const addAgencyContact = (name, phone) => {
-        const nmv = (name || '').trim(), ph = (phone || '').trim();
+        const nmv = contactDisplayName(name), ph = (phone || '').trim();
         if (!nmv) return;
         const key = contactDirectoryKey(nmv);
         setDeletedAgencyContacts(p => (p || []).filter(x => contactDirectoryKey(x) !== key));
-        setAgencies(p => p.includes(nmv) ? p : [...p, nmv]);
-        setAgencyPhones(p => ({ ...p, [nmv]: ph }));
+        setAgencies(p => normalizeAgencyDirectory([...(p || []), nmv], []));
+        setAgencyPhones(p => {
+            const next = { ...(p || {}) };
+            const existingPhone = Object.entries(next).find(([x]) => contactDirectoryKey(x) === key);
+            Object.keys(next).forEach(x => { if (contactDirectoryKey(x) === key) delete next[x]; });
+            if (ph || (existingPhone && existingPhone[1])) next[nmv] = ph || existingPhone[1];
+            return normalizeAgencyPhoneDirectory(next, normalizeAgencyDirectory([...(agencies || []), nmv], []));
+        });
     };
     const addDriverContact = (name, phone) => {
-        const nmv = (name || '').trim(), ph = (phone || '').trim();
+        const nmv = contactDisplayName(name), ph = (phone || '').trim();
         if (!nmv) return;
         const key = contactDirectoryKey(nmv);
         setDeletedDriverContacts(p => (p || []).filter(x => contactDirectoryKey(x) !== key));
-        setDrivers(p => [...p.filter(d => d.name !== nmv), { name: nmv, phone: ph }]);
+        setDrivers(p => normalizeDriverDirectory([...(p || []), { name: nmv, phone: ph }], []));
     };
     const contactUsageSummary = (name, kind) => {
         const key = contactDirectoryKey(name);
@@ -10626,18 +10675,24 @@ function App() {
         return true;
     };
     const renameAgencyContact = (oldName, newName, phone) => {
-        const oldKey = contactDirectoryKey(oldName), nextName = String(newName || '').trim();
+        const oldKey = contactDirectoryKey(oldName), nextName = contactDisplayName(newName);
         if (!nextName) return;
         const nextKey = contactDirectoryKey(nextName);
-        setAgencies(p => [...new Set((p || []).map(x => contactDirectoryKey(x) === oldKey ? nextName : x))]);
-        setAgencyPhones(p => { const next = { ...(p || {}) }; Object.keys(next).forEach(x => { if (contactDirectoryKey(x) === oldKey) delete next[x]; }); next[nextName] = String(phone || '').trim(); return next; });
+        setAgencies(p => normalizeAgencyDirectory((p || []).map(x => contactDirectoryKey(x) === oldKey ? nextName : x), []));
+        setAgencyPhones(p => {
+            const next = { ...(p || {}) };
+            Object.keys(next).forEach(x => { if ([oldKey, nextKey].includes(contactDirectoryKey(x))) delete next[x]; });
+            const ph = String(phone || '').trim();
+            if (ph) next[nextName] = ph;
+            return normalizeAgencyPhoneDirectory(next, normalizeAgencyDirectory((agencies || []).map(x => contactDirectoryKey(x) === oldKey ? nextName : x), []));
+        });
         setDeletedAgencyContacts(p => [...new Set([...(p || []).filter(x => contactDirectoryKey(x) !== nextKey), ...(oldKey !== nextKey ? [oldKey] : [])])]);
     };
     const renameDriverContact = (oldName, newName, phone) => {
-        const oldKey = contactDirectoryKey(oldName), nextName = String(newName || '').trim();
+        const oldKey = contactDirectoryKey(oldName), nextName = contactDisplayName(newName);
         if (!nextName) return;
         const nextKey = contactDirectoryKey(nextName);
-        setDrivers(p => [...(p || []).filter(x => ![oldKey, nextKey].includes(contactDirectoryKey(x && x.name))), { name: nextName, phone: String(phone || '').trim() }]);
+        setDrivers(p => normalizeDriverDirectory([...(p || []).filter(x => ![oldKey, nextKey].includes(contactDirectoryKey(x && x.name))), { name: nextName, phone: String(phone || '').trim() }], []));
         setDeletedDriverContacts(p => [...new Set([...(p || []).filter(x => contactDirectoryKey(x) !== nextKey), ...(oldKey !== nextKey ? [oldKey] : [])])]);
     };
     const cpTxt = txt => { copyText(txt); tip('Kopyalandı!'); };
@@ -10720,9 +10775,9 @@ function App() {
         const prev = editId ? T.find(x => x.id === editId) : null;
         const companyCollected = !!(form.companyCollected || form.settled || (prev && isCompanyCollected(prev)));
         const returnTransferType = form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType);
-        const returnGivenBy = String(form.returnGivenBy || form.givenBy || '').trim();
-        const returnAssignedTo = String(form.returnAssignedTo || form.assignedTo || '').trim();
-        const returnAltAcenta = String(form.returnAltAcenta || '').trim();
+        const returnGivenBy = contactDisplayName(form.returnGivenBy || form.givenBy || '');
+        const returnAssignedTo = contactDisplayName(form.returnAssignedTo || form.assignedTo || '');
+        const returnAltAcenta = contactDisplayName(form.returnAltAcenta || '');
         const buildReturnTransfer = (outBase, retId, dateValue, linkedId) => {
             const retHasAmount = String(form.returnPaymentAmount != null ? form.returnPaymentAmount : '').trim() !== '';
             const retAmount = retHasAmount ? form.returnPaymentAmount : '';
@@ -10784,7 +10839,7 @@ function App() {
         }); };
         if (editId) {
             const nowIso = new Date().toISOString();
-            const baseDraft = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
+            const baseDraft = { ...prev, ...form, id: editId, editRootId: (prev && prev.editRootId) || form.editRootId || editId, pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), givenBy: contactDisplayName(form.givenBy), assignedTo: contactDisplayName(form.assignedTo), altAcenta: contactDisplayName(form.altAcenta), brokerFirm: contactDisplayName(form.brokerFirm), driverName: contactDisplayName(form.driverName), passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), plate: (form.plate || '').toUpperCase(), customerTRY: cTRY, profit: olmezKar({ ...form, customerTRY: cTRY }), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, createdAt: (prev && prev.createdAt) || form.createdAt || nowIso, updatedAt: nowIso, clientUpdatedAt: nowIso };
             const base = { ...baseDraft, ...buildKdvFields(baseDraft) };
             let baseFixed = base;
             const extraKs = [];
@@ -10843,7 +10898,7 @@ function App() {
             for (const dateStr of recurringDates) {
                 const outId = Date.now().toString() + '_' + Math.random().toString(36).slice(2, 8);
                 const datedCustomerTRY = toTRYr(form.paymentAmount, form.paymentCurrency, dateStr);
-                const outDraft = { ...form, id: outId, editRootId: outId, date: dateStr, recurringSeriesId: recurringSeriesId, recurringDayIndex: recurringSeries ? loopCount : null, recurringStartDate: recurringSeries ? form.date : '', recurringEndDate: recurringSeries ? form.endDate : '', isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), driverName: koTitleCaseTR(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: datedCustomerTRY, profit: olmezKar({ ...form, date: dateStr, customerTRY: datedCustomerTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
+                const outDraft = { ...form, id: outId, editRootId: outId, date: dateStr, recurringSeriesId: recurringSeriesId, recurringDayIndex: recurringSeries ? loopCount : null, recurringStartDate: recurringSeries ? form.date : '', recurringEndDate: recurringSeries ? form.endDate : '', isTakas: form.transferType === 'takas', isDugun: form.transferType === 'dugun', passengers: (form.passengers || []).map(p => ({ ...p, name: koTitleCaseTR(p.name) })), pickup: koTitleCaseTR(form.pickup), dropoff: koTitleCaseTR(form.dropoff), givenBy: contactDisplayName(form.givenBy), assignedTo: contactDisplayName(form.assignedTo), altAcenta: contactDisplayName(form.altAcenta), brokerFirm: contactDisplayName(form.brokerFirm), driverName: contactDisplayName(form.driverName), plate: (form.plate || '').toUpperCase(), customerTRY: datedCustomerTRY, profit: olmezKar({ ...form, date: dateStr, customerTRY: datedCustomerTRY }), createdAt: new Date().toISOString(), settled: companyCollected, customerCollected: !!form.customerCollected, companyCollected, vehiclePaid: !!form.vehiclePaid, tripMode: 'single', hasReturn: false, isReturn: false, isReturnLeg: false, isRecurring: false, endDate: '', returnTime: '', returnDate: '', returnGivenBy: '', returnAssignedTo: '', returnAltAcenta: '', returnPaymentAmount: '', returnPaymentCurrency: 'TRY', returnDriverPayment: '', returnDriverPaymentRaw: '', returnDriverPaymentCurrency: 'TRY' };
                 const outBase = { ...outDraft, ...buildKdvFields(outDraft) };
                 transfersToAdd.push(normalizeTransfer(outBase));
                 if (form.tripMode === 'karsilikli' && loopCount === 0 && form.__ksLinkExisting) {
@@ -10998,7 +11053,12 @@ function App() {
             ...prev,
             ...draft,
             editRootId: (prev && prev.editRootId) || draft.editRootId || draft.id,
-            passengers,
+            givenBy: contactDisplayName(draft.givenBy),
+            assignedTo: contactDisplayName(draft.assignedTo),
+            altAcenta: contactDisplayName(draft.altAcenta),
+            brokerFirm: contactDisplayName(draft.brokerFirm),
+            driverName: contactDisplayName(draft.driverName),
+            passengers: passengers.map(p => ({ ...p, name: koTitleCaseTR(p && p.name) })),
             passengerCount: Math.max(1, parseInt(draft.passengerCount, 10) || passengers.length || 1),
             plate: (draft.plate || '').toUpperCase(),
             customerTRY: cTRY,
