@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-01-v500-profesyonel-v44-account-compact">
+<meta name="v500-release" content="2026-11-02-v500-profesyonel-v45-ios-passenger-scroll">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V44</title>
+<title>Ölmez Transfer · Professional V45</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -223,7 +223,7 @@ main.main-cont{max-width:1180px;margin:0 auto;padding:0 14px calc(var(--tabbar-h
 .ko-smart-opt2:hover,.ko-smart-opt2:active,.ko-smart-opt2:focus-visible{background:var(--p-bg-lo) !important}
 .ko-smart-opt2+.ko-smart-opt2{position:relative}
 .ko-smart-opt2+.ko-smart-opt2::before{content:"";position:absolute;left:52px;right:10px;top:0;height:1px;background:var(--p-bg-lo)}
-/* iPhone (16 Pro dahil) — ana sayfa transfer kartları: küçük, kibar, ferah. MacBook (>700px) etkilenmez. */
+/* iPhone Pro / Pro Max — ana sayfa transfer kartları: küçük, kibar, ferah. MacBook (>700px) etkilenmez. */
 @media(max-width:700px){
   .ko-htx-card{padding:13px 14px !important;border-radius:17px !important}
   .ko-htx-grid{gap:11px !important}
@@ -9184,6 +9184,62 @@ function App() {
     const [toast, setToast] = useState('');
     const [msgM, setMsgM] = useState(null);
     const [paxModal, setPaxModal] = useState(null);
+    /* iPhone klavyesi açıldığında yolcu penceresini gerçek görünen alana sabitle. */
+    useEffect(() => {
+        if (!paxModal) return;
+        const root = document.documentElement;
+        const body = document.body;
+        const viewport = window.visualViewport;
+        let raf = 0;
+        const syncViewport = () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                const height = Math.max(280, Math.round(viewport ? viewport.height : window.innerHeight));
+                const top = Math.max(0, Math.round(viewport ? viewport.offsetTop : 0));
+                root.style.setProperty('--ko-pax-vvh', height + 'px');
+                root.style.setProperty('--ko-pax-vvtop', top + 'px');
+            });
+        };
+        const revealFocusedField = target => {
+            if (!target || !target.closest) return;
+            const sheet = target.closest('.ko-pax-sheet');
+            if (!sheet) return;
+            const fieldBox = target.getBoundingClientRect();
+            const sheetBox = sheet.getBoundingClientRect();
+            const pad = 18;
+            if (fieldBox.bottom > sheetBox.bottom - pad) {
+                sheet.scrollTop += fieldBox.bottom - (sheetBox.bottom - pad);
+            } else if (fieldBox.top < sheetBox.top + pad) {
+                sheet.scrollTop -= (sheetBox.top + pad) - fieldBox.top;
+            }
+        };
+        const onFocusIn = event => {
+            const target = event.target;
+            if (!target || !target.closest || !target.closest('.ko-pax-sheet')) return;
+            setTimeout(() => revealFocusedField(target), 90);
+            setTimeout(() => revealFocusedField(target), 340);
+        };
+        body.classList.add('ko-pax-open');
+        syncViewport();
+        if (viewport) {
+            viewport.addEventListener('resize', syncViewport);
+            viewport.addEventListener('scroll', syncViewport);
+        }
+        window.addEventListener('orientationchange', syncViewport);
+        document.addEventListener('focusin', onFocusIn, true);
+        return () => {
+            if (raf) cancelAnimationFrame(raf);
+            if (viewport) {
+                viewport.removeEventListener('resize', syncViewport);
+                viewport.removeEventListener('scroll', syncViewport);
+            }
+            window.removeEventListener('orientationchange', syncViewport);
+            document.removeEventListener('focusin', onFocusIn, true);
+            body.classList.remove('ko-pax-open');
+            root.style.removeProperty('--ko-pax-vvh');
+            root.style.removeProperty('--ko-pax-vvtop');
+        };
+    }, [!!paxModal]);
     const [passportScan, setPassportScan] = useState(null); // {kind, msg, cur, total} tarama sürerken
     const [paxBatch, setPaxBatch] = useState(null);          // okunanların onay listesi
     const [pasteBox, setPasteBox] = useState(null);           // { text, single }
@@ -14388,8 +14444,8 @@ function App() {
                             style: { flex: 2, background: preview.length ? NAV : 'var(--p-ink-5)', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: 13, fontWeight: 500, fontSize: '14px', cursor: preview.length ? 'pointer' : 'default' }
                         }, preview.length ? ('✓ ' + preview.length + ' İsmi Gözden Geçir') : 'İsim bulunamadı'))));
         })(),
-        paxModal && (React.createElement("div", { className: "mo", onClick: () => setPaxModal(null) },
-            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
+        paxModal && (React.createElement("div", { className: "mo ko-pax-modal", role: "dialog", "aria-modal": "true", "aria-label": paxModal.idx === -1 ? "Yeni yolcu" : "Yolcu düzenle", onClick: () => setPaxModal(null) },
+            React.createElement("div", { className: "ms ko-pax-sheet", onClick: e => e.stopPropagation(), style: { paddingBottom: 24 } },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
                 React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 } },
                     React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, paxModal.scan ? (paxModal.scan.failed ? "🪪 Pasaport Okunamadı" : "🪪 Pasaporttan Okundu") : (paxModal.idx === -1 ? "👤 Yeni Yolcu" : "👤 Yolcu Düzenle")),
@@ -16887,7 +16943,7 @@ input:focus,select:focus,textarea:focus,.inp:focus{border-color:rgba(22,119,108,
   .lg-section-title{font-size:15px!important;margin:14px 0 9px!important}
   .lg-home-transfer-list,.lg-today-list-standalone{gap:8px!important}
 
-  /* Takvim: iPhone 16 Pro'da taşmadan daha ince hücreler. */
+  /* Takvim: iPhone Pro Max ekranında taşmadan daha ince hücreler. */
   .lg-month-cal-card,.ko-real-cal-card{padding:10px!important;border-radius:17px!important}
   .lg-month-title-main{font-size:16px!important}
   .lg-month-title-sub{font-size:9.5px!important}
@@ -17623,6 +17679,40 @@ button.lg-choice.is-active :where(span,div,small,b,strong){
   .view-hesap .ko-debt-secondary-chip{font-size:8.4px!important}
   /* iOS alanları 16px kalır; böylece dokununca ekran yakınlaşmaz. */
   .view-hesap .ko-debt-body :where(input,select,textarea,.inp){min-height:42px!important;padding:8px 9px!important;font-size:16px!important;border-radius:10px!important}
+}
+</style>
+<style id="ko-ios-passenger-scroll-v45">
+/* V45 · iOS klavyesinde yolcu penceresi donmaz; yalnız içerik kayar. */
+.mo,.ko-transfer-edit-modal{z-index:2200!important}
+.ko-pax-modal{
+  z-index:2400!important;left:0!important;right:0!important;bottom:auto!important;
+  top:var(--ko-pax-vvtop,0px)!important;height:var(--ko-pax-vvh,100dvh)!important;
+  max-height:var(--ko-pax-vvh,100dvh)!important;overflow:hidden!important;
+  display:flex!important;align-items:flex-end!important;justify-content:center!important;
+  touch-action:pan-y!important;overscroll-behavior:none!important;
+}
+.ko-pax-sheet{
+  width:min(100%,560px)!important;max-width:560px!important;
+  max-height:calc(var(--ko-pax-vvh,100dvh) - 16px)!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;scroll-behavior:auto!important;
+  scroll-padding-top:72px!important;scroll-padding-bottom:120px!important;
+  padding-bottom:calc(22px + var(--sa-b))!important;
+  contain:none!important;transform:none!important;
+}
+.ko-pax-sheet :where(input,select,textarea){
+  -webkit-user-select:text!important;user-select:text!important;touch-action:manipulation!important;
+}
+@media(max-width:700px){
+  body.ko-pax-open .tabbar{pointer-events:none!important}
+  .ko-pax-modal{padding:6px 7px calc(6px + var(--sa-b))!important}
+  .ko-pax-sheet{
+    width:100%!important;max-width:100%!important;
+    max-height:calc(var(--ko-pax-vvh,100dvh) - 12px - var(--sa-b))!important;
+    border-radius:20px 20px 13px 13px!important;padding:12px 13px calc(20px + var(--sa-b))!important;
+  }
+  .ko-pax-sheet :where(input,select,textarea){font-size:16px!important;min-height:44px!important}
 }
 </style>
 </body>
