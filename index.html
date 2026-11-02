@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-02-v500-profesyonel-v46-ios-keyboard-clean">
+<meta name="v500-release" content="2026-11-02-v500-profesyonel-v47-contact-delete-lock">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#123D4A">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Ölmez Transfer · Professional V46</title>
+<title>Ölmez Transfer · Professional V47</title>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -2863,6 +2863,7 @@ function moneyValue(v) {
     return Number.isFinite(n) ? n : 0;
 }
 const nm = v => (v || '').toLowerCase().replace(/[ıİ]/g, 'i').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u').replace(/[şŞ]/g, 's').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c');
+const contactDirectoryKey = value => nm(String(value || '')).replace(/\s+/g, ' ').trim();
 const flightCodeClean = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const firmSlug = v => nm(v).replace(/\s+/g, '');
 const isOlmezturParty = v => {
@@ -3307,6 +3308,16 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
     const preferredIsNewer = snapshotStamp(preferred) >= snapshotStamp(fallback);
     const newer = preferredIsNewer ? (preferred || {}) : (fallback || {});
     const older = preferredIsNewer ? (fallback || {}) : (preferred || {});
+    /* Rehber silmeleri transferlerden bağımsızdır. En yeni cihazın silme listesi
+       esas alınır; böylece eski transfer veya eski cihaz kişiyi geri getiremez. */
+    const deletedAgencies = new Set(((newer && newer.delAg) || (older && older.delAg) || []).map(contactDirectoryKey).filter(Boolean));
+    const deletedDrivers = new Set(((newer && newer.delDr) || (older && older.delDr) || []).map(contactDirectoryKey).filter(Boolean));
+    const protectedOlmezturKey = contactDirectoryKey(OL);
+    deletedAgencies.delete(protectedOlmezturKey);
+    const mergedAgencyPhones = { ...((older && older.ap) || {}), ...((newer && newer.ap) || {}) };
+    Object.keys(mergedAgencyPhones).forEach(name => {
+        if (deletedAgencies.has(contactDirectoryKey(name))) delete mergedAgencyPhones[name];
+    });
     const delA = new Set([
         ...((preferred && Array.isArray(preferred.delA)) ? preferred.delA : []),
         ...((fallback && Array.isArray(fallback.delA)) ? fallback.delA : [])
@@ -3324,8 +3335,11 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
         ...(preferred || {}),
         del: allDeleted,
         delA: Array.from(delA),
+        delAg: Array.from(deletedAgencies),
+        delDr: Array.from(deletedDrivers),
         t: mergeTransferLists((preferred || {}).t || [], (fallback || {}).t || [], allDeleted),
-        a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])]),
+        a: uniq([...(fallback && fallback.a || []), ...(preferred && preferred.a || [])])
+            .filter(name => contactDirectoryKey(name) === protectedOlmezturKey || !deletedAgencies.has(contactDirectoryKey(name))),
         dr: uniq([...(fallback && fallback.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d)), ...(preferred && preferred.dr || []).map(d => typeof d === 'string' ? d : JSON.stringify(d))]).map(x => {
             try {
                 return JSON.parse(x);
@@ -3333,8 +3347,8 @@ const mergeSnapshots = (preferred, fallback, deletedIds) => {
             catch (e) {
                 return x;
             }
-        }),
-        ap: { ...((older && older.ap) || {}), ...((newer && newer.ap) || {}) },
+        }).filter(d => !deletedDrivers.has(contactDirectoryKey(typeof d === 'string' ? d : d && d.name))),
+        ap: mergedAgencyPhones,
         ak: mergeById('ak'),
         db: mergeById('db'),
         tk: mergeById('tk'),
@@ -3415,7 +3429,8 @@ const snapshotContentSignature = snap => {
         objectContentSignature(s.a || []), objectContentSignature(s.ap || {}),
         objectContentSignature(s.dr || []), objectContentSignature(s.r || {}),
         koFastHash(String(s.ru || '')), objectContentSignature(s.cr || {}),
-        objectContentSignature(s.del || []), objectContentSignature(s.delA || [])
+        objectContentSignature(s.del || []), objectContentSignature(s.delA || []),
+        objectContentSignature(s.delAg || []), objectContentSignature(s.delDr || [])
     ].join('|');
 };
 const inferPlate = t => {
@@ -8361,25 +8376,57 @@ function DebtManager({ debts, setDebts, rates, tip, T, accountAdjustments }) {
                     React.createElement(DebtLedgerCard, { key: selectedDebt.id, d: selectedDebt, setDebts: setDebts, rates: rates, tip: tip, onClose: () => setSelectedDebtId(null) })))));
 }
 
-function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates }) {
+function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, drivers, setDrivers, onAddAgency, onAddDriver, onDeleteAgency, onDeleteDriver, onRenameAgency, onRenameDriver, debts, setDebts, tip, rates, T, accountAdjustments, sT, crossRates, setCrossRates }) {
     const [openAg, setOpenAg] = useState(false);
     const [newAgency, setNewAgency] = useState({ name: '', phone: '' });
     const [newDriver, setNewDriver] = useState({ name: '', phone: '' });
     const addAgency = () => {
         const name = (newAgency.name || '').trim(), phone = (newAgency.phone || '').trim();
         if (!name) return;
-        setAgencies(p => p.includes(name) ? p : [...p, name]);
-        setAgencyPhones(p => ({ ...p, [name]: phone }));
+        if (onAddAgency) onAddAgency(name, phone);
+        else {
+            setAgencies(p => p.includes(name) ? p : [...p, name]);
+            setAgencyPhones(p => ({ ...p, [name]: phone }));
+        }
         setNewAgency({ name: '', phone: '' });
         tip('Acenta eklendi');
     };
     const addDriver = () => {
         const name = (newDriver.name || '').trim(), phone = (newDriver.phone || '').trim();
         if (!name) return;
-        setDrivers(p => [...p.filter(x => x.name !== name), { name, phone }]);
+        if (onAddDriver) onAddDriver(name, phone);
+        else setDrivers(p => [...p.filter(x => x.name !== name), { name, phone }]);
         setNewDriver({ name: '', phone: '' });
         tip('Kaptan eklendi');
     };
+    const directoryAudit = React.useMemo(() => {
+        const agencyKeys = new Set((agencies || []).map(contactDirectoryKey));
+        const driverKeys = new Set((drivers || []).map(d => contactDirectoryKey(d && d.name)));
+        const agencyMap = new Map(), driverMap = new Map();
+        const add = (map, name, source, date) => {
+            const label = String(name || '').trim(), key = contactDirectoryKey(label);
+            if (!key || key === contactDirectoryKey(OL)) return;
+            const row = map.get(key) || { name: label, transfers: 0, accounts: 0, dates: new Set() };
+            if (source === 'transfer') row.transfers++;
+            else row.accounts++;
+            if (date) row.dates.add(String(date));
+            map.set(key, row);
+        };
+        (T || []).forEach(t => {
+            const agencyNames = [...new Set([t && t.givenBy, t && t.assignedTo, t && t.altAcenta, t && t.brokerFirm,
+                t && t.returnGivenBy, t && t.returnAssignedTo, t && t.returnAltAcenta].filter(Boolean))];
+            agencyNames.forEach(name => { if (!agencyKeys.has(contactDirectoryKey(name))) add(agencyMap, name, 'transfer', t && t.date); });
+            const driverName = t && (t.driverName || t.sofor);
+            if (driverName && !driverKeys.has(contactDirectoryKey(driverName))) add(driverMap, driverName, 'transfer', t && t.date);
+        });
+        [...(debts || []), ...(accountAdjustments || [])].forEach(row => {
+            const names = [...new Set([row && row.name, row && row.person, row && row.firm, row && row.company].filter(Boolean))];
+            names.forEach(name => { if (!agencyKeys.has(contactDirectoryKey(name))) add(agencyMap, name, 'account', row && (row.date || row.due)); });
+        });
+        const finish = map => [...map.values()].map(row => ({ ...row, dates: [...row.dates].sort().slice(0, 8) }))
+            .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+        return { agencies: finish(agencyMap), drivers: finish(driverMap) };
+    }, [T, agencies, drivers, debts, accountAdjustments]);
     return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 } },
         React.createElement(TakasHesap, { T: T, sT: sT, crossRates: crossRates || DEFAULT_CROSS_RATES, setCrossRates: setCrossRates, tip: tip }),
         React.createElement(DugunHesap, { T: T, sT: sT, tip: tip }),
@@ -8408,23 +8455,33 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     React.createElement("div", { style: { display: 'flex', gap: 6, flexShrink: 0 } },
                         miniBtn('Düzenle', onEdit, false),
                         onDel ? miniBtn('Sil', onDel, true) : null));
+                const auditRows = [...directoryAudit.agencies.map(x => ({ ...x, kind: 'Acenta / firma' })), ...directoryAudit.drivers.map(x => ({ ...x, kind: 'Kaptan' }))];
                 return React.createElement("div", { className: "ko-contact-groups" },
+                    auditRows.length > 0 && React.createElement("div", { className: "ko-contact-section", style: { borderColor: 'rgba(191,139,40,.34)', background: 'rgba(255,249,232,.72)' } },
+                        secTitle('Kayıtlarda var · rehberde yok'),
+                        React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 6 } }, auditRows.map(row => React.createElement("div", { key: row.kind + ':' + contactDirectoryKey(row.name), style: { padding: '8px 9px', borderRadius: 10, background: 'var(--p-white)', border: '1px solid rgba(191,139,40,.24)' } },
+                            React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' } },
+                                React.createElement("b", { style: { fontSize: 10.5, color: TX } }, row.name),
+                                React.createElement("span", { style: { fontSize: 8.5, color: SB, whiteSpace: 'nowrap' } }, row.kind)),
+                            React.createElement("div", { style: { marginTop: 3, fontSize: 9, color: SB, lineHeight: 1.35 } },
+                                [row.transfers ? row.transfers + ' transfer' : '', row.accounts ? row.accounts + ' hesap kaydı' : '', row.dates.length ? row.dates.join(', ') : ''].filter(Boolean).join(' · '))))),
+                        React.createElement("div", { style: { marginTop: 7, fontSize: 8.8, color: SB, lineHeight: 1.4 } }, 'Bu liste yalnız kontrol içindir; isimler rehbere otomatik eklenmez. İlgili transferi veya hesabı açıp düzeltebilirsin.')),
                     React.createElement("div", { className: "ko-contact-section ko-contact-agencies" },
                         secTitle('Acentalar'),
                         addRow(newAgency.name, e => setNewAgency(p => ({ ...p, name: e.target.value })), "Acenta adı",
                             newAgency.phone, e => setNewAgency(p => ({ ...p, phone: e.target.value })), addAgency),
                         React.createElement("div", { className: "ko-contact-grid" }, agencies.map((a, i) => React.createElement(React.Fragment, { key: i },
                             card(a, agencyPhones[a],
-                                () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } },
-                                a !== OL ? (() => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }) : null))))),
+                                () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { if (onRenameAgency) onRenameAgency(a, nn, pp); else { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } } },
+                                a !== OL ? (() => { if (onDeleteAgency) onDeleteAgency(a); else if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }) : null))))),
                     React.createElement("div", { className: "ko-contact-section ko-contact-drivers" },
                         secTitle('Kaptanlar'),
                         addRow(newDriver.name, e => setNewDriver(p => ({ ...p, name: e.target.value })), "Kaptan adı",
                             newDriver.phone, e => setNewDriver(p => ({ ...p, phone: e.target.value })), addDriver),
                         React.createElement("div", { className: "ko-contact-grid" }, drivers.map((d, i) => React.createElement(React.Fragment, { key: i },
                             card(d.name, d.phone,
-                                () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); },
-                                () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }))))));
+                                () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) { if (onRenameDriver) onRenameDriver(d.name, nn, pp); else setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); } },
+                                () => { if (onDeleteDriver) onDeleteDriver(d.name); else if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }))))));
             })()),
         React.createElement(DebtManager, { debts: debts, setDebts: setDebts, rates: rates, tip: tip, T: T, accountAdjustments: accountAdjustments }));
 }
@@ -9171,6 +9228,8 @@ function App() {
     const [agencies, setAgencies] = useState([OL]);
     const [drivers, setDrivers] = useState([]);
     const [agencyPhones, setAgencyPhones] = useState({});
+    const [deletedAgencyContacts, setDeletedAgencyContacts] = useState([]);
+    const [deletedDriverContacts, setDeletedDriverContacts] = useState([]);
     const [lastRateUpdate, setLastRateUpdate] = useState('');
     const [editId, setEditId] = useState(null);
     const [agIn, setAgIn] = useState(false);
@@ -9452,6 +9511,8 @@ function App() {
             a: Array.isArray(agencies) ? agencies : [OL],
             ap: agencyPhones || {},
             dr: Array.isArray(drivers) ? drivers : [],
+            delAg: Array.isArray(deletedAgencyContacts) ? deletedAgencyContacts : [],
+            delDr: Array.isArray(deletedDriverContacts) ? deletedDriverContacts : [],
             r: rates,
             ru: lastRateUpdate || '',
             ak: Array.isArray(aracK) ? aracK : [],
@@ -9464,7 +9525,7 @@ function App() {
             cr: crossRates
         };
         try { window.__OD_ARACK = Array.isArray(aracK) ? aracK : []; } catch (e) {}
-    }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates]);
+    }, [storageReady, T, agencies, agencyPhones, drivers, deletedAgencyContacts, deletedDriverContacts, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates]);
     useEffect(() => {
         const flushToLocal = () => {
             try {
@@ -9473,6 +9534,7 @@ function App() {
                 const nowIso = new Date().toISOString();
                 const core = {
                     t: s.t || [], a: s.a || [OL], ap: s.ap || {}, dr: s.dr || [],
+                    delAg: s.delAg || [], delDr: s.delDr || [],
                     r: s.r || rates, ru: s.ru || '', ak: s.ak || [], db: s.db || [],
                     adj: s.adj || [], tk: s.tk || [], tl: s.tl || [], au: s.au || [], tr: s.tr || [], cr: s.cr,
                     del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 27
@@ -9696,12 +9758,22 @@ function App() {
         const current = persistRef.current && persistRef.current.__ready ? persistRef.current : {};
         const nextT = alreadyMerged ? (d.t || []) : dedupeTransfers(d.t || []);
         if (recordListSignature(current.t, false) !== recordListSignature(nextT, false)) setT(nextT);
-        const ag = [...(d.a || [OL])];
+        const deletedAg = [...new Set((d.delAg || []).map(contactDirectoryKey).filter(Boolean))];
+        const deletedDr = [...new Set((d.delDr || []).map(contactDirectoryKey).filter(Boolean))];
+        const deletedAgSet = new Set(deletedAg);
+        const deletedDrSet = new Set(deletedDr);
+        deletedAgSet.delete(contactDirectoryKey(OL));
+        const ag = [...(d.a || [OL])].filter(name => contactDirectoryKey(name) === contactDirectoryKey(OL) || !deletedAgSet.has(contactDirectoryKey(name)));
         if (!ag.includes(OL))
             ag.unshift(OL);
         if (objectContentSignature(current.a || []) !== objectContentSignature(ag)) setAgencies(ag);
-        if (objectContentSignature(current.dr || []) !== objectContentSignature(d.dr || [])) setDrivers(d.dr || []);
-        if (objectContentSignature(current.ap || {}) !== objectContentSignature(d.ap || {})) setAgencyPhones(d.ap || {});
+        const nextDrivers = (d.dr || []).filter(row => !deletedDrSet.has(contactDirectoryKey(typeof row === 'string' ? row : row && row.name)));
+        if (objectContentSignature(current.dr || []) !== objectContentSignature(nextDrivers)) setDrivers(nextDrivers);
+        const nextPhones = { ...(d.ap || {}) };
+        Object.keys(nextPhones).forEach(name => { if (deletedAgSet.has(contactDirectoryKey(name))) delete nextPhones[name]; });
+        if (objectContentSignature(current.ap || {}) !== objectContentSignature(nextPhones)) setAgencyPhones(nextPhones);
+        if (objectContentSignature(current.delAg || []) !== objectContentSignature(deletedAg)) setDeletedAgencyContacts(deletedAg);
+        if (objectContentSignature(current.delDr || []) !== objectContentSignature(deletedDr)) setDeletedDriverContacts(deletedDr);
         if (d.r && objectContentSignature(current.r || {}) !== objectContentSignature(d.r)) setRates(prev => ({ ...prev, ...d.r }));
         if (d.ru && String(current.ru || '') !== String(d.ru)) setLastRateUpdate(d.ru);
         const delASet = new Set((d.delA || readDeletedAracIds() || []).map(String));
@@ -10096,7 +10168,7 @@ function App() {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(function(){
             try {
-                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, au: auditLog, tr: trashTransfers, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 27 };
+                const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, delAg: deletedAgencyContacts, delDr: deletedDriverContacts, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, au: auditLog, tr: trashTransfers, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 27 };
                 const saveSig = snapshotContentSignature(snapshotCore);
                 if (saveSig === lastSaveSigRef.current)
                     return;
@@ -10126,7 +10198,7 @@ function App() {
             } catch(inner) { console.error('[SAVE inner]', inner); }
         }, 70);
     }
-    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates, authUser]);
+    catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, deletedAgencyContacts, deletedDriverContacts, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
     useEffect(() => { try { localStorage.setItem('ko_cross_rates', JSON.stringify(crossRates)); } catch (e) {} }, [crossRates]);
     useEffect(() => { try { if(rememberMe) localStorage.setItem(REMEMBER_EMAIL_KEY, loginEmail || ''); else localStorage.removeItem(REMEMBER_EMAIL_KEY); } catch (e) {} }, [rememberMe, loginEmail]);
@@ -10491,18 +10563,82 @@ function App() {
         tip('✓ ' + koTitleCaseTR(r.name) + ' eklendi');
     };
     const paxCountryName = k => { const u = ULKELER.find(x => x.k === (k || 'TR')); return u ? u.n : (k || ''); };
-    const addAg = n => { if (n.trim() && !agencies.includes(n.trim()))
-        setAgencies(p => [...p, n.trim()]); };
+    const addAg = n => { if (n.trim()) addAgencyContact(n, ''); };
     const addAgencyContact = (name, phone) => {
         const nmv = (name || '').trim(), ph = (phone || '').trim();
         if (!nmv) return;
+        const key = contactDirectoryKey(nmv);
+        setDeletedAgencyContacts(p => (p || []).filter(x => contactDirectoryKey(x) !== key));
         setAgencies(p => p.includes(nmv) ? p : [...p, nmv]);
         setAgencyPhones(p => ({ ...p, [nmv]: ph }));
     };
     const addDriverContact = (name, phone) => {
         const nmv = (name || '').trim(), ph = (phone || '').trim();
         if (!nmv) return;
+        const key = contactDirectoryKey(nmv);
+        setDeletedDriverContacts(p => (p || []).filter(x => contactDirectoryKey(x) !== key));
         setDrivers(p => [...p.filter(d => d.name !== nmv), { name: nmv, phone: ph }]);
+    };
+    const contactUsageSummary = (name, kind) => {
+        const key = contactDirectoryKey(name);
+        const match = value => contactDirectoryKey(value) === key;
+        const transferRows = (T || []).filter(t => kind === 'agency'
+            ? [t && t.givenBy, t && t.assignedTo, t && t.altAcenta, t && t.brokerFirm,
+               t && t.returnGivenBy, t && t.returnAssignedTo, t && t.returnAltAcenta].some(match)
+            : [t && t.driverName, t && t.sofor].some(match));
+        const accountRows = [
+            ...(debts || []).filter(row => [row && row.name, row && row.person, row && row.firm, row && row.company].some(match)),
+            ...(accountAdjustments || []).filter(row => [row && row.firm, row && row.name, row && row.person].some(match))
+        ];
+        const dates = [...new Set(transferRows.map(t => String((t && t.date) || '').trim()).filter(Boolean))].sort().slice(0, 8);
+        return { transferCount: transferRows.length, accountCount: accountRows.length, dates };
+    };
+    const confirmContactDelete = (name, kind) => {
+        const usage = contactUsageSummary(name, kind);
+        const details = [];
+        if (usage.transferCount) details.push(usage.transferCount + ' transfer');
+        if (usage.accountCount) details.push(usage.accountCount + ' hesap kaydı');
+        const dateText = usage.dates.length ? ('\nTarihler: ' + usage.dates.join(', ') + (usage.transferCount > usage.dates.length ? '…' : '')) : '';
+        const warning = details.length
+            ? ('\n\nKayıtlarda hâlâ ' + details.join(' ve ') + ' içinde geçiyor.' + dateText + '\nEski kayıtlar silinmeyecek; onları daha sonra düzenleyebilirsin.')
+            : '\n\nEski transfer veya hesap kaydında kullanılmıyor.';
+        return window.confirm(name + ' rehberden silinsin mi?' + warning);
+    };
+    const forgetAgencyContact = name => {
+        const nmv = String(name || '').trim();
+        if (!nmv || isOlmezturParty(nmv) || !confirmContactDelete(nmv, 'agency')) return false;
+        const key = contactDirectoryKey(nmv);
+        setDeletedAgencyContacts(p => [...new Set([...(p || []).map(contactDirectoryKey), key])]);
+        setAgencies(p => (p || []).filter(x => contactDirectoryKey(x) !== key));
+        setAgencyPhones(p => { const next = { ...(p || {}) }; Object.keys(next).forEach(x => { if (contactDirectoryKey(x) === key) delete next[x]; }); return next; });
+        const usage = contactUsageSummary(nmv, 'agency');
+        tip('Acenta rehberden silindi' + (usage.transferCount || usage.accountCount ? ' · eski kayıtlar korundu' : ''));
+        return true;
+    };
+    const forgetDriverContact = name => {
+        const nmv = String(name || '').trim();
+        if (!nmv || !confirmContactDelete(nmv, 'driver')) return false;
+        const key = contactDirectoryKey(nmv);
+        setDeletedDriverContacts(p => [...new Set([...(p || []).map(contactDirectoryKey), key])]);
+        setDrivers(p => (p || []).filter(x => contactDirectoryKey(x && x.name) !== key));
+        const usage = contactUsageSummary(nmv, 'driver');
+        tip('Kaptan rehberden silindi' + (usage.transferCount || usage.accountCount ? ' · eski kayıtlar korundu' : ''));
+        return true;
+    };
+    const renameAgencyContact = (oldName, newName, phone) => {
+        const oldKey = contactDirectoryKey(oldName), nextName = String(newName || '').trim();
+        if (!nextName) return;
+        const nextKey = contactDirectoryKey(nextName);
+        setAgencies(p => [...new Set((p || []).map(x => contactDirectoryKey(x) === oldKey ? nextName : x))]);
+        setAgencyPhones(p => { const next = { ...(p || {}) }; Object.keys(next).forEach(x => { if (contactDirectoryKey(x) === oldKey) delete next[x]; }); next[nextName] = String(phone || '').trim(); return next; });
+        setDeletedAgencyContacts(p => [...new Set([...(p || []).filter(x => contactDirectoryKey(x) !== nextKey), ...(oldKey !== nextKey ? [oldKey] : [])])]);
+    };
+    const renameDriverContact = (oldName, newName, phone) => {
+        const oldKey = contactDirectoryKey(oldName), nextName = String(newName || '').trim();
+        if (!nextName) return;
+        const nextKey = contactDirectoryKey(nextName);
+        setDrivers(p => [...(p || []).filter(x => ![oldKey, nextKey].includes(contactDirectoryKey(x && x.name))), { name: nextName, phone: String(phone || '').trim() }]);
+        setDeletedDriverContacts(p => [...new Set([...(p || []).filter(x => contactDirectoryKey(x) !== nextKey), ...(oldKey !== nextKey ? [oldKey] : [])])]);
     };
     const cpTxt = txt => { copyText(txt); tip('Kopyalandı!'); };
     const submit = () => {
@@ -10579,16 +10715,8 @@ function App() {
             if (!(__r > 0)) { releaseSubmitLock(); tip('Kur henüz yüklenmedi — birkaç saniye sonra tekrar deneyin veya TL girin'); return; }
         }
         const cTRY = toTRYr(form.paymentAmount, form.paymentCurrency, form.date);
-        [form.givenBy, form.assignedTo, form.altAcenta].filter(Boolean).forEach(n => {
-            if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
-                addAgencyContact(n, '');
-        });
-        [form.returnGivenBy, form.returnAssignedTo, form.returnAltAcenta].filter(Boolean).forEach(n => {
-            if (!isOlmezturParty(n) && !agencies.some(a => nm(a) === nm(n)))
-                addAgencyContact(n, '');
-        });
-        if ((form.driverName || '').trim() && !drivers.some(d => nm(d.name) === nm(form.driverName)))
-            addDriverContact(form.driverName, form.driverPhone || '');
+        /* Transfer kaydetmek rehbere otomatik acenta veya kaptan eklemez.
+           Rehbere yalnız kullanıcının açık + / Kaydet işlemi ekleme yapar. */
         const prev = editId ? T.find(x => x.id === editId) : null;
         const companyCollected = !!(form.companyCollected || form.settled || (prev && isCompanyCollected(prev)));
         const returnTransferType = form.transferType === 'arrival' ? 'departure' : (form.transferType === 'departure' ? 'arrival' : form.transferType);
@@ -11244,8 +11372,8 @@ function App() {
         const quickShowOlmezNet = hasOlmezturSide(q) && !isPlate16Transfer(q);
         const quickAgencyListId = "ko-quick-agency-list";
         const quickDriverListId = "ko-quick-driver-list";
-        const quickAgencyOptions = uniqNames([OL, ...agencies, ...(T || []).flatMap(t => [t.givenBy, t.assignedTo, t.altAcenta])]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
-        const quickDriverOptions = uniqNames([...(drivers || []).map(d => d && d.name), ...(T || []).map(t => t.driverName)]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+        const quickAgencyOptions = uniqNames([OL, ...agencies]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+        const quickDriverOptions = uniqNames([...(drivers || []).map(d => d && d.name)]).sort((a, b) => String(a).localeCompare(String(b), 'tr'));
         const findQuickDriver = name => (drivers || []).find(d => nm(d.name) === nm(name));
         const saveQuickAgencies = () => {
             const draft = quickDraftRef.current || q;
@@ -11492,7 +11620,7 @@ function App() {
         };
     }, [T, aracK]);
     const stats = () => statsMemo;
-    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, au: auditLog, tr: trashTransfers, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 29, date: new Date().toISOString() });
+    const snapshotPayload = () => ({ t: dedupeTransfers(T), a: agencies, ap: agencyPhones, dr: drivers, delAg: deletedAgencyContacts, delDr: deletedDriverContacts, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, au: auditLog, tr: trashTransfers, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 30, date: new Date().toISOString() });
     const doBackup = async () => {
         if (!storageReady) { tip('Kayıtların yüklenmesini bekleyin'); return; }
         let payload = '';
@@ -12410,18 +12538,13 @@ function App() {
         };
         put(OL, '');
         (agencies || []).forEach(a => put(a, agencyPhones && agencyPhones[a]));
-        (T || []).forEach(t => {
-            put(t && t.givenBy, agencyPhones && agencyPhones[t && t.givenBy]);
-            put(t && t.assignedTo, agencyPhones && agencyPhones[t && t.assignedTo]);
-            put(t && t.altAcenta, agencyPhones && agencyPhones[t && t.altAcenta]);
-        });
         return Array.from(map.values()).sort((a, b) => {
             const ao = isOlmezturParty(a.name), bo = isOlmezturParty(b.name);
             if (ao && !bo) return -1;
             if (!ao && bo) return 1;
             return a.name.localeCompare(b.name, 'tr');
         });
-	    }, [T, agencies, agencyPhones]);
+	    }, [agencies, agencyPhones]);
 	    const formDriverRows = React.useMemo(() => {
         const map = new Map();
         const put = (name, phone) => {
@@ -12434,9 +12557,8 @@ function App() {
                 map.set(key, { name: n, phone: String(phone || '').trim() });
         };
         (drivers || []).forEach(d => put(d && d.name, d && d.phone));
-        (T || []).forEach(t => put(t && t.driverName, t && t.driverPhone));
         return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
-	    }, [T, drivers]);
+	    }, [drivers]);
     const renderReturnPartyFields = () => {
         const returnGivenValue = form.returnGivenBy || form.givenBy || '';
         const returnAssignedValue = form.returnAssignedTo || form.assignedTo || '';
@@ -13924,7 +14046,7 @@ function App() {
                         React.createElement("div", { style: { display: 'flex', gap: 7 } },
                             React.createElement("button", { onClick: () => { if (newDr.name.trim()) {
                                     const nd = { name: newDr.name.trim(), phone: newDr.phone.trim() };
-                                    setDrivers(p => [...p.filter(d => d.name !== nd.name), nd]);
+                                    addDriverContact(nd.name, nd.phone);
                                     sf({ driverName: nd.name, driverPhone: nd.phone });
                                     setNewDr({ name: '', phone: '' });
                                 } setDrIn(false); }, style: { flex: 1, background: G, border: 'none', color: 'var(--p-white)', borderRadius: 10, padding: 9, fontWeight: 470, cursor: 'pointer' } }, "\u2713 Kaydet & Se\u00E7"),
@@ -14347,9 +14469,9 @@ function App() {
                 React.createElement("div", { className: "card" },
                     React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX } }, "🏢 Acentalar"), React.createElement("button", { onClick: refreshRates, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, "↻ Kur")),
                     React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newAgencyContact.name, onChange: e => setNewAgencyContact(p => ({ ...p, name: e.target.value })), placeholder: "Acenta adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newAgencyContact.phone, onChange: e => setNewAgencyContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addAgencyContact(newAgencyContact.name, newAgencyContact.phone); setNewAgencyContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")),
-                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) { setAgencies(p => p.map(x => x === a ? nn : x).filter((x, idx, arr) => arr.indexOf(x) === idx)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; nx[nn] = pp; return nx; }); } }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => { if (window.confirm(a + ' silinsin mi?')) { setAgencies(p => p.filter(x => x !== a)); setAgencyPhones(p => { const nx = { ...p }; delete nx[a]; return nx; }); } }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))),
-                React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) setDrivers(p => [...p.filter(x => x.name !== d.name && x.name !== nn), { name: nn, phone: pp }]); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => { if (window.confirm(d.name + ' silinsin mi?')) setDrivers(p => p.filter(x => x.name !== d.name)); }, style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
-            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
+                    React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, agencies.map((a, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, a), React.createElement("div", { style: { fontSize: 11, color: SB } }, agencyPhones[a] || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Acenta adı', a) || a; const pp = prompt('Telefon', agencyPhones[a] || '') || ''; if (nn) renameAgencyContact(a, nn, pp); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), a !== OL && React.createElement("button", { onClick: () => forgetAgencyContact(a), style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))),
+                React.createElement("div", { className: "card" }, React.createElement("div", { style: { fontWeight: 450, fontSize: 14, color: TX, marginBottom: 10 } }, "👨🏻‍✈️ Kaptanlar"), React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 10 } }, React.createElement("input", { value: newDriverContact.name, onChange: e => setNewDriverContact(p => ({ ...p, name: e.target.value })), placeholder: "Kaptan adı", className: "inp", style: { flex: 1 } }), React.createElement("input", { value: newDriverContact.phone, onChange: e => setNewDriverContact(p => ({ ...p, phone: e.target.value })), placeholder: "Telefon", className: "inp", style: { width: 130, flex: 'none' } }), React.createElement("button", { onClick: () => { addDriverContact(newDriverContact.name, newDriverContact.phone); setNewDriverContact({ name: '', phone: '' }); }, style: { background: G, color: 'var(--p-white)', border: 'none', borderRadius: 10, padding: '0 14px', fontWeight: 450, cursor: 'pointer' } }, "+")), React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, drivers.map((d, i) => React.createElement("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, border: '1px solid ' + BOR, borderRadius: 12, background: INP } }, React.createElement("div", { style: { flex: 1 } }, React.createElement("div", { style: { fontWeight: 470, fontSize: 13, color: TX } }, d.name), React.createElement("div", { style: { fontSize: 11, color: SB } }, d.phone || 'Numara yok')), React.createElement("button", { onClick: () => { const nn = prompt('Kaptan adı', d.name) || d.name; const pp = prompt('Telefon', d.phone || '') || ''; if (nn) renameDriverContact(d.name, nn, pp); }, style: { background: NAV, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Düzenle'), React.createElement("button", { onClick: () => forgetDriverContact(d.name), style: { background: R, color: 'var(--p-white)', border: 'none', borderRadius: 9, padding: '8px 10px', fontWeight: 450, cursor: 'pointer' } }, 'Sil'))))))),
+            tab === 'hesap' && React.createElement(React.Fragment, null, React.createElement(HesapTab, { T: T, sT: setT, agencies: agencies, tip: tip, setTab: setTab, setExpandedT: setExpandedT, setFlt: setFlt, setSelectedRangeDay: setSelectedRangeDay, setDateRangeStart: setDateRangeStart, setOpenDays: setOpenDays, onEditTransfer: openFullEditT, accountAdjustments: accountAdjustments, setAccountAdjustments: setAccountAdjustments, debts: debts, setDebts: setDebts, rates: rates }), React.createElement(HesapExtras, { agencies: agencies, setAgencies: setAgencies, agencyPhones: agencyPhones, setAgencyPhones: setAgencyPhones, drivers: drivers, setDrivers: setDrivers, onAddAgency: addAgencyContact, onAddDriver: addDriverContact, onDeleteAgency: forgetAgencyContact, onDeleteDriver: forgetDriverContact, onRenameAgency: renameAgencyContact, onRenameDriver: renameDriverContact, debts: debts, setDebts: setDebts, tip: tip, rates: rates, T: T, accountAdjustments: accountAdjustments, sT: setT, crossRates: crossRates, setCrossRates: setCrossRates })),
             tab === 'arac' && React.createElement(AracCalendarTab, { tip: tip, aracK: aracK, setAracK: setAracK, onDeleteTransfer: deleteTransferById })),
         React.createElement("nav", { className: "tabbar" },
             React.createElement("div", { className: "tabbar-inner" },
