@@ -7946,7 +7946,7 @@ function HesapExtras({ agencies, setAgencies, agencyPhones, setAgencyPhones, dri
                     "aria-label": name + ' ' + txt.toLocaleLowerCase('tr-TR'), title: txt
                 }, txt);
                 const card = (kind, name, phone, onEdit, onDel) => React.createElement("div", { className: "ko-contact-card ko-directory-card is-" + kind },
-                    React.createElement("div", { className: "ko-directory-avatar", "aria-hidden": "true" }, kind === 'agency' ? 'A' : 'K'),
+                    React.createElement("div", { className: "ko-directory-avatar", "aria-hidden": "true" }, String(name || '?').trim().charAt(0).toLocaleUpperCase('tr-TR') || '?'),
                     React.createElement("div", { className: "ko-contact-info" },
                         React.createElement("div", { className: "ko-contact-name", title: name }, name),
                         React.createElement("div", { className: "ko-contact-phone" }, phone || 'Telefon eklenmedi')),
