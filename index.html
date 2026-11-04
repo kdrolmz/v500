@@ -110,6 +110,16 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
 @media(max-width:1050px){.ko-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:700px){.ko-directory-premium .ko-contact-toggle{min-height:53px!important;padding:8px 9px!important}.ko-directory-toggle-summary>span{display:none!important}.ko-directory-toggle-summary i{width:27px!important;height:27px!important}.ko-directory-body{padding:8px!important;border-radius:15px!important}.ko-directory-toolbar{grid-template-columns:1fr!important;gap:6px!important}.ko-directory-tabs button{min-height:36px!important;font-size:10.5px!important}.ko-directory-search{min-height:40px!important}.ko-directory-audit-list{grid-template-columns:1fr!important}.ko-directory-section-head{margin-top:1px!important}.ko-directory-add-form{grid-template-columns:minmax(0,1fr) 112px!important;padding:7px!important}.ko-directory-add-form .ko-contact-add{grid-column:1/-1!important;min-height:36px!important}.ko-directory-grid{grid-template-columns:1fr!important;gap:6px!important}.ko-directory-card{grid-template-columns:34px minmax(0,1fr) auto!important;min-height:56px!important;padding:7px!important}.ko-directory-card .ko-directory-mini-btn{min-width:0!important;padding:4px 7px!important;font-size:8.5px!important}.ko-directory-toggle-title b{font-size:13px!important}.ko-directory-toggle-title small{font-size:9px!important}}
 @media(max-width:390px){.ko-directory-card-actions{flex-direction:column!important;gap:3px!important}.ko-directory-card .ko-directory-mini-btn{width:48px!important;min-height:22px!important;padding:3px 4px!important;font-size:8px!important}.ko-directory-add-form{grid-template-columns:1fr!important}.ko-directory-add-form .ko-contact-add{grid-column:auto!important}.ko-directory-section-head strong{font-size:13px!important}}
+/* Premium WhatsApp mesaj önizlemesi */
+.ko-message-sheet{width:min(100%,600px)!important;max-width:600px!important;max-height:92dvh!important;padding:14px 16px calc(14px + var(--sa-b))!important;border-radius:22px 22px 16px 16px!important;background:linear-gradient(180deg,#FCFEFD,#F4F8F6)!important;border:1px solid rgba(27,78,75,.14)!important;box-shadow:0 -18px 48px rgba(10,42,45,.24)!important}
+.ko-message-sheet-head{padding:0 2px!important}.ko-message-sheet-head>div{font-size:14px!important;font-weight:650!important;color:#203A3D!important;-webkit-text-fill-color:#203A3D!important}
+.ko-premium-message-preview{max-height:min(57dvh,620px)!important;padding:16px!important;border-radius:16px!important;background:#FFF!important;border:1px solid rgba(31,80,77,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 12px 28px -25px rgba(11,50,52,.55)!important;scrollbar-gutter:stable!important}
+.ko-premium-message-text{display:block!important;width:100%!important;margin:0!important;text-align:left!important;direction:ltr!important;unicode-bidi:plaintext!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;word-break:break-word!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif!important;font-size:13px!important;font-weight:440!important;line-height:1.62!important;letter-spacing:0!important;color:#243538!important;-webkit-text-fill-color:#243538!important;font-variant-numeric:tabular-nums!important}
+.ko-premium-message-text.is-rtl{direction:rtl!important;text-align:right!important;font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Geeza Pro",sans-serif!important;line-height:1.75!important}
+.ko-message-language{border-radius:14px!important;background:#EEF5F2!important;border-color:rgba(31,80,77,.12)!important}.ko-message-actions{margin-bottom:0!important}.ko-message-actions>button{min-height:46px!important;border-radius:13px!important}
+.ko-whatsapp-send{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;background:linear-gradient(145deg,#25D366,#159A4A)!important;color:#FFF!important;-webkit-text-fill-color:#FFF!important;box-shadow:0 8px 18px -13px rgba(20,140,68,.8)!important}.ko-whatsapp-send svg{width:18px!important;height:18px!important;display:block!important;fill:currentColor!important;flex:0 0 auto!important}
+@media(max-width:700px){.ko-message-sheet{width:100%!important;max-width:100%!important;max-height:calc(94dvh - var(--sa-t))!important;padding:11px 11px calc(12px + var(--sa-b))!important;border-radius:21px 21px 0 0!important}.ko-premium-message-preview{max-height:52dvh!important;padding:13px 12px!important;border-radius:14px!important}.ko-premium-message-text{font-size:12.5px!important;line-height:1.57!important}.ko-premium-message-text.is-rtl{font-size:13px!important;line-height:1.72!important}.ko-message-language{align-items:stretch!important;flex-direction:column!important;padding:9px 10px!important}.ko-message-language>div:last-child{justify-content:flex-start!important}.ko-message-actions{position:sticky!important;bottom:0!important;padding-top:7px!important;background:linear-gradient(180deg,rgba(244,248,246,0),#F4F8F6 22%)!important}.ko-message-actions>button{min-height:44px!important;padding:11px!important}}
+@media(min-width:701px){.ko-message-sheet{align-self:center!important;border-radius:22px!important}.ko-premium-message-preview{padding:18px 20px!important}.ko-premium-message-text{font-size:13.2px!important;line-height:1.68!important}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMjI2RjY5Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiMxMjNGNDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQzI5MzYiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYSIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNGM0RDQTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOThCM0EiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNjciIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuODgiLz48cGF0aCBkPSJNNDIgMTEyYzMwLTIgNTUtMjAgODktNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdGNCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii45MiIvPjxwYXRoIGQ9Im0xMjIgNTEgMjMtNS03IDIyLTQtOS0xMi04WiIgZmlsbD0iI0YxRDU5QSIvPjx0ZXh0IHg9IjUyIiB5PSIxMTIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj7DljwvdGV4dD48L3N2Zz4=">
@@ -10847,7 +10857,7 @@ function App() {
         tip('Transfer silindi');
     };
     const getQ = locName => { const l = LOCS.find(x => x.n === locName); return l && l.q ? l.q : locName; };
-    const MSG_RULE = '━━━━━━━━━━━━━━━━━━━━';
+    const MSG_RULE = '──────────────────';
     const drvMsg = (t, withMaps) => {
         withMaps = false;
         const dt = new Date(t.date).toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -10855,33 +10865,35 @@ function App() {
         const px = paxList.map((p, i) => {
             let line = (i + 1) + '. ' + ((p.name || '').trim() || 'Misafir');
             const id = p.pasaport || p.tc || p.idNo || '';
-            if (id) line += ' · 🪪 ' + id;
+            if (id) line += '  —  Pasaport: ' + id;
             return line;
         }).join('\n');
-        let msg = '*TRANSFER PLANI*\n' + MSG_RULE + '\n';
+        const taskType = ((TIPLER.find(x => x.id === t.transferType) || {}).n || 'Transfer').toLocaleUpperCase('tr-TR');
+        const routeSelected = !!(t.route && t.route !== 'free');
+        const rotaItem = routeSelected ? ROTALAR.find(r => r.id === t.route) : null;
+        const guzergah = routeSelected ? (rotaItem ? rotaItem.n : (t.routeBridge || '')) : '';
+        const flight = flightCodeClean(String(t.flightCode || '').trim());
+        let msg = '*TRANSFER BİLGİLERİ*\n' + MSG_RULE + '\n';
+        msg += '📋 *Tür:* ' + taskType + '\n';
         msg += '🗓️ *Tarih:* ' + dt + '\n';
         msg += '🕒 *Saat:* ' + (t.time || '—') + '\n';
-        if (t.flightCode) msg += '✈️ *Uçuş:* ' + t.flightCode + '\n';
-        if (t.plate) msg += '🚐 *Plaka:* ' + t.plate + '\n';
+        if (flight) msg += '✈️ *Uçuş:* ' + flight + '\n';
         msg += '\n*GÜZERGÂH*\n' + MSG_RULE + '\n';
-        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
-        (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 *Ara Durak ' + (i + 1) + ':* ' + s2 + '\n'; });
-        if (t.route && t.route !== 'free') {
-            const rotaItem = ROTALAR.find(r => r.id === t.route);
-            if (rotaItem) msg += '🛣 *Rota:* ' + rotaItem.n + '\n';
-        }
-        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
+        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *Alış haritası:* ' + plm.url + '\n'; }
+        (t.extraStops || []).filter(Boolean).forEach((s2, i) => { msg += '🛑 *Ara durak ' + (i + 1) + ':* ' + s2 + '\n'; });
+        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *Varış haritası:* ' + dlm.url + '\n'; }
+        if (guzergah) msg += '🛣 *Rota:* ' + guzergah + '\n';
         const kisi = paxList.length || t.passengerCount || 0;
-        if (px) msg += '\n*MİSAFİR · ' + kisi + ' KİŞİ*\n' + MSG_RULE + '\n' + px + '\n';
-        else if (kisi) msg += '\n*MİSAFİR · ' + kisi + ' KİŞİ*\n' + MSG_RULE + '\n';
-        { const bagTxt = bagLabel(t); if (bagTxt) msg += '🧳 *Bagaj:* ' + bagTxt + '\n'; }
+        if (px) msg += '\n*MİSAFİR LİSTESİ (' + kisi + ' KİŞİ)*\n' + MSG_RULE + '\n' + px + '\n';
+        else if (kisi) msg += '\n*MİSAFİR (' + kisi + ' KİŞİ)*\n' + MSG_RULE + '\n';
         const foot = [];
-        if (t.paymentToMe) foot.push('💳 *Tahsilat:* Hesap/ödeme bana geldi');
+        { const bagTxt = bagLabel(t); if (bagTxt) foot.push('🧳 *Bagaj:* ' + bagTxt); }
+        if (t.paymentToMe) foot.push('💳 *Tahsilat:* Merkez tarafından alındı');
         else if (t.paymentCollect === 'no') foot.push('💳 *Tahsilat:* Yok');
         else if (t.paymentAmount) foot.push('💳 *Tahsilat:* ' + t.paymentAmount + ' ' + t.paymentCurrency);
         { const uz = uyrukOzeti(t.passengers); if (uz) foot.push('🌍 *Uyruk:* ' + uz); }
-        if (t.notes) foot.push('📝 *Not:* ' + t.notes);
-        if (foot.length) msg += '\n*OPERASYON*\n' + MSG_RULE + '\n' + foot.join('\n');
+        if (t.notes) foot.push('📝 *Operasyon notu:* ' + t.notes);
+        if (foot.length) msg += '\n*OPERASYON DETAYI*\n' + MSG_RULE + '\n' + foot.join('\n');
         return msg.trim();
     };
     const cusMsg = (t, lang) => {
@@ -10892,62 +10904,66 @@ function App() {
         const dmyTr = t.date ? new Date(t.date).toLocaleDateString('tr-TR') : '';
         const dmyEn = t.date ? new Date(t.date).toLocaleDateString('en-GB') : '';
         const saat = t.time || '';
-        const rotaItem = ROTALAR.find(r => r.id === (t.route || 'free'));
-        const guzergah = rotaItem ? rotaItem.n : (t.routeBridge || '');
+        const routeSelected = !!(t.route && t.route !== 'free');
+        const rotaItem = routeSelected ? ROTALAR.find(r => r.id === t.route) : null;
+        const guzergah = routeSelected ? (rotaItem ? rotaItem.n : (t.routeBridge || '')) : '';
         const stops = (t.extraStops || []).filter(Boolean);
         const tel = koPhonePretty(telefon);
         if (lang === 'en') {
-            let msg = 'Dear *' + name + '*,\n';
-            msg += 'Thank you for choosing us. Your journey has been carefully arranged with your comfort and schedule in mind.\n';
-            msg += '\n*JOURNEY DETAILS*\n' + MSG_RULE + '\n';
+            let msg = '*Dear* ' + String(name || '').toLocaleUpperCase('en-US') + ',\n';
+            msg += 'Thank you for choosing us. Your reservation details are provided below:\n';
+            msg += '\n*TRANSFER DETAILS*\n' + MSG_RULE + '\n';
             msg += '🗓 *Date:* ' + dmyEn + '\n';
             msg += '🕒 *Pickup time:* ' + saat + '\n';
-            if (t.flightCode) msg += '✈️ *Flight:* ' + t.flightCode + '\n';
-            msg += '\n*ROUTE*\n' + MSG_RULE + '\n';
-            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Pickup:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
+            if (String(t.flightCode || '').trim()) msg += '✈️ *Flight:* ' + flightCodeClean(t.flightCode) + '\n';
+            msg += '\n*ROUTE DETAILS*\n' + MSG_RULE + '\n';
+            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Pickup:* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *Pickup map:* ' + plm.url + '\n'; }
             stops.forEach((s2, i) => { msg += '🛑 *Stop ' + (i + 1) + ':* ' + s2 + '\n'; });
-            if (guzergah) msg += '🛣 *Via:* ' + guzergah + '\n';
-            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Drop-off:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
+            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Destination:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *Destination map:* ' + dlm.url + '\n'; }
+            if (guzergah) msg += '🛣 *Route:* ' + guzergah + '\n';
             msg += '\n*CAPTAIN & VEHICLE*\n' + MSG_RULE + '\n';
             msg += '👨🏻‍✈️ *Captain:* ' + kaptan + '\n';
             msg += '📞 *Phone:* ' + tel + '\n';
-            msg += '🚘 *Plate:* ' + plaka + '\n';
+            msg += '🚘 *Plate:* ' + String(plaka).toUpperCase() + '\n';
+            msg += '\nWe wish you a pleasant and comfortable journey.\n*Kind regards*';
             return msg.trim();
         }
         if (lang === 'ar') {
             const ltr = v => '\u2066' + String(v == null ? '' : v) + '\u2069';
-            let msg = 'السيد/السيدة *' + name + '*،\n';
-            msg += 'نشكركم لاختياركم لنا. تم إعداد رحلتكم بعناية مع مراعاة راحتكم ووقتكم.\n';
-            msg += '\n*تفاصيل الرحلة*\n' + MSG_RULE + '\n';
+            let msg = '*السيد/السيدة* ' + String(name || '').toLocaleUpperCase('en-US') + '،\n';
+            msg += 'نشكركم لاختياركم لنا. تجدون تفاصيل الحجز الخاص بكم أدناه:\n';
+            msg += '\n*تفاصيل النقل*\n' + MSG_RULE + '\n';
             msg += '🗓 *التاريخ:* ' + ltr(dmyEn) + '\n';
             msg += '🕒 *وقت الانطلاق:* ' + ltr(saat) + '\n';
-            if (t.flightCode) msg += '✈️ *رقم الرحلة:* ' + ltr(t.flightCode) + '\n';
-            msg += '\n*المسار*\n' + MSG_RULE + '\n';
-            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *نقطة الانطلاق:* ' + ltr(plm.name) + '\n'; if (plm.url) msg += '🗺 ' + ltr(plm.url) + '\n'; }
+            if (String(t.flightCode || '').trim()) msg += '✈️ *رقم الرحلة:* ' + ltr(flightCodeClean(t.flightCode)) + '\n';
+            msg += '\n*تفاصيل المسار*\n' + MSG_RULE + '\n';
+            { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *نقطة الانطلاق:* ' + ltr(plm.name) + '\n'; if (plm.url) msg += '🗺️ *خريطة الانطلاق:* ' + ltr(plm.url) + '\n'; }
             stops.forEach((s2, i) => { msg += '🛑 *محطة ' + (i + 1) + ':* ' + ltr(s2) + '\n'; });
-            if (guzergah) msg += '🛣 *عبر:* ' + ltr(guzergah) + '\n';
-            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *نقطة الوصول:* ' + ltr(dlm.name) + '\n'; if (dlm.url) msg += '🗺 ' + ltr(dlm.url) + '\n'; }
+            { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *نقطة الوصول:* ' + ltr(dlm.name) + '\n'; if (dlm.url) msg += '🗺️ *خريطة الوصول:* ' + ltr(dlm.url) + '\n'; }
+            if (guzergah) msg += '🛣 *المسار:* ' + ltr(guzergah) + '\n';
             msg += '\n*السائق والمركبة*\n' + MSG_RULE + '\n';
-            msg += '👨🏻‍✈️ *الكابتن:* ' + ltr(kaptan) + '\n';
+            msg += '👨🏻‍✈️ *السائق:* ' + ltr(kaptan) + '\n';
             msg += '📞 *الهاتف:* ' + ltr(tel) + '\n';
-            msg += '🚘 *اللوحة:* ' + ltr(plaka) + '\n';
+            msg += '🚘 *اللوحة:* ' + ltr(String(plaka).toUpperCase()) + '\n';
+            msg += '\nنتمنى لكم رحلة ممتعة ومريحة.\n*مع خالص التحية*';
             return msg.trim();
         }
-        let msg = 'Sayın *' + name + '*,\n';
-        msg += 'Bizi tercih ettiğiniz için teşekkür ederiz. Yolculuğunuzu konforunuz ve zamanınız gözetilerek özenle planladık.\n';
-        msg += '\n*YOLCULUK BİLGİLERİ*\n' + MSG_RULE + '\n';
-        msg += '🗓 *Tarih:* ' + dmyTr + '\n';
+        let msg = '*Sayın* ' + String(name || '').toLocaleUpperCase('tr-TR') + ',\n';
+        msg += 'Bizi tercih ettiğiniz için teşekkür ederiz. Rezervasyon detaylarınız aşağıda yer almaktadır:\n';
+        msg += '\n*TRANSFER DETAYI*\n' + MSG_RULE + '\n';
+        msg += '🗓️ *Tarih:* ' + dmyTr + '\n';
         msg += '🕒 *Alış saati:* ' + saat + '\n';
-        if (t.flightCode) msg += '✈️ *Uçuş kodu:* ' + t.flightCode + '\n';
+        if (String(t.flightCode || '').trim()) msg += '✈️ *Uçuş kodu:* ' + flightCodeClean(t.flightCode) + '\n';
         msg += '\n*GÜZERGÂH*\n' + MSG_RULE + '\n';
-        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺 ' + plm.url + '\n'; }
+        { const plm = koLocMaps(t.pickup, t.pickupMaps); msg += '📍 *Alış:* ' + plm.name + '\n'; if (plm.url) msg += '🗺️ *Alış haritası:* ' + plm.url + '\n'; }
         stops.forEach((s2, i) => { msg += '🛑 *Ara durak ' + (i + 1) + ':* ' + s2 + '\n'; });
+        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺️ *Varış haritası:* ' + dlm.url + '\n'; }
         if (guzergah) msg += '🛣 *Rota:* ' + guzergah + '\n';
-        { const dlm = koLocMaps(t.dropoff, t.dropoffMaps); msg += '🏁 *Varış:* ' + dlm.name + '\n'; if (dlm.url) msg += '🗺 ' + dlm.url + '\n'; }
         msg += '\n*KAPTAN & ARAÇ*\n' + MSG_RULE + '\n';
         msg += '👨🏻‍✈️ *Kaptan:* ' + kaptan + '\n';
         msg += '📞 *Telefon:* ' + tel + '\n';
-        msg += '🚘 *Plaka:* ' + plaka + '\n';
+        msg += '🚘 *Plaka:* ' + String(plaka).toUpperCase() + '\n';
+        msg += '\nKeyifli ve konforlu bir yolculuk geçirmenizi dileriz.\n*Saygılarımızla*';
         return msg.trim();
     };
     const brdMsg = t => {
@@ -11799,27 +11815,18 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12, color: TX, marginTop: 2, lineHeight: 1.4 } }, t.notes)
                     )
                 ),
-                React.createElement("div", { className: 'tcard-message-actions', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 6, marginBottom: 6 } },
+                React.createElement("div", { className: 'tcard-message-actions', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 6, marginBottom: 6 } },
                     React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'drv'); }, style: { background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '👨🏻‍✈️ Kaptan'),
                     React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'cus'); }, style: { background: 'var(--info-bg)', color: 'var(--info)', border: '1px solid var(--info-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '👤 Misafir'),
                     React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'recv', t: t, txt: receiverMsg(t) }); }, style: { background: 'var(--warn-bg)', color: 'var(--warn)', border: '1px solid var(--warn-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '🤝 Karşılama'),
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'bos'); }, style: { background: 'var(--brand-soft)', color: 'var(--ink-2)', border: '1px solid var(--line-2)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '📄 Boş G/D')
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'bos'); }, style: { gridColumn: '1 / -1', background: 'var(--brand-soft)', color: 'var(--ink-2)', border: '1px solid var(--line-2)', borderRadius: 10, padding: '8px 10px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, "🚐 Boş güzergâh mesajı")
                 ),
                 React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'capinfo', t: t, txt: capInfoMsg(t) }); }, style: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '9px 8px', fontWeight: 500, cursor: 'pointer', fontSize: 11, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
                     React.createElement("span", null, '🪪'),
                     React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, 'Kaptan Bilgisi · Ad · No · Plaka')
                 ),
-                React.createElement("div", { className: 'tcard-item-actions', style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 6 } },
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); copyT(t); }, style: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, color: 'var(--ink-2)', fontWeight: 470 } }, '⧉ Kopyala'),
+                React.createElement("div", { className: 'tcard-item-actions', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
                     React.createElement("button", { onClick: e => { e.stopPropagation(); editT(t); }, style: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, color: 'var(--ink-2)', fontWeight: 470 } }, '✎ Düzenle'),
-                    t.driverPhone
-                        ? React.createElement("button", { onClick: e => {
-                            e.stopPropagation();
-                            const cl = t.driverPhone.replace(/\D/g, '');
-                            const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl;
-                            openExternalSecure('https://wa.me/' + n + '?text=' + encodeURIComponent(drvMsg(t, false)));
-                        }, style: { background: 'var(--p-tint-2)', color: 'var(--p-ink)', border: '1px solid var(--p-line-3)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, fontWeight: 470 } }, '📱 WA')
-                        : React.createElement("button", { disabled: true, style: { background: 'var(--surface)', color: 'var(--ink-4)', border: '1px solid var(--line)', borderRadius: 10, padding: '9px 0', fontSize: 11, fontWeight: 470 } }, '📱 WA'),
                     React.createElement("button", { onClick: e => { e.stopPropagation(); delT(t.id); }, style: { background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid var(--err-bd)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, fontWeight: 470 } }, '🗑 Sil')
                 )
             )
@@ -14409,24 +14416,26 @@ function App() {
                     renderTransferItem(hc)));
         })(),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
-            React.createElement("div", { className: "ms", onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: "ms ko-message-sheet", onClick: e => e.stopPropagation() },
                 React.createElement("div", { style: { width: 40, height: 4, background: BOR, borderRadius: 3, margin: '0 auto 14px' } }),
-                React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
-                    React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, msgM.tp === 'drv' ? '👨🏻‍✈️ Kaptana' : msgM.tp === 'brd' ? '🪧 Tabela' : msgM.tp === 'recv' ? '🛬 Karşılamacıya' : msgM.tp === 'bos' ? '🚐 Boş Gidiş/Dönüş' : msgM.tp === 'capinfo' ? '🪪 İş Verene Kaptan Bilgisi' : '✉️ Misafire'),
+                React.createElement("div", { className: "ko-message-sheet-head", style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+                    React.createElement("div", { style: { fontWeight: 450, fontSize: 15, color: TX } }, msgM.tp === 'drv' ? '👨🏻‍✈️ Kaptana' : msgM.tp === 'brd' ? '🪧 Tabela' : msgM.tp === 'recv' ? '🛬 Karşılamacıya' : msgM.tp === 'bos' ? '🚐 Boş güzergâh mesajı' : msgM.tp === 'capinfo' ? '🪪 İş Verene Kaptan Bilgisi' : '✉️ Misafire'),
                     React.createElement("button", { onClick: () => setMsgM(null), style: { background: INP, border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14 } }, "\u2715")),
                 (msgM.tp === 'recv' || msgM.tp === 'bos')
                     ? React.createElement("textarea", { value: msgM.txt || '', onChange: e => setMsgM(m => ({ ...m, txt: e.target.value })), style: { width: '100%', minHeight: msgM.tp === 'bos' ? 140 : '46vh', maxHeight: '58vh', overflowY: 'auto', WebkitUserSelect: 'text', userSelect: 'text', background: 'var(--p-white)', borderRadius: 12, padding: 12, marginBottom: 12, border: '1px solid ' + BOR, resize: 'vertical', fontSize: 13, color: TX, lineHeight: 1.6, fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif' } })
                     : React.createElement("div", { className: "ko-premium-message-preview", style: { background: INP, borderRadius: 12, padding: 12, marginBottom: 12, border: '1px solid ' + BOR, maxHeight: '50vh', overflowY: 'auto' } },
-                        React.createElement("pre", { className: "ko-premium-message-text", style: { whiteSpace: 'pre-wrap', fontSize: 12, color: TX, fontFamily: '-apple-system,monospace', lineHeight: 1.6, margin: 0 } }, activeMsg)),
-                msgM.tp === 'cus' && (React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'var(--p-tint-3)', border: '1px solid ' + BOR, borderRadius: 12, padding: '10px 12px', marginBottom: 12 } },
+                        React.createElement("pre", { className: "ko-premium-message-text" + ((msgM.tp === 'cus' && (msgM.lang || 'tr') === 'ar') ? ' is-rtl' : ''), dir: (msgM.tp === 'cus' && (msgM.lang || 'tr') === 'ar') ? 'rtl' : 'ltr', style: { whiteSpace: 'pre-wrap', fontSize: 12, color: TX, fontFamily: '-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif', lineHeight: 1.6, margin: 0 } }, activeMsg)),
+                msgM.tp === 'cus' && (React.createElement("div", { className: "ko-message-language", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'var(--p-tint-3)', border: '1px solid ' + BOR, borderRadius: 12, padding: '10px 12px', marginBottom: 12 } },
                     React.createElement("div", null,
                         React.createElement("div", { style: { fontWeight: 450, fontSize: 12, color: NAV } }, "🌐 Misafir mesaj dili"),
                         React.createElement("div", { style: { fontSize: 10, color: SB } }, "Mesajı Türkçe, English veya العربية olarak gönderebilirsin.")),
                     React.createElement("div", { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                         [['tr','Türkçe'],['en','English'],['ar','العربية']].map(([lc,lb]) => React.createElement("button", { key: lc, onClick: () => setMsgM(m => ({ ...m, lang: lc })), style: { background: (msgM.lang || 'tr') === lc ? NAV : 'var(--p-white)', color: (msgM.lang || 'tr') === lc ? 'var(--p-white)' : NAV, border: '1px solid ' + ((msgM.lang || 'tr') === lc ? NAV : BOR), borderRadius: 999, padding: '8px 10px', fontWeight: 450, fontSize: '11px', cursor: 'pointer' } }, lb))))),
-                React.createElement("div", { style: { display: 'flex', gap: 8, marginBottom: 18 } },
+                React.createElement("div", { className: "ko-message-actions", style: { display: 'flex', gap: 8, marginBottom: 18 } },
                     React.createElement("button", { className: "ko-message-copy-btn", onClick: () => cpTxt(activeMsg), style: { flex: 1, background: 'var(--p-white)', color: 'var(--p-brand)', border: '1.5px solid var(--p-line-3)', borderRadius: 13, padding: 13, fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }, "Kopyala"),
-                    ((msgM.tp === 'drv' && msgM.t?.driverPhone) || (msgM.tp === 'cus' && msgM.t?.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone)) && (React.createElement("button", { onClick: () => { const raw = msgM.tp === 'drv' ? msgM.t.driverPhone : ((msgM.t.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone) || ''); const cl = String(raw || '').replace(/\D/g, ''); const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : '90' + cl; if (n) openExternalSecure('https://wa.me/' + n + '?text=' + encodeURIComponent(activeMsg)); }, style: { background: 'var(--p-ink)', color: 'var(--p-white)', border: 'none', borderRadius: 13, padding: '13px 16px', fontWeight: 450, fontSize: '13px', cursor: 'pointer' } }, "WA")))))),
+                    (msgM.tp === 'bos' || (msgM.tp === 'drv' && msgM.t?.driverPhone) || (msgM.tp === 'cus' && msgM.t?.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone)) && (React.createElement("button", { className: "ko-whatsapp-send", "aria-label": "WhatsApp ile gönder", onClick: () => { const raw = msgM.tp === 'drv' ? msgM.t.driverPhone : (msgM.tp === 'cus' ? ((msgM.t.passengers && msgM.t.passengers[0] && msgM.t.passengers[0].phone) || '') : ''); const cl = String(raw || '').replace(/\D/g, ''); const n = cl.startsWith('0') ? '90' + cl.slice(1) : cl.startsWith('90') ? cl : (cl ? '90' + cl : ''); const target = n ? ('https://wa.me/' + n + '?text=' + encodeURIComponent(activeMsg)) : ('https://wa.me/?text=' + encodeURIComponent(activeMsg)); openExternalSecure(target); }, style: { minWidth: 136, border: 'none', borderRadius: 13, padding: '13px 16px', fontWeight: 650, fontSize: '13px', cursor: 'pointer' } },
+                        React.createElement("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", focusable: "false" }, React.createElement("path", { d: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.372-.01-.57-.01-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479s1.065 2.875 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884a9.821 9.821 0 0 1 7.021 2.91 9.825 9.825 0 0 1 2.9 7.026c-.003 5.45-4.437 9.884-9.888 9.884m8.413-18.297A11.815 11.815 0 0 0 12.055 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.3-1.654a11.882 11.882 0 0 0 5.694 1.448h.005c6.558 0 11.893-5.335 11.896-11.893a11.821 11.821 0 0 0-3.488-8.413Z" })),
+                        React.createElement("span", null, "WhatsApp"))))))),
         bkpM && (function () {
             const TEAL = 'var(--p-pos-ink)';
             const isYedek = bkpTab === 'yedek';
