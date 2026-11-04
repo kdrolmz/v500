@@ -11014,32 +11014,36 @@ function App() {
         const dropoff = cleanLoc(t.dropoff);
         const transferTime = t.time || '00:00';
         const tDate = t.date || '';
-        const today = new Date(); today.setHours(0,0,0,0);
-        const tDateObj = new Date(tDate + 'T00:00:00'); tDateObj.setHours(0,0,0,0);
-        const diffDays = Math.round((tDateObj - today) / 86400000);
-        const gunText = diffDays >= 1 ? 'Yarın' : 'Bugün';
         const rawPickup = t.pickup || '';
         const rawDropoff = t.dropoff || '';
         const isAirportLoc = loc => /^(İST|IST|SAW|ESB|ADB|AYT|DLM|BJV|TZX|BTZ)$/i.test(String(loc || '').trim()) || /[Hh]avalimanı|[Aa]irport|\((?:İST|IST|SAW|ESB|ADB|AYT|DLM|BJV|TZX|BTZ)\)/.test(String(loc || ''));
         const isPickupAirport = isAirportLoc(rawPickup);
         const isDropoffAirport = isAirportLoc(rawDropoff);
-        const [h, m] = transferTime.split(':').map(Number);
-        const fmtTime = (hh, mm) => hh.toString().padStart(2, '0') + ':' + mm.toString().padStart(2, '0');
-        const roundTime = (hh, mm) => { const r = Math.round(mm / 30) * 30; return r >= 60 ? [(hh + 1) % 24, 0] : [hh, r]; };
-        let msg = '';
-        if (isPickupAirport && !isDropoffAirport) {
-            const eH = h - 2 < 0 ? h - 2 + 24 : h - 2;
-            msg = gunText + ' ' + fmtTime(eH, m) + "'a kadar " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş gidecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON;
-        } else if (isDropoffAirport && !isPickupAirport) {
-            const [rH, rM] = roundTime(Math.floor((h * 60 + m + 150) / 60) % 24, (h * 60 + m + 150) % 60);
-            msg = gunText + ' ' + fmtTime(rH, rM) + "'dan sonra " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş dönecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON;
-        } else if (t.transferType === 'arrival') {
-            const eH = h - 2 < 0 ? h - 2 + 24 : h - 2;
-            msg = gunText + ' ' + fmtTime(eH, m) + "'a kadar " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş gidecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON;
-        } else {
-            const [rH, rM] = roundTime(Math.floor((h * 60 + m + 150) / 60) % 24, (h * 60 + m + 150) % 60);
-            msg = gunText + ' ' + fmtTime(rH, rM) + "'dan sonra " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş dönecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON;
+        const isEmptyOutbound = (isPickupAirport && !isDropoffAirport) || (!(isDropoffAirport && !isPickupAirport) && t.transferType === 'arrival');
+        const dateParts = String(tDate).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const timeParts = String(transferTime).match(/^(\d{1,2}):(\d{2})$/);
+        let emptyAt = null;
+        if (dateParts && timeParts) {
+            const transferAt = new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]), Number(timeParts[1]), Number(timeParts[2]), 0, 0);
+            if (!isNaN(transferAt.getTime())) {
+                emptyAt = new Date(transferAt.getTime() + (isEmptyOutbound ? -120 : 150) * 60000);
+                if (!isEmptyOutbound) emptyAt.setMinutes(Math.round(emptyAt.getMinutes() / 30) * 30, 0, 0);
+            }
         }
+        const fmtDateTime = d => {
+            if (!d) return { day: 'Bugün', time: transferTime };
+            const now = new Date();
+            const dayNo = x => Date.UTC(x.getFullYear(), x.getMonth(), x.getDate()) / 86400000;
+            const diff = Math.round(dayNo(d) - dayNo(now));
+            const day = diff === 0 ? 'Bugün' : diff === 1 ? 'Yarın' : d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+            const time = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+            return { day, time };
+        };
+        const emptyWhen = fmtDateTime(emptyAt);
+        const prefix = emptyWhen.day + ' ' + emptyWhen.time;
+        const msg = isEmptyOutbound
+            ? prefix + "'a kadar " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş gidecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON
+            : prefix + "'dan sonra " + dropoff + danEk(dropoff) + ' ' + pickup + yaEk(pickup) + ' boş dönecek ' + vehIco + ' ' + vehName + ' aracım vardır.\n\n📞 ' + TELEFON;
         return msg.trim();
     };
     const openMsg = (t, tp) => {
@@ -11815,19 +11819,19 @@ function App() {
                         React.createElement("div", { style: { fontSize: 12, color: TX, marginTop: 2, lineHeight: 1.4 } }, t.notes)
                     )
                 ),
-                React.createElement("div", { className: 'tcard-message-actions', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 6, marginBottom: 6 } },
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'drv'); }, style: { background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '👨🏻‍✈️ Kaptan'),
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'cus'); }, style: { background: 'var(--info-bg)', color: 'var(--info)', border: '1px solid var(--info-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '👤 Misafir'),
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'recv', t: t, txt: receiverMsg(t) }); }, style: { background: 'var(--warn-bg)', color: 'var(--warn)', border: '1px solid var(--warn-bd)', borderRadius: 10, padding: '9px 0', fontWeight: 470, cursor: 'pointer', fontSize: 11 } }, '🤝 Karşılama'),
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'bos'); }, style: { gridColumn: '1 / -1', background: 'var(--brand-soft)', color: 'var(--ink-2)', border: '1px solid var(--line-2)', borderRadius: 10, padding: '8px 10px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, "🚐 Boş güzergâh mesajı")
+                React.createElement("div", { className: 'tcard-message-actions', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 6, marginBottom: 6 } },
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'drv'); }, style: { minHeight: 40, background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '8px 6px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, '👨🏻‍✈️ Kaptan'),
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'cus'); }, style: { minHeight: 40, background: 'var(--info-bg)', color: 'var(--info)', border: '1px solid var(--info-bd)', borderRadius: 10, padding: '8px 6px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, '👤 Misafir'),
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'recv', t: t, txt: receiverMsg(t) }); }, style: { minHeight: 40, background: 'var(--warn-bg)', color: 'var(--warn)', border: '1px solid var(--warn-bd)', borderRadius: 10, padding: '8px 6px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, '🤝 Karşılama'),
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); openMsg(t, 'bos'); }, style: { minHeight: 40, background: 'var(--brand-soft)', color: 'var(--ink-2)', border: '1px solid var(--line-2)', borderRadius: 10, padding: '8px 6px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, lineHeight: 1.2, whiteSpace: 'normal' } }, "🚐 Boş güzergâh mesajı")
                 ),
-                React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'capinfo', t: t, txt: capInfoMsg(t) }); }, style: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '9px 8px', fontWeight: 500, cursor: 'pointer', fontSize: 11, marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                React.createElement("button", { onClick: e => { e.stopPropagation(); setMsgM({ tp: 'capinfo', t: t, txt: capInfoMsg(t) }); }, style: { width: '100%', minHeight: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--ok-bg)', color: 'var(--ok)', border: '1px solid var(--ok-bd)', borderRadius: 10, padding: '8px 8px', fontWeight: 500, cursor: 'pointer', fontSize: 10.5, marginBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
                     React.createElement("span", null, '🪪'),
                     React.createElement("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, 'Kaptan Bilgisi · Ad · No · Plaka')
                 ),
                 React.createElement("div", { className: 'tcard-item-actions', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); editT(t); }, style: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, color: 'var(--ink-2)', fontWeight: 470 } }, '✎ Düzenle'),
-                    React.createElement("button", { onClick: e => { e.stopPropagation(); delT(t.id); }, style: { background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid var(--err-bd)', borderRadius: 10, padding: '9px 0', cursor: 'pointer', fontSize: 11, fontWeight: 470 } }, '🗑 Sil')
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); editT(t); }, style: { minHeight: 38, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '8px 6px', cursor: 'pointer', fontSize: 10.5, color: 'var(--ink-2)', fontWeight: 500 } }, '✎ Düzenle'),
+                    React.createElement("button", { onClick: e => { e.stopPropagation(); delT(t.id); }, style: { minHeight: 38, background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid var(--err-bd)', borderRadius: 10, padding: '8px 6px', cursor: 'pointer', fontSize: 10.5, fontWeight: 500 } }, '🗑 Sil')
                 )
             )
         );
