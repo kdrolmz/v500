@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-05-v500-ucus-kodu-sade-gecmis-100">
+<meta name="v500-release" content="2026-11-05-v500-guvenli-alan-logo-101">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#123D4A">
-<link rel="manifest" href="./manifest.json?v=ko-sync-6">
+<link rel="manifest" href="./manifest.json?v=ko-safe-logo-7">
 <script>(function(){try{var q=new URLSearchParams(location.search);if(navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||q.get('mode')==='app')document.documentElement.setAttribute('data-ko-installed','1')}catch(e){}})();</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -129,11 +129,13 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
 </style>
 <style id="ko-installed-safe-area">
 :root{--sa-l:env(safe-area-inset-left,0px);--sa-r:env(safe-area-inset-right,0px)}
+.ko-splash-mark img{display:block;width:100%;height:100%;object-fit:cover;border-radius:23px}
 .auth-shell{min-height:100vh!important;min-height:100dvh!important}
 @media(max-width:700px) and (display-mode:standalone){
-  html,body,#root{background:#123D4A!important}
+  html,body{background:#FBFDFC!important}
+  #root{background:var(--bg)!important}
   .app-shell{
-    background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 3px) no-repeat,var(--bg)!important
+    background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 18px) no-repeat,var(--bg)!important
   }
   main.main-cont{
     top:var(--sa-t)!important;
@@ -147,8 +149,9 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
   main.main-cont{padding-left:max(9px,var(--sa-l))!important;padding-right:max(9px,var(--sa-r))!important}
 }
 @media(max-width:700px){
-  html[data-ko-installed="1"],html[data-ko-installed="1"] body,html[data-ko-installed="1"] #root{background:#123D4A!important}
-  html[data-ko-installed="1"] .app-shell{background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 3px) no-repeat,var(--bg)!important}
+  html[data-ko-installed="1"],html[data-ko-installed="1"] body{background:#FBFDFC!important}
+  html[data-ko-installed="1"] #root{background:var(--bg)!important}
+  html[data-ko-installed="1"] .app-shell{background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 18px) no-repeat,var(--bg)!important}
   html[data-ko-installed="1"] main.main-cont{top:var(--sa-t)!important;padding-left:max(12px,var(--sa-l))!important;padding-right:max(12px,var(--sa-r))!important}
   html[data-ko-installed="1"] .auth-shell{padding-top:calc(18px + var(--sa-t))!important}
   html[data-ko-installed="1"] .toast{top:calc(var(--sa-t) + 10px)!important}
@@ -156,12 +159,22 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
 @media(max-width:380px){
   html[data-ko-installed="1"] main.main-cont{padding-left:max(9px,var(--sa-l))!important;padding-right:max(9px,var(--sa-r))!important}
 }
+@media(max-width:700px) and (display-mode:standalone){
+  .tabbar{bottom:0!important;padding-top:0!important;padding-bottom:8px!important;border-radius:18px 18px 0 0!important}
+  .tabbar-inner{height:68px!important;padding:2px 8px 0!important}
+  main.main-cont{padding-bottom:88px!important}
+}
+@media(max-width:700px){
+  html[data-ko-installed="1"] .tabbar{bottom:0!important;padding-top:0!important;padding-bottom:8px!important;border-radius:18px 18px 0 0!important}
+  html[data-ko-installed="1"] .tabbar-inner{height:68px!important;padding:2px 8px 0!important}
+  html[data-ko-installed="1"] main.main-cont{padding-bottom:88px!important}
+}
 </style>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMjI2RjY5Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiMxMjNGNDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQzI5MzYiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYSIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNGM0RDQTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOThCM0EiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNjciIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuODgiLz48cGF0aCBkPSJNNDIgMTEyYzMwLTIgNTUtMjAgODktNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdGNCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii45MiIvPjxwYXRoIGQ9Im0xMjIgNTEgMjMtNS03IDIyLTQtOS0xMi04WiIgZmlsbD0iI0YxRDU5QSIvPjx0ZXh0IHg9IjUyIiB5PSIxMTIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj7DljwvdGV4dD48L3N2Zz4=">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMjI2RjY5Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiMxMjNGNDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQzI5MzYiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYSIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNGM0RDQTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOThCM0EiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNjciIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuODgiLz48cGF0aCBkPSJNNDIgMTEyYzMwLTIgNTUtMjAgODktNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdGNCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii45MiIvPjxwYXRoIGQ9Im0xMjIgNTEgMjMtNS03IDIyLTQtOS0xMi04WiIgZmlsbD0iI0YxRDU5QSIvPjx0ZXh0IHg9IjUyIiB5PSIxMTIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj7DljwvdGV4dD48L3N2Zz4=">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=ko-safe-logo-7">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=ko-safe-logo-7">
 </head>
 <body>
-<div id="ko-app-splash" aria-hidden="true"><div class="ko-splash-inner"><div class="ko-splash-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#226F69"/><stop offset=".56" stop-color="#123F49"/><stop offset="1" stop-color="#0C2936"/></linearGradient><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F3DCA4"/><stop offset="1" stop-color="#B98B3A"/></linearGradient></defs><rect width="180" height="180" rx="42" fill="url(#g)"/><circle cx="90" cy="90" r="67" fill="none" stroke="url(#a)" stroke-width="3" opacity=".88"/><path d="M42 112c30-2 55-20 89-54" fill="none" stroke="#EAF7F4" stroke-width="5" stroke-linecap="round" opacity=".92"/><path d="m122 51 23-5-7 22-4-9-12-8Z" fill="#F1D59A"/><text x="52" y="112" font-family="Georgia,serif" font-size="72" font-weight="700" fill="#fff">Ö</text></svg></div><div class="ko-splash-title">Ölmez Transfer</div><div class="ko-splash-sub">Profesyonel Operasyon</div><div class="ko-splash-line"></div></div></div>
+<div id="ko-app-splash" aria-hidden="true"><div class="ko-splash-inner"><div class="ko-splash-mark"><img src="./app-icon-512.png?v=ko-safe-logo-7" width="92" height="92" alt=""></div><div class="ko-splash-title">Ölmez Transfer</div><div class="ko-splash-sub">Profesyonel Operasyon</div><div class="ko-splash-line"></div></div></div>
 <div id="root"></div>
 <script data-ko-premium-visuals="1">(function(){var s=document.getElementById('ko-app-splash');if(!s)return;var seen=false;try{seen=sessionStorage.getItem('ko_splash_seen')==='1';sessionStorage.setItem('ko_splash_seen','1')}catch(e){}var done=false;function hide(){if(done)return;done=true;s.classList.add('is-hidden');setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s)},520)}var delay=seen?180:720;window.addEventListener('load',function(){setTimeout(hide,delay)},{once:true});setTimeout(hide,2200)})();</script>
 <script>
@@ -14551,7 +14564,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
 (function(){
   if(!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('./sw.js?v=ko-sync-6', { scope: './' })
+    navigator.serviceWorker.register('./sw.js?v=ko-safe-logo-7', { scope: './' })
       .then(function(registration){
         // Ana ekrana veya Dock'a eklenen uygulama her açılışta yeni sürümü
         // sessizce denetler; açık formu zorla yenilemez.
