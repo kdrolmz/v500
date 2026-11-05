@@ -8,9 +8,12 @@
 <meta name="format-detection" content="telephone=no">
 <meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#123D4A">
+<link rel="manifest" href="./manifest.json?v=ko-sync-6">
+<script>(function(){try{var q=new URLSearchParams(location.search);if(navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||q.get('mode')==='app')document.documentElement.setAttribute('data-ko-installed','1')}catch(e){}})();</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Ölmez Transfer · Premium Rehber</title>
@@ -124,6 +127,36 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
 .ko-audit-collapsible>summary::-webkit-details-marker{display:none!important}.ko-audit-collapsible>summary::marker{content:""!important}.ko-audit-collapsible[open]>summary{border-bottom:1px solid rgba(30,74,73,.08)!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 </style>
+<style id="ko-installed-safe-area">
+:root{--sa-l:env(safe-area-inset-left,0px);--sa-r:env(safe-area-inset-right,0px)}
+.auth-shell{min-height:100vh!important;min-height:100dvh!important}
+@media(max-width:700px) and (display-mode:standalone){
+  html,body,#root{background:#123D4A!important}
+  .app-shell{
+    background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 3px) no-repeat,var(--bg)!important
+  }
+  main.main-cont{
+    top:var(--sa-t)!important;
+    padding-left:max(12px,var(--sa-l))!important;
+    padding-right:max(12px,var(--sa-r))!important
+  }
+  .auth-shell{padding-top:calc(18px + var(--sa-t))!important}
+  .toast{top:calc(var(--sa-t) + 10px)!important}
+}
+@media(max-width:380px) and (display-mode:standalone){
+  main.main-cont{padding-left:max(9px,var(--sa-l))!important;padding-right:max(9px,var(--sa-r))!important}
+}
+@media(max-width:700px){
+  html[data-ko-installed="1"],html[data-ko-installed="1"] body,html[data-ko-installed="1"] #root{background:#123D4A!important}
+  html[data-ko-installed="1"] .app-shell{background:linear-gradient(145deg,#1B685F 0%,#123F49 45%,#0C2936 100%) top/100% calc(var(--sa-t) + 3px) no-repeat,var(--bg)!important}
+  html[data-ko-installed="1"] main.main-cont{top:var(--sa-t)!important;padding-left:max(12px,var(--sa-l))!important;padding-right:max(12px,var(--sa-r))!important}
+  html[data-ko-installed="1"] .auth-shell{padding-top:calc(18px + var(--sa-t))!important}
+  html[data-ko-installed="1"] .toast{top:calc(var(--sa-t) + 10px)!important}
+}
+@media(max-width:380px){
+  html[data-ko-installed="1"] main.main-cont{padding-left:max(9px,var(--sa-l))!important;padding-right:max(9px,var(--sa-r))!important}
+}
+</style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMjI2RjY5Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiMxMjNGNDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQzI5MzYiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYSIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNGM0RDQTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOThCM0EiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNjciIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuODgiLz48cGF0aCBkPSJNNDIgMTEyYzMwLTIgNTUtMjAgODktNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdGNCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii45MiIvPjxwYXRoIGQ9Im0xMjIgNTEgMjMtNS03IDIyLTQtOS0xMi04WiIgZmlsbD0iI0YxRDU5QSIvPjx0ZXh0IHg9IjUyIiB5PSIxMTIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj7DljwvdGV4dD48L3N2Zz4=">
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjMjI2RjY5Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiMxMjNGNDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMwQzI5MzYiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYSIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNGM0RDQTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCOThCM0EiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iOTAiIGN5PSI5MCIgcj0iNjciIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNhKSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuODgiLz48cGF0aCBkPSJNNDIgMTEyYzMwLTIgNTUtMjAgODktNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0VBRjdGNCIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii45MiIvPjxwYXRoIGQ9Im0xMjIgNTEgMjMtNS03IDIyLTQtOS0xMi04WiIgZmlsbD0iI0YxRDU5QSIvPjx0ZXh0IHg9IjUyIiB5PSIxMTIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjcyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjZmZmIj7DljwvdGV4dD48L3N2Zz4=">
 </head>
@@ -193,8 +226,10 @@ function initCloud(){
     if(!window.firebase || !firebase.apps) return false;
     const app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG);
     cloudAuth = firebase.auth(app);
-    const remember = (function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } })();
-    try{ cloudAuth.setPersistence(remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION); }catch(e){}
+    // Safari, iPhone ana ekran uygulaması ve MacBook Dock uygulaması ayrı
+    // pencereler gibi açılır. Her birinde bir kez giriş yapıldıktan sonra
+    // aynı Firebase oturumunun kalıcı olması canlı eşitlemenin temelidir.
+    try{ cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
     cloudDb = firebase.firestore(app);
     cloudDocRef = cloudDb.collection('olmeztur').doc(CLOUD_DOC_ID);
     return true;
@@ -8888,7 +8923,7 @@ function App() {
     const [authUser, setAuthUser] = useState(null);
     const [loginEmail, setLoginEmail] = useState(function(){ try{ return localStorage.getItem(REMEMBER_EMAIL_KEY) || ''; }catch(e){ return ''; } });
     const [loginPassword, setLoginPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(function(){ try{ const raw = localStorage.getItem(REMEMBER_ME_KEY); return raw === null ? true : raw === '1'; }catch(e){ return true; } });
+    const rememberMe = true;
     const [githubCalendarToken, setGithubCalendarToken] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_TOKEN_KEY) || ''; }catch(e){ return ''; } });
     const [githubCalendarAuto, setGithubCalendarAuto] = useState(function(){ try{ return localStorage.getItem(GITHUB_CALENDAR_AUTO_KEY) === '1'; }catch(e){ return false; } });
     const [githubCalendarBusy, setGithubCalendarBusy] = useState(false);
@@ -8903,6 +8938,7 @@ function App() {
     const cloudLoadedRef = useRef(false);
     const cloudUnsubRef = useRef(null);
     const cloudReconnectRef = useRef(null);
+    const cloudResumeCheckAtRef = useRef(0);
     const saveTimerRef = useRef(null);
     const cloudWriteTimerRef = useRef(null);
     const pendingCloudSnapshotRef = useRef(null);
@@ -9477,7 +9513,7 @@ function App() {
                         setSyncPhase(navigator.onLine ? 'connecting' : 'offline');
                         setSyncMessage(navigator.onLine ? 'Bulut bağlantısı yeniden kontrol ediliyor.' : 'İnternet bağlantısı bekleniyor.');
                         if(!navigator.onLine) return Promise.resolve(false);
-                        return cloudDocRef.get().then(async function(serverSnap){
+                        return cloudDocRef.get({ source: 'server' }).then(async function(serverSnap){
                             await handleCloudSnapshot(serverSnap);
                             return true;
                         }).catch(function(err){
@@ -9515,9 +9551,21 @@ function App() {
         };
         const onResume = () => {
             if(!authUser || document.visibilityState === 'hidden' || !navigator.onLine) return;
-            const needsCheck = readCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY) || syncPhase === 'error' || syncPhase === 'offline';
-            if(needsCheck && cloudReconnectRef.current) cloudReconnectRef.current();
+            const now = Date.now();
+            if(now - cloudResumeCheckAtRef.current < 1400) return;
+            cloudResumeCheckAtRef.current = now;
+            // iOS ana ekran uygulaması arka planda canlı bağlantıyı sessizce
+            // durdurabilir. Her dönüşte sunucuyu zorunlu doğrulamak, ekrandaki
+            // "Eşitlendi" bilgisinin gerçekten güncel olmasını sağlar.
+            if(cloudReconnectRef.current) cloudReconnectRef.current();
         };
+        const heartbeat = window.setInterval(() => {
+            if(!authUser || document.visibilityState !== 'visible' || !navigator.onLine) return;
+            const now = Date.now();
+            if(now - cloudResumeCheckAtRef.current < 25000) return;
+            cloudResumeCheckAtRef.current = now;
+            if(cloudReconnectRef.current) cloudReconnectRef.current();
+        }, 30000);
         window.addEventListener('offline', onOffline);
         window.addEventListener('online', onOnline);
         window.addEventListener('focus', onResume);
@@ -9527,6 +9575,7 @@ function App() {
             window.removeEventListener('online', onOnline);
             window.removeEventListener('focus', onResume);
             document.removeEventListener('visibilitychange', onResume);
+            window.clearInterval(heartbeat);
         };
     }, [authUser, syncPhase]);
     useEffect(() => {
@@ -9651,7 +9700,7 @@ function App() {
         }, 70);
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, deletedAgencyContacts, deletedDriverContacts, contactSyncMeta, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates, authUser]);
-    useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? '1' : '0'); } catch (e) {} }, [rememberMe]);
+    useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, '1'); } catch (e) {} }, []);
     useEffect(() => { try { localStorage.setItem('ko_cross_rates', JSON.stringify(crossRates)); } catch (e) {} }, [crossRates]);
     useEffect(() => { try { if(rememberMe) localStorage.setItem(REMEMBER_EMAIL_KEY, loginEmail || ''); else localStorage.removeItem(REMEMBER_EMAIL_KEY); } catch (e) {} }, [rememberMe, loginEmail]);
     const loginWithEmail = async () => {
@@ -9664,7 +9713,7 @@ function App() {
         setAuthBusy(true);
         setAuthError('');
         try{
-            const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+            const persistence = firebase.auth.Auth.Persistence.LOCAL;
             await cloudAuth.setPersistence(persistence);
             const cred = await cloudAuth.signInWithEmailAndPassword(loginEmail.trim().toLowerCase(), loginPassword);
             console.log('[LOGIN] Başarılı:', cred.user.email);
@@ -9687,7 +9736,7 @@ function App() {
         if(!cloudAuth || !authUser) return;
         (async function(){
             try{
-                const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+                const persistence = firebase.auth.Auth.Persistence.LOCAL;
                 await cloudAuth.setPersistence(persistence);
             }catch(e){}
         })();
@@ -12156,12 +12205,9 @@ function App() {
                     React.createElement("input", { className: 'inp', value: loginEmail, onChange: e => setLoginEmail(e.target.value), placeholder: 'ornek@mail.com', autoComplete: 'username', style: { marginBottom: 12, height: 46 } }),
                     React.createElement("label", { className: 'lbl' }, 'Şifre'),
                     React.createElement("input", { className: 'inp', type: 'password', value: loginPassword, onChange: e => setLoginPassword(e.target.value), placeholder: 'Şifren', autoComplete: 'current-password', onKeyDown: e => { if (e.key === 'Enter' && !authBusy) loginWithEmail(); }, style: { marginBottom: 12, height: 46 } }),
-                    React.createElement("div", { className: "ko-auth-remember", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-                        React.createElement("label", { style: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: TX, fontWeight: 470 } },
-                            React.createElement("input", { type: 'checkbox', checked: rememberMe, onChange: e => setRememberMe(e.target.checked) }),
-                            React.createElement("span", null, 'Beni hatırla')
-                        ),
-                        React.createElement("div", { style: { color: SB, fontSize: 11 } }, rememberMe ? 'Oturum bu cihazda açık kalır' : 'Tarayıcı kapanınca tekrar giriş gerekir')
+                    React.createElement("div", { className: "ko-auth-remember", style: { display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14, padding: '9px 11px', borderRadius: 12, background: 'var(--p-pos-soft)', border: '1px solid var(--p-pos-bd)', color: TX, fontSize: 11.5, lineHeight: 1.4 } },
+                        React.createElement("span", { "aria-hidden": true }, '✓'),
+                        React.createElement("span", null, 'Bu cihazda bir kez giriş yapman yeterli; oturum güvenli biçimde açık kalır.')
                     ),
                     authError ? React.createElement("div", { style: { background: 'var(--p-neg-soft)', color: 'var(--p-brand)', border: '1px solid var(--p-neg-bd)', borderRadius: 12, padding: '11px 12px', fontSize: 12, marginBottom: 12, lineHeight: 1.45 } }, authError) : null,
                     React.createElement("button", { className: "ko-auth-login-btn", onClick: loginWithEmail, disabled: authBusy, style: { width: '100%', background: authBusy ? 'var(--p-ink-5)' : 'linear-gradient(135deg,' + NAV + ',' + NAV2 + ')', color: 'var(--p-white)', border: 'none', borderRadius: 14, padding: '14px 14px', fontWeight: 450, fontSize: 15, boxShadow: authBusy ? 'none' : '0 8px 24px rgba(0,0,0,.16)' } }, authBusy ? 'Giriş yapılıyor' : 'Güvenli Giriş Yap'),
@@ -12176,7 +12222,7 @@ function App() {
                         )
                     )
                 ),
-                React.createElement("div", { className: "ko-auth-note", style: { textAlign: 'center', color: SB, fontSize: 11, marginTop: 12, lineHeight: 1.5 } }, 'Beni hatırla açıksa oturum bu cihazda saklanır ve her açılışta tekrar şifre istemez.')
+                React.createElement("div", { className: "ko-auth-note", style: { textAlign: 'center', color: SB, fontSize: 11, marginTop: 12, lineHeight: 1.5 } }, 'iPhone ana ekranı ve MacBook Dock uygulamasında ilk kullanımda aynı hesapla bir kez giriş yap.')
             )
         );
     }
@@ -14500,6 +14546,20 @@ class AppErrorBoundary extends React.Component {
     }
 }
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(AppErrorBoundary, null, React.createElement(App, null)));
+</script>
+<script>
+(function(){
+  if(!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js?v=ko-sync-6', { scope: './' })
+      .then(function(registration){
+        // Ana ekrana veya Dock'a eklenen uygulama her açılışta yeni sürümü
+        // sessizce denetler; açık formu zorla yenilemez.
+        registration.update().catch(function(){});
+      })
+      .catch(function(error){ console.error('[PWA] Service worker kaydı başarısız', error); });
+  }, { once: true });
+})();
 </script>
 
 
