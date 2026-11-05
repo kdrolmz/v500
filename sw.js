@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v7-safe-logo';
+const CACHE_NAME = 'ko-v500-shell-v8-iphone-final';
 
 const LOCAL_SHELL = [
   './',
@@ -6,7 +6,10 @@ const LOCAL_SHELL = [
   './manifest.json',
   './apple-touch-icon.png',
   './icon-192.png',
-  './app-icon-512.png'
+  './app-icon-512.png',
+  './olmez-transfer-touch-icon.png',
+  './olmez-transfer-icon-192.png',
+  './olmez-transfer-icon-512.png'
 ];
 
 const VERIFIED_EXTERNAL_SCRIPTS = [

@@ -2,17 +2,17 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-05-v500-guvenli-alan-logo-101">
+<meta name="v500-release" content="2026-11-05-v500-iphone-final-sync">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
 <meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KÖ Transfer Takip">
+<meta name="apple-mobile-web-app-title" content="Ölmez Transfer">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#123D4A">
-<link rel="manifest" href="./manifest.json?v=ko-safe-logo-7">
+<link rel="manifest" href="./manifest.json?v=ko-iphone-final-8">
 <script>(function(){try{var q=new URLSearchParams(location.search);if(navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||q.get('mode')==='app')document.documentElement.setAttribute('data-ko-installed','1')}catch(e){}})();</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -169,12 +169,32 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
   html[data-ko-installed="1"] .tabbar-inner{height:68px!important;padding:2px 8px 0!important}
   html[data-ko-installed="1"] main.main-cont{padding-bottom:88px!important}
 }
+.ko-auth-brand::before,.ko-auth-wrap::before{content:none!important;display:none!important}
+.ko-auth-logo{display:block;width:70px;height:70px;margin:0 auto 12px;object-fit:cover;border-radius:19px;box-shadow:0 16px 32px -20px rgba(7,42,49,.72);border:1px solid rgba(185,139,58,.48)}
+@media(max-width:700px) and (display-mode:standalone){
+  .lg-home .ko-navy-hero{padding:18px 14px 25px!important;min-height:0!important;margin:0!important;border-radius:24px!important}
+  .lg-home .ko-navy-hero>div:first-child{align-items:center!important}
+  .tabbar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;margin:0!important;padding:0 0 4px!important;height:72px!important;border-radius:18px 18px 0 0!important}
+  .tabbar-inner{height:68px!important;min-height:68px!important;padding:1px 8px 0!important}
+  main.main-cont{padding-bottom:80px!important;scroll-padding-bottom:80px!important}
+}
+@media(max-width:700px){
+  html[data-ko-installed="1"] .lg-home .ko-navy-hero{padding:18px 14px 25px!important;min-height:0!important;margin:0!important;border-radius:24px!important}
+  html[data-ko-installed="1"] .lg-home .ko-navy-hero>div:first-child{align-items:center!important}
+  html[data-ko-installed="1"] .tabbar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;margin:0!important;padding:0 0 4px!important;height:72px!important;border-radius:18px 18px 0 0!important}
+  html[data-ko-installed="1"] .tabbar-inner{height:68px!important;min-height:68px!important;padding:1px 8px 0!important}
+  html[data-ko-installed="1"] main.main-cont{padding-bottom:80px!important;scroll-padding-bottom:80px!important}
+  .ko-auth-logo{width:64px;height:64px;border-radius:18px;margin-bottom:10px}
+  .ko-auth-wrap{padding:0 2px}
+  .ko-auth-card{padding:16px!important;border-radius:20px!important}
+  .ko-auth-banner{padding:10px 11px!important;margin-bottom:13px!important}
+}
 </style>
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=ko-safe-logo-7">
-<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=ko-safe-logo-7">
+<link rel="icon" type="image/png" sizes="192x192" href="./olmez-transfer-icon-192.png?v=20261105">
+<link rel="apple-touch-icon" sizes="180x180" href="./olmez-transfer-touch-icon.png?v=20261105">
 </head>
 <body>
-<div id="ko-app-splash" aria-hidden="true"><div class="ko-splash-inner"><div class="ko-splash-mark"><img src="./app-icon-512.png?v=ko-safe-logo-7" width="92" height="92" alt=""></div><div class="ko-splash-title">Ölmez Transfer</div><div class="ko-splash-sub">Profesyonel Operasyon</div><div class="ko-splash-line"></div></div></div>
+<div id="ko-app-splash" aria-hidden="true"><div class="ko-splash-inner"><div class="ko-splash-mark"><img src="./olmez-transfer-icon-512.png?v=20261105" width="92" height="92" alt=""></div><div class="ko-splash-title">Ölmez Transfer</div><div class="ko-splash-sub">Profesyonel Operasyon</div><div class="ko-splash-line"></div></div></div>
 <div id="root"></div>
 <script data-ko-premium-visuals="1">(function(){var s=document.getElementById('ko-app-splash');if(!s)return;var seen=false;try{seen=sessionStorage.getItem('ko_splash_seen')==='1';sessionStorage.setItem('ko_splash_seen','1')}catch(e){}var done=false;function hide(){if(done)return;done=true;s.classList.add('is-hidden');setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s)},520)}var delay=seen?180:720;window.addEventListener('load',function(){setTimeout(hide,delay)},{once:true});setTimeout(hide,2200)})();</script>
 <script>
@@ -12203,6 +12223,7 @@ function App() {
         return React.createElement("div", { className: "auth-shell", style: { minHeight: '100%', background: 'linear-gradient(180deg,var(--p-tint-3) 0%,var(--p-tint-3) 45%,var(--p-tint-3) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 } },
             React.createElement("div", { className: "ko-auth-wrap", style: { width: '100%', maxWidth: 460 } },
                 React.createElement("div", { className: "ko-auth-brand", style: { textAlign: 'center', marginBottom: 14 } },
+                    React.createElement("img", { className: "ko-auth-logo", src: "./olmez-transfer-icon-192.png?v=20261105", width: 70, height: 70, alt: "Ölmez Transfer" }),
                     React.createElement("div", { className: "ko-auth-title", style: { fontWeight: 450, fontSize: 24, color: NAV, letterSpacing: 0 } }, 'Ölmez Transfer'),
                     React.createElement("div", { className: "ko-auth-sub", style: { color: SB, fontSize: 13, marginTop: 4 } }, 'Profesyonel operasyon ve güvenli canlı senkron')
                 ),
@@ -14564,7 +14585,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
 (function(){
   if(!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('./sw.js?v=ko-safe-logo-7', { scope: './' })
+    navigator.serviceWorker.register('./sw.js?v=ko-iphone-final-8', { scope: './' })
       .then(function(registration){
         // Ana ekrana veya Dock'a eklenen uygulama her açılışta yeni sürümü
         // sessizce denetler; açık formu zorla yenilemez.

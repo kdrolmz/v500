@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "KÖ Transfer Takip",
-  "short_name": "KÖ Transfer",
-  "description": "KÖ transfer operasyon takip ve yönetim uygulaması",
+  "name": "Ölmez Transfer",
+  "short_name": "Ölmez Transfer",
+  "description": "Ölmez Transfer profesyonel operasyon takip uygulaması",
   "start_url": "./?mode=app",
   "scope": "./",
   "display": "standalone",
@@ -12,19 +12,19 @@
   "lang": "tr",
   "icons": [
     {
-      "src": "apple-touch-icon.png?v=ko-safe-logo-7",
+      "src": "olmez-transfer-touch-icon.png?v=20261105",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png?v=ko-safe-logo-7",
+      "src": "olmez-transfer-icon-192.png?v=20261105",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "app-icon-512.png?v=ko-safe-logo-7",
+      "src": "olmez-transfer-icon-512.png?v=20261105",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
