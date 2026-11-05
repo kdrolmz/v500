@@ -268,7 +268,18 @@ html .app-shell main.main-cont{scroll-behavior:auto!important;transform:none!imp
   html .mo:not(.ko-pax-modal){inset:0!important;height:100dvh!important;max-height:100dvh!important;padding:calc(var(--sa-t) + 8px) 8px max(10px,var(--sa-b))!important;box-sizing:border-box!important;align-items:flex-end!important;overflow:hidden!important}
   html .mo:not(.ko-pax-modal)>div{min-height:0!important;max-height:calc(100dvh - var(--sa-t) - var(--sa-b) - 18px)!important;overflow-y:auto!important;overscroll-behavior:contain!important}
 }
+html .mo .ko-home-detail-sheet{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:10px 12px 0!important;min-height:0!important}
+.ko-home-detail-sheet>.ko-detail-toolbar{position:relative!important;top:auto!important;flex:none!important;margin:0!important;padding:10px 4px!important;background:#F7FAF9!important}
+.ko-home-detail-sheet>div:first-child{flex:none!important}
+.ko-home-detail-body{flex:1 1 auto!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;padding:10px 0 max(16px,var(--sa-b))!important;isolation:isolate!important}
 .ko-detail-toolbar{position:sticky!important;top:0!important;z-index:30!important;background:#F7FAF9!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:10px 4px!important;margin-bottom:10px!important;border-bottom:1px solid #DCE6E3!important}
+@media(max-width:700px){
+  html[data-ko-page="other"],html[data-ko-page="other"] body,html[data-ko-page="other"] .app-shell{background:#FFFFFF!important}
+  html[data-ko-page="home"],html[data-ko-page="home"] body,html[data-ko-page="home"] .app-shell{background:#1B6170!important}
+  html[data-ko-page="home"] .app-shell .view-home .ko-navy-hero{background:var(--ko-v26-hero)!important;border-top:0!important;margin-top:0!important;border-top-left-radius:0!important;border-top-right-radius:0!important}
+  html[data-ko-page="home"] .app-shell main.main-cont.view-home{background:var(--bg)!important}
+  html[data-ko-page] .app-shell .tabbar{padding-bottom:max(6px,calc(var(--sa-b) - 18px))!important}
+}
 .ko-detail-close{flex:0 0 40px!important;min-width:40px!important;width:40px!important;height:40px!important;min-height:40px!important;display:grid!important;place-items:center!important;color:#17464A!important;-webkit-text-fill-color:#17464A!important;background:#FFF!important;border:1px solid #BCD0CB!important;border-radius:50%!important;font-size:22px!important;line-height:1!important;opacity:1!important;visibility:visible!important}
 </style>
 <link rel="icon" type="image/png" sizes="192x192" href="./olmez-transfer-icon-192.png?v=20261105">
@@ -8807,6 +8818,12 @@ function App() {
     }, []);
     // Uygulama her açılışta Ana Sayfa ile başlar; önceki oturumun sekmesi açılışı değiştirmez.
     const [tab, setTab] = useState('home');
+    useEffect(() => {
+        const home = tab === 'home';
+        document.documentElement.dataset.koPage = home ? 'home' : 'other';
+        const theme = document.querySelector('meta[name="theme-color"]');
+        if (theme) theme.content = home ? '#1B6170' : '#FFFFFF';
+    }, [tab]);
     const [openKarPanel, setOpenKarPanel] = useState(false);
     const [rates, setRates] = useState({
         USD: 44.35, EUR: 51.50, KWD: 144.40,
@@ -14373,12 +14390,12 @@ function App() {
             const hc = (T || []).find(x => x && x.id === expandedT.__homeCard);
             if (!hc) return null;
             return React.createElement("div", { className: "mo", onClick: () => setExpandedT(p => ({ ...p, __homeCard: null })), style: { zIndex: 88 } },
-                React.createElement("div", { onClick: e => e.stopPropagation(), style: { width: '100%', maxWidth: 620, maxHeight: '90vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: 'var(--p-bg)', borderRadius: '26px 26px 0 0', padding: '10px 12px calc(16px + var(--sa-b))', boxShadow: '0 -14px 44px rgba(16,20,31,.30)' } },
+                React.createElement("div", { className: "ko-home-detail-sheet", onClick: e => e.stopPropagation(), style: { width: '100%', maxWidth: 620, maxHeight: '90vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: 'var(--p-bg)', borderRadius: '26px 26px 0 0', padding: '10px 12px calc(16px + var(--sa-b))', boxShadow: '0 -14px 44px rgba(16,20,31,.30)' } },
                     React.createElement("div", { style: { width: 44, height: 5, background: 'rgba(20,26,38,.2)', borderRadius: 3, margin: '2px auto 12px' } }),
                     React.createElement("div", { className: "ko-detail-toolbar", style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, padding: '0 2px' } },
                         React.createElement("div", { style: { fontSize: 13, fontWeight: 560, color: 'var(--p-ink)', letterSpacing: .2 } }, "Transfer · işlem seç"),
                         React.createElement("button", { className: "ko-detail-close", type: "button", "aria-label": "Transfer detayını kapat", onClick: () => setExpandedT(p => ({ ...p, __homeCard: null })), style: { background: 'var(--p-tint-3)', border: 'none', borderRadius: 16, width: 30, height: 30, cursor: 'pointer', fontSize: 14, color: 'var(--p-ink-2)' } }, "✕")),
-                    renderTransferItem(hc)));
+                    React.createElement("div", { className: "ko-home-detail-body" }, renderTransferItem(hc))));
         })(),
         msgM && (React.createElement("div", { className: "mo", onClick: () => setMsgM(null) },
             React.createElement("div", { className: "ms ko-message-sheet", onClick: e => e.stopPropagation() },
