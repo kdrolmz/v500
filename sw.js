@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v5-roundtrip-mrz';
+const CACHE_NAME = 'ko-v500-shell-v6-installed-sync';
 
 const LOCAL_SHELL = [
   './',
@@ -47,16 +47,14 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
 
-  // Veri, Firebase ve GitHub istekleri hiçbir zaman service worker
-  // önbelleğine yazılmaz. Böylece kişisel/operasyonel veri cihaz önbelleğinde
-  // ikinci bir kopya oluşturmaz.
+  // Firebase, takvim ve kişisel veri istekleri uygulama önbelleğine alınmaz.
   if (isSensitivePublicFile(url)) return;
 
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       try {
-        const fresh = await fetch(request);
+        const fresh = await fetch(request, { cache: 'no-store' });
         if (fresh.ok) await cache.put('./index.html', fresh.clone());
         return fresh;
       } catch (e) {
