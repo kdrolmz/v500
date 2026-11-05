@@ -275,10 +275,12 @@ html .mo .ko-home-detail-sheet{display:flex!important;flex-direction:column!impo
 .ko-detail-toolbar{position:sticky!important;top:0!important;z-index:30!important;background:#F7FAF9!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:10px 4px!important;margin-bottom:10px!important;border-bottom:1px solid #DCE6E3!important}
 @media(max-width:700px){
   html[data-ko-page="other"],html[data-ko-page="other"] body,html[data-ko-page="other"] .app-shell{background:#FFFFFF!important}
-  html[data-ko-page="home"],html[data-ko-page="home"] body,html[data-ko-page="home"] .app-shell{background:#1B6170!important}
+  html[data-ko-page="other"] .app-shell main.main-cont:not(.view-home){inset:var(--sa-t) 0 0!important;top:var(--sa-t)!important;height:auto!important;padding-top:12px!important;overflow-x:hidden!important;overflow-y:auto!important;isolation:isolate!important;scroll-padding-top:12px!important}
+  html[data-ko-page="home"],html[data-ko-page="home"] body{background:#FBFDFC!important}
+  html[data-ko-page="home"] .app-shell{background:linear-gradient(#1B6170,#1B6170) top/100% calc(var(--sa-t) + 2px) no-repeat,#FBFDFC!important}
   html[data-ko-page="home"] .app-shell .view-home .ko-navy-hero{background:var(--ko-v26-hero)!important;border-top:0!important;margin-top:0!important;border-top-left-radius:0!important;border-top-right-radius:0!important}
   html[data-ko-page="home"] .app-shell main.main-cont.view-home{background:var(--bg)!important}
-  html[data-ko-page] .app-shell .tabbar{padding-bottom:max(6px,calc(var(--sa-b) - 18px))!important}
+  html[data-ko-page] .app-shell .tabbar{padding-bottom:max(6px,calc(var(--sa-b) - 22px))!important;background:#FBFDFC!important}
 }
 .ko-detail-close{flex:0 0 40px!important;min-width:40px!important;width:40px!important;height:40px!important;min-height:40px!important;display:grid!important;place-items:center!important;color:#17464A!important;-webkit-text-fill-color:#17464A!important;background:#FFF!important;border:1px solid #BCD0CB!important;border-radius:50%!important;font-size:22px!important;line-height:1!important;opacity:1!important;visibility:visible!important}
 </style>
