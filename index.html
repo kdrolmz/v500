@@ -246,6 +246,15 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
   .view-home .ko-home-scroll .lg-today-title-row{padding-top:16px!important}
 }
 </style>
+<style id="ko-dock-bottom-spacing">
+/* Ana ekrana kurulu iPhone: alt hareket alanında yalnızca küçük bir pay bırak. */
+@media(max-width:700px) and (display-mode:standalone){
+  html .app-shell .tabbar{bottom:calc(0px - min(16px,var(--sa-b)))!important}
+}
+@media(max-width:700px){
+  html[data-ko-installed="1"] .app-shell .tabbar{bottom:calc(0px - min(16px,var(--sa-b)))!important}
+}
+</style>
 <link rel="icon" type="image/png" sizes="192x192" href="./olmez-transfer-icon-192.png?v=20261105">
 <link rel="apple-touch-icon" sizes="180x180" href="./olmez-transfer-touch-icon.png?v=20261105">
 </head>
