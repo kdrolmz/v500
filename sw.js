@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v8-iphone-final';
+const CACHE_NAME = 'ko-v500-shell-v9-home-sticky';
 
 const LOCAL_SHELL = [
   './',

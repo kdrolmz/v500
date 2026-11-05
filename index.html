@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="v500-release" content="2026-11-05-v500-iphone-final-sync">
+<meta name="v500-release" content="2026-11-05-v500-home-sticky-premium">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
 <meta name="format-detection" content="telephone=no">
@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Ölmez Transfer">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#123D4A">
-<link rel="manifest" href="./manifest.json?v=ko-iphone-final-8">
+<link rel="manifest" href="./manifest.json?v=ko-home-sticky-9">
 <script>(function(){try{var q=new URLSearchParams(location.search);if(navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches||q.get('mode')==='app')document.documentElement.setAttribute('data-ko-installed','1')}catch(e){}})();</script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -188,6 +188,62 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
   .ko-auth-wrap{padding:0 2px}
   .ko-auth-card{padding:16px!important;border-radius:20px!important}
   .ko-auth-banner{padding:10px 11px!important;margin-bottom:13px!important}
+}
+/* iPhone ana sayfa: tam genişlikte güvenli üst panel + sabit özet */
+.ko-home-fixed,.ko-home-scroll{min-width:0}
+@media(max-width:700px){
+  html[data-ko-installed="1"] main.main-cont.view-home,
+  main.main-cont.view-home{
+    top:0!important;
+    padding-top:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    padding-bottom:80px!important;
+    scroll-padding-bottom:80px!important
+  }
+  html[data-ko-installed="1"] .view-home .lg-home,
+  .view-home .lg-home{display:flex!important;flex-direction:column!important;gap:0!important;padding:0!important}
+  html[data-ko-installed="1"] .view-home .ko-home-fixed,
+  .view-home .ko-home-fixed{
+    position:sticky!important;
+    top:0!important;
+    z-index:24!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    width:100%!important;
+    padding:0 0 10px!important;
+    background:var(--bg)!important;
+    box-shadow:0 18px 30px -31px rgba(8,43,49,.65)!important;
+    isolation:isolate!important
+  }
+  html[data-ko-installed="1"] .view-home .ko-home-fixed .ko-navy-hero,
+  .view-home .ko-home-fixed .ko-navy-hero{
+    width:100%!important;
+    margin:0!important;
+    padding:calc(var(--sa-t) + 15px) 16px 24px!important;
+    border-radius:0 0 24px 24px!important;
+    border-left:0!important;
+    border-right:0!important;
+    border-top:0!important;
+    box-shadow:0 15px 29px -25px rgba(5,40,48,.88)!important
+  }
+  html[data-ko-installed="1"] .view-home .ko-home-fixed .lg-period-row,
+  .view-home .ko-home-fixed .lg-period-row{
+    width:auto!important;
+    margin:0 12px!important;
+    gap:8px!important
+  }
+  html[data-ko-installed="1"] .view-home .ko-home-scroll,
+  .view-home .ko-home-scroll{
+    position:relative!important;
+    z-index:1!important;
+    width:100%!important;
+    padding:0 12px 20px!important;
+    background:var(--bg)!important
+  }
+  html[data-ko-installed="1"] .view-home .ko-home-scroll .lg-today-title-row,
+  .view-home .ko-home-scroll .lg-today-title-row{padding-top:16px!important}
 }
 </style>
 <link rel="icon" type="image/png" sizes="192x192" href="./olmez-transfer-icon-192.png?v=20261105">
@@ -12858,6 +12914,7 @@ function App() {
                     );
                 };
                 return React.createElement("div", { className: "lg-home" },
+                    React.createElement("div", { className: "ko-home-fixed" },
                     React.createElement("div", { className: "lg-glass-card lg-greeting-card ko-navy-hero", style: { flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: '15px 15px 13px', borderRadius: 22, position: 'relative', overflow: 'hidden' } },
                         React.createElement("div", { style: { width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', alignItems: 'start', gap: 12 } },
                             React.createElement("div", { style: { minWidth: 0, paddingTop: 1 } },
@@ -12888,6 +12945,8 @@ function App() {
                         renderPeriodCard('month', 'Aylık', monthT.length, AYLAR[now.getMonth()]),
                         renderPeriodCard('year', 'Yıllık', yearT.length, String(yyyy))
                     ),
+                    ),
+                    React.createElement("div", { className: "ko-home-scroll" },
                     React.createElement("div", { className: "lg-today-title-row", style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', padding: '10px 2px 4px', margin: 0 } },
                         (() => {
                             const chev = dir => React.createElement("svg", { viewBox: "0 0 24 24", width: 16, height: 16, fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", style: { display: 'block' } },
@@ -12911,6 +12970,7 @@ function App() {
                         })()
                     ),
                     renderPeriodPanel(selectedPeriod)
+                    )
                 );
                 return React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                     React.createElement("div", { 
@@ -14585,7 +14645,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
 (function(){
   if(!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('./sw.js?v=ko-iphone-final-8', { scope: './' })
+    navigator.serviceWorker.register('./sw.js?v=ko-home-sticky-9', { scope: './' })
       .then(function(registration){
         // Ana ekrana veya Dock'a eklenen uygulama her açılışta yeni sürümü
         // sessizce denetler; açık formu zorla yenilemez.
