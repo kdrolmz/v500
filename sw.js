@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ko-v500-shell-v6-installed-sync';
+const CACHE_NAME = 'ko-v500-shell-v7-safe-logo';
 
 const LOCAL_SHELL = [
   './',
