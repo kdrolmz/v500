@@ -246,21 +246,23 @@ button,.lg-choice,.date-hdr,.tk-cell{transition:transform .17s cubic-bezier(.2,.
   .view-home .ko-home-scroll .lg-today-title-row{padding-top:16px!important}
 }
 </style>
-<style id="ko-dock-bottom-spacing">
-/* Ana ekrana kurulu iPhone: alt hareket alanında yalnızca küçük bir pay bırak. */
-@media(max-width:700px) and (display-mode:standalone){
-  html .app-shell .tabbar{bottom:0!important;height:auto!important;padding:0 0 max(8px,calc(var(--sa-b) - 16px))!important;overflow:visible!important;contain:layout style!important}
-}
-@media(max-width:700px){
-  html[data-ko-installed="1"] .app-shell .tabbar{bottom:0!important;height:auto!important;padding:0 0 max(8px,calc(var(--sa-b) - 16px))!important;overflow:visible!important;contain:layout style!important}
-}
-</style>
 <style id="ko-installed-layout-repair">
-html:has(#ko-app-splash:not(.is-hidden)),html:has(#ko-app-splash:not(.is-hidden)) body{background:#123F49!important}
+html:has(#ko-app-splash:not(.is-hidden)),html:has(#ko-app-splash:not(.is-hidden)) body{background:#123D4A!important}
 #ko-app-splash{inset:0!important;width:100%!important;height:100dvh!important;min-height:100%!important;padding:var(--sa-t) 0 var(--sa-b)!important;box-sizing:border-box!important}
+#ko-app-splash{background:#123D4A!important}
+html .app-shell .ko-pro-search-card{position:relative!important;inset:auto!important;transform:none!important;width:auto!important;max-width:100%!important;min-width:0!important;margin:0!important;overflow:hidden!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#FBFDFC!important}
+html .app-shell .ko-pro-search-card input{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html .app-shell main.main-cont{scroll-behavior:auto!important;transform:none!important;background-attachment:scroll!important;scrollbar-gutter:auto}
 @media(max-width:700px){
-  html .app-shell .tabbar .tabbar-inner{height:64px!important;min-height:64px!important;overflow:visible!important;padding:4px 8px!important}
-  html .app-shell main.main-cont:not(.view-home){top:var(--sa-t)!important;min-height:0!important;padding-top:12px!important;padding-bottom:calc(88px + var(--sa-b))!important}
+  html .app-shell{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}
+  html .app-shell .tabbar{position:absolute!important;inset:auto 0 0!important;bottom:0!important;transform:none!important;height:auto!important;max-height:none!important;padding:0 0 max(6px,calc(var(--sa-b) - 12px))!important;overflow:visible!important;contain:none!important;border-radius:20px 20px 0 0!important;background:#FBFDFC!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 -4px 18px -12px rgba(16,54,58,.3)!important}
+  html .app-shell .tabbar .tabbar-inner{height:66px!important;min-height:66px!important;overflow:visible!important;padding:12px 8px 0!important;align-items:center!important;background:transparent!important}
+  html .app-shell main.main-cont:not(.view-home){inset:0!important;width:100%!important;max-width:100%!important;min-height:0!important;padding:calc(var(--sa-t) + 12px) max(12px,var(--sa-r)) calc(90px + var(--sa-b)) max(12px,var(--sa-l))!important;scroll-padding-top:calc(var(--sa-t) + 12px)!important;box-sizing:border-box!important}
+  html .app-shell main.main-cont>*{min-width:0!important;max-width:100%!important}
+  html .app-shell .tcard,html .app-shell .lg-upcoming-card{content-visibility:visible!important;contain:none!important;contain-intrinsic-size:none!important;transform:none!important}
+  html .app-shell .ko-home-fixed{transform:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  html .app-shell .ko-home-scroll{isolation:isolate!important}
+  html .app-shell main.main-cont :where(input,select,textarea){scroll-margin-top:calc(var(--sa-t) + 16px)!important;scroll-margin-bottom:100px!important}
   html .app-shell .ko-pro-search-card{position:relative!important;top:auto!important;inset:auto!important;width:100%!important;min-width:0!important;margin:0!important;padding:10px!important;transform:none!important;overflow:hidden!important}
   html .app-shell .ko-pro-search-card input{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
   html .mo:not(.ko-pax-modal){inset:0!important;height:100dvh!important;max-height:100dvh!important;padding:calc(var(--sa-t) + 8px) 8px max(10px,var(--sa-b))!important;box-sizing:border-box!important;align-items:flex-end!important;overflow:hidden!important}
@@ -9527,6 +9529,8 @@ function App() {
                 setSyncMessage(user ? (navigator.onLine ? 'Buluttaki güncel veri doğrulanıyor.' : 'İnternet gelince otomatik eşitlenecek.') : '');
                 if(user){
                     const handleCloudSnapshot = async function(snap){
+                        // Çevrimiçiyken eski cihaz önbelleği eşitlendi sayılmaz.
+                        if (navigator.onLine && snap.metadata && snap.metadata.fromCache) return;
                         const readSeq = ++cloudSnapshotReadSeqRef.current;
                         try{
                             let localPayload = null;
@@ -9622,7 +9626,7 @@ function App() {
                         setSyncPhase(navigator.onLine ? 'error' : 'offline');
                         setSyncMessage(msg);
                     };
-                    cloudUnsubRef.current = cloudDocRef.onSnapshot(handleCloudSnapshot, handleCloudListenError);
+                    cloudUnsubRef.current = cloudDocRef.onSnapshot({ includeMetadataChanges: true }, handleCloudSnapshot, handleCloudListenError);
                     cloudReconnectRef.current = function(){
                         if(!cloudDb || !cloudDocRef || !cloudAuth || !cloudAuth.currentUser) return Promise.resolve(false);
                         if(cloudReconnectInFlightRef.current) return cloudReconnectInFlightRef.current;
@@ -9815,9 +9819,9 @@ function App() {
                     setMemoryInfo({ count: rows.length, last: row.date, ok: true });
                 }).catch(function(){ setMemoryInfo(p => ({ ...p, ok: false })); });
                 if (cloudEnabled() && authUser && cloudLoadedRef.current && saveSig !== lastCloudServerSigRef.current && Date.now() >= cloudBackoffUntilRef.current)
-                    queueCloudSnapshot(snapshot, 40);
+                    queueCloudSnapshot(snapshot, 0);
             } catch(inner) { console.error('[SAVE inner]', inner); }
-        }, 70);
+        }, 20);
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, deletedAgencyContacts, deletedDriverContacts, contactSyncMeta, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, '1'); } catch (e) {} }, []);
