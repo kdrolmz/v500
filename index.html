@@ -347,6 +347,7 @@ function ensureExternalLibrary(name){
 let cloudDb = null;
 let cloudDocRef = null;
 let cloudAuth = null;
+let cloudPersistenceStarted = false;
 function initCloud(){
   try{
     if(!FIREBASE_CONFIG || !FIREBASE_CONFIG.apiKey) return false;
@@ -358,6 +359,12 @@ function initCloud(){
     // aynı Firebase oturumunun kalıcı olması canlı eşitlemenin temelidir.
     try{ cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
     cloudDb = firebase.firestore(app);
+    if (!cloudPersistenceStarted) {
+      cloudPersistenceStarted = true;
+      cloudDb.enablePersistence({ synchronizeTabs: true }).catch(function(err){
+        console.warn('[CLOUD] Kalıcı gönderim kuyruğu kullanılamadı:', err && err.code);
+      });
+    }
     cloudDocRef = cloudDb.collection('olmeztur').doc(CLOUD_DOC_ID);
     return true;
   }catch(e){ console.error('Firebase init error', e); return false; }
@@ -9483,8 +9490,11 @@ function App() {
                 writeCloudSyncFlag(CLOUD_SYNC_READY_KEY, true);
                 writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, false);
                 setLastCloudSyncAt(new Date().toISOString());
-                setSyncPhase('synced');
-                setSyncMessage('Değişiklik buluta kaydedildi.');
+                const latest = pendingCloudSnapshotRef.current || persistRef.current;
+                const moreToSend = latest && Array.isArray(latest.t) && snapshotContentSignature({ ...latest, del: readDeletedTransferIds(), delA: readDeletedAracIds() }) !== contentSig;
+                writeCloudSyncFlag(CLOUD_SYNC_DIRTY_KEY, !!moreToSend);
+                setSyncPhase(moreToSend ? 'syncing' : 'synced');
+                setSyncMessage(moreToSend ? 'Son değişiklik de buluta gönderiliyor.' : 'Değişiklik sunucuya kaydedildi.');
             }).catch(function(err){
                 if (cloudWriteInFlightSigRef.current === contentSig) cloudWriteInFlightSigRef.current = '';
                 lastCloudSentSigRef.current = '';
@@ -9549,7 +9559,7 @@ function App() {
                 if(user){
                     const handleCloudSnapshot = async function(snap){
                         // Çevrimiçiyken eski cihaz önbelleği eşitlendi sayılmaz.
-                        if (navigator.onLine && snap.metadata && snap.metadata.fromCache) return;
+                        if (snap.metadata && (snap.metadata.hasPendingWrites || (navigator.onLine && snap.metadata.fromCache))) return;
                         const readSeq = ++cloudSnapshotReadSeqRef.current;
                         try{
                             let localPayload = null;
@@ -9810,7 +9820,7 @@ function App() {
     }, [storageReady, T]);
     useEffect(() => { if (!storageReady) return; try {
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-        saveTimerRef.current = setTimeout(function(){
+        (function(){
             try {
                 const snapshotCore = { t: T, a: agencies, ap: agencyPhones, dr: drivers, delAg: deletedAgencyContacts, delDr: deletedDriverContacts, cm: contactSyncMeta, r: rates, ru: lastRateUpdate, ak: aracK, db: debts, adj: accountAdjustments, tk: todos, tl: tkLedger, au: auditLog, tr: trashTransfers, cr: crossRates, del: readDeletedTransferIds(), delA: readDeletedAracIds(), v: 31 };
                 const saveSig = snapshotContentSignature(snapshotCore);
@@ -9837,10 +9847,10 @@ function App() {
                     const rows = await koMemoryList();
                     setMemoryInfo({ count: rows.length, last: row.date, ok: true });
                 }).catch(function(){ setMemoryInfo(p => ({ ...p, ok: false })); });
-                if (cloudEnabled() && authUser && cloudLoadedRef.current && saveSig !== lastCloudServerSigRef.current && Date.now() >= cloudBackoffUntilRef.current)
+                if (cloudEnabled() && authUser && cloudLoadedRef.current && saveSig !== lastCloudServerSigRef.current)
                     queueCloudSnapshot(snapshot, 0);
             } catch(inner) { console.error('[SAVE inner]', inner); }
-        }, 20);
+        })();
     }
     catch (e) { console.error('[SAVE] genel hata', e); } ; }, [storageReady, T, agencies, agencyPhones, drivers, deletedAgencyContacts, deletedDriverContacts, contactSyncMeta, rates, lastRateUpdate, aracK, debts, accountAdjustments, todos, tkLedger, auditLog, trashTransfers, crossRates, authUser]);
     useEffect(() => { try { localStorage.setItem(REMEMBER_ME_KEY, '1'); } catch (e) {} }, []);
@@ -12314,7 +12324,7 @@ function App() {
         if(syncPhase === 'synced') {
             let timeText = '';
             try { timeText = lastCloudSyncAt ? new Date(lastCloudSyncAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : ''; } catch(e) {}
-            return { text: '● Eşitlendi' + (timeText ? ' ' + timeText : ''), color: 'var(--ok)', ok: true };
+            return { text: '● Buluta kaydedildi' + (timeText ? ' ' + timeText : ''), color: 'var(--ok)', ok: true };
         }
         if(syncPhase === 'syncing') return { text: '● Eşitleniyor…', color: 'var(--p-info)', ok: false };
         if(syncPhase === 'connecting') return { text: '● Bağlanıyor…', color: 'var(--p-info)', ok: false };
