@@ -10893,7 +10893,7 @@ function App() {
         else if (kisi) msg += '\n*MİSAFİR (' + kisi + ' KİŞİ)*\n' + MSG_RULE + '\n';
         const foot = [];
         { const bagTxt = bagLabel(t); if (bagTxt) foot.push('🧳 *Bagaj:* ' + bagTxt); }
-        if (t.paymentToMe) foot.push('💳 *Tahsilat:* Merkez tarafından alındı');
+        if (t.paymentToMe) foot.push('💳 *Tahsilat:* Ödeme alınmayacak');
         else if (t.paymentCollect === 'no') foot.push('💳 *Tahsilat:* Yok');
         else if (t.paymentAmount) foot.push('💳 *Tahsilat:* ' + t.paymentAmount + ' ' + t.paymentCurrency);
         { const uz = uyrukOzeti(t.passengers); if (uz) foot.push('🌍 *Uyruk:* ' + uz); }
