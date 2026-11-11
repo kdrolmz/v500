@@ -3261,7 +3261,7 @@ const KOX = {
     TOTAL_TXT: 11, TOTAL_MONEY: 12,
     TITLE: 13, SUBTITLE: 14, NOTE: 15, TXT_L: 16, TXT_L_Z: 17
 };
-function koxStylesXml() {
+function koxStylesXml(showCents) {
     const border = '<border><left style="thin"><color rgb="FF' + KOX_LINE + '"/></left><right style="thin"><color rgb="FF' + KOX_LINE + '"/></right><top style="thin"><color rgb="FF' + KOX_LINE + '"/></top><bottom style="thin"><color rgb="FF' + KOX_LINE + '"/></bottom><diagonal/></border>';
     const fonts = [
         '<font><sz val="10"/><color rgb="FF' + KOX_INK + '"/><name val="Calibri"/></font>',                       /* 0 gövde */
@@ -3302,7 +3302,7 @@ function koxStylesXml() {
     xfs[KOX.TXT_L_Z]      = '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"' + L;
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         + '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-        + '<numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;₺&quot;#,##0;[Red]\\-&quot;₺&quot;#,##0"/></numFmts>'
+        + '<numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;₺&quot;#,##0' + (showCents ? '.00' : '') + ';[Red]\\-&quot;₺&quot;#,##0' + (showCents ? '.00' : '') + '"/></numFmts>'
         + '<fonts count="' + fonts.length + '">' + fonts.join('') + '</fonts>'
         + '<fills count="' + fills.length + '">' + fills.join('') + '</fills>'
         + '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>' + border + '</borders>'
@@ -3321,6 +3321,10 @@ function koxSheetXml(sheet) {
             if (!c) return '';
             const ref = koxColName(ci) + (ri + 1);
             const s = ' s="' + (c.s || 0) + '"';
+            if (c.f) {
+                const type = c.n ? '' : ' t="str"';
+                return '<c r="' + ref + '"' + s + type + '><f>' + koxEsc(c.f) + '</f><v>' + koxEsc(c.v) + '</v></c>';
+            }
             if (c.n) {
                 const num = Number(c.v);
                 if (!isFinite(num)) return '<c r="' + ref + '"' + s + '/>';
@@ -3353,13 +3357,14 @@ function koxSheetXml(sheet) {
 }
 function koxBuildWorkbook(sheet) {
     const enc = new TextEncoder();
+    const showCents = sheet.rows.some(row => row.cells.some(cell => cell && cell.n && !Number.isInteger(cell.v)));
     const name = koxEsc(String(sheet.name || 'Hesap').replace(/[\\\/\?\*\[\]:]/g, ' ').slice(0, 28) || 'Hesap');
     const files = [
         { name: '[Content_Types].xml', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>') },
         { name: '_rels/.rels', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>') },
         { name: 'xl/workbook.xml', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="' + name + '" sheetId="1" r:id="rId1"/></sheets></workbook>') },
         { name: 'xl/_rels/workbook.xml.rels', data: enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>') },
-        { name: 'xl/styles.xml', data: enc.encode(koxStylesXml()) },
+        { name: 'xl/styles.xml', data: enc.encode(koxStylesXml(showCents)) },
         { name: 'xl/worksheets/sheet1.xml', data: enc.encode(koxSheetXml(sheet)) }
     ];
     return new Blob([kozipBuild(files)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -6516,8 +6521,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
     const HESAP_COLS = [
         { t: 'TARİH', w: 12 }, { t: 'SAAT', w: 7 }, { t: 'MÜŞTERİ ADI', w: 22 },
         { t: 'ALIŞ NOKTASI', w: 22 }, { t: 'GÜZERGAH', w: 24 }, { t: 'VARIŞ NOKTASI', w: 22 },
-        { t: 'MÜŞTERİ / İŞ TOPLAMI ₺', w: 18 }, { t: 'ARAÇ / ALT ACENTA ₺', w: 18 }, { t: 'KOMİSYON ₺', w: 13 },
-        { t: 'KALAN ₺', w: 13 }, { t: 'NOTLAR', w: 24 }, { t: 'İŞİ YAPAN', w: 17 }
+        { t: 'MÜŞTERİ ÜCRETİ ₺', w: 14 }, { t: 'ARABA ÜCRETİ ₺', w: 14 }, { t: 'KOMİSYON ₺', w: 13 },
+        { t: 'KALAN ₺', w: 13 }, { t: 'NOTLAR', w: 24 }
     ];
     const HESAP_NCOL = HESAP_COLS.length;
     const buildHesapSheet = (firm, opts) => {
@@ -6536,8 +6541,12 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const odeloGrup = ts.filter(t => t.kaynak === 'odelo').slice().sort(sortByDate);
         const clean = v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
         const up = v => clean(v).toLocaleUpperCase('tr-TR');
-        const money = n => Math.round(moneyValue(n) || 0);
-        const dateTxt = d => d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        const cents = n => Math.round((moneyValue(n) || 0) * 100);
+        const money = n => cents(n) / 100;
+        const dateTxt = d => {
+            const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+            return match ? [match[3], match[2], match[1]].join('.') : clean(d);
+        };
         const paxTxt = t => {
             const ps = (t.passengers || []).map(p => p.name || p.fullName || '').filter(Boolean);
             return up(ps[0] || t.passengerName || t.yolcu || '');
@@ -6552,12 +6561,6 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             if (id === 'hw') return 'OTOBAN';
             const r = ROTALAR.find(x => x.id === id);
             return up(r ? r.n : '');
-        };
-        const doerTxt = t => {
-            const alt = clean(t.altAcenta);
-            if (alt) return up(alt);
-            const asg = clean(t.assignedTo);
-            return up(asg || OL);
         };
         const noteTxt = t => {
             const bits = [];
@@ -6582,7 +6585,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const rowNo = () => rows.length;   // eklenecek satırın 1 tabanlı numarası
         if (opts.logo) {
             const pad = n => Array.from({ length: n }, () => null);
-            rows.push({ h: 26, cells: [{ v: 'ÖLMEZTUR TURİZM', s: KOX.TITLE }].concat(pad(HESAP_NCOL - 1)) });
+            rows.push({ h: 26, cells: [{ v: 'ÖLMEZ - ' + up(firm), s: KOX.TITLE }].concat(pad(HESAP_NCOL - 1)) });
             merges.push('A' + rowNo() + ':F' + rowNo());
             rows.push({
                 h: 16, cells: [{
@@ -6597,14 +6600,16 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         }
         rows.push({ h: 32, cells: HESAP_COLS.map(c => ({ v: c.t, s: KOX.HEAD })) });
         const headRow = rowNo();
-        const grand = { musteri: 0, araba: 0, komisyon: 0, kalan: 0 };
-        const addSection = (title, list, type) => {
+        const grand = { komisyon: 0, kalan: 0 };
+        const subtotalRows = [];
+        const addSection = (title, list) => {
             if (!list.length) return;
             const label = [{ v: up(title), s: KOX.SECTION }, { v: '', s: KOX.SECTION }, { v: '', s: KOX.SECTION }];
             for (let i = 3; i < HESAP_NCOL; i++) label.push({ v: '', s: KOX.SECTION_FILL });
             rows.push({ h: 22, cells: label });
             merges.push('A' + rowNo() + ':C' + rowNo());
-            const sum = { musteri: 0, araba: 0, komisyon: 0, kalan: 0 };
+            const first = rowNo() + 1;
+            let commissionCents = 0, balanceCents = 0;
             list.forEach((t, i) => {
                 const z = i % 2 === 1;
                 const sT = z ? KOX.TXT_Z : KOX.TXT;
@@ -6612,12 +6617,14 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 const musteri = money(accountReportCustomerTRYValue(t));
                 const araba = money(accountReportVehicleTRYValue(t));
                 const komisyon = money(tourCommissionShare(t));
-                const hasNet = t.netOl !== undefined && t.netOl !== null && String(t.netOl) !== '';
-                const kalan = hasNet ? money(t.netOl) : (musteri - araba);
+                const kalan = money(t.netOl);
                 const manual = t.kaynak === 'manual';
                 const meta = manual ? accountAdjustmentTypeMeta(t.adjustmentType) : null;
-                sum.musteri += musteri; sum.araba += araba; sum.komisyon += komisyon; sum.kalan += kalan;
+                commissionCents += cents(komisyon);
+                balanceCents += cents(kalan);
+                const note = noteTxt(t);
                 rows.push({
+                    h: Math.min(400, Math.max(24, 12 * Math.ceil(note.length / 25) + 6)),
                     cells: [
                         { v: dateTxt(t.date), s: sT },
                         { v: t.time || '', s: sT },
@@ -6629,42 +6636,40 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         { v: araba, s: sM, n: true },
                         { v: komisyon, s: sM, n: true },
                         { v: kalan, s: sM, n: true },
-                        { v: noteTxt(t), s: KOX.NOTE },
-                        { v: manual ? '' : doerTxt(t), s: sT }
+                        { v: note, s: z ? KOX.TXT_L_Z : KOX.TXT_L }
                     ]
                 });
             });
             const sub = [];
             for (let i = 0; i < HESAP_NCOL; i++) sub.push({ v: '', s: KOX.SUB_TXT });
-            sub[5] = { v: 'ARA TOPLAM', s: KOX.SUB_TXT };
-            sub[6] = { v: sum.musteri, s: KOX.SUB_MONEY, n: true };
-            sub[7] = { v: sum.araba, s: KOX.SUB_MONEY, n: true };
-            sub[8] = { v: sum.komisyon, s: KOX.SUB_MONEY, n: true };
-            sub[9] = { v: sum.kalan, s: KOX.SUB_MONEY, n: true };
+            sub[9] = { v: balanceCents / 100, s: KOX.SUB_MONEY, n: true, f: 'ROUND(SUM(J' + first + ':J' + rowNo() + '),2)' };
+            const commissionRange = 'I' + first + ':I' + rowNo();
             rows.push({ h: 20, cells: sub });
+            subtotalRows.push({ balance: 'J' + rowNo(), commission: commissionRange });
             rows.push({ h: 7, cells: Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.BAND })) });
             blankRow();
-            grand.musteri += sum.musteri; grand.araba += sum.araba;
-            grand.komisyon += sum.komisyon; grand.kalan += sum.kalan;
+            grand.komisyon += commissionCents;
+            grand.kalan += balanceCents;
         };
-        addSection(OL + ' - ' + firm, benVerdim, 'normal');
-        addSection(firm + ' - ' + OL, oVerdi, 'normal');
-        if (odeloGrup.length) addSection('Odelo', odeloGrup, 'odelo');
-        if (manualGrup.length) addSection('Ödeme / Bakiye', manualGrup, 'normal');
+        addSection(OL + ' - ' + firm, benVerdim);
+        addSection(firm + ' - ' + OL, oVerdi);
+        addSection('Odelo', odeloGrup);
+        addSection('Ödeme / Bakiye', manualGrup);
         (function () {
-            const list = (debtRows || []).map(d => ({ d, tryVal: debtRemainingTRY(d, rates) })).filter(x => Math.abs(x.tryVal) >= 0.5);
+            const list = (debtRows || []).map(d => ({ d, tryVal: debtRemainingTRY(d, rates) })).filter(x => cents(x.tryVal) !== 0);
             if (!list.length) return;
             const label = [{ v: up('Nakit Borç / Alacak'), s: KOX.SECTION }, { v: '', s: KOX.SECTION }, { v: '', s: KOX.SECTION }];
             for (let i = 3; i < HESAP_NCOL; i++) label.push({ v: '', s: KOX.SECTION_FILL });
             rows.push({ h: 22, cells: label });
             merges.push('A' + rowNo() + ':C' + rowNo());
+            const first = rowNo() + 1;
             let sumK = 0;
             list.forEach((x, i) => {
                 const z = i % 2 === 1;
                 const sT = z ? KOX.TXT_Z : KOX.TXT;
                 const sM = z ? KOX.MONEY_Z : KOX.MONEY;
                 const signed = x.d.type === 'borc' ? -Math.abs(money(x.tryVal)) : Math.abs(money(x.tryVal));
-                sumK += signed;
+                sumK += cents(signed);
                 rows.push({ cells: [
                     { v: dateTxt(x.d.date), s: sT },
                     { v: x.d.time || '', s: sT },
@@ -6676,15 +6681,15 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                     { v: 0, s: sM, n: true },
                     { v: 0, s: sM, n: true },
                     { v: signed, s: sM, n: true },
-                    { v: clean(x.d.note || x.d.notes || ''), s: KOX.NOTE },
-                    { v: '', s: sT }
+                    { v: clean(x.d.note || x.d.notes || ''), s: z ? KOX.TXT_L_Z : KOX.TXT_L }
                 ] });
             });
             const sub = [];
             for (let i = 0; i < HESAP_NCOL; i++) sub.push({ v: '', s: KOX.SUB_TXT });
             sub[5] = { v: 'ARA TOPLAM', s: KOX.SUB_TXT };
-            sub[9] = { v: sumK, s: KOX.SUB_MONEY, n: true };
+            sub[9] = { v: sumK / 100, s: KOX.SUB_MONEY, n: true, f: 'ROUND(SUM(J' + first + ':J' + rowNo() + '),2)' };
             rows.push({ h: 20, cells: sub });
+            subtotalRows.push({ balance: 'J' + rowNo() });
             rows.push({ h: 7, cells: Array.from({ length: HESAP_NCOL }, () => ({ v: '', s: KOX.BAND })) });
             blankRow();
             grand.kalan += sumK;
@@ -6696,12 +6701,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         }
         const tot = [];
         for (let i = 0; i < HESAP_NCOL; i++) tot.push({ v: '', s: KOX.TOTAL_TXT });
-        tot[0] = { v: 'TOPLAM HESAP · TRANSFER + BAKİYE', s: KOX.TOTAL_TXT };
-        tot[6] = { v: grand.musteri, s: KOX.TOTAL_MONEY, n: true };
-        tot[7] = { v: grand.araba, s: KOX.TOTAL_MONEY, n: true };
-        tot[8] = { v: grand.komisyon, s: KOX.TOTAL_MONEY, n: true };
-        tot[9] = { v: grand.kalan, s: KOX.TOTAL_MONEY, n: true };
-        rows.push({ h: 26, cells: tot });
+        const sumFormula = refs => refs.length ? 'ROUND(SUM(' + refs.join(',') + '),2)' : '0';
+        const totalRef = 'J' + (rowNo() + 1);
+        const receivable = 'ALACAKLIYIM. ' + up(firm) + ' → ' + up(OL);
+        const payable = 'BORÇLUYUM. ' + up(OL) + ' → ' + up(firm);
+        const balanced = 'HESAP DENGEDE.';
+        const formulaText = value => '"' + value.replace(/"/g, '""') + '"';
+        tot[0] = { v: 'TOPLAM HESAP', s: KOX.TOTAL_TXT };
+        tot[8] = { v: grand.komisyon / 100, s: KOX.TOTAL_MONEY, n: true, f: sumFormula(subtotalRows.map(row => row.commission).filter(Boolean)) };
+        tot[9] = { v: grand.kalan / 100, s: KOX.TOTAL_MONEY, n: true, f: sumFormula(subtotalRows.map(row => row.balance)) };
+        tot[10] = {
+            v: grand.kalan > 0 ? receivable : grand.kalan < 0 ? payable : balanced,
+            s: KOX.TOTAL_TXT,
+            f: 'IF(' + totalRef + '>0,' + formulaText(receivable) + ',IF(' + totalRef + '<0,' + formulaText(payable) + ',' + formulaText(balanced) + '))'
+        };
+        rows.push({ h: Math.max(32, 14 * Math.ceil(receivable.length / 21) + 6), cells: tot });
         merges.push('A' + rowNo() + ':F' + rowNo());
         return {
             name: clean(firm).slice(0, 28) || 'Hesap',
@@ -7599,7 +7613,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         };
                         return React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 } },
                             actBtn('\uD83D\uDCC4', 'PDF Olu\u015Ftur', 'kaydet / payla\u015F', () => pdfExport(sel), true),
-                            actBtn('\uD83D\uDCD7', 'Excel', 'biçimli .xlsx dosyası', () => excelExport(sel), false),
+                            actBtn('\uD83D\uDCD7', 'Numbers / Excel', 'biçimli .xlsx dosyası', () => excelExport(sel), false),
                             actBtn('\uD83D\uDCE4', '\u015Eirkete Kopyala', 'mesaj olarak panoya', () => { copyText(sirketMsg(sel)); tip('Kopyaland\u0131!'); }, false),
                             actBtn('\uD83D\uDCCB', 'Kendi Hesab\u0131m', 'k\u00E2r \u00F6zeti panoya', kendiHesabim, false));
                     })(),
