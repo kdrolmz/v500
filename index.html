@@ -286,60 +286,71 @@ html .mo .ko-home-detail-sheet{display:flex!important;flex-direction:column!impo
 </style>
 <link rel="icon" type="image/png" sizes="192x192" href="./olmez-transfer-icon-192.png?v=20261105">
 <style id="ko-firm-ledger-layout">
+  .view-hesap .ko-account-root-card,
+  .view-hesap .ko-account-root-card :is(div,span,b,small,strong,label,button,p,summary){
+    text-transform:capitalize!important
+  }
   .view-hesap .ko-account-sheet-section,
   .view-hesap .ko-account-table-wrap,
   .view-hesap .ko-account-transfer-table{min-width:0!important;max-width:100%!important}
   .view-hesap .ko-account-transfer-table>.ko-account-transfer-row{
-    box-sizing:border-box!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-areas:none!important;gap:0!important;min-width:0!important;padding:12px 14px!important;
-    border-radius:16px!important;align-items:start!important
+    box-sizing:border-box!important;grid-template-columns:max-content minmax(0,1fr) minmax(0,45%)!important;
+    grid-template-areas:"date time cust" "name name driver" "route route net" "route route status"!important;
+    gap:1px 10px!important;min-width:0!important;padding:10px 12px!important;
+    border-radius:15px!important;align-items:start!important
   }
+  .view-hesap .ko-account-transfer-table{gap:8px!important}
   .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-cell{
-    grid-area:auto!important;grid-column:1/-1!important;justify-self:stretch!important;
+    justify-self:stretch!important;
     min-width:0!important;width:auto!important;max-width:100%!important;white-space:normal!important;overflow-wrap:anywhere!important
   }
-  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-date-cell{grid-column:1!important}
-  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-time-cell{grid-column:2!important;text-align:right!important}
-  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-name-cell{margin-top:8px!important}
-  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-route-cell{padding:3px 0 8px!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-date-cell{grid-area:date!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-time-cell{grid-area:time!important;text-align:left!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-name-cell{grid-area:name!important;margin:0!important;padding:3px 0 0!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-route-cell{grid-area:route!important;padding:3px 0 0!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-money-cell:nth-child(5){grid-area:cust!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-money-cell:nth-child(6){grid-area:driver!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-net-cell{grid-area:net!important}
   .view-hesap .ko-account-transfer-table .ko-account-cell :where(b,small,.ko-account-flow,.ko-account-chip){
     white-space:normal!important;overflow-wrap:anywhere!important;text-overflow:clip!important
   }
   .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>:is(.ko-account-money-cell,.ko-account-net-cell){
-    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)!important;gap:3px 12px!important;
-    align-items:baseline!important;border-top:1px solid var(--p-line)!important;padding:7px 0!important;text-align:left!important
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr)!important;gap:1px 6px!important;
+    align-items:baseline!important;padding:2px 0!important;text-align:left!important
   }
   .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-money-cell.is-empty{display:none!important}
   .view-hesap .ko-account-transfer-table :is(.ko-account-money-cell,.ko-account-net-cell)>b{
     grid-column:2;grid-row:1;justify-self:stretch;text-align:right;font-variant-numeric:tabular-nums;
-    font-size:13px!important;line-height:1.3!important;font-weight:600!important
+    font-size:12px!important;line-height:1.25!important;font-weight:600!important
   }
   .view-hesap .ko-account-transfer-table .ko-account-money-cell>small:first-of-type,
   .view-hesap .ko-account-transfer-table .ko-account-line-label{
     grid-column:1;grid-row:1;margin:0!important;font-size:11px!important;font-weight:500!important;color:var(--mut)!important;-webkit-text-fill-color:var(--mut)!important
   }
   .view-hesap .ko-account-transfer-table :is(.ko-account-net-cell>small,.ko-account-money-cell>small:not(:first-of-type)){
-    grid-column:2;text-align:right;margin:0!important;white-space:normal!important;overflow-wrap:anywhere!important
+    grid-column:1/-1;text-align:right;margin:0!important;white-space:normal!important;overflow-wrap:anywhere!important
   }
-  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-net-cell{padding-top:9px!important}
+  .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-net-cell{border-top:1px solid var(--p-line)!important;padding-top:4px!important}
   .view-hesap .ko-account-transfer-table .ko-account-net-cell.is-pos>b{color:var(--p-pos)!important;-webkit-text-fill-color:var(--p-pos)!important}
   .view-hesap .ko-account-transfer-table .ko-account-net-cell.is-neg>b{color:var(--p-neg)!important;-webkit-text-fill-color:var(--p-neg)!important}
   .view-hesap .ko-account-transfer-table>.ko-account-transfer-row>.ko-account-status-cell{
-    display:flex!important;flex-direction:row!important;justify-content:flex-end!important;align-items:center!important;
-    border-top:1px solid var(--p-line)!important;padding:8px 0 0!important
+    grid-area:status!important;display:flex!important;flex-direction:row!important;justify-content:flex-end!important;
+    align-items:center!important;padding:3px 0 0!important
   }
   .view-hesap .ko-account-transfer-table .ko-account-status-cell>div{justify-content:flex-end}
   .view-hesap .ko-account-transfer-table .ko-account-settle-btn{
-    box-sizing:border-box!important;width:98px!important;min-width:0!important;max-width:100%!important;
-    min-height:44px!important;padding:8px 10px!important;border-radius:12px!important;
-    font-size:12px!important;font-weight:600!important;justify-content:center!important;white-space:nowrap!important
+    box-sizing:border-box!important;width:76px!important;min-width:0!important;max-width:100%!important;
+    min-height:32px!important;padding:4px 8px!important;border-radius:10px!important;
+    font-size:11.5px!important;font-weight:600!important;justify-content:center!important;white-space:nowrap!important
   }
   .view-hesap .ko-account-transfer-table .ko-account-settle-btn.is-open{background:var(--p-tint-3)!important}
   .view-hesap .ko-account-transfer-table .ko-account-settle-btn.is-settled{background:var(--p-pos-soft)!important;color:var(--p-pos-deep)!important;-webkit-text-fill-color:var(--p-pos-deep)!important}
+  .view-hesap .ko-account-transfer-table .ko-account-manual-row .ko-account-status-cell>div{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,158px)}
+  .view-hesap .ko-account-transfer-table .ko-account-manual-row .ko-account-settle-btn{width:100%!important;padding-inline:4px!important}
   .view-hesap .ko-account-summary-lines{display:grid!important;grid-template-columns:minmax(0,1fr)!important;padding:0!important;gap:0!important}
   .view-hesap .ko-account-summary-lines>.ko-account-summary-line{
     display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:baseline;gap:3px 12px;
-    min-width:0;padding:9px 14px!important;border-bottom:1px solid var(--p-line);text-align:left!important
+    min-width:0;padding:6px 11px!important;border-bottom:1px solid var(--p-line);text-align:left!important
   }
   .view-hesap .ko-account-summary-lines>.ko-account-summary-line:last-child{border-bottom:0}
   .view-hesap .ko-account-summary-line>*{min-width:0;white-space:normal!important;overflow-wrap:anywhere}
@@ -7266,20 +7277,21 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                 React.createElement("div", { className: "ko-account-flow" }, renderAccountRoute(hesapRouteParts(t), hesapRouteSuffix(t), true)),
                 React.createElement("small", null, routeText)),
             (() => {
-                const cd = (t.kaynak === 'odelo' || t.kaynak === 'broker') ? { isForeign: false } : transferCustomerDisplay(t);
-                const customerLabel = transferNoCustomerPayment(t) ? 'Tahsilat yok' : 'Müşteri';
+                const specialAccount = t.kaynak === 'odelo' || t.kaynak === 'broker';
+                const showZeroCustomer = !specialAccount && transferNoCustomerPayment(t);
+                const cd = specialAccount || showZeroCustomer ? { isForeign: false } : transferCustomerDisplay(t);
                 if (cd.isForeign) {
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
                         React.createElement("b", null, cd.main),
-                        React.createElement("small", null, customerLabel + (cd.sub ? ' (' + cd.sub + ')' : '')),
+                        React.createElement("small", null, 'Müşteri' + (cd.sub ? ' (' + cd.sub + ')' : '')),
                         jabirNetUnderCustomer);
                 }
                 const cAmt = moneyValue(hesapCustomerAmount(t));
-                if (!(cAmt > 0) && !jabirNetUnderCustomer)
+                if (!showZeroCustomer && !(cAmt > 0) && !jabirNetUnderCustomer)
                     return React.createElement("div", { className: "ko-account-cell ko-account-money-cell is-empty" });
                 return React.createElement("div", { className: "ko-account-cell ko-account-money-cell" },
-                    React.createElement("b", null, hesapPlainMoney(cAmt)),
-                    React.createElement("small", null, customerLabel),
+                    React.createElement("b", null, showZeroCustomer ? '0 ₺' : hesapPlainMoney(cAmt)),
+                    React.createElement("small", null, 'Müşteri'),
                     jabirNetUnderCustomer);
             })(),
             (() => {
@@ -7619,7 +7631,7 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                             React.createElement("div", { style: { padding: '17px 16px 15px', textAlign: 'center', background: pos ? 'var(--p-pos-soft)' : 'var(--p-neg-soft)' } },
                                 React.createElement("div", { style: { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 11px', borderRadius: 999, background: 'var(--p-white)', border: '1px solid ' + (pos ? 'rgba(14,159,110,.28)' : 'rgba(192,95,95,.28)'), marginBottom: 9 } },
                                     React.createElement("span", { style: { fontSize: 10, lineHeight: 1, color: tone } }, pos ? '▲' : '▼'),
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: tone } }, pos ? 'ÖLMEZTUR ALACAKLI' : 'ÖLMEZTUR BORÇLU')),
+                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: tone } }, pos ? 'Ölmeztur Alacaklı' : 'Ölmeztur Borçlu')),
                                 React.createElement("div", { className: "ko-account-summary-total", style: { fontSize: 30, fontWeight: 500, color: tone, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' } }, netTxt),
                                 jabir ? React.createElement("div", { style: { fontSize: 11.5, fontWeight: 500, color: tone, opacity: .72, marginTop: 3 } }, '(' + fmtTl(displayTlNet) + ')') : null),
                             React.createElement("div", { className: "ko-account-summary-lines", style: { borderTop: '1px solid ' + BOR } },
