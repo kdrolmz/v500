@@ -347,15 +347,21 @@ html .mo .ko-home-detail-sheet{display:flex!important;flex-direction:column!impo
   .view-hesap .ko-account-transfer-table .ko-account-settle-btn.is-settled{background:var(--p-pos-soft)!important;color:var(--p-pos-deep)!important;-webkit-text-fill-color:var(--p-pos-deep)!important}
   .view-hesap .ko-account-transfer-table .ko-account-manual-row .ko-account-status-cell>div{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,158px)}
   .view-hesap .ko-account-transfer-table .ko-account-manual-row .ko-account-settle-btn{width:100%!important;padding-inline:4px!important}
-  .view-hesap .ko-account-summary-lines{display:grid!important;grid-template-columns:minmax(0,1fr)!important;padding:0!important;gap:0!important}
-  .view-hesap .ko-account-summary-lines>.ko-account-summary-line{
-    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:baseline;gap:3px 12px;
-    min-width:0;padding:6px 11px!important;border-bottom:1px solid var(--p-line);text-align:left!important
-  }
-  .view-hesap .ko-account-summary-lines>.ko-account-summary-line:last-child{border-bottom:0}
-  .view-hesap .ko-account-summary-line>*{min-width:0;white-space:normal!important;overflow-wrap:anywhere}
-  .view-hesap .ko-account-summary-line>:nth-child(n+2){grid-column:2;text-align:right}
-  .view-hesap .ko-account-summary-card .ko-account-summary-total{white-space:normal!important;overflow-wrap:anywhere!important}
+  .view-hesap .ko-account-summary-card{min-width:0;border:1px solid var(--p-line);border-radius:14px;overflow:hidden;background:var(--p-white)}
+  .view-hesap .ko-account-summary-net{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;padding:8px 11px;background:var(--ko-balance-bg)}
+  .view-hesap .ko-account-summary-net>span{min-width:0;font-size:11px;font-weight:600;overflow-wrap:anywhere}
+  .view-hesap .ko-account-summary-total{min-width:0;font-size:17px;font-weight:650;line-height:1.2;text-align:right;color:var(--ko-balance-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .view-hesap .ko-account-summary-total small{display:block;font-size:10px;font-weight:500}
+  .view-hesap .ko-account-summary-lines{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--p-line)}
+  .view-hesap .ko-account-summary-month .ko-account-summary-lines{grid-template-columns:minmax(0,.65fr) minmax(0,1.35fr)}
+  .view-hesap .ko-account-summary-line{min-width:0;display:flex;flex-direction:column;gap:2px;padding:6px 10px;overflow-wrap:anywhere}
+  .view-hesap .ko-account-summary-line+.ko-account-summary-line{border-left:1px solid var(--p-line)}
+  .view-hesap .ko-account-summary-line span,.view-hesap .ko-account-summary-line small{font-size:10px;line-height:1.2;color:var(--mut)}
+  .view-hesap .ko-account-summary-line b{font-size:12px;font-weight:620;line-height:1.2;font-variant-numeric:tabular-nums}
+  .view-hesap .ko-account-summary-month{border-top:1px solid var(--p-line);background:var(--p-bg-hi)}
+  .view-hesap .ko-account-month-picker{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;font-size:11px;color:var(--mut)}
+  .view-hesap .ko-account-month-picker .ko-hesap-month-input{box-sizing:border-box;min-width:0!important;width:135px!important;max-width:64%!important;min-height:32px!important;font-size:12px!important;padding:4px 7px!important;border-radius:8px!important}
+  .view-hesap .ko-account-root-card .ko-account-section-head{min-height:46px!important;padding:8px 10px!important;gap:6px 10px!important}
   .view-hesap .ko-account-sheet-section .ko-account-section-title,
   .view-hesap .ko-account-sheet-section .ko-account-stat-total{min-width:0!important;max-width:100%;white-space:normal!important;overflow-wrap:anywhere!important}
 </style>
@@ -6320,15 +6326,20 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const s = hesapSum(detay);
         return { ts: detay, al: s.al, ver: s.ver, net: s.net };
     };
+    const firmAccountCache = React.useMemo(() => new Map(), [T, normalizedAccountAdjustments, normalizedDebts, activeFirmKeys, rates]);
     const hesapData = firm => {
+        if (firmAccountCache.has(firm)) return firmAccountCache.get(firm);
         const base = ozet(firm);
-        if (!isBalenturFirm(firm))
-            return { ...base, regularTs: base.ts, odelo: { ts: [], al: 0, ver: 0, net: 0 } };
+        if (!isBalenturFirm(firm)) {
+            const account = { ...base, regularTs: base.ts, odelo: { ts: [], al: 0, ver: 0, net: 0 } };
+            firmAccountCache.set(firm, account);
+            return account;
+        }
         const regularTs = base.ts.filter(t => t.kaynak === 'broker' || t.kaynak === 'manual' || !isBalenturOdeloTransfer(t));
         const regular = hesapSum(regularTs);
         const odelo = balenturOdeloOzet();
         const debt = debtSummaryForFirm(firm);
-        return {
+        const account = {
             ts: [...regularTs, ...odelo.ts],
             debtRows: base.debtRows,
             al: regular.al + odelo.al + debt.al,
@@ -6337,6 +6348,8 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
             regularTs,
             odelo
         };
+        firmAccountCache.set(firm, account);
+        return account;
     };
     const sirketMsg = firm => {
         const { ts, al, ver, net } = hesapData(firm);
@@ -7506,9 +7519,9 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
         const totalNet = hesapOpenNet(liste);
         const openCount = (liste || []).filter(t => !t.firmSettled).length;
         const closedCount = Math.max(0, (liste || []).length - openCount);
-        const totalUsd = accountUsdSummary(liste).net;
-        const totalUsdTl = accountUsdTlSummary(liste).net;
-        const displayNet = isJabirFirm(sel) ? totalUsd : totalNet;
+        const jabir = isJabirFirm(sel);
+        const totalUsdTl = jabir ? accountUsdTlSummary(liste).net : 0;
+        const displayNet = jabir ? accountUsdSummary(liste).net : totalNet;
         const tone = isOlmezToAgency
             ? {
                 bd: 'var(--p-pos-deep)',
@@ -7618,33 +7631,32 @@ function HesapTab({ T, sT, agencies, tip, setTab, setExpandedT, setFlt, setSelec
                         const tone = pos ? G : R;
                         const netTxt = jabir ? signedUsdText(displayNet)
                             : (pos ? '+' : '−') + fr(Math.abs(displayNet)) + ' ₺';
-                        const cell = (key, lab, val, col, sub, big) => React.createElement("div", {
+                        const cell = (key, lab, val, col, sub) => React.createElement("div", {
                             key: key, className: "ko-account-summary-line"
                         },
-                            React.createElement("div", { style: { fontSize: 10.5, fontWeight: 600, color: SB, textTransform: 'uppercase', marginBottom: 3, whiteSpace: 'nowrap' } }, lab),
-                            React.createElement("div", { style: { fontSize: big ? 15 : 13, fontWeight: 500, color: col, fontVariantNumeric: 'tabular-nums', lineHeight: 1.15, whiteSpace: 'nowrap' } }, val),
-                            sub ? React.createElement("div", { style: { fontSize: 10.5, fontWeight: 500, color: col, opacity: .72, marginTop: 1, whiteSpace: 'nowrap' } }, sub) : null);
+                            React.createElement("span", null, lab),
+                            React.createElement("b", { style: { color: col } }, val),
+                            sub ? React.createElement("small", null, sub) : null);
                         return React.createElement("div", {
                             className: "ko-account-summary-card",
-                            style: { background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 16, overflow: 'hidden' }
+                            style: { '--ko-balance-bg': pos ? 'var(--p-pos-soft)' : 'var(--p-neg-soft)', '--ko-balance-ink': tone }
                         },
-                            React.createElement("div", { style: { padding: '17px 16px 15px', textAlign: 'center', background: pos ? 'var(--p-pos-soft)' : 'var(--p-neg-soft)' } },
-                                React.createElement("div", { style: { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 11px', borderRadius: 999, background: 'var(--p-white)', border: '1px solid ' + (pos ? 'rgba(14,159,110,.28)' : 'rgba(192,95,95,.28)'), marginBottom: 9 } },
-                                    React.createElement("span", { style: { fontSize: 10, lineHeight: 1, color: tone } }, pos ? '▲' : '▼'),
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: tone } }, pos ? 'Ölmeztur Alacaklı' : 'Ölmeztur Borçlu')),
-                                React.createElement("div", { className: "ko-account-summary-total", style: { fontSize: 30, fontWeight: 500, color: tone, lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' } }, netTxt),
-                                jabir ? React.createElement("div", { style: { fontSize: 11.5, fontWeight: 500, color: tone, opacity: .72, marginTop: 3 } }, '(' + fmtTl(displayTlNet) + ')') : null),
-                            React.createElement("div", { className: "ko-account-summary-lines", style: { borderTop: '1px solid ' + BOR } },
-                                cell('al', '↑ Alacak', jabir ? '+' + fmtUsd(displayAl) : '+' + fr(al) + ' ₺', G, jabir ? '(' + fmtTl(displayTlAl) + ')' : null, true),
-                                cell('ver', '↓ Borç', jabir ? '−' + fmtUsd(displayVer) : '−' + fr(ver) + ' ₺', R, jabir ? '(' + fmtTl(displayTlVer) + ')' : null, true)),
-                            React.createElement("div", { style: { borderTop: '1px solid ' + BOR, background: 'var(--p-bg-hi)', padding: '10px 12px 11px' } },
-                                React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 } },
-                                    React.createElement("span", { style: { fontSize: 10.5, fontWeight: 600, color: SB, textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0 } }, "Transfer ayı"),
-                                    React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value), style: { marginLeft: 'auto', flex: '0 0 auto', width: 'auto', minWidth: 0, maxWidth: 150, background: 'var(--p-white)', border: '1px solid ' + BOR, borderRadius: 9, padding: '5px 9px', color: TX, fontSize: 11.5, fontWeight: 500 } })),
+                            React.createElement("div", { className: "ko-account-summary-net" },
+                                React.createElement("span", null, displayNet === 0 ? 'Hesap Dengede' : pos ? 'Ölmeztur Alacaklı' : 'Ölmeztur Borçlu'),
+                                React.createElement("div", { className: "ko-account-summary-total" }, netTxt,
+                                    jabir ? React.createElement("small", null, '(' + fmtTl(displayTlNet) + ')') : null)),
+                            React.createElement("div", { className: "ko-account-summary-lines" },
+                                cell('al', 'Toplam Alacak', jabir ? '+' + fmtUsd(displayAl) : '+' + fr(al) + ' ₺', G, jabir ? '(' + fmtTl(displayTlAl) + ')' : null),
+                                cell('ver', 'Toplam Borç', jabir ? '−' + fmtUsd(displayVer) : '−' + fr(ver) + ' ₺', R, jabir ? '(' + fmtTl(displayTlVer) + ')' : null)),
+                            React.createElement("div", { className: "ko-account-summary-month" },
+                                React.createElement("label", { className: "ko-account-month-picker" },
+                                    React.createElement("span", null, "Transfer Ayı"),
+                                    React.createElement("input", { type: "month", className: "ko-hesap-month-input", value: ay, onChange: e => setAy(e.target.value) })),
                                 React.createElement("div", { className: "ko-account-summary-lines" },
-                                    cell('m0', 'İş', String(mtsOpen.length), TX, null, false),
-                                    cell('m1v', 'Alacak', jabir ? '+' + fmtUsd(monthUsdTotals.al) : '+' + fr(mAl) + '₺', G, jabir ? '(' + fmtTl(monthUsdTlTotals.al) + ')' : null, false),
-                                    cell('m2v', 'Borç', jabir ? '−' + fmtUsd(monthUsdTotals.ver) : '−' + fr(mVer) + '₺', R, jabir ? '(' + fmtTl(monthUsdTlTotals.ver) + ')' : null, false))));
+                                    cell('m0', 'Açık İş', String(mtsOpen.length), TX),
+                                    cell('mnet', 'Aylık Net', jabir ? signedUsdText(monthUsdTotals.net) : hesapMoney(mAl - mVer),
+                                        (jabir ? monthUsdTotals.net : mAl - mVer) >= 0 ? G : R,
+                                        jabir ? '(' + fmtTl(monthUsdTlTotals.net) + ')' : null))));
                     })(),
                     koKicker('İşlemler'),
                     React.createElement("div", { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
